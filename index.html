@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oncología · Hospital Juárez de México</title>
-<meta name="application-version" content="3.01">
+<meta name="application-version" content="3.02">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -3055,7 +3055,7 @@ body.pp-browse #pPanel.pp-xl .pp-list .dlg-item.has-bed{align-items:center;gap:1
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 3.01 · Fecha de publicación: 25.10.26</div>
+  <div class="app-footer-version">Versión 3.02 · Fecha de publicación: 25.10.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p>Los datos viajan por conexión segura (HTTPS) y se almacenan en la cuenta de Google Drive del Servicio de Oncología del Hospital Juárez de México; el acceso está protegido con clave.</p>
     <p id="hjmOffInfo" role="status" hidden></p>
@@ -6566,6 +6566,10 @@ function ppFiltMatch(f){
 }
 /* v3.01 · Adscrito y Clínica: selección múltiple (casillas en un desplegable) */
 let PP_MS_OPEN=""; const PP_MS={};
+const PP_ADS_TM=[/\bziad\b/,/\bsosa\b/,/\bcharis\b/,/\bluna\b/,/\brosas\b/,/\brovelo\b/];
+function ppAdsCmp(clin){ const tm=/tumores\s+mixtos/i.test(String(clin||"").normalize("NFD").replace(/[\u0300-\u036f]/g,""));
+  const rk=n=>{ const s=String(n||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase(); const i=PP_ADS_TM.findIndex(r=>r.test(s)); return i<0?99:i; };
+  return (a,b)=>{ if(tm){ const d=rk(a.nombre)-rk(b.nombre); if(d) return d; } return a.nombre.localeCompare(b.nombre,"es"); }; }
 function ppMsDraw(btn,allLabel,key,groups){
   const sel=PP_FILT[key], flat=[]; groups.forEach(g=>g.items.forEach(i=>flat.push(i)));
   const name=v=>{ const i=flat.find(x=>x.v===v); return i?i.t:v; };
@@ -6602,7 +6606,7 @@ function ppFiltDraw(){
   const list=(PP_FILT.clin.length?all.filter(x=>PP_FILT.clin.some(c=>ppU(c)===ppU(x.clin))):all);
   PP_FILT.ads=PP_FILT.ads.filter(k=>list.some(x=>x.key===k));
   const groups=new Map(); list.forEach(x=>{ (groups.get(x.clin)||groups.set(x.clin,[]).get(x.clin)).push(x); });
-  const adsGroups=[...groups.keys()].sort(ppClinCmp).map(c=>({label:c,items:groups.get(c).sort((a,b)=>a.nombre.localeCompare(b.nombre,"es")).map(x=>({v:x.key,t:x.nombre}))}));
+  const adsGroups=[...groups.keys()].sort(ppClinCmp).map(c=>({label:c,items:groups.get(c).sort(ppAdsCmp(c)).map(x=>({v:x.key,t:x.nombre}))}));
   ppMsDraw(A,"Todos","ads",adsGroups);
   ppMsDraw(C,"Todas","clin",[{label:"",items:clins.map(c=>({v:c,t:c}))}]);
   const b=$("ppFClr"); if(b) b.hidden=!(PP_FILT.ads.length||PP_FILT.clin.length);
@@ -9654,6 +9658,38 @@ html:root body .band .band-btn.band-exit:hover .ic,html:root body .band .band-bt
 html:root[data-theme="dark"] body .band .band-btn.band-exit{color:#F2A9A4;border-color:#6B3A3C}
 html:root[data-theme="dark"] body .band .band-btn.band-exit .ic{stroke:#F2A9A4}
 html:root[data-theme="dark"] body .band .band-btn.band-exit:hover{background:#3A2022}
+
+html body #pPanel .pp-actions button.pp-census{height:36px;padding:0 18px 0 14px;border:1px solid #1F3A5F!important;background:#1F3A5F!important;color:#fff!important;font:700 13px/1 var(--rd-sans);box-shadow:0 1px 2px rgba(31,58,95,.28)}
+html body #pPanel .pp-actions button.pp-census:hover{background:#2B4C79!important;border-color:#2B4C79!important}
+html body #pPanel .pp-actions button.pp-census svg{width:16px;height:16px;stroke:#fff}
+@media (prefers-color-scheme: dark){html:root:not([data-theme="light"]) body #pPanel .pp-actions button.pp-census{background:#BFD3F0!important;border-color:#BFD3F0!important;color:#14233A!important;box-shadow:none}html:root:not([data-theme="light"]) body #pPanel .pp-actions button.pp-census:hover{background:#D3E1F6!important}html:root:not([data-theme="light"]) body #pPanel .pp-actions button.pp-census svg{stroke:#14233A}}
+html:root[data-theme="dark"] body #pPanel .pp-actions button.pp-census{background:#BFD3F0!important;border-color:#BFD3F0!important;color:#14233A!important;box-shadow:none}
+html:root[data-theme="dark"] body #pPanel .pp-actions button.pp-census:hover{background:#D3E1F6!important}
+html:root[data-theme="dark"] body #pPanel .pp-actions button.pp-census svg{stroke:#14233A}
+
+/* ── Hospitalizados: diagnóstico multilínea y vista móvil / plegable ── */
+html body.pp-browse #pPanel #ppList.by-cama .dlg-item small.dx{display:-webkit-box!important;-webkit-box-orient:vertical;-webkit-line-clamp:3!important;line-clamp:3;white-space:normal!important;overflow:hidden!important;text-overflow:clip;font-size:13px!important;line-height:1.28!important;word-break:break-word}
+@media (max-width:760px){
+html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed{grid-template-columns:58px minmax(0,1fr) minmax(0,1fr) 38px!important;grid-template-areas:"bed name name kebab" "bed exp exp kebab" "bed dx dx dx" "bed meta meta meta"!important;column-gap:12px!important;row-gap:4px!important;padding:12px 8px 12px 14px!important;min-height:0!important;align-items:start!important}
+html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed .cama-badge{align-self:start;width:54px!important;height:46px!important;font-size:20px!important}
+html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed b{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;font-size:15px!important;line-height:1.25!important}
+html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed .tags{flex-wrap:wrap;gap:2px 10px!important}
+html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed .tag{white-space:nowrap}
+html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed small.dx{-webkit-line-clamp:4!important;line-clamp:4;font-size:13px!important}
+html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed .pmeta{align-self:center;flex-direction:row;flex-wrap:wrap;align-items:baseline;gap:2px 10px}
+html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed .pm-ads,html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed .pm-cl{white-space:normal!important}
+html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed .pp-kebab{align-self:start}
+}
+@media (min-width:761px) and (max-width:1100px){
+html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed{grid-template-columns:62px minmax(0,1.1fr) minmax(0,1.7fr) minmax(0,1fr) 38px!important;grid-template-areas:"bed name dx meta kebab" "bed exp dx meta kebab"!important;column-gap:12px!important}
+html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed b{white-space:normal!important;overflow:visible!important;line-height:1.2!important}
+}
+
+@media (max-width:760px){html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed .cama-badge.long{font-size:13px!important;line-height:1.05!important}}
+
+@media (max-width:700px){html body .band .sync-st:not(.band-id){font-size:0!important}}
+
+@media (max-width:1100px){html body.pp-browse #pPanel #ppList .pp-ing{display:none!important}}
 }
 </style>
 <script id="hjm-offline-js">
