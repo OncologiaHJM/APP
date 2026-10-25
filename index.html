@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oncología · Hospital Juárez de México</title>
-<meta name="application-version" content="2.171">
+<meta name="application-version" content="2.172">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2771,6 +2771,14 @@ body.pp-browse .pp-filt{display:flex;align-items:center;justify-content:flex-end
 #datos .f.ads-bad > input{background-color:#FFF1F0;border-color:#E5A29B;padding-right:34px;background-image:radial-gradient(circle,#D93025 0 3.5px,rgba(217,48,37,.22) 4px 7px,transparent 7.5px);background-repeat:no-repeat;background-size:15px 15px;background-position:calc(100% - 11px) center}
 #datos .f.ads-bad > input:focus{background-color:var(--surface,#fff)}
 .cpm{font-style:normal}.cpm::after{content:" " attr(data-cp);font-size:.78em;font-weight:400}
+/* v2.172 · Encabezado, cintilla y pie aprovechan todo el ancho; izquierda: Hospital Juárez de México · derecha: Servicio de Oncología */
+@media screen and (min-width:901px){
+  body .top,body .band{padding-left:clamp(16px,2.2vw,40px)!important;padding-right:clamp(16px,2.2vw,40px)!important}
+  .app-footer{width:calc(100% - clamp(32px,4.4vw,80px))!important;max-width:none!important}
+  .app-footer p{max-width:none!important}
+}
+body .top h1{font-size:clamp(22px,2vw,30px);letter-spacing:-.01em}
+body .top .credit .credit-name{font-size:clamp(15px,1.3vw,19px);font-weight:800}
 </style>
 <style id="pp-grid-v2111">
 /* v2.111 · Buscar paciente (inicio): tarjetas dentro de la página, 6×5, círculo de cama (solo vista Cama) */
@@ -2852,10 +2860,9 @@ body.pp-browse #pPanel.pp-xl .pp-list .dlg-item.has-bed{align-items:center;gap:1
 <header class="top">
   <img class="seal" data-logo="hjm" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Hospital Juárez de México">
   <div class="brand">
-    <h1>Oncología</h1>
-    <p class="inst">Hospital Juárez de México</p>
+    <h1>Hospital Juárez de México</h1>
   </div>
-  <div class="credit"><p class="credit-name">Servicio de Oncología</p><p class="credit-service">Cirugía Oncológica</p></div>
+  <div class="credit"><p class="credit-name">Servicio de Oncología</p></div>
   <img class="seal crab" data-logo="crab" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Cirugía Oncológica">
 </header>
 <div class="band" aria-live="polite">
@@ -3020,7 +3027,7 @@ body.pp-browse #pPanel.pp-xl .pp-list .dlg-item.has-bed{align-items:center;gap:1
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 2.171 · Fecha de publicación: 20.10.26</div>
+  <div class="app-footer-version">Versión 2.172 · Fecha de publicación: 20.10.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p>Los datos viajan por conexión segura (HTTPS) y se almacenan en la cuenta de Google Drive del Servicio de Oncología del Hospital Juárez de México; el acceso está protegido con clave.</p>
     <p id="hjmOffInfo" role="status" hidden></p>
