@@ -6202,10 +6202,10 @@ async function ppChangeIng(id){ const f=DRIVE_FILES.find(x=>x.id===id); if(!f) r
   ppApply(f,{fIngreso:v}); }
 const PP_CLIN_COL=["#2F7FC1","#1FA37A","#D4663C","#8A63D2","#C2912B","#D0527A","#3A9CA6","#6A7B8C"];
 function ppClinColor(n){ let h=0; const t=String(n||"").toUpperCase(); for(let i=0;i<t.length;i++) h=(h*31+t.charCodeAt(i))>>>0; return PP_CLIN_COL[h%PP_CLIN_COL.length]; }
-function ppMetaHTML(p){
+function ppMetaHTML(p,short){
   const first=String(p.adscrito||"").split("/")[0].trim(); let cl=p.clinica; if(cl===undefined||cl===null||cl==="") { cl=""; try{ cl=clinicForAdscrito(first)||""; }catch(_){} }
   cl=String(cl||"").trim(); if(!first&&!cl) return "";
-  return `<span class="pmeta">${first?`<span class="pm-ads">${esc(first.toLowerCase())}</span>`:""}${cl?`<span class="pm-cl"><i style="background:${ppClinColor(cl)}"></i><span>${esc(cl.toLowerCase())}</span></span>`:""}</span>`;
+  return `<span class="pmeta">${first?`<span class="pm-ads"${short?` title="${esc(first)}"`:""}>${esc(short?(ppCensusAds(first)||first).toLowerCase():first.toLowerCase())}</span>`:""}${cl?`<span class="pm-cl"><i style="background:${ppClinColor(cl)}"></i><span>${esc(cl.toLowerCase())}</span></span>`:""}</span>`;
 }
 function renderPP(){
   try{ ppOverlay(); }catch(_){}
@@ -6223,7 +6223,7 @@ function renderPP(){
   try{ $("ppList").classList.toggle("by-cama",!!camaMode); const mb=$("ppMore"); if(mb) mb.hidden=!(ppHome&&Math.min(items.length,ppCap)>ppShown); }catch(_){}
   $("ppList").innerHTML=items.length?items.slice(0,ppShown).map(f=>{ const p=f.meta||{}, exp=p.exp||patientExpFromFileName(f.name), nm=p.nombre||exp;
     const bed=camaMode&&p.cama?`<span class="cama-badge${String(p.cama).trim().length>3?" long":""}" title="Cama ${esc(p.cama)}">${esc(String(p.cama).trim().replace(/^UCI\s*/i,"UCI "))}</span>`:"";
-    const tg=camaMode?"div":"button"; return `<${tg}${camaMode?' role="button" tabindex="0"':' type="button"'} class="dlg-item${bed?" has-bed":""}" data-id="${f.id}" data-exp="${esc(exp)}"><span class="pp-kebab" role="button" tabindex="0" data-ppmenu aria-haspopup="menu" aria-expanded="false" title="Acciones" aria-label="Acciones del paciente"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></span>${bed}<span class="pinfo"><b>${esc(String(nm).toLowerCase())}</b><span class="tags"><span class="tag">Exp. ${esc(exp)}</span>${camaMode?ppFnHTML(f):""}${p.cama&&!bed?`<span class="tag cama">Cama ${esc(p.cama)}</span>`:""}</span>${p.dx?`<small class="dx">${esc(p.dx)}</small>`:""}${ppMetaHTML(p)}${camaMode?ppIngHTML(f):""}</span>${camaMode?ppPendHTML(f):""}</${tg}>`; }).join("")
+    const tg=camaMode?"div":"button"; return `<${tg}${camaMode?' role="button" tabindex="0"':' type="button"'} class="dlg-item${bed?" has-bed":""}" data-id="${f.id}" data-exp="${esc(exp)}"><span class="pp-kebab" role="button" tabindex="0" data-ppmenu aria-haspopup="menu" aria-expanded="false" title="Acciones" aria-label="Acciones del paciente"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></span>${bed}<span class="pinfo"><b>${esc(String(nm).toLowerCase())}</b><span class="tags"><span class="tag">Exp. ${esc(exp)}</span>${camaMode?ppFnHTML(f):""}${p.cama&&!bed?`<span class="tag cama">Cama ${esc(p.cama)}</span>`:""}</span>${p.dx?`<small class="dx">${esc(p.dx)}</small>`:""}${ppMetaHTML(p,camaMode)}${camaMode?ppIngHTML(f):""}</span>${camaMode?ppPendHTML(f):""}</${tg}>`; }).join("")
     :filtOn?'<div class="dlg-empty">Ningún paciente con ese filtro en esta vista. Puedes borrar el filtro o cambiar a «Todos». Los pacientes se asocian al adscrito la próxima vez que se guardan.</div>':camaMode?'<div class="dlg-empty">Sin pacientes hospitalizados modificados en las últimas 36 horas. Usa «Todos» o el buscador.</div>':`<button type="button" class="dlg-item pp-new" data-pp-new><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H5v18h14V8l-5-5zM14 3v5h5M8 14h8M12 10v8"/></svg><b>Nuevo Paciente</b></button>`;
   try{ ppCensusSync(!!camaMode); }catch(_){}
   try{ ppRowFill(!!camaMode,items.slice(0,ppShown)); }catch(_){}
@@ -9735,10 +9735,10 @@ html body.pp-browse #pPanel #ppList .dlg-item .pp-pt{flex:1 1 auto;min-width:0!i
 html body.pp-browse #pPanel #ppList .dlg-item .pp-pt::placeholder{color:var(--rd-mute);opacity:.6}
 html body.pp-browse #pPanel #ppList .dlg-item .pp-pi.done .pp-pt{color:var(--rd-mute);text-decoration:line-through}
 @media (min-width:1101px){
-html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed{grid-template-columns:78px minmax(0,.95fr) minmax(0,1.1fr) 88px minmax(0,1fr) minmax(0,2fr) 44px!important;grid-template-areas:"bed name dx ing meta pend kebab" "bed exp dx ing meta pend kebab"!important}
+html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed{grid-template-columns:78px minmax(0,1.35fr) minmax(0,2.1fr) 84px minmax(0,.8fr) minmax(0,1.7fr) 40px!important;grid-template-areas:"bed name dx ing meta pend kebab" "bed exp dx ing meta pend kebab"!important}
 }
 @media (min-width:801px) and (max-width:1100px){
-html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed{grid-template-columns:56px minmax(0,.9fr) minmax(0,1fr) 66px minmax(0,.95fr) minmax(0,1.7fr) 30px!important;grid-template-areas:"bed name dx ing meta pend kebab" "bed exp dx ing meta pend kebab"!important;column-gap:10px!important}
+html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed{grid-template-columns:56px minmax(0,.95fr) minmax(0,1.3fr) 78px minmax(0,.9fr) minmax(0,1.5fr) 30px!important;grid-template-areas:"bed name dx ing meta pend kebab" "bed exp dx ing meta pend kebab"!important;column-gap:10px!important}
 }
 @media (min-width:701px) and (max-width:800px){
 html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed{grid-template-columns:52px minmax(0,1fr) minmax(0,1.2fr) 72px minmax(0,.9fr) 34px!important;grid-template-areas:"bed name dx ing meta kebab" "bed exp dx ing meta kebab" "bed pend pend pend pend kebab"!important;column-gap:10px!important;row-gap:4px!important;height:auto!important;padding-bottom:10px!important}
@@ -9748,7 +9748,11 @@ html body.pp-browse #pPanel #ppList.by-cama .dlg-item .pp-ing{display:flex!impor
 }
 @media (min-width:701px) and (max-width:1100px){
 html body.pp-browse #pPanel #ppList.by-cama .dlg-item .pm-ads{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.2!important}
+html body.pp-browse #pPanel #ppList.by-cama .dlg-item .pm-cl,html body.pp-browse #pPanel #ppList.by-cama .dlg-item .pm-cl span{white-space:normal!important;overflow:visible!important;text-overflow:clip!important}
 }
+/* v3.13 · Hospitalizados: nombre y diagnóstico completos (sin recortes con «…») */
+html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed b{display:block!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;-webkit-line-clamp:unset!important;line-clamp:unset!important}
+html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed small.dx{display:block!important;-webkit-line-clamp:unset!important;line-clamp:unset!important;overflow:visible!important;max-height:none!important}
 @media (max-width:700px){
 html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed{grid-template-areas:"bed name name kebab" "bed exp exp kebab" "bed dx dx dx" "bed meta meta meta" "bed pend pend pend"!important}
 html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed .pp-pend{margin-top:2px}
