@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oncología · Hospital Juárez de México</title>
-<meta name="application-version" content="3.00">
+<meta name="application-version" content="3.01">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2931,7 +2931,7 @@ body.pp-browse #pPanel.pp-xl .pp-list .dlg-item.has-bed{align-items:center;gap:1
           <button type="button" id="ppPrev" title="Anteriores" aria-label="Anteriores"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button>
           <button type="button" id="ppNext" title="Siguientes" aria-label="Siguientes"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
           <button type="button" id="ppRefresh" title="Actualizar lista" aria-label="Actualizar lista"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></svg></button>
-          <span class="pp-filt" id="ppFilt" role="group" aria-label="Filtros de la lista de pacientes"><label><span>Adscrito</span><select id="ppFAds" aria-label="Filtrar por adscrito"></select></label><label><span>Clínica</span><select id="ppFClin" aria-label="Filtrar por clínica"></select></label><button type="button" id="ppFClr" hidden title="Quitar el filtro de adscrito y clínica" aria-label="Borrar filtro">✕</button></span>
+          <span class="pp-filt" id="ppFilt" role="group" aria-label="Filtros de la lista de pacientes"><label><span>Adscrito</span><button type="button" id="ppFAds" class="ppms" aria-haspopup="listbox" aria-expanded="false" aria-label="Filtrar por adscrito">Todos</button></label><label><span>Clínica</span><button type="button" id="ppFClin" class="ppms" aria-haspopup="listbox" aria-expanded="false" aria-label="Filtrar por clínica">Todas</button></label><button type="button" id="ppFClr" hidden title="Quitar los filtros de adscrito y clínica" aria-label="Borrar filtro">✕</button></span>
           <span class="pp-view-btns" role="group" aria-label="Vista de la tabla de pacientes"><button type="button" id="ppViewCama" data-pp-view="cama" aria-pressed="true" title="Pacientes hospitalizados con cama modificados en las últimas 36 horas">Hospitalizados</button><button type="button" id="ppViewRec" data-pp-view="recientes" aria-pressed="false" title="Todos los pacientes">Todos</button></span>
           <button type="button" id="ppToggle" title="Mostrar u ocultar la lista" aria-label="Mostrar u ocultar la lista" aria-expanded="true"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
         </span>
@@ -3055,7 +3055,7 @@ body.pp-browse #pPanel.pp-xl .pp-list .dlg-item.has-bed{align-items:center;gap:1
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 3.00 · Fecha de publicación: 20.10.26</div>
+  <div class="app-footer-version">Versión 3.01 · Fecha de publicación: 25.10.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p>Los datos viajan por conexión segura (HTTPS) y se almacenan en la cuenta de Google Drive del Servicio de Oncología del Hospital Juárez de México; el acceso está protegido con clave.</p>
     <p id="hjmOffInfo" role="status" hidden></p>
@@ -3140,7 +3140,7 @@ body.pp-browse #pPanel.pp-xl .pp-list .dlg-item.has-bed{align-items:center;gap:1
       <button class="btn" type="button" id="btnPrintBlank" hidden title="Imprime solo los datos, para hojas ya impresas: Escala 100 %, márgenes ninguno, sin encabezados"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2" stroke-dasharray="3 2"/><path d="M6 14h12v7H6z" stroke-dasharray="3 2"/></svg>Imprimir en blanco</button>
     </div>
   </div>
-  <p class="fnote" id="fnote">Puedes escribir directamente sobre el formato. Lo que cambies en campos de la hoja de datos (cama, expediente, médico, diagnóstico, fechas, género) se actualiza también allá; los demás cambios solo quedan en este formato.</p>
+  <p class="fnote" id="fnote">Puedes escribir directamente sobre el formato.</p>
   <div class="fbody" id="fbody">
     <nav class="rel" id="relNav" aria-label="Formatos relacionados" hidden></nav>
     <div class="stage"><div class="paper-holder" id="holder"><div class="papers" id="paper"></div></div></div>
@@ -3820,7 +3820,7 @@ function refresh(){
   if(typeof updateSecNav==="function") try{ updateSecNav(); renderSync(); }catch(_){}
 }
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
-const FORMAT_NOTE="Puedes escribir directamente sobre el formato. Lo que cambies en campos de la hoja de datos (cama, expediente, médico, diagnóstico, fechas, género) se actualiza también allá; los demás cambios solo quedan en este formato.";
+const FORMAT_NOTE="Puedes escribir directamente sobre el formato.";
 const TRANSFUSION_FIELDS=["hb","hto","plt","tp","inr","tpt","indicacion","peso","gestas","partos","abortos","cesareas"];
 const TRANSFUSION_LABELS={hb:"Hb",hto:"Hto",plt:"Plaquetas",tp:"TP",inr:"INR",tpt:"TPT",indicacion:"Indicación de transfusión",peso:"Peso",gestas:"Gestas",partos:"Partos",abortos:"Abortos",cesareas:"Cesáreas"};
 function transfusionMissing(){return TRANSFUSION_FIELDS.filter(id=>!String($(id).value||"").trim());}
@@ -5761,7 +5761,7 @@ function idleLock(){
   if(current){try{captureCurrentRecent();}catch(_){}}
   SESSION_ADSCRITO="";SESSION_RESIDENT="";IDLE_LOCKED=true;try{ppFiltClear();}catch(_){}
   openResidentGate();
-  gateStatus("La sesión se cerró por 10 minutos sin uso. Escribe el usuario actual para continuar.","info");
+  gateStatus("La sesión se cerró por 10 minutos sin uso.","info");
   return true;
 }
 ["pointerdown","keydown","touchstart","wheel"].forEach(t=>addEventListener(t,e=>{
@@ -6548,7 +6548,7 @@ function ppMarkCurrent(){
   $("ppList").querySelectorAll(".dlg-item").forEach(b=>b.classList.toggle("cur",!!cur&&b.dataset.exp===cur));
 }
 /* v2.158 · Filtros Adscrito / Clínica de la lista de pacientes: viven en memoria (se pierden al recargar, al salir o a los 10 min sin uso) */
-let PP_FILT={ads:"",clin:""};
+let PP_FILT={ads:[],clin:[]};
 const ppU=v=>String(v||"").toLocaleUpperCase("es-MX").trim();
 function ppAdsInfo(raw){ const rec=userRecord(raw), k=normalizeStaffName(raw), ok=!!(rec&&rec.tipo==="adscrito"&&rec.servicio); return {key:k,ok,nombre:rec?rec.nombre:String(raw).trim(),clin:ok?rec.servicio:""}; }
 /* Orden de las clínicas en los filtros */
@@ -6560,32 +6560,63 @@ const ppClinCmp=(a,b)=>ppClinRank(a)-ppClinRank(b)||String(a).localeCompare(Stri
 function ppFileClins(f){ const m=f.meta||{}; if(m.clinica!==undefined) return String(m.clinica).split("/").map(normalizeStaffName).filter(Boolean);
   const out=[]; String(m.adscrito||"").split("/").forEach(p=>{ const i=ppAdsInfo(p.trim()); if(i.ok) out.push(normalizeStaffName(i.clin)); }); return out; }
 function ppFiltMatch(f){
-  if(!PP_FILT.ads&&!PP_FILT.clin) return true;
-  if(PP_FILT.ads){ const a=String((f.meta&&f.meta.adscrito)||"").split("/")[0].trim(); if(!a) return false; const i=ppAdsInfo(a); return i.ok&&i.key===PP_FILT.ads; }
-  return ppFileClins(f).includes(normalizeStaffName(PP_FILT.clin));
+  const A=PP_FILT.ads,C=PP_FILT.clin; if(!A.length&&!C.length) return true;
+  if(A.length){ const a=String((f.meta&&f.meta.adscrito)||"").split("/")[0].trim(); if(!a) return false; const i=ppAdsInfo(a); return i.ok&&A.includes(i.key); }
+  const fc=ppFileClins(f); return C.some(c=>fc.includes(normalizeStaffName(c)));
 }
+/* v3.01 · Adscrito y Clínica: selección múltiple (casillas en un desplegable) */
+let PP_MS_OPEN=""; const PP_MS={};
+function ppMsDraw(btn,allLabel,key,groups){
+  const sel=PP_FILT[key], flat=[]; groups.forEach(g=>g.items.forEach(i=>flat.push(i)));
+  const name=v=>{ const i=flat.find(x=>x.v===v); return i?i.t:v; };
+  btn.textContent=!sel.length?allLabel:sel.length===1?name(sel[0]):sel.length+" seleccionados";
+  btn.classList.toggle("on",sel.length>0);
+  PP_MS[key]={btn,groups,allLabel};
+  if(PP_MS_OPEN===key) ppMsRender(key);
+}
+function ppMsRender(key){
+  const m=PP_MS[key]; if(!m) return; let pop=$("ppMsPop");
+  if(!pop){
+    pop=document.createElement("div"); pop.id="ppMsPop"; pop.className="ppms-pop"; pop.setAttribute("role","listbox"); pop.setAttribute("aria-multiselectable","true"); pop.hidden=true; document.body.appendChild(pop);
+    pop.addEventListener("change",e=>{ const cb=e.target; if(!cb||cb.type!=="checkbox"||!PP_MS_OPEN) return; const k=PP_MS_OPEN, set=PP_FILT[k], v=cb.value;
+      PP_FILT[k]=cb.checked?(set.includes(v)?set:set.concat([v])):set.filter(x=>x!==v); ppFiltDraw(); renderPP(); });
+    pop.addEventListener("click",e=>{ if(e.target.closest&&e.target.closest("[data-ppms-clear]")&&PP_MS_OPEN){ PP_FILT[PP_MS_OPEN]=[]; ppFiltDraw(); renderPP(); } });
+  }
+  const sel=PP_FILT[key], top=pop.scrollTop, ae=document.activeElement, fv=(ae&&pop.contains(ae)&&ae.type==="checkbox")?ae.value:null;
+  pop.innerHTML=`<div class="ppms-head"><b>${key==="ads"?"Adscrito":"Clínica"}</b><button type="button" data-ppms-clear${sel.length?"":" disabled"}>Limpiar</button></div>`
+    +m.groups.map(g=>(g.label?`<div class="ppms-grp">${esc(g.label)}</div>`:"")+g.items.map(i=>`<label class="ppms-opt"><input type="checkbox" value="${esc(i.v)}"${sel.includes(i.v)?" checked":""}><span>${esc(i.t)}</span></label>`).join("")).join("");
+  pop.hidden=false; pop.scrollTop=top;
+  const r=(m.btn.closest("label")||m.btn).getBoundingClientRect();
+  pop.style.minWidth=Math.max(r.width,220)+"px"; pop.style.top=(r.bottom+6)+"px"; pop.style.left=Math.max(8,Math.min(r.left,window.innerWidth-pop.offsetWidth-8))+"px";
+  if(fv!==null){ const el=[...pop.querySelectorAll("input")].find(x=>x.value===fv); if(el) el.focus({preventScroll:true}); }
+}
+function ppMsClose(){ const pop=$("ppMsPop"); if(pop) pop.hidden=true; if(PP_MS_OPEN&&PP_MS[PP_MS_OPEN]) PP_MS[PP_MS_OPEN].btn.setAttribute("aria-expanded","false"); PP_MS_OPEN=""; }
+function ppMsToggle(key){ const was=PP_MS_OPEN; ppMsClose(); if(was===key) return; PP_MS_OPEN=key; ppMsRender(key); if(PP_MS[key]) PP_MS[key].btn.setAttribute("aria-expanded","true"); }
 function ppFiltDraw(){
   const A=$("ppFAds"),C=$("ppFClin"); if(!A||!C) return;
   /* Se muestran TODOS los adscritos y TODAS las clínicas registradas, tengan o no pacientes */
   const seen=new Map(); HJM_USERS.forEach(u=>{ if(u.tipo!=="adscrito"||!u.servicio) return; const i=ppAdsInfo(u.usuario); if(i.ok&&!seen.has(i.key)) seen.set(i.key,i); });
   const all=[...seen.values()], cm=new Map(); PP_CLIN_NAMES.concat(all.map(x=>x.clin)).forEach(c=>{ const k=normalizeStaffName(c); if(!cm.has(k)) cm.set(k,c); });
   const clins=[...cm.values()].sort(ppClinCmp);
-  if(PP_FILT.ads&&!seen.has(PP_FILT.ads)) PP_FILT.ads="";
-  if(PP_FILT.clin&&!clins.some(c=>ppU(c)===ppU(PP_FILT.clin))) PP_FILT.clin="";
-  const list=(PP_FILT.clin?all.filter(x=>ppU(x.clin)===ppU(PP_FILT.clin)):all);
+  PP_FILT.clin=PP_FILT.clin.filter(c=>clins.includes(c));
+  const list=(PP_FILT.clin.length?all.filter(x=>PP_FILT.clin.some(c=>ppU(c)===ppU(x.clin))):all);
+  PP_FILT.ads=PP_FILT.ads.filter(k=>list.some(x=>x.key===k));
   const groups=new Map(); list.forEach(x=>{ (groups.get(x.clin)||groups.set(x.clin,[]).get(x.clin)).push(x); });
-  const opt=(v,t,sel)=>`<option value="${esc(v)}"${sel?" selected":""}>${esc(t)}</option>`;
-  A.innerHTML=opt("","Todos",!PP_FILT.ads)+[...groups.keys()].sort(ppClinCmp).map(c=>`<optgroup label="${esc(c)}">${groups.get(c).sort((a,b)=>a.nombre.localeCompare(b.nombre,"es")).map(x=>opt(x.key,x.nombre,PP_FILT.ads===x.key)).join("")}</optgroup>`).join("");
-  C.innerHTML=opt("","Todas",!PP_FILT.clin)+clins.map(c=>opt(c,c,ppU(c)===ppU(PP_FILT.clin))).join("");
-  A.classList.toggle("on",!!PP_FILT.ads); C.classList.toggle("on",!!PP_FILT.clin);
-  const b=$("ppFClr"); if(b) b.hidden=!(PP_FILT.ads||PP_FILT.clin);
+  const adsGroups=[...groups.keys()].sort(ppClinCmp).map(c=>({label:c,items:groups.get(c).sort((a,b)=>a.nombre.localeCompare(b.nombre,"es")).map(x=>({v:x.key,t:x.nombre}))}));
+  ppMsDraw(A,"Todos","ads",adsGroups);
+  ppMsDraw(C,"Todas","clin",[{label:"",items:clins.map(c=>({v:c,t:c}))}]);
+  const b=$("ppFClr"); if(b) b.hidden=!(PP_FILT.ads.length||PP_FILT.clin.length);
 }
-function ppFiltClear(){ PP_FILT={ads:"",clin:""}; try{ ppFiltDraw(); renderPP(); }catch(_){} }
+function ppFiltClear(){ ppMsClose(); PP_FILT={ads:[],clin:[]}; try{ ppFiltDraw(); renderPP(); }catch(_){} }
 (function(){
   const A=$("ppFAds"),C=$("ppFClin"),B=$("ppFClr"); if(!A||!C||!B) return;
-  A.onchange=()=>{ PP_FILT.ads=A.value; if(A.value){ const u=HJM_USERS.find(x=>x.tipo==="adscrito"&&normalizeStaffName(x.usuario)===A.value); PP_FILT.clin=u?u.servicio:""; } ppFiltDraw(); renderPP(); };
-  C.onchange=()=>{ PP_FILT.clin=C.value; if(PP_FILT.ads){ const cur=HJM_USERS.find(x=>x.tipo==="adscrito"&&normalizeStaffName(x.usuario)===PP_FILT.ads); const ac=cur?cur.servicio:""; if(ppU(ac)!==ppU(C.value)) PP_FILT.ads=""; } ppFiltDraw(); renderPP(); };
+  A.onclick=e=>{ e.preventDefault(); ppMsToggle("ads"); };
+  C.onclick=e=>{ e.preventDefault(); ppMsToggle("clin"); };
   B.onclick=ppFiltClear;
+  document.addEventListener("mousedown",e=>{ if(!PP_MS_OPEN) return; if(e.target.closest&&e.target.closest("#ppMsPop,#ppFilt")) return; ppMsClose(); });
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&PP_MS_OPEN){ const b=PP_MS[PP_MS_OPEN]&&PP_MS[PP_MS_OPEN].btn; ppMsClose(); if(b) b.focus(); } });
+  window.addEventListener("resize",ppMsClose);
+  window.addEventListener("scroll",e=>{ if(PP_MS_OPEN&&!(e.target&&e.target.nodeType===1&&e.target.closest("#ppMsPop"))) ppMsClose(); },true);
 })();
 const PP_CLIN_COL=["#2F7FC1","#1FA37A","#D4663C","#8A63D2","#C2912B","#D0527A","#3A9CA6","#6A7B8C"];
 function ppClinColor(n){ let h=0; const t=String(n||"").toUpperCase(); for(let i=0;i<t.length;i++) h=(h*31+t.charCodeAt(i))>>>0; return PP_CLIN_COL[h%PP_CLIN_COL.length]; }
@@ -6601,7 +6632,7 @@ function renderPP(){
   const camaMode=document.body.classList.contains("pp-browse")&&!s&&PP_VIEW==="cama";
   if(camaMode){ const now=Date.now(); items=uniqueFiles(DRIVE_FILES).filter(f=>camaValida(f.meta&&f.meta.cama)&&now-fileTime(f)<=PP_RECENT_MS).sort(camaOrder); }
   try{ ppFiltDraw(); }catch(_){}
-  const filtOn=!!(PP_FILT.ads||PP_FILT.clin); if(filtOn) items=items.filter(ppFiltMatch);
+  const filtOn=!!(PP_FILT.ads.length||PP_FILT.clin.length); if(filtOn) items=items.filter(ppFiltMatch);
   try{ const pc=$("ppCount"); if(pc){ const n=items.length; pc.textContent=!n?"":camaMode?(n===1?"1 hospitalizado":n+" hospitalizados"):(n===1?"1 paciente":n+" pacientes"); } }catch(_){}
   const ppHome=document.body.classList.contains("pp-browse"), ppKey=s+"|"+PP_VIEW+"|"+ppHome+"|"+PP_FILT.ads+"|"+PP_FILT.clin;
   if(window.PP_KEY!==ppKey){ window.PP_KEY=ppKey; window.PP_PAGES=0; }
@@ -8044,7 +8075,7 @@ async function renderStats(body){
   </div>
   <div class="st-card"><h3>Actividad de los últimos 14 días <small style="font-weight:500;color:#7B7E81">· accesos + guardados</small></h3><div class="hrs">${days.map(d=>`<i title="${d} · ${A.perDay[d]||0}" style="height:${Math.max(2,Math.round((A.perDay[d]||0)/dmax*100))}%"></i>`).join("").replace(/grid-template-columns:repeat\(24/,"")}</div></div>
   <div class="st-card"><h3>Liberación automática de camas</h3>
-   <div class="st-msg" style="margin:0">Al abrir la app (y cada 30 min mientras esté abierta) la cama de los pacientes que no se han editado en ${INACT_H} horas o más se cambia a <b>CE</b>, tengan o no cama asignada. Pendientes de cambiar ahora: <b>${cands.length}</b>. No se toca el expediente abierto ni los editados recientemente.</div>
+   <div class="st-msg" style="margin:0">Pendientes de cambiar ahora: <b>${cands.length}</b>.</div>
    <div class="st-msg" style="margin:12px 0 6px"><b>Con cama y sin editar entre 36 y ${INACT_H} h</b> (${med.length}) · aún no pasan solos a CE</div>
    ${med.length?`<div style="display:flex;gap:10px;align-items:center;margin:0 0 6px;flex-wrap:wrap"><label style="font-size:12px;font-weight:700;color:#353B40;display:flex;gap:6px;align-items:center"><input type="checkbox" id="stMedAll"> Seleccionar todos</label><button type="button" class="st-btn st-sm" id="stMedSel" disabled>Borrar seleccionados (0)</button></div><div class="cam-list">${med.map((f,i)=>`<div class="cam-row" style="grid-template-columns:22px 52px 1fr auto auto"><input type="checkbox" data-msel="${i}" aria-label="Seleccionar"><span class="bd">${esc(String(f.meta.cama).trim())}</span><span>${esc((f.meta.nombre||"").slice(0,48))} · Exp. ${esc(String(f.meta.exp||""))}</span><small>${Math.floor((Date.now()-fileTime(f))/3600e3)} h</small><button type="button" class="st-btn st-sm" data-bcam="${i}">Borrar cama</button></div>`).join("")}</div>`:'<div class="st-msg">Ninguno.</div>'}<div class="st-msg" id="stMedMsg" style="margin-top:6px">${esc(MEDMSG)}</div>
    ${camasLog.length?`<div class="st-msg" style="margin-top:10px"><b>Últimas liberaciones</b>\n${camasLog.map(c=>`${new Date(c.ts).toLocaleString("es-MX",{dateStyle:"short",timeStyle:"short"})} · cama ${esc(c.cama)} → CE · Exp. ${esc(c.exp)}`).join("\n")}</div>`:""}</div></div>`;
@@ -8192,7 +8223,7 @@ function pendHtml(){ updPendBadge(); if(!pendData) return '<div class="st-msg">R
   (d.out.length?`<div class="st-msg" style="margin:8px 0"><b>${d.out.length}</b> expediente(s) con pendientes · <b>${nf}</b> archivo(s)</div><div class="st-tw"><table><thead><tr><th>Expediente</th><th>Paciente</th><th>Pend.</th><th>Contenido</th><th>Creó</th><th></th></tr></thead><tbody>${d.out.map(p=>{ const inf=p.items.map(pendInfo), kinds=[...new Set(inf.map(x=>x.kind))].join(" · "), by=[...new Set(inf.map(x=>x.by).filter(Boolean))].join(", ")||"—", bad=inf.some(x=>x.bad), alt=inf.some(x=>x.hasAltas)&&!inf.some(x=>x.hasOther);
     return `<tr><td class="nm">${esc(p.exp)}</td><td>${esc(String(p.nombre||"").slice(0,34))}</td><td>${p.items.length}</td><td style="text-align:left">${esc(kinds)}${bad?' <span class="lv warn">revisar</span>':""}${alt?' <span class="lv warn">alta: se integra con «Integrar»</span>':""}</td><td style="text-align:left">${esc(by)}</td><td style="white-space:nowrap"><button type="button" class="st-btn st-sm" data-pint="${esc(p.exp)}">Integrar</button> <button type="button" class="st-btn st-sm" data-pdelx="${esc(p.exp)}">Borrar</button></td></tr>`; }).join("")}</tbody></table></div>`:(d.unsupported?"":`<div class="st-msg">Ninguna nota pendiente en la carpeta PendientesJCF.</div>`)); }
 function renderPend(body){
-  body.innerHTML=`<div class="st-card"><h3>Pendientes (carpeta PendientesJCF)</h3><div class="st-msg" style="margin:0 0 8px">Notas, indicaciones y cambios de datos que esperan integrarse al expediente. «Integrar» los suma al archivo del paciente y borra el pendiente solo si el guardado salió bien. Las altas se arman con el formato de la Nota de Alta: al integrarlas se abre el paciente por detrás y se vuelve a Inicio (no debe haber un paciente abierto). Se revisan todos los expedientes de la lista automáticamente al abrir esta pestaña.</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button type="button" class="st-btn" id="stPendGo">Actualizar</button><button type="button" class="st-btn" id="stPendAll">Integrar todos</button><span class="st-msg" id="stPendMsg" style="margin:0"></span></div><div id="stPendOut">${pendHtml()}</div></div>`;
+  body.innerHTML=`<div class="st-card"><h3>Pendientes (carpeta PendientesJCF)</h3><div class="st-msg" style="margin:0 0 8px">Notas, indicaciones y cambios de datos que esperan integrarse al expediente.</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button type="button" class="st-btn" id="stPendGo">Actualizar</button><button type="button" class="st-btn" id="stPendAll">Integrar todos</button><span class="st-msg" id="stPendMsg" style="margin:0"></span></div><div id="stPendOut">${pendHtml()}</div></div>`;
   const msg=()=>$s("stPendMsg");
   const bind=()=>{ const o=$s("stPendOut"); if(!o) return; o.innerHTML=pendHtml();
     o.querySelectorAll("[data-pint]").forEach(b=>b.onclick=async()=>{ if(!isAdmin()) return; b.disabled=true; b.textContent="…"; const r=await integrarExp(b.dataset.pint); msg().textContent=`Exp. ${b.dataset.pint}: ${r}`; bind(); });
@@ -8255,7 +8286,7 @@ function renderErr(body){
   eqDraw(); drawDup();
   const card=document.createElement("div"); card.className="st-card"; body.appendChild(card);
   const rm=async x=>{ await G(x.extra?"hjmBorrarPendienteExtra":(x.where==="Pendientes"?"hjmBorrarPendiente":"hjmBorrarDuplicado"),x.id); DRIVE_FILES=DRIVE_FILES.filter(f=>f.id!==x.id); };
-  const drawBad=(busy)=>{ card.innerHTML=`<h3>Archivos no viables ${badFiles?`<small style="font-weight:500;color:#7B7E81">· ${badFiles.length} encontrado(s)</small>`:""}</h3><div class="st-msg" style="margin:0 0 8px">Se revisan solos al abrir esta pestaña: archivos dañados, de otro formato (.bak, .doc, .error…) o que no corresponden a la app, en pacientes y pendientes. Los respaldos de la carpeta de respaldo se revisan abajo.</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${badFiles&&badFiles.length?'<button type="button" class="st-btn" id="stBadAll">Eliminar todos</button>':""}<span class="st-msg" id="stBadMsg" style="margin:0">${busy?"Revisando…":esc(BADERR)}</span></div>${badFiles?(badFiles.length?`<div class="st-tw" style="margin-top:8px"><table><thead><tr><th>Carpeta</th><th>Nombre del archivo</th><th>Problema</th><th></th></tr></thead><tbody>${badFiles.map((x,i)=>`<tr><td>${x.where}</td><td style="text-align:left;word-break:break-all">${esc(x.name||"")}</td><td style="text-align:left">${esc(x.why)}</td><td>${eqBusy("b"+x.id)?'<button type="button" class="st-btn st-sm" disabled>En cola…</button>':`<button type="button" class="st-btn st-sm" data-bdel="${i}">Eliminar</button>`}</td></tr>`).join("")}</tbody></table></div>`:'<div class="st-msg" style="margin-top:8px">Todos los archivos revisados son viables.</div>'):""}`;
+  const drawBad=(busy)=>{ card.innerHTML=`<h3>Archivos no viables ${badFiles?`<small style="font-weight:500;color:#7B7E81">· ${badFiles.length} encontrado(s)</small>`:""}</h3><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${badFiles&&badFiles.length?'<button type="button" class="st-btn" id="stBadAll">Eliminar todos</button>':""}<span class="st-msg" id="stBadMsg" style="margin:0">${busy?"Revisando…":esc(BADERR)}</span></div>${badFiles?(badFiles.length?`<div class="st-tw" style="margin-top:8px"><table><thead><tr><th>Carpeta</th><th>Nombre del archivo</th><th>Problema</th><th></th></tr></thead><tbody>${badFiles.map((x,i)=>`<tr><td>${x.where}</td><td style="text-align:left;word-break:break-all">${esc(x.name||"")}</td><td style="text-align:left">${esc(x.why)}</td><td>${eqBusy("b"+x.id)?'<button type="button" class="st-btn st-sm" disabled>En cola…</button>':`<button type="button" class="st-btn st-sm" data-bdel="${i}">Eliminar</button>`}</td></tr>`).join("")}</tbody></table></div>`:'<div class="st-msg" style="margin-top:8px">Todos los archivos revisados son viables.</div>'):""}`;
 
     const all=$s("stBadAll"); if(all) all.onclick=()=>{ if(!isAdmin()) return; const todo=(badFiles||[]).filter(x=>!eqBusy("b"+x.id)); if(!todo.length) return;
       if(!all.dataset.ok){ all.dataset.ok="1"; all.textContent=`¿Eliminar los ${todo.length}?`; all.classList.add("st-danger"); setTimeout(()=>{ if(all.isConnected){ delete all.dataset.ok; all.textContent="Eliminar todos"; all.classList.remove("st-danger"); } },5000); return; }
@@ -8326,7 +8357,7 @@ function drawQueueCard(body){
   const load=async()=>{ const Q=window.__hjmOffQ; rows=Q?await Q.list():[]; };
   const draw=()=>{ if(!card.isConnected) return;
     card.innerHTML=`<h3>Pendientes por subir (sin conexión) ${rows?`<small style="font-weight:500;color:#7B7E81">· ${rows.length}</small>`:""}</h3>
-    <div class="st-msg" style="margin:0 0 8px">Lo guardado sin conexión en este dispositivo espera aquí hasta subirse a Drive. «Intentar subir» lo sube ahora si hay conexión; «Borrar» descarta esos cambios de este dispositivo (no se suben).</div>
+    <div class="st-msg" style="margin:0 0 8px">Lo guardado sin conexión en este dispositivo espera aquí hasta subirse a Drive.</div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button type="button" class="st-btn" id="stQGo" ${busy||!rows||!rows.length?"disabled":""}>Intentar subir todos</button><button type="button" class="st-btn" id="stQAll" ${busy||!rows||!rows.length?"disabled":""}>Borrar todos</button><span class="st-msg" id="stQMsg">${esc(msg)}</span></div>
     ${rows?(rows.length?`<div class="st-tw" style="margin-top:8px"><table><thead><tr><th>Exp. / Paciente</th><th>Tipo</th><th>Cambios</th><th>Última edición</th><th>Estado</th><th></th></tr></thead><tbody>${rows.map((r,i)=>{ const nm=(r.cur&&r.cur.datos&&r.cur.datos.nombreCompleto)||(r.meta&&r.meta.nombre)||((r.cur&&r.cur.datos)?[r.cur.datos.nombres,r.cur.datos.apPaterno,r.cur.datos.apMaterno].filter(Boolean).join(" "):"");
       return `<tr><td style="text-align:left"><b>${esc(r.exp||"—")}</b><br><small style="color:#7B7E81">${esc(String(nm||"").slice(0,34))}</small></td><td>${r.nuevo?"Paciente nuevo":"Cambios"}</td><td>${r.nuevo?"—":nCamb(r)}</td><td>${when(r.last)}<br><small style="color:#7B7E81">${esc(r.user||"")}</small></td>
@@ -8371,7 +8402,7 @@ function drawBakCard(body){
     bakRows=(bakData||[]).filter(x=>!q||(x.name+" "+(x.exp||"")+" "+((x.original&&x.original.nombre)||"")).toUpperCase().includes(q));
     const busy=bakBusy, sinJson=(bakData||[]).filter(x=>!x.original).length;
     card.innerHTML=`<h3>Respaldos (.bak) ${bakData?`<small style="font-weight:500;color:#7B7E81">· ${bakData.length} respaldo(s)${sinJson?` · ${sinJson} sin JSON original`:""}</small>`:""}</h3>
-    <div class="st-msg" style="margin:0 0 8px">Copias de seguridad de la carpeta de respaldo junto con el JSON actual del mismo expediente. «Restaurar» reemplaza el JSON del paciente por el contenido del respaldo (el .bak se conserva; el JSON anterior queda en el historial de versiones de Drive). «Borrar» manda el .bak a la papelera de Drive.</div>
+    <div class="st-msg" style="margin:0 0 8px">Copias de seguridad</div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="st-msg" id="stBakMsg" style="margin:0">${busy?"Cargando…":esc(bakMsg)}</span></div>
     ${bakData?(bakRows.length?`<div class="st-tw" style="margin-top:8px"><table><thead><tr><th>Exp. / Paciente</th><th>JSON original</th><th>Peso</th><th>Respaldo (.bak)</th><th>Peso</th><th></th></tr></thead><tbody>${bakRows.map((x,i)=>{ const o=x.original, mas=o&&x.size>o.size, menos=o&&x.size<o.size;
       return `<tr><td style="text-align:left"><b>${esc(x.exp||"—")}</b><br><small style="color:#7B7E81">${esc(String((o&&o.nombre)||"").slice(0,34))}</small></td>
@@ -8458,7 +8489,7 @@ function usrEditor(key,tipoNuevo){
 }
 function renderUsr(host){
   host.innerHTML=`<div class="st-card"><h3>Usuarios de la app</h3>
-    <div class="st-msg" style="margin:0 0 10px">Los cambios se guardan solos (no hay botón de guardar): quedan en este equipo al instante y se suben a Drive en segundo plano. <b>Usuario</b> es lo que se escribe al ingresar; <b>Nombre completo</b> es el que se llena e imprime en los formatos.</div>
+    <div class="st-msg" style="margin:0 0 10px"><b>Usuario</b> es lo que se escribe al ingresar; <b>Nombre completo</b> es el que se llena e imprime en los formatos.</div>
     <div class="usr-bar"><input class="st-in" id="stUsrQ" type="search" placeholder="Buscar por nombre, usuario o servicio…" value="${esc(usrQ)}" autocomplete="off" aria-label="Buscar usuario"><button type="button" class="st-btn" id="stUsrAdd">+ Agregar usuario</button></div>
     <div class="usr-state" id="stUsrState" role="status"></div>
     <div class="usr-tabs" role="tablist"><button type="button" role="tab" class="usr-tab" id="stUsrTR" data-sub="residente"></button><button type="button" role="tab" class="usr-tab" id="stUsrTA" data-sub="adscrito"></button></div>
@@ -8502,11 +8533,11 @@ function renderIdx(host){
   host.innerHTML=`<div class="st-card"><h3>Descargas · archivos de la app</h3>
     <div class="st-msg" style="margin:0 0 12px">Versión ${esc(ver)} · ${n?`<b>${n}</b> cambio(s) de usuarios aún sin integrar al HTML.`:"el HTML ya trae todos los usuarios."}</div>
     <div class="idx-opt"><button type="button" class="st-btn idx-btn" id="stIdxWeb">Descargar Index con Usuarios Actualizados</button>
-      <p>Es el HTML normal de la app con la lista de usuarios actual. Súbelo a GitHub reemplazando el index.html. Al abrir la app con esa versión, los cambios que ya trae se borran solos de Drive.</p></div>
+      <p>Es el HTML normal de la app con la lista de usuarios actual.</p></div>
     <div class="idx-opt"><button type="button" class="st-btn idx-btn" id="btnDbDownload">Descargar base de datos</button>
-      <p>Es un .zip con todos los archivos .json de la carpeta de pacientes, tal como están hoy en Drive. Puede tardar un poco si hay muchos pacientes.</p></div>
+      <p>Es un .zip con todos los archivos .json de la carpeta de pacientes.</p></div>
     <div class="idx-opt"><button type="button" class="st-btn idx-btn" id="stIdxLocal">Descargar Oncologia HJM SIN CONEXION (.exe)</button>
-      <p>Es un solo archivo .exe con el cangrejo como icono (solo Windows). Al abrirlo con doble clic abre la app en Chrome como una pestaña normal, sin pasos extra. Ábrelo una vez con internet e ingresa la clave para que arme su copia sin conexión. Si Windows o Chrome avisan que no es un archivo común, elige «Conservar» / «Más información → Ejecutar de todos modos» (solo la primera vez).</p>
+      <p>Es un solo archivo .exe con el cangrejo como icono (solo Windows).</p>
       <button type="button" class="st-btn" id="stIdxHtml">Solo el HTML (sin icono, para Mac u otros)</button></div>
     <div class="st-msg" id="stIdxMsg" style="margin-top:6px"></div></div>`;
   const msg=(t,ok)=>{ const m=$s("stIdxMsg"); if(m){ m.textContent=t; m.style.color=ok?"#2E8B57":""; } };
@@ -9124,6 +9155,345 @@ html body .band .band-btn.band-gear{width:38px;min-height:38px;padding:0;margin:
 html body.hjm-admin .band .band-btn.band-gear{display:inline-flex}
 html body .band .band-btn.band-gear .ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 html body .band .band-btn.band-gear:hover,html body .band .band-btn.band-gear:focus-visible{background:var(--rd-tint);color:var(--rd-ink)}
+</style>
+<style id="crab-theme-v301">
+/* ═════════════ v3.01 · Tema HJM (solo diseño) ═════════════
+   Capa final de estilos: reemplaza los grises/negros por azules pastel tomados del escudo del
+   Hospital Juárez de México. Colores sólidos, sin degradados. No toca marcado, scripts ni la impresión. */
+@media screen{
+:root{
+  --hj-navy:#1F3A5F; --hj-navy2:#2F4D78; --hj-blue:#5B83B7;
+  --hj-btn:#BFD2EC; --hj-btn-h:#AEC6E6; --hj-btn-ink:#1B3358; --hj-btn-line:#9DB7DB;
+  --hj-soft:#E4ECF7; --hj-soft-h:#D6E3F4; --hj-soft-line:#C4D5EA;
+  --hj-tint:#EDF2F9; --hj-wash:#F7FAFD; --hj-line:#D9E3F0; --hj-line2:#C2D2E6;
+  --rd-canvas:#F4F7FB; --rd-ink:#1E2A3B; --rd-ink2:#4A5B73; --rd-mute:#74849B;
+  --rd-line:#DCE5F1; --rd-line2:#C6D4E7; --rd-tint:#EDF2F9; --rd-brand:#2F4D78; --rd-accent:#5B83B7;
+  --rd-inkbtn:#BFD2EC; --rd-on-ink:#1B3358; --rd-brandbtn:#E4ECF7; --rd-on-brand:#1F3A5F;
+  --rd-conn-bg:rgba(47,77,120,.08); --rd-conn-line:rgba(47,77,120,.35); --rd-conn-ink:#2F4D78;
+  --rd-scrim:rgba(20,32,52,.42);
+  --bg:#F4F7FB; --ink:#1E2A3B; --muted:#74849B; --line:#DCE5F1;
+  --accent:#2F4D78; --accent-soft:#E4ECF7; --soft-blue:#E4ECF7; --band:#BFD2EC; --band-ink:#1B3358; --navy:#1F3A5F;
+  --rd-graph:#2F4D78; --rd-graph-soft:#E4ECF7; --rd-graph-line:#C4D5EA;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --hj-navy:#CFE0F6; --hj-navy2:#B4CAE8; --hj-blue:#8FB0DC;
+    --hj-btn:#5A7FB5; --hj-btn-h:#6B90C6; --hj-btn-ink:#FFFFFF; --hj-btn-line:#93B3E0;
+    --hj-soft:#2C415E; --hj-soft-h:#365071; --hj-soft-line:#52709B;
+    --hj-tint:#202D41; --hj-wash:#1A2535; --hj-line:#2E3E57; --hj-line2:#4A6285;
+    --rd-canvas:#121A26; --rd-ink:#EAF0F8; --rd-ink2:#BCCBE0; --rd-mute:#8DA0BB;
+    --rd-line:#2E3E57; --rd-line2:#3C4F6D; --rd-tint:#202D41; --rd-brand:#9DB9E0; --rd-accent:#8FB0DC;
+    --rd-inkbtn:#5A7FB5; --rd-on-ink:#FFFFFF; --rd-brandbtn:#2C415E; --rd-on-brand:#CFE0F6;
+    --rd-conn-bg:rgba(143,176,220,.12); --rd-conn-line:rgba(143,176,220,.45); --rd-conn-ink:#B4CAE8; --rd-scrim:rgba(4,8,16,.6);
+    --bg:#121A26; --ink:#EAF0F8; --muted:#8DA0BB; --line:#2E3E57; --accent:#8FB0DC; --accent-soft:#202D41; --soft-blue:#202D41;
+    --band:#5A7FB5; --band-ink:#FFFFFF; --navy:#EAF0F8;
+    --rd-graph:#8FB0DC; --rd-graph-soft:#27384F; --rd-graph-line:#3C5272;
+  }
+}
+:root[data-theme="dark"]{
+  --hj-navy:#CFE0F6; --hj-navy2:#B4CAE8; --hj-blue:#8FB0DC;
+  --hj-btn:#5A7FB5; --hj-btn-h:#6B90C6; --hj-btn-ink:#FFFFFF; --hj-btn-line:#93B3E0;
+  --hj-soft:#2C415E; --hj-soft-h:#365071; --hj-soft-line:#52709B;
+  --hj-tint:#202D41; --hj-wash:#1A2535; --hj-line:#2E3E57; --hj-line2:#4A6285;
+  --rd-canvas:#121A26; --rd-ink:#EAF0F8; --rd-ink2:#BCCBE0; --rd-mute:#8DA0BB;
+  --rd-line:#2E3E57; --rd-line2:#3C4F6D; --rd-tint:#202D41; --rd-brand:#9DB9E0; --rd-accent:#8FB0DC;
+  --rd-inkbtn:#5A7FB5; --rd-on-ink:#FFFFFF; --rd-brandbtn:#2C415E; --rd-on-brand:#CFE0F6;
+  --rd-conn-bg:rgba(143,176,220,.12); --rd-conn-line:rgba(143,176,220,.45); --rd-conn-ink:#B4CAE8; --rd-scrim:rgba(4,8,16,.6);
+  --bg:#121A26; --ink:#EAF0F8; --muted:#8DA0BB; --line:#2E3E57; --accent:#8FB0DC; --accent-soft:#202D41; --soft-blue:#202D41;
+  --band:#5A7FB5; --band-ink:#FFFFFF; --navy:#EAF0F8;
+  --rd-graph:#8FB0DC; --rd-graph-soft:#27384F; --rd-graph-line:#3C5272;
+}
+
+/* ── Encabezado ── */
+html body .top{background:var(--rd-surface) linear-gradient(var(--hj-btn-line),var(--hj-btn-line)) top/100% 3px no-repeat}
+html body .band{background:var(--rd-surface)}
+html body .top h1,html body .top .credit .credit-name{color:var(--hj-navy)}
+html body .top .seal,html body .top>.seal.crab{border-color:var(--hj-line)}
+html body .band .band-name{color:var(--rd-ink)}
+html body .band .band-btn{border-color:var(--hj-line2)}
+html body .band .band-btn:hover,html body .band .band-btn:focus-visible{background:var(--hj-tint);border-color:var(--hj-line2)}
+html body .band .band-btn#bandBack,html body.pp-browse .band #bandNew{background:var(--hj-btn)!important;border-color:var(--hj-btn-line)!important;color:var(--hj-btn-ink)!important;box-shadow:none!important}
+html body .band .band-btn#bandBack:hover,html body.pp-browse .band #bandNew:hover{background:var(--hj-btn-h)!important;opacity:1!important}
+html body .band .band-btn.band-gear{border-color:var(--hj-line2);color:var(--hj-navy2)}
+html body .band .band-btn.band-gear:hover,html body .band .band-btn.band-gear:focus-visible{background:var(--hj-tint);color:var(--hj-navy)}
+html body .band .band-btn.band-exit{border-color:var(--hj-line);color:var(--rd-mute)}
+html body .band .band-btn:focus-visible,html body .band .sync-st:focus-visible{outline-color:var(--hj-blue)}
+html body .band .sync-st{border-color:var(--hj-line)}
+html body .band .sync-st.busy::before{background:var(--hj-blue)}
+html body .band .sync-n{background:var(--hj-navy2);color:#fff}
+
+/* ── Botones ── */
+html:root body .btn.save,html:root body .btn.primary,html:root body #btnSave,html:root body #btnSaveFmt,html:root body #clinicalSaveTop{background:var(--hj-btn)!important;border:1px solid var(--hj-btn-line)!important;color:var(--hj-btn-ink)!important;box-shadow:none!important}
+html:root body .btn.save:hover,html:root body .btn.primary:hover,html:root body #btnSave:hover,html:root body #btnSaveFmt:hover,html:root body #clinicalSaveTop:hover{background:var(--hj-btn-h)!important;opacity:1!important}
+html:root body #btnPrint,html:root body #clinicalPrintTop,html:root body .fbar .actions #btnPrint,html:root body .clinical-head #clinicalPrintTop,html:root body #view-clinical #clinicalPrintTop{background:var(--hj-soft)!important;border:1px solid var(--hj-soft-line)!important;color:var(--hj-navy)!important;box-shadow:none!important}
+html:root body #btnPrint:hover,html:root body #clinicalPrintTop:hover{background:var(--hj-soft-h)!important;opacity:1!important}
+html:root body #btnPrint .ic,html:root body #clinicalPrintTop .ic,html:root body .btn.save .ic,html:root body .btn.primary .ic{stroke:currentColor}
+html:root body .fbar .actions .btn:not(.primary):not(.save):not(#btnPrint):not(#btnReset),html:root body .clinical-head .actions .btn:not(.primary):not(.save):not(#clinicalPrintTop){background:var(--hj-wash);border:1px solid var(--hj-soft-line);color:var(--hj-navy)}
+html:root body .fbar .actions .btn:not(.primary):not(.save):not(#btnPrint):not(#btnReset):hover,html:root body .clinical-head .actions .btn:not(.primary):not(.save):not(#clinicalPrintTop):hover{background:var(--hj-soft)}
+html:root body .fbar .actions #btnReset{background:var(--rd-surface)!important;border-color:var(--hj-line2)!important;color:var(--hj-navy2)!important}
+html:root body .fbar .actions #btnReset:hover{background:var(--hj-tint)!important}
+html:root body #btnClear,html:root body .idx-actions .btn.clear{border-color:var(--hj-line2)!important;color:var(--hj-navy)!important;background:var(--rd-surface)!important}
+html:root body #btnClear:hover{background:var(--hj-tint)!important}
+
+/* ── Títulos de página ── */
+html body #view-clinical .clinical-head .ftitle>span,html body .fbar .ftitle .fcat{display:inline-flex;align-items:center;gap:8px;color:var(--hj-navy2);font-weight:600}
+html body #view-clinical .clinical-head .ftitle>span::before,html body .fbar .ftitle .fcat::before{content:"";width:18px;height:3px;border-radius:3px;background:var(--hj-btn-line)}
+html body #view-clinical .clinical-head,html body .fbar{position:relative}
+html body #view-clinical .clinical-head::after,html body .fbar::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--hj-line);border-radius:2px}
+html body #view-clinical .clinical-record-state{display:inline-flex;align-items:center;gap:7px;padding:5px 13px 5px 11px;border:1px solid #A9DACE;background:#D3EEE7;color:#14594B;font-weight:700;font-size:12.5px;box-shadow:none}
+html body #view-clinical .clinical-record-state::before{content:"";width:7px;height:7px;border-radius:50%;background:#2E9C84}
+html body #view-clinical .clinical-record-state.saved{background:#E1E3F7;border-color:#C3C8EE;color:#34408A}
+html body #view-clinical .clinical-record-state.saved::before{background:#6370C8}
+@media (prefers-color-scheme: dark){html:root:not([data-theme="light"]) body #view-clinical .clinical-record-state{background:#1F4A41;border-color:#2E6B5D;color:#BFEDE1}html:root:not([data-theme="light"]) body #view-clinical .clinical-record-state.saved{background:#2C3563;border-color:#44509A;color:#D5D9FA}}
+html:root[data-theme="dark"] body #view-clinical .clinical-record-state{background:#1F4A41;border-color:#2E6B5D;color:#BFEDE1}
+html:root[data-theme="dark"] body #view-clinical .clinical-record-state.saved{background:#2C3563;border-color:#44509A;color:#D5D9FA}
+
+/* ── Índice superior del archivo clínico ── */
+html body #view-clinical .clinical-switcher,html body #view-format .section-switcher{background:var(--hj-soft);border:1px solid var(--hj-soft-line)}
+html body #view-clinical .clinical-switch.active,html body #view-format .section-switcher .clinical-switch.active{background:var(--rd-surface)!important;box-shadow:inset 0 0 0 1px var(--hj-btn-line)!important}
+html body #view-clinical .clinical-switch.active:before,html body #view-clinical .clinical-switch.active .clinical-switch-icon,html body #view-format .section-switcher .clinical-switch.active .clinical-switch-icon{background:var(--hj-btn)!important}
+html body #view-clinical .clinical-switch.active .clinical-switch-icon .ic,html body #view-format .section-switcher .clinical-switch.active .clinical-switch-icon .ic{stroke:var(--hj-btn-ink)!important}
+html body #view-clinical .clinical-switch:not(.active) .clinical-switch-icon .ic,html body #view-format .section-switcher .clinical-switch:not(.active) .clinical-switch-icon .ic{stroke:var(--hj-navy2)!important}
+html body #view-clinical .clinical-switch:not(.active):hover,html body #view-format .section-switcher .clinical-switch:not(.active):hover{background:rgba(255,255,255,.55)!important}
+html body #view-clinical .clinical-switch.active span,html body #view-format .section-switcher .clinical-switch.active span{color:var(--hj-navy)!important}
+
+/* ── Recientes / Últimas notas / Últimas indicaciones / Previos ── */
+html body #view-clinical .clinical-recents{background:var(--hj-wash);border:1px solid var(--hj-line);overflow:hidden}
+html body #view-clinical .clinical-recents-head{background:var(--hj-soft);border-bottom:1px solid var(--hj-soft-line);box-shadow:inset 4px 0 0 var(--hj-btn-line)}
+html body #view-clinical .clinical-recents-head h2{color:var(--hj-navy)}
+html body #view-clinical .clinical-recents-head p{color:var(--rd-ink2)}
+html body #view-clinical .clinical-recents .clinical-table-wrap{background:var(--hj-wash)}
+html body #view-clinical .clinical-recents table th{color:var(--hj-navy2);background:var(--hj-tint)}
+html body #view-clinical .clinical-recents tr:hover td{background:var(--hj-tint)}
+html body #view-clinical .clinical-empty{color:var(--rd-ink2)}
+html body #view-clinical .clinical-form-card{border-color:var(--hj-line)}
+html body .rc-head{background:var(--hj-soft)!important;color:var(--hj-navy)!important;border-radius:14px 14px 0 0;border-bottom:1px solid var(--hj-soft-line)}
+html body .rc-head small{opacity:.85}
+html body .rcsec .rc-head,html body .alta-recent .rc-head{background:none!important;color:var(--rd-ink)!important;border-radius:0;border:0}
+html body .rc,html body #recentBox,html body .rc-list{background:var(--hj-wash)}
+html body #view-format .rc{border:1px solid var(--hj-line);border-radius:16px;overflow:hidden}
+html body #view-format .rc-list .rc-item:hover,html body #view-format .rc-list tr:hover{background:var(--hj-tint)}
+
+/* ── Chips y segmentos ── */
+html body #view-format .halfseg{background:var(--hj-tint);border:1px solid var(--hj-line)}
+html body #view-clinical .clinical-shortcuts button,html body #view-data .hoy{background:var(--hj-soft);border-color:var(--hj-soft-line);color:var(--hj-navy)}
+html body #view-clinical .clinical-shortcuts button:hover,html body #view-data .hoy:hover{background:var(--hj-soft-h);border-color:var(--hj-btn-line)}
+html body #view-clinical .clinical-shortcuts button:focus-visible{outline-color:var(--hj-blue)}
+html body #ppList .pp-new,html body #view-data #ppList .dlg-item.pp-new,html body.pp-browse #pPanel.pp-xl #ppList .dlg-item.pp-new{background:var(--hj-soft);border-color:var(--hj-soft-line);color:var(--hj-navy)}
+html body #ppList .pp-new:hover,html body.pp-browse #pPanel.pp-xl #ppList .dlg-item.pp-new:hover{background:var(--hj-soft-h)!important;border-color:var(--hj-btn-line)}
+html body #view-data .auto,html body #view-data .auto.empty{background:var(--hj-tint);border-color:var(--hj-line2)}
+html body .rel .pre-txt{--c:#5B83B7;--t:#E4ECF7}
+html body #view-format .pre-txt,html body #view-format .pre-txt.col{background:var(--hj-soft);border-color:var(--hj-soft-line);color:var(--hj-navy)}
+html body #view-format .pre-txt:hover{background:var(--hj-soft-h);border-color:var(--hj-btn-line)}
+html body .rel .g-gab{--c:#5B83B7;--t:#E4ECF7}
+html body .rel .g-hosp{--c:#4F8FA3;--t:#DDEEF3}
+html body .rel .g-paja{--c:#6C7BB8;--t:#E3E6F5}
+html body .rel .g-cx{--c:#5A6F8C;--t:#E1E7EF}
+html body .rel .g-egr{--c:#5E9A8F;--t:#DCEFEB}
+
+/* ── Archivo clínico del paciente (expediente) ── */
+html body #view-archive .ar-hero-icon{background:var(--hj-btn);box-shadow:none}
+html body #view-archive .ar-hero-icon svg{stroke:var(--hj-btn-ink)}
+html body #view-archive .ar-eyebrow{color:var(--hj-navy2)}
+html body #view-archive .ar-hero{border-bottom-color:var(--hj-line)}
+html body #view-archive .ar-hero-stat{border-color:var(--hj-line2)}
+html body #view-archive .ar-hero-stat b,html body #view-archive .ar-hero-stat strong{color:var(--hj-navy2)}
+html body #view-archive .ar-search,html body #view-archive .ar-order select{border-color:var(--hj-line2)}
+html body #view-archive .ar-search:focus-within{border-color:var(--hj-blue);box-shadow:0 0 0 4px rgba(91,131,183,.15)}
+html body #view-archive .ar-nav-item{border-color:var(--hj-line2);color:var(--rd-ink2)}
+html body #view-archive .ar-nav-item b{background:var(--hj-tint);color:var(--hj-navy2)}
+html body #view-archive .ar-nav-item:hover{background:var(--hj-tint);border-color:var(--hj-btn-line)}
+html body #view-archive .ar-nav-item.active{background:var(--hj-btn);border-color:var(--hj-btn-line);color:var(--hj-btn-ink);box-shadow:none}
+html body #view-archive .ar-nav-item.active b{background:rgba(255,255,255,.55);color:var(--hj-btn-ink)}
+html body #view-archive .ar-panel,html body #view-archive .ar-other{background:var(--hj-wash);border-color:var(--hj-line);overflow:hidden}
+html body #view-archive .ar-panel-head,html body #view-archive .ar-other-head{background:var(--hj-soft);border-bottom:1px solid var(--hj-soft-line)}
+html body #view-archive .ar-section-icon{background:var(--rd-surface);color:var(--hj-navy2);border:1px solid var(--hj-soft-line)}
+html body #view-archive .ar-section-kicker{color:var(--hj-navy2)}
+html body #view-archive .ar-count{background:var(--rd-surface);color:var(--hj-navy);border:1px solid var(--hj-soft-line)}
+html body #view-archive .ar-record:hover,html body #view-archive .ar-tr:hover,html body #view-archive .ar-o:hover{background:var(--hj-tint)}
+html body #view-archive .ar-act:hover,html body #view-archive .ar-more:hover{background:var(--hj-tint);border-color:var(--hj-btn-line)}
+html body #view-archive .ar-latest{background:var(--hj-soft);border-color:var(--hj-soft-line)}
+
+/* ── Hoja de datos ── */
+html body #view-data .secnav{border-color:var(--hj-line2)}
+html body #view-data .secnav .sn.active,html body #view-data .secnav .sn[aria-current="true"],html body #view-data .secnav .sn.on{background:var(--hj-soft);color:var(--hj-navy);box-shadow:inset 0 0 0 1px var(--hj-soft-line)}
+html body #view-data fieldset{border-color:var(--hj-line)}
+html body #view-data input:focus,html body #view-data select:focus,html body #view-data textarea:focus{border-color:var(--hj-blue)!important;box-shadow:0 0 0 4px rgba(91,131,183,.15)!important}
+html body #view-data #servicio,html body #datos #servicio{background:var(--hj-tint)!important}
+html body.pp-browse #pPanel .pp-actions .pp-view-btns button[aria-pressed="true"]{color:var(--hj-navy)}
+html body.pp-browse #pPanel .pp-view-btns{background:var(--hj-soft)}
+html body.pp-browse #pPanel #ppRefresh{border-color:var(--hj-line2)}
+html body.pp-browse #pPanel .pp-head #ppSearch:focus{border-color:var(--hj-blue);box-shadow:0 0 0 4px rgba(91,131,183,.15)}
+html body.pp-browse #pPanel #ppList .dlg-item.cur,html body.pp-browse #pPanel.pp-xl #ppList .dlg-item.cur{background:var(--hj-tint)!important;box-shadow:inset 3px 0 0 var(--hj-blue)!important}
+html body.pp-browse #pPanel.pp-xl #ppList .cama-badge{background:var(--hj-soft);color:var(--hj-navy)}
+html body.pp-browse #pPanel.pp-xl #ppList .dlg-item:hover{background:var(--hj-wash)!important}
+html body.pp-browse #pPanel.pp-xl #ppList .dlg-item .tag.cama{background:var(--hj-soft);color:var(--hj-navy2)}
+html body.pp-browse #pPanel.pp-xl #ppList{border-color:var(--hj-line)}
+html body.pp-browse #pPanel .pp-filt label{border-color:var(--hj-line2)}
+html body.pp-browse #pPanel .pp-filt label:has(select.on){background:var(--hj-btn);border-color:var(--hj-btn-line)}
+html body.pp-browse #pPanel .pp-filt label:has(select.on)>span,html body.pp-browse #pPanel .pp-filt select.on{color:var(--hj-btn-ink)}
+
+/* ── ÍNDICE DE FORMATOS · rediseño ── */
+html body #view-data #formatos{position:relative}
+html body #view-data #formatos .idx-archive-title,html body #view-data #formatos .index-formats-heading{padding:20px 16px 12px;color:var(--hj-navy)}
+html body #view-data #formatos .idx-archive-title::after,html body #view-data #formatos .index-formats-heading::after{content:"";position:absolute;left:50%;bottom:3px;width:34px;height:3px;margin-left:-17px;border-radius:3px;background:var(--hj-btn-line)}
+html body #view-data #formatos .index-formats-heading .index-key{color:var(--hj-navy2);background:var(--hj-soft);padding:5px 9px;border-radius:999px;margin-top:5px;font-weight:600}
+html body #view-data #formatos .index-key svg{fill:var(--hj-blue);stroke:var(--hj-blue)}
+html body #view-data #formatos button.idx-archive-title .ic{stroke:var(--hj-blue)}
+html body #view-data #formatos button.idx-archive-title:hover .ic,html body #view-data #formatos button.idx-archive-title:focus-visible .ic{stroke:var(--hj-navy)}
+html body #view-data #formatos button.idx-archive-title:focus-visible{outline-color:var(--hj-blue)}
+
+html body #view-data #formatos .clinical-index{gap:9px;padding:4px 12px 12px}
+html body #view-data #formatos .clinical-index button{--kt:#E4ECF7;--ki:#BFD2EC;position:relative;min-height:58px;padding:0 12px 0 10px;gap:10px;border:1px solid var(--hj-line);border-radius:16px;background:var(--kt);color:var(--rd-ink);font-weight:600;box-shadow:none}
+html body #view-data #formatos .clinical-index button:nth-child(1){--kt:#E6EEF9;--ki:#BFD2EC}
+html body #view-data #formatos .clinical-index button:nth-child(2){--kt:#DEF0F2;--ki:#B7DCE2}
+html body #view-data #formatos .clinical-index button:nth-child(3){--kt:#E6E9F7;--ki:#C6CDEE}
+html body #view-data #formatos .clinical-index button:nth-child(4){--kt:#E3EBF1;--ki:#BFD0DD}
+html body #view-data #formatos .clinical-index button:hover:not([aria-disabled="true"]){border-color:var(--hj-btn-line);background:var(--kt);box-shadow:0 0 0 2px var(--ki)}
+html body #view-data #formatos .clinical-index button .clinical-index-icon{width:36px;height:36px;background:var(--ki)!important;color:var(--hj-navy)!important;border-radius:12px;box-shadow:none}
+html body #view-data #formatos .clinical-index button .clinical-index-icon .ic{stroke:var(--hj-navy)}
+@media (prefers-color-scheme: dark){html:root:not([data-theme="light"]) body #view-data #formatos .clinical-index button{background:var(--hj-soft)}}
+html:root[data-theme="dark"] body #view-data #formatos .clinical-index button{background:var(--hj-soft)}
+
+html body #view-data #formatos #index{gap:10px}
+html body #view-data #formatos #index .col{gap:10px}
+html body #view-data #formatos #index .g-gab{--c:#5B83B7;--t:#E4ECF7;--tile:#BFD2EC}
+html body #view-data #formatos #index .g-hosp{--c:#4F8FA3;--t:#DDEEF3;--tile:#B7DCE2}
+html body #view-data #formatos #index .g-paja{--c:#6C7BB8;--t:#E5E8F6;--tile:#C6CDEE}
+html body #view-data #formatos #index .g-cx{--c:#5A6F8C;--t:#E2E8F0;--tile:#BFD0DD}
+html body #view-data #formatos #index .g-egr{--c:#5E9A8F;--t:#DDF0EC;--tile:#B9E0D8}
+html body #view-data #formatos #index .grp{overflow:hidden;border:1px solid color-mix(in srgb,var(--c) 28%,var(--hj-line));border-radius:18px;background:var(--rd-surface);box-shadow:none}
+html body #view-data #formatos #index .grp h3{gap:10px;padding:12px 14px 11px;background:var(--t);border-bottom:1px solid color-mix(in srgb,var(--c) 18%,var(--hj-line));color:var(--rd-ink);font:700 13px/1.2 var(--rd-sans);letter-spacing:.005em}
+html body #view-data #formatos #index .grp h3::before{width:28px;height:28px;border-radius:9px;background-color:var(--tile);-webkit-mask:none;mask:none;background-repeat:no-repeat;background-position:center;background-size:17px}
+html body #view-data #formatos #index .g-gab h3::before{background-image:var(--ic-gab)}
+html body #view-data #formatos #index .g-hosp h3::before{background-image:var(--ic-hosp)}
+html body #view-data #formatos #index .g-paja h3::before{background-image:var(--ic-paja)}
+html body #view-data #formatos #index .g-cx h3::before{background-image:var(--ic-cx)}
+html body #view-data #formatos #index .g-egr h3::before{background-image:var(--ic-egr)}
+html body #view-data #formatos #index .grp .list{padding:6px 6px 8px;gap:2px}
+html body #view-data #formatos #index .fmt{position:relative;min-height:36px;padding:7px 9px 7px 12px;border-radius:10px;font-size:12.5px;font-weight:500;line-height:1.3;color:var(--rd-ink)}
+html body #view-data #formatos #index .fmt::before{content:"";position:absolute;left:3px;top:50%;width:3px;height:0;margin-top:0;border-radius:3px;background:var(--c);transition:height .15s,margin .15s}
+html body #view-data #formatos #index .fmt.ready:hover{background:var(--t);border-color:transparent;color:var(--rd-ink)}
+html body #view-data #formatos #index .fmt.ready:hover::before{height:16px;margin-top:-8px}
+html body #view-data #formatos #index .fmt-frequent{font-weight:600}
+html body #view-data #formatos #index .fmt-frequent-mark{color:var(--c);width:16px;height:16px}
+html body #view-data #formatos #index .fmt.ready[aria-disabled="true"]{opacity:.62}
+html body #view-data #formatos #index .fmt.ready[aria-disabled="true"]:hover{background:transparent}
+html body #view-data #formatos #index .fmt.ready[aria-disabled="true"]:hover::before{height:0}
+html body #view-data #formatos :is(.fmt,.clinical-index button,.idx-archive-btn):focus-visible{outline-color:var(--hj-blue)}
+@media (prefers-color-scheme: dark){
+  html:root:not([data-theme="light"]) body #view-data #formatos #index .grp{--t:color-mix(in srgb,var(--c) 22%,var(--rd-surface))}
+}
+html:root[data-theme="dark"] body #view-data #formatos #index .grp{--t:color-mix(in srgb,var(--c) 22%,var(--rd-surface))}
+:root{--ic-gab:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231F3A5F' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='3' width='16' height='18' rx='2.5'/%3E%3Cpath d='M12 8v7M8.5 11.5h7'/%3E%3C/svg%3E");--ic-hosp:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231F3A5F' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 19V6M3 15h18v4M21 15v-2.5A2.5 2.5 0 0 0 18.500 10H11v5'/%3E%3Ccircle cx='7' cy='12' r='1.7'/%3E%3C/svg%3E");--ic-paja:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231F3A5F' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 3h7l4 4v14H7zM14 3v4h4M9.500 12h6M9.500 16h6'/%3E%3C/svg%3E");--ic-cx:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231F3A5F' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3.500 18.500 9-9 2 2-9 9a1.400 1.400 0 0 1-2-2Z'/%3E%3Cpath d='m13.500 8.500 7-6c.5 3-1.500 6-5 8l-2-2Z'/%3E%3C/svg%3E");--ic-egr:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231F3A5F' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 4H5v16h5M14 8l4 4-4 4M18 12H9'/%3E%3C/svg%3E")}
+
+/* ── Ventana de usuario (ingreso) ── */
+html body #dlgResidentGate{background:var(--rd-surface) linear-gradient(var(--hj-btn-line),var(--hj-btn-line)) top/100% 4px no-repeat;border-color:var(--hj-line)}
+html body #dlgResidentGate .resident-gate-logo{border-color:var(--hj-line)}
+html body #dlgResidentGate .resident-gate-brand p{color:var(--hj-navy2)}
+html body #dlgResidentGate .resident-gate-field input:focus{border-color:var(--hj-blue);box-shadow:0 0 0 4px rgba(91,131,183,.18)}
+html body #dlgResidentGate .resident-gate-submit{background:var(--hj-btn);color:var(--hj-btn-ink);border:1px solid var(--hj-btn-line);box-shadow:none}
+html body #dlgResidentGate .resident-gate-submit:hover{background:var(--hj-btn-h);opacity:1}
+html body #dlgResidentGate .resident-gate-request{color:var(--hj-navy2)}
+html body #dlgResidentGate .resident-gate-clinic{background:var(--hj-soft)}
+html body #dlgResidentGate .gate-suggestions button:hover,html body #dlgResidentGate .gate-suggestions button:focus-visible{background:var(--hj-tint)}
+html body #dlgResidentGate .resident-gate-field>span{color:var(--rd-ink2)}
+
+/* ── Panel de Control (ventana y pestañas) ── */
+#dlgStats{background:var(--hj-wash);color:var(--rd-ink);border:1px solid var(--hj-line);border-radius:22px;box-shadow:0 30px 80px -20px rgba(20,40,80,.45)}
+#dlgStats::backdrop{background:rgba(20,32,52,.5)}
+#dlgStats #stSub{display:none}
+#dlgStats .st-head{background:var(--hj-soft);color:var(--hj-navy);padding:16px 20px;border-bottom:1px solid var(--hj-soft-line)}
+#dlgStats .st-head h2{font-weight:700;color:var(--hj-navy)}
+#dlgStats .st-stat{background:var(--rd-surface);color:var(--hj-navy2);border:1px solid var(--hj-soft-line)}
+#dlgStats .st-stat.ok{background:#D3EEE7;color:#14594B;border-color:#A9DACE}
+#dlgStats .st-x{background:var(--rd-surface);color:var(--hj-navy2);border:1px solid var(--hj-soft-line)}
+#dlgStats .st-x:hover{background:var(--hj-tint)}
+#dlgStats input[type=checkbox],#dlgUsr input[type=checkbox]{accent-color:var(--hj-blue)}
+#dlgStats .st-body{background:var(--hj-wash)}
+#dlgStats .st-per button,#dlgStats .st-btn{border-color:var(--hj-line2);background:var(--rd-surface);color:var(--hj-navy)}
+#dlgStats .st-per button:hover,#dlgStats .st-btn:hover{background:var(--hj-tint);border-color:var(--hj-btn-line)}
+#dlgStats .st-per button[aria-pressed=true]{background:var(--hj-btn);color:var(--hj-btn-ink);border-color:var(--hj-btn-line)}
+#dlgStats .st-note{color:var(--rd-mute)}
+#dlgStats .st-kpi,#dlgStats .st-card{background:var(--rd-surface);border-color:var(--hj-line)}
+#dlgStats .st-kpi{position:relative;overflow:hidden}
+#dlgStats .st-kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--hj-btn-line)}
+#dlgStats .st-kpi b{color:var(--hj-navy)}
+#dlgStats .st-kpi span{color:var(--hj-navy2)}
+#dlgStats .st-card h3{color:var(--hj-navy)}
+#dlgStats th{color:var(--hj-navy2);border-bottom-color:var(--hj-line)}
+#dlgStats td{border-bottom-color:var(--hj-tint)}
+#dlgStats td.nm{color:var(--rd-ink)}
+#dlgStats table.st-act tfoot td{background:var(--hj-soft);border-top-color:var(--hj-soft-line);color:var(--hj-navy)}
+#dlgStats .bar{background:var(--hj-tint)}
+#dlgStats .bar i{background:var(--hj-blue)}
+#dlgStats .hrs i{background:#9DB7DB}
+#dlgStats .hrl{color:var(--rd-mute)}
+#dlgStats .cam-list{border-color:var(--hj-line)}
+#dlgStats .cam-row{border-bottom-color:var(--hj-tint)}
+#dlgStats .cam-row .bd{background:var(--hj-soft);color:var(--hj-navy)}
+#dlgStats .st-tabs{border-bottom-color:var(--hj-line)}
+#dlgStats .st-tabs button{color:var(--rd-ink2)}
+#dlgStats .st-tabs button:hover{background:var(--hj-tint);color:var(--hj-navy)}
+#dlgStats .st-tabs button[aria-selected=true]{background:var(--hj-btn);color:var(--hj-btn-ink);border-color:var(--hj-btn-line);box-shadow:none}
+#dlgStats .st-cnt{background:#9DB7DB;color:#142845}
+#dlgStats .st-tabs button[aria-selected=true] .st-cnt{background:#fff;color:var(--hj-navy)}
+#dlgStats .st-cnt.st-bad,#dlgStats .st-tabs button[aria-selected=true] .st-cnt.st-bad{background:#F2B3AE;color:#6E1612}
+#dlgStats .st-in,#dlgUsr input,#dlgUsr select{border-color:var(--hj-line2);background:var(--rd-surface);color:var(--rd-ink)}
+#dlgStats .st-in:focus,#dlgUsr input:focus,#dlgUsr select:focus{outline:0;border-color:var(--hj-blue);box-shadow:0 0 0 4px rgba(91,131,183,.16)}
+#dlgStats .usr-tabs{border-bottom-color:var(--hj-line)}
+#dlgStats .usr-tab{color:var(--rd-mute)}
+#dlgStats .usr-tab:hover{color:var(--hj-navy)}
+#dlgStats .usr-tab.on{color:var(--hj-navy);border-bottom-color:var(--hj-blue)}
+#dlgStats .usr-cols h4{color:var(--hj-navy)}
+#dlgStats .usr-item{border-color:var(--hj-line);background:var(--rd-surface)}
+#dlgStats .usr-item:hover{background:var(--hj-wash);border-color:var(--hj-line2)}
+#dlgStats .usr-nm b{color:var(--rd-ink)}
+#dlgStats .usr-nm small{color:var(--rd-mute)}
+#dlgStats .idx-opt{border-top-color:var(--hj-line)}
+#dlgStats .idx-btn{background:var(--hj-btn);border-color:var(--hj-btn-line);color:var(--hj-btn-ink)}
+#dlgStats .idx-btn:hover{background:var(--hj-btn-h)}
+#dlgStats .st-msg{color:var(--rd-ink2)}
+#dlgStats .st-danger{background:#F2B3AE;border-color:#E39891;color:#6E1612}
+#dlgUsr{background:var(--rd-surface);color:var(--rd-ink);border:1px solid var(--hj-line);border-radius:20px;box-shadow:0 30px 80px -20px rgba(20,40,80,.45)}
+#dlgUsr::backdrop{background:rgba(20,32,52,.5)}
+#dlgUsr h3{color:var(--hj-navy)}
+#dlgUsr label{color:var(--rd-ink2)}
+#dlgUsr .st-btn{border-color:var(--hj-line2);color:var(--hj-navy);background:var(--rd-surface)}
+#dlgUsr .usr-ok{background:var(--hj-btn);border-color:var(--hj-btn-line);color:var(--hj-btn-ink)}
+#dlgUsr .usr-ok:hover{background:var(--hj-btn-h)}
+#hjmCamaMini{background:#35507A}
+#hjmCamaMini.ok{background:#2E8B57}
+#hjmOffMini{background:#3F4F66}
+
+/* ── Pie y avisos ── */
+html body .app-footer .app-footer-version{color:var(--hj-navy2);font-weight:600}
+html body .pop.info .pi,html body .pop.loading .pi{border-top-color:var(--hj-blue)}
+html body .toast{background:#35507A}
+html body .pp-dlg-b button.ok{background:var(--hj-btn);border-color:var(--hj-btn-line);color:var(--hj-btn-ink)}
+html body .pp-menu button:hover{background:var(--hj-tint)}
+
+/* ── Filtros de selección múltiple (Adscrito / Clínica) ── */
+html body .pp-filt button.ppms{position:relative;display:block;font:inherit;font-size:12.5px;font-weight:700;width:140px;max-width:34vw;height:28px;min-height:0;padding:0 20px 0 6px;margin:0;border:0;border-radius:999px;background:transparent;box-shadow:none;color:inherit;cursor:pointer;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;outline:none}
+.pp-filt .ppms::after{content:"";position:absolute;right:9px;top:50%;width:6px;height:6px;margin-top:-5px;border:solid currentColor;border-width:0 1.8px 1.8px 0;transform:rotate(45deg);opacity:.6}
+html body.pp-browse #pPanel .pp-filt button.ppms{height:44px;width:150px;padding:0 22px 0 2px;font:600 14px/44px var(--rd-sans);color:var(--rd-ink);background:transparent;border:0;border-radius:999px;box-shadow:none}
+html body.pp-browse #pPanel .pp-filt label:has(.ppms.on){background:var(--hj-btn);border-color:var(--hj-btn-line)}
+html body.pp-browse #pPanel .pp-filt label:has(.ppms.on)>span,html body.pp-browse #pPanel .pp-filt button.ppms.on{color:var(--hj-btn-ink);opacity:1}
+html body.pp-browse #pPanel .pp-filt label:focus-within{border-color:var(--hj-blue)}
+@media (max-width:860px){html body.pp-browse #pPanel .pp-filt button.ppms{width:100%;max-width:none}}
+.ppms-pop{position:fixed;z-index:9999;max-height:min(340px,60vh);overflow:auto;padding:6px;border:1px solid var(--hj-line2);border-radius:16px;background:var(--rd-surface);color:var(--rd-ink);box-shadow:0 18px 40px -12px rgba(20,40,80,.35);font-family:var(--rd-sans,system-ui,sans-serif)}
+.ppms-pop[hidden]{display:none}
+.ppms-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 8px 8px;border-bottom:1px solid var(--hj-line);margin-bottom:4px;position:sticky;top:-6px;background:var(--rd-surface)}
+.ppms-head b{font-size:12px;color:var(--hj-navy2)}
+.ppms-pop .ppms-head button{width:auto;height:auto;box-shadow:none;border:0;background:transparent;color:var(--hj-navy2);font:600 12.5px var(--rd-sans,system-ui);cursor:pointer;padding:3px 8px;border-radius:999px}
+.ppms-head button:hover:not([disabled]){background:var(--hj-tint)}
+.ppms-head button[disabled]{opacity:.4;cursor:default}
+.ppms-grp{padding:8px 8px 3px;font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--rd-mute)}
+.ppms-opt{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;text-align:left;width:auto;margin:0;gap:10px;padding:8px 10px;border-radius:10px;font-size:13.5px;font-weight:500;cursor:pointer}
+.ppms-opt:hover{background:var(--hj-tint)}
+.ppms-opt input{width:16px!important;height:16px!important;min-width:0;padding:0!important;margin:0!important;flex:none;accent-color:var(--hj-blue);box-shadow:none!important;border-radius:4px}
+.ppms-opt span{flex:1;min-width:0;text-align:left;overflow-wrap:anywhere;color:var(--rd-ink);font-size:13.5px}
+}
 </style>
 <script id="hjm-offline-js">
 /* v2.130 · Modo sin conexión: copia local de TODOS los expedientes (IndexedDB del navegador, sin permisos) que se actualiza en cada conexión
