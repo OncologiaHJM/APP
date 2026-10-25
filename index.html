@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oncología · Hospital Juárez de México</title>
-<meta name="application-version" content="2.177">
+<meta name="application-version" content="2.178">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2451,6 +2451,7 @@ body #view-archive .rb-del:hover{background:#fff0f1!important}
 .sync-st.warn::before{background:#FACC15}
 .sync-st.err{background:rgba(248,113,113,.16);border-color:rgba(248,113,113,.7)}
 .sync-st.err::before{background:#F87171}
+.sync-n{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#93C5FD;color:#0b2540;font-size:11px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
 .sync-st.busy::before{background:#93C5FD;animation:syncPulse 1s ease-in-out infinite}
 @keyframes syncPulse{50%{opacity:.25}}
 .secnav{position:sticky;top:var(--secnav-top,0px);z-index:12;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding:7px;margin:0;background:color-mix(in srgb,var(--bg,#F4F7FA) 88%,transparent);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid var(--line,#DDE5EC);border-radius:13px}
@@ -2467,7 +2468,8 @@ body #view-archive .rb-del:hover{background:#fff0f1!important}
 .secnav .sn.done .sn-p{background:#16A34A;color:#fff}
 #datos > fieldset{scroll-margin-top:var(--sec-scroll,150px)}
 @media (max-width:620px){
-  .sync-st{font-size:0;gap:0;padding:0;width:30px;min-height:30px;justify-content:center}
+  .sync-st{font-size:0;gap:0;padding:0;width:30px;min-height:30px;justify-content:center;position:relative}
+  .sync-n{position:absolute;top:-7px;right:-7px;min-width:16px;height:16px;font-size:10px;padding:0 4px}
   .sync-st::before{width:10px;height:10px}
   .secnav{border-radius:11px;padding:5px}
   .secnav .sn{flex:0 0 auto;padding:4px 8px;font-size:12px}
@@ -3053,7 +3055,7 @@ body.pp-browse #pPanel.pp-xl .pp-list .dlg-item.has-bed{align-items:center;gap:1
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 2.177 · Fecha de publicación: 20.10.26</div>
+  <div class="app-footer-version">Versión 2.178 · Fecha de publicación: 20.10.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p>Los datos viajan por conexión segura (HTTPS) y se almacenan en la cuenta de Google Drive del Servicio de Oncología del Hospital Juárez de México; el acceso está protegido con clave.</p>
     <p id="hjmOffInfo" role="status" hidden></p>
@@ -5361,13 +5363,13 @@ async function goHome(){
       if(STORE==="drive"&&CAN_DRIVE){
         const key=expKey(d.expediente), name=fileName(d);
         /* v2.113 · si hay un guardado en curso no se espera: se deja una copia del paciente para que termine en segundo plano */
-        if(SAVING&&window.__savingKey!==key) for(let i=0;SAVING&&i<60;i++) await sleep(250);   // guardado de otro paciente: ese sí se espera
-        if(SAVING){ window.__bgSnap={k:key,data:collect()}; bg=false; }
-        else {
+        /* v2.178 · ya no se espera a ningún guardado en curso: lo nuevo se deja en la cola y sube en segundo plano */
+        {
         const mine=!!LOADED_EXP&&expKey(LOADED_EXP)===key;
         const exists=DRIVE_FILES.some(f=>expKey(expOf(f))===key);
         const clean=!DIRTY&&LOADED_BASE&&LOADED_BASE.k===key;
-        if(clean){ /* nada nuevo que guardar */ }
+        const queued=DSN_N>0&&DSN_LAST.k===key&&LAST_INPUT<=DSN_LAST.in;   // ese mismo estado ya va en la cola
+        if(clean||queued){ /* nada nuevo que guardar */ }
         else if(exists&&!mine){
           /* ya existe en Drive y no es el abierto: hay que decidir (abrir o combinar), así que se guarda con aviso */
           const ok=await driveSaveNow({silent:true}).catch(()=>false);
@@ -5798,7 +5800,7 @@ $("bandExit").onclick=async()=>{ try{ppFiltClear();}catch(_){}
    v2.52 · tiempo límite (30 s; 60 s al guardar), reintentos automáticos en lecturas y cuando el servidor está ocupado */
 const SRV_READS=new Set(["hjmPing","hjmUser","hjmGetFolder","hjmList","hjmRead","hjmReadFull","hjmInit","hjmStamp","hjmPendientes"]);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-let PPQ_N=0, PPQ_DONE_AT=0;
+let PPQ_N=0, PPQ_DONE_AT=0, DSN_N=0, DSN_LAST={k:"",in:0}, DSN_PEND={};
 let SRV_V=0, NET_FAIL=false, DIRTY=false, LAST_INPUT=0, LAST_SAVED=0, LAST_SAVED_K="", LIST_STAMP=null, LIST_FULL=0, FLUSHING=false;
 async function call1(u,fn,args,ms){
   const ctl=typeof AbortController==="function"?new AbortController():null;
@@ -5837,12 +5839,12 @@ function renderSync(){
   try{
     const el=$("syncSt"); if(!el) return;
     if(!CAN_DRIVE){ el.hidden=true; return; }
-    const n=outboxCount(), k=expKey(($("expediente")||{}).value||"");
+    const n=outboxCount(), k=expKey(($("expediente")||{}).value||""), bgN=PPQ_N+DSN_N+n;
     let cls="", txt="", tip="";
     const pend=n?(n===1?" · 1 paciente pendiente":" · "+n+" pacientes pendientes"):"";
     if(STORE!=="drive"){ cls="conn"; txt="Conectar"; tip="Trabajando sin conexión. Toca para conectar con Google Drive"+pend; }
     else if(CONNECTING){ cls="busy"; txt="Conectando…"; tip="Conectando con el Drive compartido"; }
-    else if(SAVING||FLUSHING||PPQ_N>0){ cls="busy"; txt="Guardando…"; tip="Guardando en Google Drive"+(PPQ_N>1?" · "+PPQ_N+" cambios en cola":""); }
+    else if(SAVING||FLUSHING||PPQ_N>0||DSN_N>0){ cls="busy"; txt="Guardando…"; tip="Guardando en Google Drive"+(bgN>1?" · "+bgN+" en cola":""); }
     else if(!apiKey()||CONNECT_FAIL||!USER||NET_FAIL||navigator.onLine===false){ cls="conn"; txt="Conectar"; tip="Sin conexión con Google Drive. Toca para conectar"+pend; }
     else if(n){ cls="warn"; txt=n===1?"1 pendiente":n+" pendientes"; tip="Guardado en este navegador; se sube solo a Drive en cuanto vuelva la conexión"; }
     else if(!hasSelectedPatient()){ cls="ok"; txt=(Date.now()-PPQ_DONE_AT<4000)?"Guardado":"Conectado"; tip="Conectado con Google Drive"; }
@@ -5850,7 +5852,7 @@ function renderSync(){
     else { cls="ok"; txt=LAST_SAVED&&LAST_SAVED_K===k?"Guardado":"Conectado"; tip="Este paciente está al día en Google Drive"; }
     el.hidden=false; el.className="sync-st "+cls; el.title=tip;
     if(cls==="conn"){ el.innerHTML=(DRIVE_ICON_SRC?'<img class="sync-logo" alt="" src="'+DRIVE_ICON_SRC+'">':"")+txt; el.setAttribute("role","button"); el.tabIndex=0; }
-    else { el.textContent=txt; el.setAttribute("role","status"); el.removeAttribute("tabindex"); }
+    else { el.textContent=txt; el.setAttribute("role","status"); el.removeAttribute("tabindex"); if(cls==="busy"&&bgN>0){ const b=document.createElement("span"); b.className="sync-n"; b.textContent=bgN; el.appendChild(b); } }
   }catch(_){}
 }
 /* v2.70 · «Conectar» en la cintilla: reconecta con Drive (o pide la clave si este navegador no la tiene) */
@@ -5875,7 +5877,7 @@ function renderSync(){
 /* Se llama al terminar de cargar datos (abrir paciente, combinar, nuevo paciente) */
 function afterDataLoad(){ try{ DIRTY=false; gynUpd(); updateSecNav(); renderSync(); }catch(_){} }
 addEventListener("beforeunload",e=>{
-  try{ if(STORE==="drive"&&CAN_DRIVE&&(SAVING||outboxCount()&&!LS.get(OUTBOX_KEY)||(DIRTY&&hasSelectedPatient()))){ e.preventDefault(); e.returnValue=""; } }catch(_){}
+  try{ if(STORE==="drive"&&CAN_DRIVE&&(SAVING||PPQ_N>0||DSN_N>0||outboxCount()&&!LS.get(OUTBOX_KEY)||(DIRTY&&hasSelectedPatient()))){ e.preventDefault(); e.returnValue=""; } }catch(_){}
 });
 addEventListener("online",()=>{ NET_FAIL=false; renderSync(); setTimeout(()=>flushOutbox(),1500); });
 addEventListener("offline",()=>renderSync());
@@ -5889,14 +5891,17 @@ function outboxSave(){ const o=outboxGet(), txt=JSON.stringify(o); if(Object.key
 function outboxAdd(name,payload,meta,base){ try{ const u=String(sessionUserName()||"").toLocaleUpperCase("es-MX"); if(u){ payload.ultimoEditor={u,ts:Date.now()}; meta.ed=u; } }catch(_){}
   outboxGet()[name]={name,payload,meta,base:base||null,ts:Date.now()}; const ok=outboxSave(); scheduleFlush(); return ok; }
 function scheduleFlush(ms=60000){ clearTimeout(FLUSH_T); if(outboxCount()) FLUSH_T=setTimeout(()=>flushOutbox(),ms); }
-async function flushOutbox(opt={}){
+let FLUSH_P=null;
+function flushOutbox(opt={}){ if(FLUSH_P) return FLUSH_P; return FLUSH_P=flushOutboxRun(opt).finally(()=>{ FLUSH_P=null; }); }
+async function flushOutboxRun(opt={}){
+  let failed=false;
   if(FLUSHING||!outboxCount()||!CAN_DRIVE||STORE!=="drive"||!apiUrl()||!apiKey()) return;
   if(navigator.onLine===false){ scheduleFlush(); return; }
   FLUSHING=true; renderSync(); const sent=[];
   try{
     if(!USER||!FOLDER) await driveHandshake(call);
     DRIVE_FILES=onlyJsonFiles(await call("hjmList",null,{fresco:true})); PP_LAST=Date.now(); LIST_FULL=Date.now();
-    for(const it of Object.values(outboxGet())){
+    for(let it; (it=Object.values(outboxGet())[0]); ){
       const key=expKey(it.meta&&it.meta.exp), twins=DRIVE_FILES.filter(f=>expKey(expOf(f))===key);
       let payload=it.payload, base="", res=null;
       for(const f of [...twins].reverse()){ const r=await readRemoteFull(f.id); if(r.obj) payload=mergePatient(payload,r.obj,it.base); if(f.name===it.name) base=r.modified||""; }
@@ -5906,7 +5911,7 @@ async function flushOutbox(opt={}){
         if(i>=3) throw new Error("Otro equipo está guardando este paciente; se reintentará.");
         const r=await readRemoteFull(res.id); if(r.obj) payload=mergePatient(payload,r.obj,it.base); base=r.modified||"";
       }
-      delete outboxGet()[it.name]; outboxSave(); sent.push((it.meta&&it.meta.nombre)||it.name);
+      if(outboxGet()[it.name]===it) delete outboxGet()[it.name]; outboxSave(); sent.push((it.meta&&it.meta.nombre)||it.name);
       if(res&&res.id&&res.modified) upsertDriveFile(res);
       /* Si es el paciente en pantalla y no se ha escrito nada desde entonces, queda al día con lo subido */
       if(!SAVING&&key&&expKey(($("expediente")||{}).value||"")===key&&LAST_INPUT<=it.ts){
@@ -5915,9 +5920,9 @@ async function flushOutbox(opt={}){
       }
     }
   }catch(e){
-    scheduleFlush();
+    failed=true; scheduleFlush();
     if(!opt.quiet&&!isTransient(e)&&String(e&&e.message)!=="cancelado") notify("Pacientes pendientes: "+friendly(e),"warn");
-  }finally{ FLUSHING=false; renderSync(); }
+  }finally{ FLUSHING=false; renderSync(); if(!failed&&outboxCount()) setTimeout(()=>flushOutbox({quiet:true}),30); }
 }
 /* Actualiza la lista local con lo que devolvió el servidor al guardar (sin volver a pedir toda la lista) */
 function upsertDriveFile(rec){
@@ -6225,13 +6230,23 @@ async function readRemote(id){ return (await readRemoteFull(id)).obj; }
 
 /* Guardar: directo, sin ventana; solo un aviso al terminar */
 let SAVING=false;
-async function driveSaveNow(opt={}){
+let DSN_CHAIN=Promise.resolve();
+/* v2.178 · Guardar paciente: se toma una copia en el momento y se sube en segundo plano, uno tras otro; se puede cambiar de paciente o de página sin esperar */
+function driveSaveNow(opt={}){
   const d=data();
-  if(warnMissing(d)) return false;
-  if(SAVING) return false;
-  if(opt.silent&&(!apiUrl()||!apiKey())){ notify("No se guardó en Drive: falta conectar con la clave de acceso.","warn"); return false; }
+  if(warnMissing(d)) return Promise.resolve(false);
+  if(opt.silent&&(!apiUrl()||!apiKey())){ notify("No se guardó en Drive: falta conectar con la clave de acceso.","warn"); return Promise.resolve(false); }
+  const key=expKey(d.expediente);
+  const job=Object.assign({},opt,{__d:d,__c:collect(),__mine:!!LOADED_EXP&&expKey(LOADED_EXP)===key,__base:LOADED_BASE&&LOADED_BASE.k===key?jclone(LOADED_BASE):null,__in:LAST_INPUT});
+  DSN_LAST={k:key,in:LAST_INPUT}; DSN_N++; DSN_PEND[key]=(DSN_PEND[key]||0)+1; renderSync();
+  const p=DSN_CHAIN.then(()=>driveSaveRun(job),()=>driveSaveRun(job)).finally(()=>{ DSN_N--; DSN_PEND[key]=Math.max(0,(DSN_PEND[key]||1)-1); renderSync(); });
+  DSN_CHAIN=p.catch(()=>{});
+  return p;
+}
+async function driveSaveRun(opt={}){
+  const d=opt.__d;
   SAVING=true; renderSync();                                         // v2.52 · el estado se ve en la cinta del paciente (sin aviso emergente)
-  const name=fileName(d), key=expKey(d.expediente), baseSnap=LOADED_BASE&&LOADED_BASE.k===key?jclone(LOADED_BASE):null; window.__savingKey=key;
+  const name=fileName(d), key=expKey(d.expediente), baseSnap=opt.__base; window.__savingKey=key;
   const meta={app:"solicitudes-hjm",nombre:(d.nombreCompleto||"").slice(0,100),exp:d.expediente.slice(0,60),cama:(d.cama||"").trim().slice(0,20),dx:(d.diagnostico||"").slice(0,100),adscrito:String(d.medico||"").trim().slice(0,80),...(d.clinica!==undefined?{clinica:String(d.clinica).trim().slice(0,80)}:{})};
   let payload=null;
   try{
@@ -6240,11 +6255,11 @@ async function driveSaveNow(opt={}){
     if(!DRIVE_FILES.length||Date.now()-PP_LAST>120000){ DRIVE_FILES=onlyJsonFiles(await gcall("hjmList",FOLDER.id)); PP_LAST=Date.now(); if(typeof renderPP==="function")renderPP(); }
     const twins=DRIVE_FILES.filter(f=>expKey(expOf(f))===key);         // más reciente primero
     const target=twins.find(f=>f.name===name)||twins[0]||null; window.__saveNew=!target;
-    const mine=!!LOADED_EXP&&expKey(LOADED_EXP)===key;                  // es el paciente que abriste o guardaste en esta sesión
+    const mine=!!opt.__mine;                  // es el paciente que abriste o guardaste en esta sesión (se toma al pulsar guardar)
     const conflict=(id,nm)=>{ notify(`Ya existe en Drive el expediente ${d.expediente}${nm?" ("+nm+")":""}. Para no sobrescribir ni duplicar, ábrelo desde la lista o combina lo que capturaste aquí con lo que ya tiene.`,"warn",
         {ms:40000,center:true,actions:[{label:"Abrir el de Drive",fn:()=>openDriveFile(id).catch(driveError)},{label:"Combinar y guardar",fn:()=>driveSaveNow({combinar:true}).catch(driveError)}]}); return false; };
     if(target&&!mine&&!opt.combinar) return conflict(target.id,(target.meta||{}).nombre||"");
-    const away=()=>!!(window.__bgSnap&&window.__bgSnap.k===key), cur=()=>away()?window.__bgSnap.data:collect();
+    const bgm=()=>!!(window.__bgSnap&&window.__bgSnap.k===key), away=()=>bgm()||expKey(($("expediente")||{}).value||"")!==key, cur=()=>bgm()?window.__bgSnap.data:opt.__c;
     const local=cur(); payload=local; let base="";
     if(target){
       for(const f of [...twins].reverse()){ const r=await readRemoteFull(f.id); if(r.obj) payload=mergePatient(payload,r.obj); if(f.name===name) base=r.modified||""; }   // también recoge lo de archivos duplicados viejos
@@ -6260,8 +6275,9 @@ async function driveSaveNow(opt={}){
       if(i>=3) throw new Error("Otro equipo está guardando este mismo paciente en este momento. Espera unos segundos y vuelve a guardar.");
       const r=await readRemoteFull(res.id); if(r.obj) payload=mergePatient(payload,r.obj); base=r.modified||"";
     }
-    const combined=away()?false:applyMerged(payload,local);
-    if(!away()){ setBase(payload); LOADED_EXP=d.expediente; NOTIFIED_EXP=d.expediente; DIRTY=false; }
+    const typed=LAST_INPUT>opt.__in;                                    // se siguió escribiendo mientras subía: no se pisa lo nuevo
+    const combined=(away()||typed)?false:applyMerged(payload,local);
+    if(!away()){ if(!typed){ setBase(payload); DIRTY=false; } LOADED_EXP=d.expediente; NOTIFIED_EXP=d.expediente; }
     LAST_SAVED=Date.now(); LAST_SAVED_K=key;
     /* Sin aviso de "Guardado": solo se avisa si se combinaron cambios de otro equipo o se reunieron archivos duplicados */
     if(combined||twins.length>1) notify((combined?"Se sumaron cambios hechos desde otro equipo":"")+(combined&&twins.length>1?" · ":"")+(twins.length>1?`Había ${twins.length} archivos con este expediente: todo quedó reunido en ${name}`:""),"info",{ms:7000});
@@ -6271,7 +6287,7 @@ async function driveSaveNow(opt={}){
   }catch(e){
     if(String(e&&e.message)==="cancelado"){ $("popHost").replaceChildren(); return false; }
     if(isTransient(e)){
-      const kept=outboxAdd(name,payload||((window.__bgSnap&&window.__bgSnap.k===key)?window.__bgSnap.data:collect()),meta,baseSnap);
+      const kept=outboxAdd(name,payload||(bgm()?window.__bgSnap.data:opt.__c),meta,baseSnap);
       notify(kept?"Sin conexión estable con Google Drive. El paciente quedó guardado en este navegador como «pendiente» y se subirá solo en cuanto vuelva la conexión."
                  :"Sin conexión con Google Drive. El paciente quedó pendiente solo mientras esta pestaña siga abierta: no la cierres hasta que se suba.","warn",{ms:10000});
       return false;
@@ -6434,22 +6450,34 @@ async function integrarAltas(lista){
   for(const pid of borrar){ try{ await gcall("hjmBorrarPendiente",pid); }catch(_){} }
   return n;
 }
-let DRIVE_OPEN_BUSY=false;
+let DRIVE_OPEN_BUSY=false, OPEN_TOKEN=0;
 async function openDriveFile(id){
-  if(DRIVE_OPEN_BUSY)return;
+  const my=++OPEN_TOKEN, stale=()=>my!==OPEN_TOKEN;   // v2.178 · si se toca otro paciente antes de que cargue, manda el último
   DRIVE_OPEN_BUSY=true;
   if($("dlgDrive").open) $("dlgDrive").close();
   notify("Cargando paciente…","info",{center:true,loading:true,persist:true});
   try{
-    if(outboxCount()) await flushOutbox({quiet:true});
+    { const f0=DRIVE_FILES.find(x=>x&&x.id===id), k0=f0?expKey(expOf(f0)):"";
+      if(DSN_N>0&&(!k0||DSN_PEND[k0]>0)) await DSN_CHAIN;                       // si ese paciente se está guardando, primero termina
+      const inBox=outboxCount()&&(!k0||Object.values(outboxGet()).some(it=>expKey(it.meta&&it.meta.exp)===k0));
+      if(inBox) await flushOutbox({quiet:true}); else if(outboxCount()) flushOutbox({quiet:true});   // lo demás sube sin que haya que esperar
+      if(stale()) return; }
     try{ id=await unificarPaciente(id); }catch(_){}                       // v2.83 · un solo archivo por paciente
+    if(stale()) return;
     const txt=await gcall("hjmRead",id);let obj=null;try{obj=JSON.parse(txt);}catch(_){}
+    if(stale()) return;
     let integ=0, altasPend=[]; if(obj&&obj.app==="solicitudes-hjm"){ try{ const r=await integrarPendientes(id,obj); if(r){ if(r.obj) obj=r.obj; integ=r.n; altasPend=r.altasPend||[]; } }catch(_){} }   // v2.53 · notas de PendientesJCF
+    if(stale()) return;
+    if(obj&&hasSelectedPatient()&&DIRTY&&STORE==="drive"&&CAN_DRIVE){          // lo que quedó sin guardar del paciente anterior se va a la cola
+      try{ const d0=data(), k0=expKey(d0.expediente); if(d0.expediente&&d0.nombreCompleto&&k0!==expKey((obj.datos||{}).expediente)&&!(DSN_N>0&&DSN_LAST.k===k0&&LAST_INPUT<=DSN_LAST.in)){
+        const meta={app:"solicitudes-hjm",nombre:(d0.nombreCompleto||"").slice(0,100),exp:d0.expediente.slice(0,60),cama:(d0.cama||"").trim().slice(0,20),dx:(d0.diagnostico||"").slice(0,100),adscrito:String(d0.medico||"").trim().slice(0,80),...(d0.clinica!==undefined?{clinica:String(d0.clinica).trim().slice(0,80)}:{})};
+        outboxAdd(fileName(d0),collect(),meta,LOADED_BASE&&LOADED_BASE.k===k0?jclone(LOADED_BASE):null); flushOutbox({quiet:true}); } }catch(_){}
+    }
     if(obj&&restore(obj)){
       let nAltas=0; if(altasPend.length){ try{ nAltas=await integrarAltas(altasPend); }catch(_){} }   // v2.55 · Notas de Alta
       notify("Paciente abierto · "+(data().nombreCompleto||id)+(integ?` · se ${integ===1?"agregó 1 registro":"agregaron "+integ+" registros"} (notas/indicaciones) desde PendientesJCF`:"")+(nAltas?` · Nota de Alta agregada${nAltas>1?" ("+nAltas+")":""} con su Receta`:""),"ok");
     } else notify("Ese archivo no es de un paciente.","err");
-  }finally{DRIVE_OPEN_BUSY=false;}
+  }finally{ if(!stale()) DRIVE_OPEN_BUSY=false; }
 }
 $("dlgSearch").oninput=renderDriveList;
 $("dlgClose").onclick=()=>$("dlgDrive").close();
