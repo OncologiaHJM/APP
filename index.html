@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oncología · Hospital Juárez de México</title>
-<meta name="application-version" content="2.174">
+<meta name="application-version" content="2.175">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2789,8 +2789,8 @@ body .top .credit .credit-name{font-size:clamp(15px,1.3vw,19px);font-weight:800}
 .pp-kebab{position:absolute;top:5px;right:5px;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;color:#6A7D93;cursor:pointer;transition:background .15s,color .15s}
 .pp-kebab svg{width:16px;height:16px;fill:currentColor}
 .pp-kebab:hover,.pp-kebab:focus-visible,.pp-kebab[aria-expanded="true"]{background:rgba(23,59,94,.1);color:#173B5E;outline:none}
-.pp-menu{position:fixed;z-index:2147483000;min-width:172px;padding:5px;background:#fff;border:1px solid #D5E0EC;border-radius:12px;box-shadow:0 12px 32px rgba(23,59,94,.22),0 2px 6px rgba(23,59,94,.1);animation:ppmenu .12s ease-out}
-@keyframes ppmenu{from{opacity:0;transform:translateY(-4px) scale(.98)}to{opacity:1;transform:none}}
+.pp-menu{position:fixed;z-index:2147483000;min-width:172px;padding:5px;background:#fff;border:1px solid #D5E0EC;border-radius:12px;box-shadow:0 12px 32px rgba(23,59,94,.22),0 2px 6px rgba(23,59,94,.1);animation:ppmenu .1s ease-out;transform:none;will-change:auto;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+@keyframes ppmenu{from{opacity:0}to{opacity:1}}
 .pp-menu button{display:flex;align-items:center;gap:10px;width:100%;padding:9px 11px;border:0;border-radius:8px;background:transparent;color:#173B5E;font:inherit;font-size:13.5px;font-weight:700;text-align:left;cursor:pointer}
 .pp-menu button svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .pp-menu button:hover,.pp-menu button:focus-visible{background:#EAF2F8;outline:none}
@@ -3053,7 +3053,7 @@ body.pp-browse #pPanel.pp-xl .pp-list .dlg-item.has-bed{align-items:center;gap:1
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 2.174 · Fecha de publicación: 20.10.26</div>
+  <div class="app-footer-version">Versión 2.175 · Fecha de publicación: 20.10.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p>Los datos viajan por conexión segura (HTTPS) y se almacenan en la cuenta de Google Drive del Servicio de Oncología del Hospital Juárez de México; el acceso está protegido con clave.</p>
     <p id="hjmOffInfo" role="status" hidden></p>
@@ -6586,7 +6586,7 @@ const PP_MENU=(()=>{ let el=null,btn=null;
     el.innerHTML=`<button type="button" role="menuitem" data-act="cama">${PP_ICO.bed}<span>Cambiar cama</span></button><button type="button" role="menuitem" class="danger" data-act="alta">${PP_ICO.out}<span>Dar de alta</span></button>`;
     document.body.appendChild(el);
     const r=b.getBoundingClientRect(), w=el.offsetWidth, h=el.offsetHeight; let x=Math.min(Math.max(8,r.right-w),innerWidth-w-8), y=r.bottom+4; if(y+h>innerHeight-8) y=Math.max(8,r.top-h-4);
-    el.style.left=x+"px"; el.style.top=y+"px";
+    el.style.left=Math.round(x)+"px"; el.style.top=Math.round(y)+"px";
     el.onclick=e=>{ const a=e.target.closest("[data-act]"); if(!a) return; const act=a.dataset.act; close(); if(act==="cama") ppChangeBed(id); else ppDischarge(id); };
     const f=el.querySelector("button"); if(f) f.focus(); }
   const toggle=b=>{ if(btn===b) close(); else open(b); };
