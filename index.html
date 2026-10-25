@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oncología · Hospital Juárez de México</title>
-<meta name="application-version" content="3.11">
+<meta name="application-version" content="3.12">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2468,7 +2468,7 @@ body.pp-browse #pPanel.pp-xl .pp-list .cama-badge{flex:none;justify-content:cent
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 3.11 · Fecha de publicación: 25.10.26</div>
+  <div class="app-footer-version">Versión 3.12 · Fecha de publicación: 25.10.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p>Los datos viajan por conexión segura (HTTPS) y se almacenan en la cuenta de Google del Servicio de Oncología del Hospital Juárez de México; protegidos mediante clave de acceso.</p>
     <p id="hjmOffInfo" role="status" hidden></p>
@@ -6078,14 +6078,18 @@ function ppFiltClear(){ ppMsClose(); PP_FILT={ads:[],clin:[]}; try{ ppFiltDraw()
 })();
 /* v3.01 · Imprimir Censo Actual (vista Hospitalizados): tabla horizontal con los pacientes visibles, el filtro aplicado y Periféricos */
 const PP_CEN_CACHE=new Map(), PP_CEN_LAST=new Map(), PP_CEN_LSK="hjm-pp-cen-v1"; let PP_CEN_T=0;
-(function(){ try{ const o=JSON.parse(LS.get(PP_CEN_LSK)||"{}"); Object.keys(o).forEach(id=>{ const e=o[id]; if(!e||!e[1]) return; const d={fnac:e[1][0]||"",fIngreso:e[1][1]||"",diagnostico:e[1][2]||""}; PP_CEN_CACHE.set(id+"|"+e[0],d); PP_CEN_LAST.set(id,d); }); }catch(_){} })();
-function ppCenSave(){ clearTimeout(PP_CEN_T); PP_CEN_T=setTimeout(()=>{ try{ const o={}; PP_CEN_CACHE.forEach((d,k)=>{ const i=k.lastIndexOf("|"); o[k.slice(0,i)]=[k.slice(i+1),[d.fnac||"",d.fIngreso||"",d.diagnostico||""]]; }); const ids=Object.keys(o); if(ids.length>600) ids.slice(0,ids.length-600).forEach(k=>delete o[k]); LS.set(PP_CEN_LSK,JSON.stringify(o)); }catch(_){} },1500); }
+(function(){ try{ const o=JSON.parse(LS.get(PP_CEN_LSK)||"{}"); Object.keys(o).forEach(id=>{ const e=o[id]; if(!e||!e[1]) return; const d={fnac:e[1][0]||"",fIngreso:e[1][1]||"",diagnostico:e[1][2]||"",pendientes:e[1][3]||""}; PP_CEN_CACHE.set(id+"|"+e[0],d); PP_CEN_LAST.set(id,d); }); }catch(_){} })();
+function ppCenSave(){ clearTimeout(PP_CEN_T); PP_CEN_T=setTimeout(()=>{ try{ const o={}; PP_CEN_CACHE.forEach((d,k)=>{ const i=k.lastIndexOf("|"); o[k.slice(0,i)]=[k.slice(i+1),[d.fnac||"",d.fIngreso||"",d.diagnostico||"",d.pendientes||""]]; }); const ids=Object.keys(o); if(ids.length>600) ids.slice(0,ids.length-600).forEach(k=>delete o[k]); LS.set(PP_CEN_LSK,JSON.stringify(o)); }catch(_){} },1500); }
 function ppCensusSync(on){ const w=$("ppCensus"); if(w) w.hidden=!on; }
 async function ppCensusDatos(f){
   const key=f.id+"|"+(f.modified||""); if(PP_CEN_CACHE.has(key)) return PP_CEN_CACHE.get(key);
   let d=null; try{ const r=await gcall("hjmReadFull",f.id); const o=JSON.parse(r&&r.content); d=(o&&o.datos)||null; }catch(_){ d=null; }
   if(d){ PP_CEN_CACHE.set(key,d); PP_CEN_LAST.set(f.id,d); ppCenSave(); } return d;
 }
+/* Pendientes: caché local inmediata (hjm-pp-pend-v1) + lectura del JSON del paciente */
+const PP_PEND_LSK="hjm-pp-pend-v1"; let PP_PEND_C={}; try{ PP_PEND_C=JSON.parse(LS.get(PP_PEND_LSK)||"{}")||{}; }catch(_){ PP_PEND_C={}; }
+function ppPendCacheSet(id,v){ PP_PEND_C[id]=[String(v),Date.now()]; try{ const ks=Object.keys(PP_PEND_C); if(ks.length>600){ ks.sort((a,b)=>PP_PEND_C[a][1]-PP_PEND_C[b][1]).slice(0,ks.length-600).forEach(k=>delete PP_PEND_C[k]); } LS.set(PP_PEND_LSK,JSON.stringify(PP_PEND_C)); }catch(_){} }
+function ppPendLocal(f){ const e=PP_PEND_C[f.id]; if(!e) return undefined; const mt=Date.parse(f.modified||"")||0; return e[1]>mt?e[0]:undefined; }
 async function ppPool(arr,n,fn){ let i=0; await Promise.all(Array.from({length:Math.min(n,arr.length)},async()=>{ while(i<arr.length){ const k=i++; await fn(arr[k]); } })); }
 const PP_CEN_CLIN={"TUMORES MIXTOS":"TM","TUMORES GINECOLOGICOS":"Gine","ONCOLOGIA MEDICA":"OM","CABEZA Y CUELLO":"CyC","MAMA":"Mama","RADIO ONCOLOGIA":"RT","INTERVENCIONISMO":"Interv"};
 const PP_CEN_ADS={"ZIAD ABO HARP HASAN":"Ziad"};
@@ -6116,7 +6120,7 @@ async function ppCensusPrint(){
     const row=f=>{ const m=f.meta||{}, d=datos.get(f.id)||{}, fn=String(d.fnac||"").trim(), ing=String(d.fIngreso||"").trim();
       let ed=""; try{ ed=edad(fn,todayStr()); }catch(_){}
       const cama=String(m.cama||"").trim().replace(/^UCI\s*/i,"UCI ");
-      const c=[cama,ppCenName(m.nombre),ed,expOf(f),fn,ppCensusAds(m.adscrito),ppCenDx(m.dx||d.diagnostico),ppCensusClin(f),ppCensusEH(ing),ing], pend=(m.pendientes!==undefined&&m.pendientes!==null)?String(m.pendientes):String(d.pendientes||"");
+      const c=[cama,ppCenName(m.nombre),ed,expOf(f),fn,ppCensusAds(m.adscrito),ppCenDx(m.dx||d.diagnostico),ppCensusClin(f),ppCensusEH(ing),ing], pend=ppRowPend(f);
       return "<tr>"+c.map(x=>"<td>"+esc(String(x))+"</td>").join("")+'<td class="pend">'+esc(pend)+"</td></tr>"; };
     const sec=t=>`<tr class="sec"><td colspan="11">${t}</td></tr>`;
     const inMain=f=>{ const c=String(f.meta.cama||"").trim(), n=camaNum(c); return n!=null&&n>=150&&n<=197&&!/^UCI/i.test(c); };
@@ -6158,11 +6162,11 @@ function ppRowS(f){ return ppRowD(f)||PP_CEN_LAST.get(f.id)||null; }
 function ppRowIng(f){ const m=f.meta||{}; if(m.ingreso!==undefined&&m.ingreso!==null) return String(m.ingreso); const d=ppRowS(f); return d&&d.fIngreso?String(d.fIngreso):""; }
 function ppRowFn(f){ const d=ppRowS(f); return d&&d.fnac?String(d.fnac):""; }
 function ppFnHTML(f){ const v=ppRowFn(f); return `<span class="tag fn" data-fn>${v?"FN. "+esc(v):""}</span>`; }
-function ppRowPend(f){ const m=f.meta||{}; if(m.pendientes!==undefined&&m.pendientes!==null) return String(m.pendientes); const d=ppRowS(f); return d&&d.pendientes?String(d.pendientes):""; }
+function ppRowPend(f){ const loc=ppPendLocal(f); if(loc!==undefined) return loc; const m=f.meta||{}; if(m.pendientes!==undefined&&m.pendientes!==null) return String(m.pendientes); const d=ppRowS(f); return d&&d.pendientes?String(d.pendientes):""; }
 function ppPendHTML(f){ return `<label class="pp-pend" data-pendbox><i>Pendientes</i><textarea rows="2" maxlength="400" spellcheck="false" autocomplete="off" data-pend="${f.id}" aria-label="Pendientes">${esc(ppRowPend(f)||PP_BUL)}</textarea></label>`; }
 const PP_BUL="• ";
 function ppPendBul(t){ if(!t.value) t.value=PP_BUL; }
-function ppPendSave(t){ clearTimeout(t._pt); const f=DRIVE_FILES.find(x=>x&&x.id===t.dataset.pend); if(!f) return; let v=t.value.replace(/\s+$/,"").slice(0,400); if(/^[•\s]*$/.test(v)) v=""; if(v===ppRowPend(f)) return; ppApply(f,{pendientes:v},{quiet:true}); }
+function ppPendSave(t){ clearTimeout(t._pt); const f=DRIVE_FILES.find(x=>x&&x.id===t.dataset.pend); if(!f) return; let v=t.value.replace(/\s+$/,"").slice(0,400); if(/^[•\s]*$/.test(v)) v=""; if(v===ppRowPend(f)) return; ppPendCacheSet(f.id,v); ppApply(f,{pendientes:v},{quiet:true}); }
 function ppIngHTML(f){ const v=ppRowIng(f); return `<span class="pp-ing" data-ing><i>Ingreso</i><b>${v?esc(v):"—"}</b></span>`; }
 function ppRowPaint(f){ const el=document.querySelector('#ppList [data-id="'+f.id+'"]'); if(!el) return;
   const a=el.querySelector("[data-fn]"); if(a) a.textContent=ppRowFn(f)?"FN. "+ppRowFn(f):"";
