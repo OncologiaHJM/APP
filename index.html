@@ -6335,6 +6335,10 @@ $("ppList").addEventListener("paste",e=>{ const t=e.target; if(!ppIsPT(t)) retur
   t.value=(t.value+" "+parts[0]).trim(); let at=row; parts.slice(1).forEach(x=>{ at.insertAdjacentHTML("afterend",ppPendRow(false,x)); at=at.nextElementSibling; });
   if(c.lastElementChild.querySelector(".pp-pt").value.trim()) c.insertAdjacentHTML("beforeend",ppPendRow(false,"")); clearTimeout(c._pt); c._pt=setTimeout(()=>ppPendSave(c),400); });
 $("ppList").addEventListener("focusout",e=>{ const c=ppPCont(e.target); if(c&&!c.contains(e.relatedTarget)){ ppPendSave(c); ppPendTidy(c); } });
+/* v3.13 · Android: al cerrar el teclado con el gesto «atrás» el cursor se queda en el campo y, al redibujarse la lista (guardado o cambio de tamaño), se le devolvía el foco y el teclado reaparecía.
+   Ahora, si la pantalla visible crece (se cerró el teclado) y el cursor está en un pendiente, se le quita el foco. */
+(function(){ const vv=window.visualViewport; if(!vv) return; let h0=vv.height;
+  vv.addEventListener("resize",()=>{ const h=vv.height; try{ const ae=document.activeElement; if(h>h0+60&&ppIsPT(ae)) ae.blur(); }catch(_){} h0=h; }); })();
 $("ppList").addEventListener("keydown",e=>{ const it=e.target; if(it&&it.matches&&it.matches('div.dlg-item[role="button"]')&&(e.key==="Enter"||e.key===" ")){ e.preventDefault(); it.click(); } });
 $("ppList").onclick=e=>{ if(e.target.closest&&e.target.closest("[data-pendbox]")) return; const kb=e.target.closest("[data-ppmenu]"); if(kb){ e.preventDefault(); e.stopPropagation(); PP_MENU.toggle(kb); return; } if(e.target.closest("[data-pp-new]")){ $("btnClear").click(); return; } const b=e.target.closest("[data-id]"); if(b) openDriveFile(b.dataset.id).then(ppMarkCurrent).catch(driveError); };
 (function(){
@@ -7530,26 +7534,27 @@ body.hjm-admin .top > .seal.crab{cursor:pointer}
 #dlgUsr .usr-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 #dlgStats .cfg-grid label:has(.hm-seg){grid-column:1/-1}
 /* v3.13 · selectores Clínica / Adscrito del filtro predeterminado de inicio */
-#dlgStats .cfg-hf{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:12px}
-#dlgStats .cfg-hf[hidden]{display:none}
-#dlgStats .cfg-f{display:grid;gap:5px;align-content:start;font-size:12px;font-weight:700;color:#3A3B3B;min-width:0}
-#dlgStats .cfg-f small{font-weight:500;color:#7B7E81}
-#dlgStats .cfg-fb{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #D6D8DB;border-radius:10px;background:#fff;color:#303132;font:inherit;font-size:14px;font-weight:500;text-align:left;cursor:pointer}
-#dlgStats .cfg-fb b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
-#dlgStats .cfg-fb svg{flex:none;transition:transform .15s}
-#dlgStats .cfg-fb[aria-expanded="true"] svg{transform:rotate(180deg)}
-#dlgStats .cfg-fb.on{background:#3A3B3B;border-color:#3A3B3B;color:#fff}
-#dlgStats .cfg-fb:disabled{opacity:.6;cursor:default}
-#dlgStats .cfg-fw{position:relative}
-#dlgStats .cfg-fp{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:30;max-height:230px;overflow:auto;padding:4px 0;border:1px solid #D6D8DB;border-radius:10px;background:#fff;box-shadow:0 10px 28px rgba(28,30,33,.22)}
-#dlgStats .cfg-fp[hidden]{display:none}
-#dlgStats .cfg-fg{padding:7px 12px 2px;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#7B7E81}
-#dlgStats .cfg-fo{display:flex;align-items:center;justify-content:flex-start;gap:9px;min-height:0!important;height:auto!important;line-height:1.25;width:100%;box-sizing:border-box;margin:0;padding:7px 12px;border:0;background:transparent;color:#303132;font:inherit;font-size:13.5px;font-weight:500;text-align:left;cursor:pointer}
-#dlgStats .cfg-fo:hover{background:#F2F3F4}
-#dlgStats .cfg-fo span{flex:1;min-width:0;text-align:left;color:#303132;font-size:13.5px;font-weight:500;letter-spacing:0;text-transform:none}
-#dlgStats .cfg-fa{display:block}
-#dlgStats .cfg-fo input{flex:none;width:16px!important;height:16px!important;min-height:0!important;min-width:0!important;padding:0!important;margin:0;accent-color:#3A3B3B}
-#dlgStats .cfg-fa[aria-pressed="true"]{font-weight:800}
+:is(#dlgStats,#dlgUsr) .cfg-hf{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:12px}
+:is(#dlgStats,#dlgUsr) .cfg-hf[hidden]{display:none}
+:is(#dlgStats,#dlgUsr) .cfg-f{display:grid;gap:5px;align-content:start;font-size:12px;font-weight:700;color:#3A3B3B;min-width:0}
+:is(#dlgStats,#dlgUsr) .cfg-f small{font-weight:500;color:#7B7E81}
+:is(#dlgStats,#dlgUsr) .cfg-fb{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #D6D8DB;border-radius:10px;background:#fff;color:#303132;font:inherit;font-size:14px;font-weight:500;text-align:left;cursor:pointer}
+:is(#dlgStats,#dlgUsr) .cfg-fb b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+:is(#dlgStats,#dlgUsr) .cfg-fb svg{flex:none;transition:transform .15s}
+:is(#dlgStats,#dlgUsr) .cfg-fb[aria-expanded="true"] svg{transform:rotate(180deg)}
+:is(#dlgStats,#dlgUsr) .cfg-fb.on{background:#3A3B3B;border-color:#3A3B3B;color:#fff}
+:is(#dlgStats,#dlgUsr) .cfg-fb:disabled{opacity:.6;cursor:default}
+:is(#dlgStats,#dlgUsr) .cfg-fw{position:relative}
+:is(#dlgStats,#dlgUsr) .cfg-fp.up{top:auto;bottom:calc(100% + 4px)}
+:is(#dlgStats,#dlgUsr) .cfg-fp{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:30;max-height:230px;overflow:auto;padding:4px 0;border:1px solid #D6D8DB;border-radius:10px;background:#fff;box-shadow:0 10px 28px rgba(28,30,33,.22)}
+:is(#dlgStats,#dlgUsr) .cfg-fp[hidden]{display:none}
+:is(#dlgStats,#dlgUsr) .cfg-fg{padding:7px 12px 2px;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#7B7E81}
+:is(#dlgStats,#dlgUsr) .cfg-fo{display:flex;align-items:center;justify-content:flex-start;gap:9px;min-height:0!important;height:auto!important;line-height:1.25;width:100%;box-sizing:border-box;margin:0;padding:7px 12px;border:0;background:transparent;color:#303132;font:inherit;font-size:13.5px;font-weight:500;text-align:left;cursor:pointer}
+:is(#dlgStats,#dlgUsr) .cfg-fo:hover{background:#F2F3F4}
+:is(#dlgStats,#dlgUsr) .cfg-fo span{flex:1;min-width:0;text-align:left;color:#303132;font-size:13.5px;font-weight:500;letter-spacing:0;text-transform:none}
+:is(#dlgStats,#dlgUsr) .cfg-fa{display:block}
+:is(#dlgStats,#dlgUsr) .cfg-fo input{flex:none;width:16px!important;height:16px!important;min-height:0!important;min-width:0!important;padding:0!important;margin:0;accent-color:#3A3B3B}
+:is(#dlgStats,#dlgUsr) .cfg-fa[aria-pressed="true"]{font-weight:800}
 .hm-seg{display:inline-flex;flex-wrap:wrap;gap:2px;padding:3px;background:var(--hj-tint,#EDF2F9);border:1px solid var(--hj-line,#D9E3F0);border-radius:999px;max-width:100%;justify-self:start}
 .hm-seg button{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border:0;border-radius:999px;background:transparent;color:var(--hj-navy2,#2F4D78);font-family:inherit;font-size:13px;font-weight:600;line-height:1;cursor:pointer;white-space:nowrap;transition:background .18s,color .18s,box-shadow .18s}
 .hm-seg button svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
@@ -7720,11 +7725,20 @@ async function syncRemote(extra){
 async function loadRemote(){ if(!driveOK()) return null; try{ const r=await readStats(); remoteCache=r.obj; return r.obj; }catch(e){ syncMsg="No se pudieron leer las estadísticas: "+friendly(e); return remoteCache; } }
 
 /* ---------- Agregación ---------- */
+/* v3.13 · Una sola cuenta por persona: las variantes del mismo usuario (usuario, nombre completo, nombre con «R5CO», con o sin DR./DRA.) se suman bajo su usuario de la lista.
+   Las estadísticas globales y las personales salen de esta misma función, así que siempre coinciden. */
+const STAT_CANON=new Map(); let STAT_CANON_REF=null;
+function statUser(u){
+  if(STAT_CANON_REF!==HJM_USERS){ STAT_CANON.clear(); STAT_CANON_REF=HJM_USERS; }
+  if(STAT_CANON.has(u)) return STAT_CANON.get(u);
+  let k=u; try{ const rec=userRecord(u); if(rec&&rec.usuario) k=String(rec.usuario).toLocaleUpperCase("es-MX"); }catch(_){}
+  STAT_CANON.set(u,k); return k;
+}
 function agg(remote,days){
   const cutoff=days?dayKey(Date.now()-(days-1)*864e5):"0000-00-00", users={}, fmt={}, hr=Array(24).fill(0), perDay={};
   const devs=Object.assign({},(remote&&remote.dev)||{}); devs[dev]=local;
   Object.values(devs).forEach(dd=>Object.entries(dd||{}).forEach(([dk,us])=>{ if(dk<cutoff) return;
-    Object.entries(us||{}).forEach(([u,r])=>{ const o=users[u]=users[u]||{acc:0,sav:0,opn:0,min:0,lib:0,crt:0,nts:0,ind:0,prt:0,upd:0,_u:new Set()};
+    Object.entries(us||{}).forEach(([u0,r])=>{ const u=statUser(u0); const o=users[u]=users[u]||{acc:0,sav:0,opn:0,min:0,lib:0,crt:0,nts:0,ind:0,prt:0,upd:0,_u:new Set()};
       ["acc","sav","opn","min","lib","crt","nts","ind","prt"].forEach(k=>o[k]+=r[k]||0);
       Object.keys(r.upd||{}).forEach(x=>o._u.add(dk+"|"+x)); o.upd=o._u.size;
       Object.entries(r.fmt||{}).forEach(([f,n])=>fmt[f]=(fmt[f]||0)+n);
@@ -8145,7 +8159,7 @@ function usrPend(u){ const k=ukey(u.usuario), o=HJM_OPS[k]; if(!o||o.op!=="set")
 function usrItem(u){
   const k=ukey(u.usuario);
   const pd=usrPend(u), tag=pd?`<span class="usr-pend" title="Está guardado en este equipo y en Drive, pero el HTML (index) todavía no lo trae: descarga el Index actualizado y súbelo a GitHub.">${pd==="nuevo"?"Nuevo · sin integrar al Index":"Editado · sin integrar al Index"}</span>`:"";
-  return `<div class="usr-item${pd?" usr-pd":""}" data-k="${esc(k)}"><div class="usr-nm">${tag}<b>${esc(u.nombre)}</b><small>${esc(u.servicio||"Sin servicio")}${resSuf(u)?" · "+esc(resSuf(u).trim()):""}${u.usuario!==u.nombre?" · Usuario: "+esc(u.usuario):""}${u.cp?" · CP "+esc(u.cp):""}${u.inicio?" · Inicio: "+(u.inicio==="nuevo"?"Nuevo Paciente":"Todos"):""}${(u.admin||admName(normalizeStaffName(u.nombre)))?" · Administrador":""}</small></div><div class="usr-act"><button type="button" class="st-btn st-sm" data-edit="${esc(k)}">Editar</button><button type="button" class="st-btn st-sm" data-del="${esc(k)}">Borrar</button></div></div>`;
+  return `<div class="usr-item${pd?" usr-pd":""}" data-k="${esc(k)}"><div class="usr-nm">${tag}<b>${esc(u.nombre)}</b><small>${esc(u.servicio||"Sin servicio")}${resSuf(u)?" · "+esc(resSuf(u).trim()):""}${u.usuario!==u.nombre?" · Usuario: "+esc(u.usuario):""}${u.cp?" · CP "+esc(u.cp):""}${u.inicio?" · Inicio: "+(u.inicio==="nuevo"?"Nuevo Paciente":"Todos"):""}${u.inicio!=="nuevo"&&((u.fclin&&u.fclin.length)||(u.fads&&u.fads.length))?" · Filtro: "+[(u.fclin&&u.fclin.length)?u.fclin.join(", "):"",(u.fads&&u.fads.length)?u.fads.length+(u.fads.length===1?" adscrito":" adscritos"):""].filter(Boolean).join(" · "):""}${(u.admin||admName(normalizeStaffName(u.nombre)))?" · Administrador":""}</small></div><div class="usr-act"><button type="button" class="st-btn st-sm" data-edit="${esc(k)}">Editar</button><button type="button" class="st-btn st-sm" data-del="${esc(k)}">Borrar</button></div></div>`;
 }
 function usrDraw(){
   const l=$s("stUsrList"); if(!l) return;
@@ -8179,6 +8193,7 @@ function usrEditor(key,tipoNuevo){
     <div class="usr-two" id="usrfRW"${tipo==="residente"?"":" hidden"}><label><span>Año de Residencia <small>(se imprime tras el nombre junto con la especialidad: R5CO)</small></span><select id="usrfY"><option value="">—</option>${[1,2,3,4,5,6,7].map(n=>`<option value="${n}"${cur&&String(cur.anio||"")===String(n)?" selected":""}>R${n}</option>`).join("")}</select></label></div>
     <label><span>Cédula profesional <small>(se imprime solo en Notas Médicas, Indicaciones y Nota de Alta)</small></span><input id="usrfP" value="${esc(cur&&cur.cp?cur.cp:"")}" inputmode="text" autocomplete="off" spellcheck="false" maxlength="16"></label>
     <label><span>Página de inicio <small>(la que ve al ingresar)</small></span>${homeSegHTML("usrfI",cur&&cur.inicio)}</label>
+    <div class="cfg-hf" id="usrfHF" hidden></div>
     <label class="usr-chk"><input type="checkbox" id="usrfA"${cur&&(cur.admin||admName(normalizeStaffName(cur.nombre)))?" checked":""}${cur&&admName(normalizeStaffName(cur.nombre))?" disabled":""}><span>Administrador <small>(puede entrar al panel y a estadísticas${cur&&admName(normalizeStaffName(cur.nombre))?" · permanente":""})</small></span></label>
     <p class="usr-err" id="usrfE" role="alert"></p>
     <div class="usr-btns"><button type="button" class="st-btn" id="usrfC">Cancelar</button><button type="submit" class="st-btn usr-ok">Guardar</button></div></form>`;
@@ -8192,6 +8207,10 @@ function usrEditor(key,tipoNuevo){
   const SERV_ESP={"Cirugía Oncológica":"CO","Ginecología Oncológica":"GO","Oncología Cabeza y Cuello":"OCyC","Oncología Médica":"OM"}, RW=dlg.querySelector("#usrfRW"), SS=dlg.querySelector("#usrfSS");
   const vis=()=>{ const r=T.value==="residente"; S.hidden=r; SS.hidden=!r; RW.hidden=!r; };
   T.onchange=()=>{ if(T.value==="adscrito") S.value=upc(S.value); vis(); lists(); };
+  /* v3.13 · El administrador también define la página de inicio y los filtros (Clínica / Adscrito) de cada usuario */
+  const UHF={clin:cur&&Array.isArray(cur.fclin)?cur.fclin.slice():[],ads:cur&&Array.isArray(cur.fads)?cur.fads.slice():[],open:""}, HF=dlg.querySelector("#usrfHF"), UI=dlg.querySelector("#usrfI");
+  const hfShow=()=>{ HF.hidden=UI.value==="nuevo"; if(!HF.hidden) hfRender(HF,UHF); };
+  hfWire(HF,UHF); UI.addEventListener("change",hfShow); hfShow();
   dlg.querySelector("#usrfC").onclick=()=>dlg.close();
   dlg.querySelector("#usrForm").onsubmit=e=>{
     e.preventDefault();
@@ -8199,7 +8218,7 @@ function usrEditor(key,tipoNuevo){
     const fail=m=>{ E.textContent=m; };
     if(!u||!k) return fail("Escribe el usuario.");
     if(HJM_USERS.some(x=>ukey(x.usuario)===k&&ukey(x.usuario)!==key)) return fail("Ya existe un usuario «"+u+"».");
-    const ch=[]; if(key&&k!==key) ch.push({k:key,op:"del"}); ch.push({k,op:"set",u:Object.assign({usuario:u,nombre:n,tipo:t,servicio:sv},((dlg.querySelector("#usrfA").checked&&!dlg.querySelector("#usrfA").disabled)||(cur&&admName(normalizeStaffName(cur.nombre))&&!admName(normalizeStaffName(n))))?{admin:true}:{},{cp:dlg.querySelector("#usrfP").value},t==="residente"?{anio:dlg.querySelector("#usrfY").value,esp:SERV_ESP[sv]||""}:{},{inicio:dlg.querySelector("#usrfI").value},cur&&cur.fclin?{fclin:cur.fclin}:{},cur&&cur.fads?{fads:cur.fads}:{})});
+    const ch=[]; if(key&&k!==key) ch.push({k:key,op:"del"}); ch.push({k,op:"set",u:Object.assign({usuario:u,nombre:n,tipo:t,servicio:sv},((dlg.querySelector("#usrfA").checked&&!dlg.querySelector("#usrfA").disabled)||(cur&&admName(normalizeStaffName(cur.nombre))&&!admName(normalizeStaffName(n))))?{admin:true}:{},{cp:dlg.querySelector("#usrfP").value},t==="residente"?{anio:dlg.querySelector("#usrfY").value,esp:SERV_ESP[sv]||""}:{},{inicio:dlg.querySelector("#usrfI").value},{fclin:UHF.clin,fads:UHF.ads})});
     if(!usersChange(ch)) return fail("La lista debe conservar al usuario administrador.");
     usrSub=t; dlg.close(); usrDraw();
   };
@@ -8430,7 +8449,7 @@ function cfgSave(patch){
 }
 function cfgMsg(t,warn){ const e=document.getElementById("cfgState"); if(!e) return; e.textContent=t||""; e.classList.toggle("warn",!!warn); }
 /* v3.13 · Selectores «Clínica» y «Adscrito» bajo Página de inicio (solo con Hospitalizados o Todos): selección múltiple; sin elegir = Todas / Todos */
-let CFG_HF={clin:[],ads:[]}, CFG_HF_OPEN="";
+const CFG_HF={clin:[],ads:[],open:""};   /* estado del selector de Configuración; el editor de usuarios usa otro objeto igual */
 function ppFiltCatalog(selClin){
   const seen=new Map(); HJM_USERS.forEach(u=>{ if(u.tipo!=="adscrito"||!u.servicio) return; const i=ppAdsInfo(u.usuario); if(i.ok&&!seen.has(i.key)) seen.set(i.key,i); });
   const all=[...seen.values()], cm=new Map(); PP_CLIN_NAMES.concat(all.map(x=>x.clin)).forEach(c=>{ const k=normalizeStaffName(c); if(!cm.has(k)) cm.set(k,c); });
@@ -8439,37 +8458,44 @@ function ppFiltCatalog(selClin){
   const groups=new Map(); list.forEach(x=>{ (groups.get(x.clin)||groups.set(x.clin,[]).get(x.clin)).push(x); });
   return {clins,ads:new Set(list.map(x=>x.key)),adsGroups:[...groups.keys()].sort(ppClinCmp).map(c=>({label:c,items:groups.get(c).sort(ppAdsCmp(c)).map(x=>({v:x.key,t:x.nombre}))}))};
 }
-function cfgHFDraw(){
-  const h=document.getElementById("cfgHF"); if(!h) return;
-  const c=cfgRec(), I=document.getElementById("cfgI");
-  CFG_HF={clin:c&&Array.isArray(c.fclin)?c.fclin.slice():[],ads:c&&Array.isArray(c.fads)?c.fads.slice():[]};
-  h.hidden=!(c&&I&&I.value!=="nuevo"); if(h.hidden) return;
-  const cat=ppFiltCatalog(CFG_HF.clin);
-  CFG_HF.clin=CFG_HF.clin.filter(x=>cat.clins.includes(x)); CFG_HF.ads=CFG_HF.ads.filter(k=>cat.ads.has(k));
+/* Dibuja los dos selectores (Clínica y Adscrito) dentro de h con el estado st = {clin,ads,open}. El menú flota encima del contenido (no lo empuja). */
+function hfRender(h,st){
+  const cat=ppFiltCatalog(st.clin);
+  st.clin=st.clin.filter(x=>cat.clins.includes(x)); st.ads=st.ads.filter(k=>cat.ads.has(k));
   const old={}; h.querySelectorAll("[data-hfp]").forEach(p=>old[p.dataset.hfp]=p.scrollTop);
   const chev='<svg viewBox="0 0 24 24" aria-hidden="true" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
   const box=(key,title,all,sel,groups)=>{
-    const flat=groups.flatMap(g=>g.items), nm=v=>(flat.find(x=>x.v===v)||{t:v}).t, open=CFG_HF_OPEN===key;
+    const flat=groups.flatMap(g=>g.items), nm=v=>(flat.find(x=>x.v===v)||{t:v}).t, open=st.open===key;
     const lab=!sel.length?all:sel.length===1?nm(sel[0]):sel.length+" seleccionados";
     return `<div class="cfg-f"><span>${title} <small>(filtro predeterminado al iniciar)</small></span><div class="cfg-fw"><button type="button" class="cfg-fb${sel.length?" on":""}" data-hf="${key}" aria-expanded="${open}"><b>${esc(lab)}</b>${chev}</button><div class="cfg-fp" data-hfp="${key}"${open?"":" hidden"}><button type="button" class="cfg-fo cfg-fa" data-hfclear="${key}" aria-pressed="${!sel.length}">${all}</button>${groups.map(g=>(g.label?`<div class="cfg-fg">${esc(g.label)}</div>`:"")+g.items.map(i=>`<label class="cfg-fo"><input type="checkbox" data-hfv="${key}" value="${esc(i.v)}"${sel.includes(i.v)?" checked":""}><span>${esc(i.t)}</span></label>`).join("")).join("")}</div></div></div>`;
   };
-  h.innerHTML=box("clin","Clínica","Todas",CFG_HF.clin,[{label:"",items:cat.clins.map(x=>({v:x,t:x}))}])+box("ads","Adscrito","Todos",CFG_HF.ads,cat.adsGroups);
+  h.innerHTML=box("clin","Clínica","Todas",st.clin,[{label:"",items:cat.clins.map(x=>({v:x,t:x}))}])+box("ads","Adscrito","Todos",st.ads,cat.adsGroups);
   h.querySelectorAll("[data-hfp]").forEach(p=>{ if(old[p.dataset.hfp]) p.scrollTop=old[p.dataset.hfp]; });
+  const op=h.querySelector("[data-hfp]:not([hidden])");   /* si abajo no cabe, el menú se abre hacia arriba */
+  if(op){ try{ const host=(h.closest("dialog")||document.documentElement).getBoundingClientRect(), w=op.parentElement.getBoundingClientRect(), need=Math.min(230,op.scrollHeight)+12, below=host.bottom-w.bottom, above=w.top-host.top; op.classList.toggle("up",below<need&&above>below); }catch(_){} }
 }
-function cfgHFWire(host){
-  const h=host.querySelector("#cfgHF"); if(!h||h._w) return; h._w=1;
+function hfWire(h,st,done){
+  if(!h||h._w) return; h._w=1;
   h.addEventListener("click",e=>{
-    const b=e.target.closest&&e.target.closest("[data-hf]"); if(b){ CFG_HF_OPEN=CFG_HF_OPEN===b.dataset.hf?"":b.dataset.hf; cfgHFDraw(); return; }
-    const k=e.target.closest&&e.target.closest("[data-hfclear]"); if(k){ const key=k.dataset.hfclear; if(!CFG_HF[key].length) return; CFG_HF[key]=[]; if(key==="clin") CFG_HF.ads=CFG_HF.ads.filter(x=>ppFiltCatalog([]).ads.has(x)); cfgCommit(true); }
+    const b=e.target.closest&&e.target.closest("[data-hf]"); if(b){ st.open=st.open===b.dataset.hf?"":b.dataset.hf; hfRender(h,st); return; }
+    const k=e.target.closest&&e.target.closest("[data-hfclear]"); if(k){ const key=k.dataset.hfclear; if(!st[key].length) return; st[key]=[]; if(key==="clin"){ const ok=ppFiltCatalog([]).ads; st.ads=st.ads.filter(x=>ok.has(x)); } hfRender(h,st); done&&done(); }
   });
   h.addEventListener("change",e=>{
     const cb=e.target; if(!cb||!cb.matches||!cb.matches("input[data-hfv]")) return;
-    const key=cb.dataset.hfv, set=CFG_HF[key], v=cb.value;
-    CFG_HF[key]=cb.checked?(set.includes(v)?set:set.concat([v])):set.filter(x=>x!==v);
-    if(key==="clin"){ const ok=ppFiltCatalog(CFG_HF.clin).ads; CFG_HF.ads=CFG_HF.ads.filter(x=>ok.has(x)); }   /* al cambiar las clínicas, los adscritos que ya no pertenecen se quitan */
-    cfgCommit(true);
+    const key=cb.dataset.hfv, set=st[key], v=cb.value;
+    st[key]=cb.checked?(set.includes(v)?set:set.concat([v])):set.filter(x=>x!==v);
+    if(key==="clin"){ const ok=ppFiltCatalog(st.clin).ads; st.ads=st.ads.filter(x=>ok.has(x)); }   /* al cambiar las clínicas, los adscritos que ya no pertenecen se quitan */
+    hfRender(h,st); done&&done();
   });
 }
+function cfgHFDraw(){
+  const h=document.getElementById("cfgHF"); if(!h) return;
+  const c=cfgRec(), I=document.getElementById("cfgI");
+  CFG_HF.clin=c&&Array.isArray(c.fclin)?c.fclin.slice():[]; CFG_HF.ads=c&&Array.isArray(c.fads)?c.fads.slice():[];
+  h.hidden=!(c&&I&&I.value!=="nuevo"); if(h.hidden) return;
+  hfRender(h,CFG_HF);
+}
+function cfgHFWire(host){ hfWire(host.querySelector("#cfgHF"),CFG_HF,()=>cfgCommit(true)); }
 function cfgFill(){
   const g=id=>document.getElementById(id); if(!g("cfgU")) return;
   const c=cfgRec();
@@ -8488,7 +8514,7 @@ function cfgCommit(hf){
 }
 function cfgStatsDraw(){
   const h=document.getElementById("cfgStats"); if(!h) return;
-  const A=agg(remoteCache,cfgPer), o=A.users[userName()]||{};
+  const A=agg(remoteCache,cfgPer), o=A.users[statUser(userName())]||{};
   h.innerHTML=`<h3>Mis estadísticas</h3><div class="st-per">${[[1,"Hoy"],[7,"7 días"],[30,"30 días"],[0,"Todo"]].map(([d,l])=>`<button type="button" data-cper="${d}" aria-pressed="${cfgPer===d}">${l}</button>`).join("")}</div><div class="st-kpis" style="margin-top:12px">${CFG_COLS.map(([k,l])=>`<div class="st-kpi"><b>${o[k]||0}</b><span>${l}</span></div>`).join("")}</div>`;
   h.querySelectorAll("[data-cper]").forEach(b=>b.onclick=()=>{ cfgPer=+b.dataset.cper; cfgStatsDraw(); });
 }
