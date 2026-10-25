@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oncología · Hospital Juárez de México</title>
-<meta name="application-version" content="3.12">
+<meta name="application-version" content="3.13">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2208,6 +2208,9 @@ body.pp-browse .pp-view-btns{align-items:center}
 .pp-actions .pp-view-btns button{width:auto;height:28px;padding:0 11px;border:1px solid rgba(146,149,152,.55);border-radius:999px;background:transparent;color:inherit;font:inherit;font-size:12px;font-weight:700;line-height:1;display:inline-flex;align-items:center;white-space:nowrap}
 .pp-actions .pp-view-btns button[aria-pressed="true"]{background:var(--navy,#3A3B3B);border-color:var(--navy,#3A3B3B);color:#fff}
 .pp-actions .pp-view-btns button[aria-pressed="false"]:hover{background:rgba(146,149,152,.18)}
+/* v3.13 · íconos en Hospitalizados / Todos */
+.pp-actions .pp-view-btns button{gap:6px}
+.pp-actions .pp-view-btns button svg{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .pp-filt{display:none}
 body.pp-browse .pp-filt{align-items:center;flex-wrap:nowrap}
 .pp-filt label{display:inline-flex;align-items:center;gap:0;height:32px;padding:0 4px 0 11px;border:1px solid rgba(146,149,152,.45);border-radius:999px;background:#fff;box-shadow:0 1px 2px rgba(58,59,59,.08);transition:border-color .15s,box-shadow .15s}
@@ -2345,7 +2348,7 @@ body.pp-browse #pPanel.pp-xl .pp-list .cama-badge{flex:none;justify-content:cent
           <button type="button" id="ppNext" title="Siguientes" aria-label="Siguientes"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
           <button type="button" id="ppRefresh" title="Actualizar lista" aria-label="Actualizar lista"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></svg></button>
           <span class="pp-filt" id="ppFilt" role="group" aria-label="Filtros de la lista de pacientes"><label><span>Adscrito</span><button type="button" id="ppFAds" class="ppms" aria-haspopup="listbox" aria-expanded="false" aria-label="Filtrar por adscrito">Todos</button></label><label><span>Clínica</span><button type="button" id="ppFClin" class="ppms" aria-haspopup="listbox" aria-expanded="false" aria-label="Filtrar por clínica">Todas</button></label><button type="button" id="ppFClr" hidden title="Quitar los filtros de adscrito y clínica" aria-label="Borrar filtro">✕</button></span>
-          <button type="button" id="ppCensus" class="pp-census" title="Imprimir el censo de los pacientes visibles en Hospitalizados" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9V3h10v6M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M7 14h10v7H7z"/></svg>Imprimir Censo</button><span class="pp-view-btns" role="group" aria-label="Vista de la tabla de pacientes"><button type="button" id="ppViewCama" data-pp-view="cama" aria-pressed="true" title="Pacientes hospitalizados con cama modificados en las últimas 36 horas">Hospitalizados</button><button type="button" id="ppViewRec" data-pp-view="recientes" aria-pressed="false" title="Todos los pacientes">Todos</button></span>
+          <button type="button" id="ppCensus" class="pp-census" title="Imprimir el censo de los pacientes visibles en Hospitalizados" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9V3h10v6M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M7 14h10v7H7z"/></svg>Imprimir Censo</button><span class="pp-view-btns" role="group" aria-label="Vista de la tabla de pacientes"><button type="button" id="ppViewCama" data-pp-view="cama" aria-pressed="true" title="Pacientes hospitalizados con cama modificados en las últimas 36 horas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18V6M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="10.5" r="1.6"/></svg><span>Hospitalizados</span></button><button type="button" id="ppViewRec" data-pp-view="recientes" aria-pressed="false" title="Todos los pacientes"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c.5-3 2.7-4.5 5.5-4.5s5 1.5 5.5 4.5M16 5.5a3 3 0 0 1 0 5.6M18 14.8c1.6.6 2.6 2 3 4.2"/></svg><span>Todos</span></button></span>
           <button type="button" id="ppToggle" title="Mostrar u ocultar la lista" aria-label="Mostrar u ocultar la lista" aria-expanded="true"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
         </span>
       </div>
@@ -2468,7 +2471,7 @@ body.pp-browse #pPanel.pp-xl .pp-list .cama-badge{flex:none;justify-content:cent
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 3.12 · Fecha de publicación: 25.10.26</div>
+  <div class="app-footer-version">Versión 3.13 · Fecha de publicación: 25.10.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p>Los datos viajan por conexión segura (HTTPS) y se almacenan en la cuenta de Google del Servicio de Oncología del Hospital Juárez de México; protegidos mediante clave de acceso.</p>
     <p id="hjmOffInfo" role="status" hidden></p>
@@ -2738,7 +2741,10 @@ function cleanUsers(list){
       if(m){ nombre=m[1]; if(!anio) anio=m[2]; if(!esp) esp=ESP_CODES[m[3].toUpperCase()]; }
     }
     const inicio=x.inicio==="todos"||x.inicio==="nuevo"?x.inicio:"";   /* v3.06 · página de inicio: «hospitalizados» es la de fábrica y no se guarda */
-    out.push({usuario,nombre,tipo,servicio,...(x.admin===true?{admin:true}:{}),...(cp?{cp}:{}),...(anio?{anio}:{}),...(esp?{esp}:{}),...(inicio?{inicio}:{})});
+    /* v3.13 · filtros predeterminados de inicio (Hospitalizados / Todos): clínicas y adscritos elegidos; vacío = todos */
+    const uniq=(a,n)=>Array.isArray(a)?[...new Set(a.map(v=>String(v==null?"":v).trim()).filter(Boolean))].slice(0,n):[];
+    const fclin=uniq(x.fclin,12), fads=uniq(x.fads,60);
+    out.push({usuario,nombre,tipo,servicio,...(x.admin===true?{admin:true}:{}),...(cp?{cp}:{}),...(anio?{anio}:{}),...(esp?{esp}:{}),...(inicio?{inicio}:{}),...(fclin.length?{fclin}:{}),...(fads.length?{fads}:{})});
   });
   return out;
 }
@@ -2763,7 +2769,7 @@ function userRecord(v){
    Cada cambio: clave del usuario → {op:"set"|"del", ts, u:{usuario,nombre,tipo,servicio}}. El más reciente por usuario gana. */
 const ukey=v=>normalizeStaffName(v);
 const BASE_MAP=(()=>{const m=new Map();cleanUsers(HJM_USERS_BASE&&HJM_USERS_BASE.usuarios).forEach(u=>m.set(ukey(u.usuario),u));return m;})();
-const sameUser=(a,b)=>!!a&&!!b&&a.usuario===b.usuario&&a.nombre===b.nombre&&a.tipo===b.tipo&&a.servicio===b.servicio&&!!a.admin===!!b.admin&&(a.cp||"")===(b.cp||"")&&(a.inicio||"")===(b.inicio||"")&&(a.anio||"")===(b.anio||"")&&(a.esp||"")===(b.esp||"");
+const sameUser=(a,b)=>!!a&&!!b&&a.usuario===b.usuario&&a.nombre===b.nombre&&a.tipo===b.tipo&&a.servicio===b.servicio&&!!a.admin===!!b.admin&&(a.cp||"")===(b.cp||"")&&(a.inicio||"")===(b.inicio||"")&&(a.anio||"")===(b.anio||"")&&(a.esp||"")===(b.esp||"")&&JSON.stringify(a.fclin||[])===JSON.stringify(b.fclin||[])&&JSON.stringify(a.fads||[])===JSON.stringify(b.fads||[]);
 function opsClean(o){
   const out={};
   if(o&&typeof o==="object")Object.entries(o).forEach(([k,x])=>{
@@ -6120,7 +6126,7 @@ async function ppCensusPrint(){
     const row=f=>{ const m=f.meta||{}, d=datos.get(f.id)||{}, fn=String(d.fnac||"").trim(), ing=String(d.fIngreso||"").trim();
       let ed=""; try{ ed=edad(fn,todayStr()); }catch(_){}
       const cama=String(m.cama||"").trim().replace(/^UCI\s*/i,"UCI ");
-      const c=[cama,ppCenName(m.nombre),ed,expOf(f),fn,ppCensusAds(m.adscrito),ppCenDx(m.dx||d.diagnostico),ppCensusClin(f),ppCensusEH(ing),ing], pend=ppRowPend(f);
+      const c=[cama,ppCenName(m.nombre),ed,expOf(f),fn,ppCensusAds(m.adscrito),ppCenDx(m.dx||d.diagnostico),ppCensusClin(f),ppCensusEH(ing),ing], pend=ppPendPrint(ppRowPend(f));
       return "<tr>"+c.map(x=>"<td>"+esc(String(x))+"</td>").join("")+'<td class="pend">'+esc(pend)+"</td></tr>"; };
     const sec=t=>`<tr class="sec"><td colspan="11">${t}</td></tr>`;
     const inMain=f=>{ const c=String(f.meta.cama||"").trim(), n=camaNum(c); return n!=null&&n>=150&&n<=197&&!/^UCI/i.test(c); };
@@ -6163,15 +6169,24 @@ function ppRowIng(f){ const m=f.meta||{}; if(m.ingreso!==undefined&&m.ingreso!==
 function ppRowFn(f){ const d=ppRowS(f); return d&&d.fnac?String(d.fnac):""; }
 function ppFnHTML(f){ const v=ppRowFn(f); return `<span class="tag fn" data-fn>${v?"FN. "+esc(v):""}</span>`; }
 function ppRowPend(f){ const loc=ppPendLocal(f); if(loc!==undefined) return loc; const m=f.meta||{}; if(m.pendientes!==undefined&&m.pendientes!==null) return String(m.pendientes); const d=ppRowS(f); return d&&d.pendientes?String(d.pendientes):""; }
-function ppPendHTML(f){ return `<label class="pp-pend" data-pendbox><i>Pendientes</i><textarea rows="2" maxlength="400" spellcheck="false" autocomplete="off" data-pend="${f.id}" aria-label="Pendientes">${esc(ppRowPend(f)||PP_BUL)}</textarea></label>`; }
-const PP_BUL="• ";
-function ppPendBul(t){ if(!t.value) t.value=PP_BUL; }
-function ppPendSave(t){ clearTimeout(t._pt); const f=DRIVE_FILES.find(x=>x&&x.id===t.dataset.pend); if(!f) return; let v=t.value.replace(/\s+$/,"").slice(0,400); if(/^[•\s]*$/.test(v)) v=""; if(v===ppRowPend(f)) return; ppPendCacheSet(f.id,v); ppApply(f,{pendientes:v},{quiet:true}); }
+/* v3.13 · Pendientes como lista de casillas (como Samsung Notes): cada renglón es una viñeta con casilla; al marcarla se tacha.
+   Se guarda en el mismo campo de texto de siempre: «• texto» = pendiente, «✔ texto» = terminado (los guardados antes con «• » siguen igual). */
+const PP_BUL="• ", PP_DONE="✔ ";
+function ppPendParse(v){ const out=[]; String(v==null?"":v).split(/\r?\n/).forEach(l=>{ let t=l.trim(); const d=/^[✔✓☑]/.test(t); t=t.replace(/^[•✔✓☑☐▪◦]+\s*/,"").trim(); if(t) out.push({d,t}); }); return out; }
+function ppPendSer(rows){ return rows.filter(r=>String(r.t).trim()).map(r=>(r.d?PP_DONE:PP_BUL)+String(r.t).trim().replace(/\s+/g," ")).join("\n"); }
+const ppPendNorm=v=>ppPendSer(ppPendParse(v));
+function ppPendPrint(v){ return ppPendParse(v).filter(r=>!r.d).map(r=>PP_BUL+r.t).join("\n"); }   /* el censo impreso solo lleva los pendientes sin terminar */
+function ppPendRow(d,t,ph){ return `<div class="pp-pi${d?" done":""}"><input type="checkbox" class="pp-pc"${d?" checked":""} aria-label="Marcar como terminado"><input type="text" class="pp-pt" maxlength="120" spellcheck="false" autocomplete="off" enterkeyhint="next"${ph?` placeholder="${ph}"`:""} value="${esc(t)}" aria-label="Pendiente"></div>`; }   /* «Pendientes» es solo texto fantasma (placeholder) de la primera casilla: no se edita ni se guarda */
+function ppPendBuild(rows){ rows=rows.slice(); if(!rows.length||String(rows[rows.length-1].t).trim()) rows.push({d:false,t:""}); return rows.map((r,i)=>ppPendRow(r.d,r.t,i===0?"Pendientes":"")).join(""); }
+function ppPendRead(c){ return [...c.querySelectorAll(".pp-pi")].map(r=>({d:r.querySelector(".pp-pc").checked,t:r.querySelector(".pp-pt").value})); }
+function ppPendHTML(f){ return `<div class="pp-pend" data-pendbox><div class="pp-pl" data-pend="${f.id}" role="group" aria-label="Pendientes">${ppPendBuild(ppPendParse(ppRowPend(f)))}</div></div>`; }
+function ppPendSave(c){ clearTimeout(c._pt); const f=DRIVE_FILES.find(x=>x&&x.id===c.dataset.pend); if(!f) return; const v=ppPendSer(ppPendRead(c)).slice(0,400); if(v===ppPendNorm(ppRowPend(f))) return; ppPendCacheSet(f.id,v); ppApply(f,{pendientes:v},{quiet:true}); }
+function ppPendTidy(c){ c.innerHTML=ppPendBuild(ppPendRead(c).filter(r=>String(r.t).trim())); }
 function ppIngHTML(f){ const v=ppRowIng(f); return `<span class="pp-ing" data-ing><i>Ingreso</i><b>${v?esc(v):"—"}</b></span>`; }
 function ppRowPaint(f){ const el=document.querySelector('#ppList [data-id="'+f.id+'"]'); if(!el) return;
   const a=el.querySelector("[data-fn]"); if(a) a.textContent=ppRowFn(f)?"FN. "+ppRowFn(f):"";
   const b=el.querySelector("[data-ing] b"); if(b) b.textContent=ppRowIng(f)||"—";
-  const pt=el.querySelector("[data-pend]"); if(pt&&document.activeElement!==pt&&pt.value!==(ppRowPend(f)||PP_BUL)) pt.value=ppRowPend(f)||PP_BUL; }
+  const pc=el.querySelector("[data-pend]"); if(pc&&!pc.contains(document.activeElement)){ const w=ppPendNorm(ppRowPend(f)); if(ppPendSer(ppPendRead(pc))!==w) pc.innerHTML=ppPendBuild(ppPendParse(w)); } }
 async function ppRowFill(on,list){ if(!on||!list||!list.length) return; const now=Date.now();
   const need=list.filter(f=>f&&f.id&&!ppRowD(f)&&!PP_ROW_BUSY.has(f.id)&&!(PP_ROW_BAD.get(f.id)>now));
   need.forEach(f=>{ ppRowPaint(f); });
@@ -6194,7 +6209,7 @@ function ppMetaHTML(p){
 }
 function renderPP(){
   try{ ppOverlay(); }catch(_){}
-  const _ae=document.activeElement, _keep=(_ae&&_ae.matches&&_ae.matches("[data-pend]"))?{id:_ae.dataset.pend,v:_ae.value,s:_ae.selectionStart,e:_ae.selectionEnd}:null;
+  const _ae=document.activeElement, _pc=(_ae&&_ae.classList&&_ae.classList.contains("pp-pt"))?_ae.closest("[data-pend]"):null, _keep=_pc?{id:_pc.dataset.pend,rows:ppPendRead(_pc),i:[..._pc.children].indexOf(_ae.closest(".pp-pi")),s:_ae.selectionStart,e:_ae.selectionEnd}:null;
   const s=($("ppSearch").value||"").trim().toUpperCase();
   let items=uniqueFiles(DRIVE_FILES).filter(f=>{ const p=f.meta||{}; if(PP_AUTO&&!PP_MANUAL&&s)return ($("expediente").value.trim()?expOf(f):String(p.cama||"").trim()).toUpperCase().startsWith(s); return !s||(p.nombre||"").toUpperCase().includes(s)||(expOf(f)).toUpperCase().includes(s)||String(f.name||"").toUpperCase().includes(s)||("CAMA "+(p.cama||"")).toUpperCase().includes(s)||(p.cama||"").toUpperCase()===s||(p.dx||"").toUpperCase().includes(s); });
   const camaMode=document.body.classList.contains("pp-browse")&&!s&&PP_VIEW==="cama";
@@ -6213,7 +6228,7 @@ function renderPP(){
   try{ ppCensusSync(!!camaMode); }catch(_){}
   try{ ppRowFill(!!camaMode,items.slice(0,ppShown)); }catch(_){}
   ppMarkCurrent();
-  if(_keep){ try{ const t=document.querySelector('#ppList [data-pend="'+_keep.id+'"]'); if(t){ t.value=_keep.v; t.focus({preventScroll:true}); t.setSelectionRange(_keep.s,_keep.e); } }catch(_){} }
+  if(_keep){ try{ const c=document.querySelector('#ppList [data-pend="'+_keep.id+'"]'); if(c){ c.innerHTML=ppPendBuild(_keep.rows); const t=c.children[_keep.i]&&c.children[_keep.i].querySelector(".pp-pt"); if(t){ t.focus({preventScroll:true}); t.setSelectionRange(_keep.s,_keep.e); } } }catch(_){} }
 }
 
 /* ---------- v2.174 · Menú de tres puntos en cada paciente: Cambiar cama · Dar de alta ---------- */
@@ -6304,10 +6319,22 @@ $("ppSearch").oninput=()=>{ clearTimeout(_expT); PP_MANUAL=true; PP_AUTO=false; 
 $("ppRefresh").onclick=()=>{ PP_LAST=0; loadPatients({fresco:true}); };   // ⟳ trae la lista directo de Drive (sin caché)
 const ppScroll=d=>{ const l=$("ppList"); l.scrollBy({left:d*Math.max(200,l.clientWidth*0.85),behavior:"smooth"}); };
 $("ppPrev").onclick=()=>ppScroll(-1); $("ppNext").onclick=()=>ppScroll(1);
-$("ppList").addEventListener("input",e=>{ const t=e.target; if(!(t&&t.matches&&t.matches("[data-pend]"))) return; clearTimeout(t._pt); t._pt=setTimeout(()=>ppPendSave(t),900); });
-$("ppList").addEventListener("keydown",e=>{ const t=e.target; if(!(t&&t.matches&&t.matches("[data-pend]"))||e.key!=="Enter"||e.shiftKey||e.isComposing) return; e.preventDefault(); const a=t.selectionStart,z=t.selectionEnd; t.setRangeText("\n"+PP_BUL,a,z,"end"); t.dispatchEvent(new Event("input",{bubbles:true})); });
-$("ppList").addEventListener("focusin",e=>{ const t=e.target; if(t&&t.matches&&t.matches("[data-pend]")) ppPendBul(t); });
-$("ppList").addEventListener("focusout",e=>{ const t=e.target; if(t&&t.matches&&t.matches("[data-pend]")) ppPendSave(t); });
+const ppPCont=t=>t&&t.closest?t.closest("[data-pend]"):null, ppIsPT=t=>!!(t&&t.classList&&t.classList.contains("pp-pt"));
+$("ppList").addEventListener("input",e=>{ const t=e.target; if(!ppIsPT(t)) return; const c=ppPCont(t); if(!c) return;
+  const last=c.lastElementChild; if(last&&last.contains(t)&&t.value.trim()) last.insertAdjacentHTML("afterend",ppPendRow(false,""));   /* siempre queda un renglón vacío al final para seguir agregando */
+  clearTimeout(c._pt); c._pt=setTimeout(()=>ppPendSave(c),900); });
+$("ppList").addEventListener("change",e=>{ const t=e.target; if(!(t&&t.classList&&t.classList.contains("pp-pc"))) return; const c=ppPCont(t); if(!c) return; t.closest(".pp-pi").classList.toggle("done",t.checked); ppPendSave(c); });
+$("ppList").addEventListener("keydown",e=>{ const t=e.target; if(!ppIsPT(t)||e.isComposing) return; const row=t.closest(".pp-pi"), c=ppPCont(t); if(!row||!c) return;
+  const foc=r=>{ const x=r&&r.querySelector(".pp-pt"); if(x){ x.focus(); const n=x.value.length; try{ x.setSelectionRange(n,n); }catch(_){} } };
+  if(e.key==="Enter"){ e.preventDefault(); if(!t.value.trim()) return; let nx=row.nextElementSibling; if(!nx||nx.querySelector(".pp-pt").value.trim()){ row.insertAdjacentHTML("afterend",ppPendRow(false,"")); nx=row.nextElementSibling; } foc(nx); }
+  else if(e.key==="Backspace"&&!t.value){ const pv=row.previousElementSibling; if(!pv) return; e.preventDefault(); foc(pv); row.remove(); clearTimeout(c._pt); c._pt=setTimeout(()=>ppPendSave(c),900); }
+  else if(e.key==="ArrowUp"&&row.previousElementSibling){ e.preventDefault(); foc(row.previousElementSibling); }
+  else if(e.key==="ArrowDown"&&row.nextElementSibling){ e.preventDefault(); foc(row.nextElementSibling); } });
+$("ppList").addEventListener("paste",e=>{ const t=e.target; if(!ppIsPT(t)) return; const tx=(e.clipboardData&&e.clipboardData.getData("text"))||""; if(!/\r?\n/.test(tx)) return; const c=ppPCont(t), row=t.closest(".pp-pi"); if(!c||!row) return; e.preventDefault();
+  const parts=tx.split(/\r?\n/).map(x=>x.replace(/^\s*[•✔✓☑☐▪◦\-*]+\s*/,"").trim()).filter(Boolean); if(!parts.length) return;
+  t.value=(t.value+" "+parts[0]).trim(); let at=row; parts.slice(1).forEach(x=>{ at.insertAdjacentHTML("afterend",ppPendRow(false,x)); at=at.nextElementSibling; });
+  if(c.lastElementChild.querySelector(".pp-pt").value.trim()) c.insertAdjacentHTML("beforeend",ppPendRow(false,"")); clearTimeout(c._pt); c._pt=setTimeout(()=>ppPendSave(c),400); });
+$("ppList").addEventListener("focusout",e=>{ const c=ppPCont(e.target); if(c&&!c.contains(e.relatedTarget)){ ppPendSave(c); ppPendTidy(c); } });
 $("ppList").addEventListener("keydown",e=>{ const it=e.target; if(it&&it.matches&&it.matches('div.dlg-item[role="button"]')&&(e.key==="Enter"||e.key===" ")){ e.preventDefault(); it.click(); } });
 $("ppList").onclick=e=>{ if(e.target.closest&&e.target.closest("[data-pendbox]")) return; const kb=e.target.closest("[data-ppmenu]"); if(kb){ e.preventDefault(); e.stopPropagation(); PP_MENU.toggle(kb); return; } if(e.target.closest("[data-pp-new]")){ $("btnClear").click(); return; } const b=e.target.closest("[data-id]"); if(b) openDriveFile(b.dataset.id).then(ppMarkCurrent).catch(driveError); };
 (function(){
@@ -7502,6 +7529,27 @@ body.hjm-admin .top > .seal.crab{cursor:pointer}
 #dlgUsr #usrfU,#dlgUsr #usrfN{text-transform:uppercase}
 #dlgUsr .usr-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 #dlgStats .cfg-grid label:has(.hm-seg){grid-column:1/-1}
+/* v3.13 · selectores Clínica / Adscrito del filtro predeterminado de inicio */
+#dlgStats .cfg-hf{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:12px}
+#dlgStats .cfg-hf[hidden]{display:none}
+#dlgStats .cfg-f{display:grid;gap:5px;align-content:start;font-size:12px;font-weight:700;color:#3A3B3B;min-width:0}
+#dlgStats .cfg-f small{font-weight:500;color:#7B7E81}
+#dlgStats .cfg-fb{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #D6D8DB;border-radius:10px;background:#fff;color:#303132;font:inherit;font-size:14px;font-weight:500;text-align:left;cursor:pointer}
+#dlgStats .cfg-fb b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+#dlgStats .cfg-fb svg{flex:none;transition:transform .15s}
+#dlgStats .cfg-fb[aria-expanded="true"] svg{transform:rotate(180deg)}
+#dlgStats .cfg-fb.on{background:#3A3B3B;border-color:#3A3B3B;color:#fff}
+#dlgStats .cfg-fb:disabled{opacity:.6;cursor:default}
+#dlgStats .cfg-fw{position:relative}
+#dlgStats .cfg-fp{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:30;max-height:230px;overflow:auto;padding:4px 0;border:1px solid #D6D8DB;border-radius:10px;background:#fff;box-shadow:0 10px 28px rgba(28,30,33,.22)}
+#dlgStats .cfg-fp[hidden]{display:none}
+#dlgStats .cfg-fg{padding:7px 12px 2px;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#7B7E81}
+#dlgStats .cfg-fo{display:flex;align-items:center;justify-content:flex-start;gap:9px;min-height:0!important;height:auto!important;line-height:1.25;width:100%;box-sizing:border-box;margin:0;padding:7px 12px;border:0;background:transparent;color:#303132;font:inherit;font-size:13.5px;font-weight:500;text-align:left;cursor:pointer}
+#dlgStats .cfg-fo:hover{background:#F2F3F4}
+#dlgStats .cfg-fo span{flex:1;min-width:0;text-align:left;color:#303132;font-size:13.5px;font-weight:500;letter-spacing:0;text-transform:none}
+#dlgStats .cfg-fa{display:block}
+#dlgStats .cfg-fo input{flex:none;width:16px!important;height:16px!important;min-height:0!important;min-width:0!important;padding:0!important;margin:0;accent-color:#3A3B3B}
+#dlgStats .cfg-fa[aria-pressed="true"]{font-weight:800}
 .hm-seg{display:inline-flex;flex-wrap:wrap;gap:2px;padding:3px;background:var(--hj-tint,#EDF2F9);border:1px solid var(--hj-line,#D9E3F0);border-radius:999px;max-width:100%;justify-self:start}
 .hm-seg button{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border:0;border-radius:999px;background:transparent;color:var(--hj-navy2,#2F4D78);font-family:inherit;font-size:13px;font-weight:600;line-height:1;cursor:pointer;white-space:nowrap;transition:background .18s,color .18s,box-shadow .18s}
 .hm-seg button svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
@@ -7580,6 +7628,8 @@ html body .cm-comp textarea{flex:1 1 auto;width:auto!important;min-width:0;margi
 #dlgStats .cm-sn{font-size:11.5px;opacity:.75;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #dlgStats .cm-pane{display:grid;gap:8px;min-width:0}
 #dlgStats .cm-pane-h{font-size:13px;font-weight:800}
+#dlgStats .cm-pane-hh{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:30px}
+#dlgStats .cm-pane-hh [hidden]{display:none}
 #dlgStats .cm-pane .cm-comp{border:1px solid var(--hj-line,#D9E3F0);border-radius:14px}
 @media(max-width:720px){#dlgStats .cm-adm{grid-template-columns:1fr}#dlgStats .cm-list{max-height:200px}#hjmChat{right:12px;width:calc(100vw - 24px)}}
 @media print{#hjmFab,#hjmChat{display:none!important}}
@@ -8149,7 +8199,7 @@ function usrEditor(key,tipoNuevo){
     const fail=m=>{ E.textContent=m; };
     if(!u||!k) return fail("Escribe el usuario.");
     if(HJM_USERS.some(x=>ukey(x.usuario)===k&&ukey(x.usuario)!==key)) return fail("Ya existe un usuario «"+u+"».");
-    const ch=[]; if(key&&k!==key) ch.push({k:key,op:"del"}); ch.push({k,op:"set",u:Object.assign({usuario:u,nombre:n,tipo:t,servicio:sv},((dlg.querySelector("#usrfA").checked&&!dlg.querySelector("#usrfA").disabled)||(cur&&admName(normalizeStaffName(cur.nombre))&&!admName(normalizeStaffName(n))))?{admin:true}:{},{cp:dlg.querySelector("#usrfP").value},t==="residente"?{anio:dlg.querySelector("#usrfY").value,esp:SERV_ESP[sv]||""}:{},{inicio:dlg.querySelector("#usrfI").value})});
+    const ch=[]; if(key&&k!==key) ch.push({k:key,op:"del"}); ch.push({k,op:"set",u:Object.assign({usuario:u,nombre:n,tipo:t,servicio:sv},((dlg.querySelector("#usrfA").checked&&!dlg.querySelector("#usrfA").disabled)||(cur&&admName(normalizeStaffName(cur.nombre))&&!admName(normalizeStaffName(n))))?{admin:true}:{},{cp:dlg.querySelector("#usrfP").value},t==="residente"?{anio:dlg.querySelector("#usrfY").value,esp:SERV_ESP[sv]||""}:{},{inicio:dlg.querySelector("#usrfI").value},cur&&cur.fclin?{fclin:cur.fclin}:{},cur&&cur.fads?{fads:cur.fads}:{})});
     if(!usersChange(ch)) return fail("La lista debe conservar al usuario administrador.");
     usrSub=t; dlg.close(); usrDraw();
   };
@@ -8334,8 +8384,19 @@ function cfgRec(){ try{ return userRecord(sessionUserName()); }catch(_){ return 
 function homePref(){ const r=cfgRec(); return r&&(r.inicio==="todos"||r.inicio==="nuevo")?r.inicio:"hospitalizados"; }
 window.__hjmHomePref=homePref;
 /* Página de inicio de cada usuario: Hospitalizados (de fábrica) · Todos · Nuevo Paciente. Se aplica al ingresar (y al volver al inicio con «Pacientes»/«Inicio» en las tablas). */
+/* v3.13 · Filtro predeterminado (Clínica / Adscrito) de las vistas Hospitalizados y Todos. Al ingresar solo se aplica si el usuario eligió alguno; al guardarlo en Configuración (force) se aplica de inmediato. */
+function applyHomeFilters(force){
+  try{
+    const r=cfgRec(); if(!r||homePref()==="nuevo") return;
+    const clin=Array.isArray(r.fclin)?r.fclin.slice():[], ads=Array.isArray(r.fads)?r.fads.slice():[];
+    if(!force&&!clin.length&&!ads.length) return;
+    PP_FILT={ads,clin}; try{ ppMsClose(); }catch(_){}
+    renderPP();
+  }catch(_){}
+}
 function applyHomePref(){
   try{
+    applyHomeFilters(false);
     if(hasSelectedPatient()||current||currentClinical) return;
     const p=homePref();
     if(p==="nuevo"){ setTimeout(()=>{ try{ if(!hasSelectedPatient()&&!current&&!currentClinical&&!$("dlgResidentGate").open) $("btnClear").click(); }catch(_){} },250); return; }
@@ -8352,7 +8413,7 @@ function cfgSave(patch){
   if(HJM_USERS.some(x=>ukey(x.usuario)===k&&ukey(x.usuario)!==oldKey)) return {ok:false,err:"Ya existe un usuario «"+usuario+"»."};
   if(HJM_USERS.some(x=>x!==cur&&normalizeStaffName(x.nombre)===normalizeStaffName(nombre))) return {ok:false,err:"Ya existe un usuario con el nombre completo «"+nombre+"»."};
   const needAdm=cur.admin===true||(admName(normalizeStaffName(cur.nombre))&&!admName(normalizeStaffName(nombre)));   /* un administrador de origen que cambia su nombre conserva el permiso */
-  const u=Object.assign({usuario,nombre,tipo:cur.tipo,servicio:cur.servicio},cur.anio?{anio:cur.anio}:{},cur.esp?{esp:cur.esp}:{},needAdm?{admin:true}:{},{cp:patch.cp,inicio:patch.inicio});
+  const u=Object.assign({usuario,nombre,tipo:cur.tipo,servicio:cur.servicio},cur.anio?{anio:cur.anio}:{},cur.esp?{esp:cur.esp}:{},needAdm?{admin:true}:{},{cp:patch.cp,inicio:patch.inicio},patch.fclin&&patch.fclin.length?{fclin:patch.fclin}:{},patch.fads&&patch.fads.length?{fads:patch.fads}:{});
   const clean=cleanUsers([u])[0];
   if(sameUser(cur,clean)) return {ok:true,same:true};
   const ch=[]; if(k!==oldKey) ch.push({k:oldKey,op:"del"}); ch.push({k,op:"set",u});
@@ -8368,17 +8429,59 @@ function cfgSave(patch){
   return {ok:true,renamed:printName(clean)!==printName(cur)};
 }
 function cfgMsg(t,warn){ const e=document.getElementById("cfgState"); if(!e) return; e.textContent=t||""; e.classList.toggle("warn",!!warn); }
+/* v3.13 · Selectores «Clínica» y «Adscrito» bajo Página de inicio (solo con Hospitalizados o Todos): selección múltiple; sin elegir = Todas / Todos */
+let CFG_HF={clin:[],ads:[]}, CFG_HF_OPEN="";
+function ppFiltCatalog(selClin){
+  const seen=new Map(); HJM_USERS.forEach(u=>{ if(u.tipo!=="adscrito"||!u.servicio) return; const i=ppAdsInfo(u.usuario); if(i.ok&&!seen.has(i.key)) seen.set(i.key,i); });
+  const all=[...seen.values()], cm=new Map(); PP_CLIN_NAMES.concat(all.map(x=>x.clin)).forEach(c=>{ const k=normalizeStaffName(c); if(!cm.has(k)) cm.set(k,c); });
+  const clins=[...cm.values()].sort(ppClinCmp);
+  const list=selClin.length?all.filter(x=>selClin.some(c=>ppU(c)===ppU(x.clin))):all;
+  const groups=new Map(); list.forEach(x=>{ (groups.get(x.clin)||groups.set(x.clin,[]).get(x.clin)).push(x); });
+  return {clins,ads:new Set(list.map(x=>x.key)),adsGroups:[...groups.keys()].sort(ppClinCmp).map(c=>({label:c,items:groups.get(c).sort(ppAdsCmp(c)).map(x=>({v:x.key,t:x.nombre}))}))};
+}
+function cfgHFDraw(){
+  const h=document.getElementById("cfgHF"); if(!h) return;
+  const c=cfgRec(), I=document.getElementById("cfgI");
+  CFG_HF={clin:c&&Array.isArray(c.fclin)?c.fclin.slice():[],ads:c&&Array.isArray(c.fads)?c.fads.slice():[]};
+  h.hidden=!(c&&I&&I.value!=="nuevo"); if(h.hidden) return;
+  const cat=ppFiltCatalog(CFG_HF.clin);
+  CFG_HF.clin=CFG_HF.clin.filter(x=>cat.clins.includes(x)); CFG_HF.ads=CFG_HF.ads.filter(k=>cat.ads.has(k));
+  const old={}; h.querySelectorAll("[data-hfp]").forEach(p=>old[p.dataset.hfp]=p.scrollTop);
+  const chev='<svg viewBox="0 0 24 24" aria-hidden="true" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+  const box=(key,title,all,sel,groups)=>{
+    const flat=groups.flatMap(g=>g.items), nm=v=>(flat.find(x=>x.v===v)||{t:v}).t, open=CFG_HF_OPEN===key;
+    const lab=!sel.length?all:sel.length===1?nm(sel[0]):sel.length+" seleccionados";
+    return `<div class="cfg-f"><span>${title} <small>(filtro predeterminado al iniciar)</small></span><div class="cfg-fw"><button type="button" class="cfg-fb${sel.length?" on":""}" data-hf="${key}" aria-expanded="${open}"><b>${esc(lab)}</b>${chev}</button><div class="cfg-fp" data-hfp="${key}"${open?"":" hidden"}><button type="button" class="cfg-fo cfg-fa" data-hfclear="${key}" aria-pressed="${!sel.length}">${all}</button>${groups.map(g=>(g.label?`<div class="cfg-fg">${esc(g.label)}</div>`:"")+g.items.map(i=>`<label class="cfg-fo"><input type="checkbox" data-hfv="${key}" value="${esc(i.v)}"${sel.includes(i.v)?" checked":""}><span>${esc(i.t)}</span></label>`).join("")).join("")}</div></div></div>`;
+  };
+  h.innerHTML=box("clin","Clínica","Todas",CFG_HF.clin,[{label:"",items:cat.clins.map(x=>({v:x,t:x}))}])+box("ads","Adscrito","Todos",CFG_HF.ads,cat.adsGroups);
+  h.querySelectorAll("[data-hfp]").forEach(p=>{ if(old[p.dataset.hfp]) p.scrollTop=old[p.dataset.hfp]; });
+}
+function cfgHFWire(host){
+  const h=host.querySelector("#cfgHF"); if(!h||h._w) return; h._w=1;
+  h.addEventListener("click",e=>{
+    const b=e.target.closest&&e.target.closest("[data-hf]"); if(b){ CFG_HF_OPEN=CFG_HF_OPEN===b.dataset.hf?"":b.dataset.hf; cfgHFDraw(); return; }
+    const k=e.target.closest&&e.target.closest("[data-hfclear]"); if(k){ const key=k.dataset.hfclear; if(!CFG_HF[key].length) return; CFG_HF[key]=[]; if(key==="clin") CFG_HF.ads=CFG_HF.ads.filter(x=>ppFiltCatalog([]).ads.has(x)); cfgCommit(true); }
+  });
+  h.addEventListener("change",e=>{
+    const cb=e.target; if(!cb||!cb.matches||!cb.matches("input[data-hfv]")) return;
+    const key=cb.dataset.hfv, set=CFG_HF[key], v=cb.value;
+    CFG_HF[key]=cb.checked?(set.includes(v)?set:set.concat([v])):set.filter(x=>x!==v);
+    if(key==="clin"){ const ok=ppFiltCatalog(CFG_HF.clin).ads; CFG_HF.ads=CFG_HF.ads.filter(x=>ok.has(x)); }   /* al cambiar las clínicas, los adscritos que ya no pertenecen se quitan */
+    cfgCommit(true);
+  });
+}
 function cfgFill(){
   const g=id=>document.getElementById(id); if(!g("cfgU")) return;
   const c=cfgRec();
-  g("cfgU").value=c?c.usuario:""; g("cfgN").value=c?c.nombre:userName(); g("cfgP").value=c&&c.cp?c.cp:""; g("cfgI").value=c&&c.inicio?c.inicio:"hospitalizados"; homeSegSync(g("cfgI").closest(".hm-seg").parentNode);
+  g("cfgU").value=c?c.usuario:""; g("cfgN").value=c?c.nombre:userName(); g("cfgP").value=c&&c.cp?c.cp:""; g("cfgI").value=c&&c.inicio?c.inicio:"hospitalizados"; homeSegSync(g("cfgI").closest(".hm-seg").parentNode); cfgHFDraw();
 }
-function cfgCommit(){
+function cfgCommit(hf){
   const g=id=>document.getElementById(id); if(!g("cfgU")||!cfgRec()) return;
-  const r=cfgSave({usuario:g("cfgU").value,nombre:g("cfgN").value,cp:g("cfgP").value,inicio:g("cfgI").value});
+  const r=cfgSave({usuario:g("cfgU").value,nombre:g("cfgN").value,cp:g("cfgP").value,inicio:g("cfgI").value,fclin:CFG_HF.clin,fads:CFG_HF.ads});
   cfgFill();
   if(!r.ok){ cfgMsg("⚠ "+r.err,true); return; }
   if(r.same) return;
+  if(hf===true) applyHomeFilters(true);   /* v3.13 · el filtro elegido se ve de inmediato en Pacientes */
   cfgMsg("✓ Guardado. Se sube a Drive en segundo plano."+(r.renamed?" Tus estadísticas anteriores quedan con tu nombre anterior.":""));
   try{ usrDraw(); }catch(_){}
   cfgStatsDraw();
@@ -8400,9 +8503,10 @@ function renderCfg(host){
       <label><span>Cédula profesional</span><input id="cfgP" inputmode="text" autocomplete="off" spellcheck="false" maxlength="16"${dis}></label>
       <label><span>Página de inicio</span>${homeSegHTML("cfgI",c&&c.inicio)}</label>
     </div>
+    <div class="cfg-hf" id="cfgHF"${c&&c.inicio!=="nuevo"?"":" hidden"}></div>
     <div class="usr-state" id="cfgState" role="status" style="margin-top:10px"></div></div>
   <div class="st-card" id="cfgStats"></div>`;
-  cfgFill(); if(!c) host.querySelectorAll(".hm-seg button").forEach(b=>b.disabled=true);
+  cfgHFWire(host); cfgFill(); if(!c) host.querySelectorAll(".hm-seg button").forEach(b=>b.disabled=true);
   ["cfgU","cfgN","cfgP","cfgI"].forEach(id=>{ const e=document.getElementById(id); if(e) e.addEventListener("change",cfgCommit); });
   cfgStatsDraw();
   if(Date.now()-cfgLoadAt>30000){ cfgLoadAt=Date.now(); cfgLoad(); }
@@ -8426,17 +8530,17 @@ function cmClean(h){
     if(!v||!Array.isArray(v.m)) return; const seen=new Set(), m=[];
     v.m.forEach(x=>{ if(!x||typeof x!=="object"||!x.i||seen.has(x.i)) return; const t=String(x.t||"").slice(0,2000); if(!t) return; seen.add(x.i);
       m.push({i:String(x.i).slice(0,40),ts:+x.ts||0,by:String(x.by||"").slice(0,120),r:x.r==="a"?"a":"u",t}); });
-    if(m.length){ m.sort((a,b)=>a.ts-b.ts); out[k]={u:String(v.u||k).slice(0,120),m}; }
+    if(m.length){ m.sort((a,b)=>a.ts-b.ts); const vis=+v.vis||0; out[k]={u:String(v.u||k).slice(0,120),m,...(vis?{vis}:{})}; }   /* v3.13 · vis = hora del último mensaje que un administrador marcó como visto */
   });
   return out;
 }
 function cmMerge(a,b){
   const out={}; new Set([...Object.keys(a||{}),...Object.keys(b||{})]).forEach(k=>{
     const x=(a&&a[k])||{m:[]}, y=(b&&b[k])||{m:[]}, mm=new Map(); x.m.concat(y.m).forEach(z=>mm.set(z.i,z));
-    out[k]={u:x.u||y.u||k,m:[...mm.values()].sort((p,q)=>p.ts-q.ts)};
+    const vis=Math.max(+x.vis||0,+y.vis||0); out[k]={u:x.u||y.u||k,m:[...mm.values()].sort((p,q)=>p.ts-q.ts),...(vis?{vis}:{})};
   }); return out;
 }
-function cmSame(a,b){ const ka=Object.keys(a),kb=Object.keys(b); return ka.length===kb.length&&ka.every(k=>{ if(!b[k]||b[k].m.length!==a[k].m.length) return false; const s=new Set(a[k].m.map(z=>z.i)); return b[k].m.every(z=>s.has(z.i)); }); }
+function cmSame(a,b){ const ka=Object.keys(a),kb=Object.keys(b); return ka.length===kb.length&&ka.every(k=>{ if(!b[k]||b[k].m.length!==a[k].m.length||(+a[k].vis||0)!==(+b[k].vis||0)) return false; const s=new Set(a[k].m.map(z=>z.i)); return b[k].m.every(z=>s.has(z.i)); }); }
 try{ const o=JSON.parse(LS.get(CM_LS)||"null"); if(o&&o.hilos){ CM.hilos=cmClean(o.hilos); CM.dirty=!!o.dirty; } }catch(_){}
 const cmPersist=()=>{ try{ LS.set(CM_LS,JSON.stringify({hilos:CM.hilos,dirty:CM.dirty})); }catch(_){} };
 const cmKey=()=>ukey(userName());
@@ -8444,7 +8548,10 @@ const cmSeenKey=()=>"hjm-cm-seen-"+cmKey();
 const cmLast=h=>h&&h.m.length?h.m[h.m.length-1]:null;
 function cmUnseen(){ const h=CM.hilos[cmKey()]; if(!h) return false; let seen=0; try{ seen=+LS.get(cmSeenKey())||0; }catch(_){} return h.m.some(x=>x.r==="a"&&x.ts>seen); }
 function cmMarkSeen(){ const h=CM.hilos[cmKey()]; if(!h) return; const t=Math.max(0,...h.m.map(x=>x.ts)); try{ LS.set(cmSeenKey(),String(t)); }catch(_){} }
-function cmPendingCount(){ const own=cmKey(); return Object.entries(CM.hilos).filter(([k,h])=>k!==own&&cmLast(h)&&cmLast(h).r==="u").length; }
+/* v3.13 · Un comentario queda «pendiente» (punto rojo en el engrane y en la pestaña) hasta que un administrador lo responde o lo marca como visto; si el usuario escribe de nuevo, vuelve a quedar pendiente */
+const cmPend=h=>{ const l=cmLast(h); return !!l&&l.r==="u"&&l.ts>(+h.vis||0); };
+function cmPendingCount(){ const own=cmKey(); return Object.entries(CM.hilos).filter(([k,h])=>k!==own&&cmPend(h)).length; }
+function cmMarkViewed(key){ const h=CM.hilos[key]; if(!h||!cmPend(h)) return; h.vis=cmLast(h).ts; CM.dirty=true; CM.ver++; cmPersist(); cmRefreshUI(); cmSyncSoon(300); }
 function cmTabDot(){ return isAdmin()&&cmPendingCount()?' <i class="cm-dot cm-dot-inl" title="Hay comentarios sin responder"></i>':""; }
 const cmTime=ts=>{ const d=new Date(ts); return (dayKey(ts)===dayKey(Date.now())?"":d.toLocaleDateString("es-MX",{day:"2-digit",month:"short"})+" ")+d.toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit"}); };
 function cmBubbles(h,view){   /* view «u»: quien escribió el hilo · «a»: administrador */
@@ -8544,14 +8651,14 @@ function cmFabSync(){
 setInterval(()=>{ try{ cmFabSync(); }catch(_){} },1500);
 /* ---- Pestaña «Comentarios» (administradores) ---- */
 function cmThreads(){
-  return Object.entries(CM.hilos).filter(([k,h])=>cmLast(h)).sort((a,b)=>{ const pa=cmLast(a[1]).r==="u"?1:0, pb=cmLast(b[1]).r==="u"?1:0; return pb-pa||cmLast(b[1]).ts-cmLast(a[1]).ts; });
+  return Object.entries(CM.hilos).filter(([k,h])=>cmLast(h)).sort((a,b)=>{ const pa=cmPend(a[1])?1:0, pb=cmPend(b[1])?1:0; return pb-pa||cmLast(b[1]).ts-cmLast(a[1]).ts; });
 }
 function cmAdmDraw(){
   const L=document.getElementById("cmList"); if(!L) return;
   const th=cmThreads(); if(!cmSel||!CM.hilos[cmSel]) cmSel=th.length?th[0][0]:"";
-  L.innerHTML=th.length?th.map(([k,h])=>{ const l=cmLast(h), pd=l.r==="u"; return `<button type="button" class="cm-item${k===cmSel?" on":""}" data-cmk="${esc(k)}"><span class="cm-nm">${pd?'<i class="cm-dot cm-dot-inl" title="Sin responder"></i>':""}<b>${esc(h.u)}</b><small>${esc(cmTime(l.ts))}</small></span><span class="cm-sn">${l.r==="a"?"Tú: ":""}${esc(l.t.slice(0,90))}</span></button>`; }).join(""):'<div class="st-msg">Aún no hay comentarios.</div>';
+  L.innerHTML=th.length?th.map(([k,h])=>{ const l=cmLast(h), pd=cmPend(h); return `<button type="button" class="cm-item${k===cmSel?" on":""}" data-cmk="${esc(k)}"><span class="cm-nm">${pd?'<i class="cm-dot cm-dot-inl" title="Sin responder"></i>':""}<b>${esc(h.u)}</b><small>${esc(cmTime(l.ts))}</small></span><span class="cm-sn">${l.r==="a"?"Tú: ":""}${esc(l.t.slice(0,90))}</span></button>`; }).join(""):'<div class="st-msg">Aún no hay comentarios.</div>';
   const h=CM.hilos[cmSel], H=document.getElementById("cmPaneH"), M=document.getElementById("cmAdmMsgs"), F=document.getElementById("cmAdmForm");
-  F.hidden=!h; H.textContent=h?h.u:"Selecciona un comentario";
+  F.hidden=!h; H.textContent=h?h.u:"Selecciona un comentario"; const VB=document.getElementById("cmSeenBtn"); if(VB) VB.hidden=!(h&&cmPend(h));
   if(h){ const near=M.scrollHeight-M.scrollTop-M.clientHeight<80, first=M.dataset.k!==cmSel; M.dataset.k=cmSel; M.innerHTML=cmBubbles(h,"a"); if(first||near) M.scrollTop=M.scrollHeight; }
   else M.innerHTML="";
   const st=document.getElementById("cmAdmStat"); if(st) st.textContent=cmStatText();
@@ -8559,8 +8666,9 @@ function cmAdmDraw(){
 function renderCmt(host){
   host.innerHTML=`<div class="st-card" id="cmWrap"><h3>Comentarios y sugerencias <small style="font-weight:500;color:#7B7E81">· responde como ${esc(userName())}</small></h3>
     <div class="cm-adm"><div class="cm-list" id="cmList"></div>
-    <div class="cm-pane"><div class="cm-pane-h" id="cmPaneH"></div><div class="cm-msgs cm-msgs-adm" id="cmAdmMsgs"></div><div class="cm-stat" id="cmAdmStat"></div>
+    <div class="cm-pane"><div class="cm-pane-h cm-pane-hh"><span id="cmPaneH"></span><button type="button" class="st-btn st-sm" id="cmSeenBtn" hidden>Marcar como visto</button></div><div class="cm-msgs cm-msgs-adm" id="cmAdmMsgs"></div><div class="cm-stat" id="cmAdmStat"></div>
     <form class="cm-comp" id="cmAdmForm" hidden><textarea id="cmAdmIn" rows="2" maxlength="2000" placeholder="Escribe tu respuesta…" aria-label="Respuesta"></textarea><button type="submit" aria-label="Enviar respuesta"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 3 10.5 13.5M21 3l-6.5 18-4-7.5L3 9.5z"/></svg></button></form></div></div></div>`;
+  document.getElementById("cmSeenBtn").onclick=()=>{ if(cmSel) cmMarkViewed(cmSel); };
   document.getElementById("cmList").onclick=e=>{ const b=e.target.closest("[data-cmk]"); if(!b) return; cmSel=b.dataset.cmk; cmAdmDraw(); };
   const inp=document.getElementById("cmAdmIn");
   document.getElementById("cmAdmForm").onsubmit=e=>{ e.preventDefault(); const h=CM.hilos[cmSel]; if(h&&cmAdd(cmSel,h.u,"a",inp.value)) inp.value=""; };
@@ -9587,15 +9695,24 @@ html body #view-data #formatos #index .grp h3{padding:5px 12px!important;gap:8px
 html body #view-data #formatos #index .grp h3::before{width:22px!important;height:22px!important;border-radius:7px!important;background-size:14px!important}
 /* Hospitalizados: Pendientes */
 html body.pp-browse #pPanel #ppList div.dlg-item{font:inherit;color:inherit;text-align:left;cursor:pointer}
-html body.pp-browse #pPanel #ppList .dlg-item .pp-pend{grid-area:pend;display:flex;flex-direction:column;gap:3px;min-width:0;align-self:center;cursor:text}
-html body.pp-browse #pPanel #ppList .dlg-item .pp-pend i{font:500 11px/1.2 var(--rd-sans);font-style:normal;color:var(--rd-mute);letter-spacing:.01em}
-html body.pp-browse #pPanel #ppList .dlg-item .pp-pend textarea{display:block;width:100%;box-sizing:border-box;min-height:38px;max-height:66px;margin:0;padding:4px 8px;resize:none;overflow-y:auto;border:1px solid var(--rd-line2);border-radius:10px;background:var(--rd-surface);color:var(--rd-ink);font:500 12.5px/1.3 var(--rd-sans);text-transform:none;letter-spacing:0;white-space:pre-wrap;overflow-wrap:anywhere}
-html body.pp-browse #pPanel #ppList .dlg-item .pp-pend textarea:focus{outline:2px solid color-mix(in srgb,var(--rd-ink) 55%,transparent);outline-offset:1px;background:var(--rd-surface)}
+html body.pp-browse #pPanel #ppList .dlg-item .pp-pend{grid-area:pend;display:flex;flex-direction:column;min-width:0;align-self:stretch;cursor:text}
+html body.pp-browse #pPanel #ppList .dlg-item .pp-pl{display:flex;flex-direction:column;flex:1 1 auto;gap:0;box-sizing:border-box;width:100%;min-height:56px;height:auto;margin:0;padding:4px 9px;overflow:visible;border:1px solid var(--rd-line2);border-radius:10px;background:var(--rd-surface);cursor:text}
+html body.pp-browse #pPanel #ppList .dlg-item .pp-pl:focus-within{outline:2px solid color-mix(in srgb,var(--rd-ink) 55%,transparent);outline-offset:1px}
+/* v3.13 · renglón de pendiente: casilla + texto; al marcarla se tacha */
+html body.pp-browse #pPanel #ppList .dlg-item .pp-pi{display:flex;align-items:center;gap:7px;min-height:23px}
+@media (pointer:coarse){html body.pp-browse #pPanel #ppList .dlg-item .pp-pi{min-height:30px;gap:9px}html body.pp-browse #pPanel #ppList .dlg-item .pp-pc{width:19px!important;height:19px!important}html body.pp-browse #pPanel #ppList .dlg-item .pp-pt{height:28px!important;font-size:14px}}
+html body.pp-browse #pPanel #ppList .dlg-item .pp-pc{-webkit-appearance:none;appearance:none;flex:none;display:grid;place-content:center;width:15px!important;height:15px!important;min-width:0!important;min-height:0!important;margin:0;padding:0;box-shadow:none;border:1.5px solid var(--rd-mute);border-radius:4px;background:transparent;cursor:pointer;transition:background .12s,border-color .12s}
+html body.pp-browse #pPanel #ppList .dlg-item .pp-pc:checked{background:var(--rd-ink);border-color:var(--rd-ink)}
+html body.pp-browse #pPanel #ppList .dlg-item .pp-pc:checked::after{content:"";width:8px;height:4px;margin-top:-2px;border:solid var(--rd-surface);border-width:0 0 2px 2px;transform:rotate(-45deg)}
+html body.pp-browse #pPanel #ppList .dlg-item .pp-pc:focus-visible{outline:2px solid var(--rd-ink);outline-offset:2px}
+html body.pp-browse #pPanel #ppList .dlg-item .pp-pt{flex:1 1 auto;min-width:0!important;min-height:0!important;width:100%;height:21px!important;margin:0;padding:2px 0;border:0!important;outline:0;box-shadow:none!important;background:transparent!important;color:var(--rd-ink);font:500 12.5px/1.3 var(--rd-sans);text-transform:none;letter-spacing:0;text-overflow:ellipsis}
+html body.pp-browse #pPanel #ppList .dlg-item .pp-pt::placeholder{color:var(--rd-mute);opacity:.6}
+html body.pp-browse #pPanel #ppList .dlg-item .pp-pi.done .pp-pt{color:var(--rd-mute);text-decoration:line-through}
 @media (min-width:1101px){
-html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed{grid-template-columns:78px minmax(0,1.05fr) minmax(0,1.3fr) 88px minmax(0,1.15fr) minmax(0,1.2fr) 44px!important;grid-template-areas:"bed name dx ing meta pend kebab" "bed exp dx ing meta pend kebab"!important}
+html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed{grid-template-columns:78px minmax(0,.95fr) minmax(0,1.1fr) 88px minmax(0,1fr) minmax(0,2fr) 44px!important;grid-template-areas:"bed name dx ing meta pend kebab" "bed exp dx ing meta pend kebab"!important}
 }
 @media (min-width:801px) and (max-width:1100px){
-html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed{grid-template-columns:56px minmax(0,1fr) minmax(0,1.1fr) 70px minmax(0,1.15fr) minmax(0,1fr) 30px!important;grid-template-areas:"bed name dx ing meta pend kebab" "bed exp dx ing meta pend kebab"!important;column-gap:10px!important}
+html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed{grid-template-columns:56px minmax(0,.9fr) minmax(0,1fr) 66px minmax(0,.95fr) minmax(0,1.7fr) 30px!important;grid-template-areas:"bed name dx ing meta pend kebab" "bed exp dx ing meta pend kebab"!important;column-gap:10px!important}
 }
 @media (min-width:701px) and (max-width:800px){
 html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed{grid-template-columns:52px minmax(0,1fr) minmax(0,1.2fr) 72px minmax(0,.9fr) 34px!important;grid-template-areas:"bed name dx ing meta kebab" "bed exp dx ing meta kebab" "bed pend pend pend pend kebab"!important;column-gap:10px!important;row-gap:4px!important;height:auto!important;padding-bottom:10px!important}
@@ -9607,7 +9724,8 @@ html body.pp-browse #pPanel #ppList.by-cama .dlg-item .pp-ing{display:flex!impor
 html body.pp-browse #pPanel #ppList.by-cama .dlg-item .pm-ads{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.2!important}
 }
 @media (max-width:700px){
-html body.pp-browse #pPanel #ppList .dlg-item .pp-pend{display:none!important}
+html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed{grid-template-areas:"bed name name kebab" "bed exp exp kebab" "bed dx dx dx" "bed meta meta meta" "bed pend pend pend"!important}
+html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed .pp-pend{margin-top:2px}
 }
 /* Títulos de página: misma disposición que «Notas Médicas» (etiqueta chica arriba, título serif, acciones a la derecha, línea debajo; mismo margen lateral) */
 html body #view-format:not(.clinical-format-workspace) .fbar{margin:28px var(--hj-gut,58px) 20px!important;padding:0 0 18px!important;max-width:none!important;background:transparent!important;border-bottom:1px solid var(--rd-line)!important;box-shadow:none!important;align-items:flex-end!important}
