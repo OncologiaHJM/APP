@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oncología · Hospital Juárez de México</title>
-<meta name="application-version" content="3.13">
+<meta name="application-version" content="3.14">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2471,7 +2471,7 @@ body.pp-browse #pPanel.pp-xl .pp-list .cama-badge{flex:none;justify-content:cent
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 3.13 · Fecha de publicación: 25.10.26</div>
+  <div class="app-footer-version">Versión 3.14 · Fecha de publicación: 25.10.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p>Los datos viajan por conexión segura (HTTPS) y se almacenan en la cuenta de Google del Servicio de Oncología del Hospital Juárez de México; protegidos mediante clave de acceso.</p>
     <p id="hjmOffInfo" role="status" hidden></p>
@@ -6094,6 +6094,22 @@ async function ppCensusDatos(f){
 }
 /* Pendientes: caché local inmediata (hjm-pp-pend-v1) + lectura del JSON del paciente */
 const PP_PEND_LSK="hjm-pp-pend-v1"; let PP_PEND_C={}; try{ PP_PEND_C=JSON.parse(LS.get(PP_PEND_LSK)||"{}")||{}; }catch(_){ PP_PEND_C={}; }
+/* v3.13 · Cola de subida de pendientes: cada cambio en la lista de Hospitalizados se sube al JSON de su paciente, uno a uno. Si falla (sin internet, conflicto), queda guardado en este equipo y se reintenta solo hasta que Drive lo confirme. */
+const PP_PQ_KEY="hjm-pp-pq-v1"; let PP_PQ={}; try{ PP_PQ=JSON.parse(LS.get(PP_PQ_KEY)||"{}")||{}; }catch(_){ PP_PQ={}; }
+const PP_PQ_BUSY=new Set(); let PP_PQ_REC=false;
+const ppPqStore=()=>{ try{ LS.set(PP_PQ_KEY,JSON.stringify(PP_PQ)); }catch(_){} };
+function ppPqRun(id){
+  const e=PP_PQ[id]; if(!e||PP_PQ_BUSY.has(id)) return; const f=DRIVE_FILES.find(x=>x&&x.id===id); if(!f) return;
+  PP_PQ_BUSY.add(id); const ts=e.ts;
+  ppApply(f,{pendientes:e.v},{quiet:true,keep:true,save:true,done:err=>{ PP_PQ_BUSY.delete(id); if(err) return; if(PP_PQ[id]&&PP_PQ[id].ts===ts){ delete PP_PQ[id]; ppPqStore(); } else if(PP_PQ[id]) ppPqRun(id); }});
+}
+function ppPqFlush(){
+  try{ if(navigator.onLine===false||!ppOn()||!DRIVE_FILES.length) return; }catch(_){ return; }
+  if(!PP_PQ_REC){ PP_PQ_REC=true;   /* pendientes escritos antes de esta versión que nunca llegaron a Drive: se vuelven a poner en la cola */
+    try{ DRIVE_FILES.forEach(f=>{ if(!f||!f.id||PP_PQ[f.id]) return; const loc=ppPendLocal(f); if(loc===undefined) return; const m=f.meta||{}; if(String(m.pendientes==null?"":m.pendientes)!==loc) PP_PQ[f.id]={v:loc,ts:Date.now()}; }); ppPqStore(); }catch(_){} }
+  const old=Date.now()-14*864e5; Object.keys(PP_PQ).forEach(id=>{ if(PP_PQ[id].ts<old){ delete PP_PQ[id]; } else ppPqRun(id); }); ppPqStore();
+}
+setInterval(ppPqFlush,25000); addEventListener("online",()=>setTimeout(ppPqFlush,800)); setTimeout(ppPqFlush,6000);
 function ppPendCacheSet(id,v){ PP_PEND_C[id]=[String(v),Date.now()]; try{ const ks=Object.keys(PP_PEND_C); if(ks.length>600){ ks.sort((a,b)=>PP_PEND_C[a][1]-PP_PEND_C[b][1]).slice(0,ks.length-600).forEach(k=>delete PP_PEND_C[k]); } LS.set(PP_PEND_LSK,JSON.stringify(PP_PEND_C)); }catch(_){} }
 function ppPendLocal(f){ const e=PP_PEND_C[f.id]; if(!e) return undefined; const mt=Date.parse(f.modified||"")||0; return e[1]>mt?e[0]:undefined; }
 async function ppPool(arr,n,fn){ let i=0; await Promise.all(Array.from({length:Math.min(n,arr.length)},async()=>{ while(i<arr.length){ const k=i++; await fn(arr[k]); } })); }
@@ -6168,7 +6184,7 @@ function ppRowS(f){ return ppRowD(f)||PP_CEN_LAST.get(f.id)||null; }
 function ppRowIng(f){ const m=f.meta||{}; if(m.ingreso!==undefined&&m.ingreso!==null) return String(m.ingreso); const d=ppRowS(f); return d&&d.fIngreso?String(d.fIngreso):""; }
 function ppRowFn(f){ const d=ppRowS(f); return d&&d.fnac?String(d.fnac):""; }
 function ppFnHTML(f){ const v=ppRowFn(f); return `<span class="tag fn" data-fn>${v?"FN. "+esc(v):""}</span>`; }
-function ppRowPend(f){ const loc=ppPendLocal(f); if(loc!==undefined) return loc; const m=f.meta||{}; if(m.pendientes!==undefined&&m.pendientes!==null) return String(m.pendientes); const d=ppRowS(f); return d&&d.pendientes?String(d.pendientes):""; }
+function ppRowPend(f){ if(PP_PQ[f.id]) return PP_PQ[f.id].v; const loc=ppPendLocal(f); if(loc!==undefined) return loc; const m=f.meta||{}; if(m.pendientes!==undefined&&m.pendientes!==null) return String(m.pendientes); const d=ppRowS(f); return d&&d.pendientes?String(d.pendientes):""; }
 /* v3.13 · Pendientes como lista de casillas (como Samsung Notes): cada renglón es una viñeta con casilla; al marcarla se tacha.
    Se guarda en el mismo campo de texto de siempre: «• texto» = pendiente, «✔ texto» = terminado (los guardados antes con «• » siguen igual). */
 const PP_BUL="• ", PP_DONE="✔ ";
@@ -6176,17 +6192,20 @@ function ppPendParse(v){ const out=[]; String(v==null?"":v).split(/\r?\n/).forEa
 function ppPendSer(rows){ return rows.filter(r=>String(r.t).trim()).map(r=>(r.d?PP_DONE:PP_BUL)+String(r.t).trim().replace(/\s+/g," ")).join("\n"); }
 const ppPendNorm=v=>ppPendSer(ppPendParse(v));
 function ppPendPrint(v){ return ppPendParse(v).filter(r=>!r.d).map(r=>PP_BUL+r.t).join("\n"); }   /* el censo impreso solo lleva los pendientes sin terminar */
-function ppPendRow(d,t,ph){ return `<div class="pp-pi${d?" done":""}"><input type="checkbox" class="pp-pc"${d?" checked":""} aria-label="Marcar como terminado"><input type="text" class="pp-pt" maxlength="120" spellcheck="false" autocomplete="off" enterkeyhint="next"${ph?` placeholder="${ph}"`:""} value="${esc(t)}" aria-label="Pendiente"></div>`; }   /* «Pendientes» es solo texto fantasma (placeholder) de la primera casilla: no se edita ni se guarda */
+function ppPendRow(d,t,ph){ return `<div class="pp-pi${d?" done":""}${String(t).trim()?"":" ghost"}"><input type="checkbox" class="pp-pc"${d?" checked":""} aria-label="Marcar como terminado"><textarea class="pp-pt" rows="1" maxlength="120" spellcheck="false" autocomplete="off" enterkeyhint="next"${ph?` placeholder="${ph}"`:""} aria-label="Pendiente">${esc(t)}</textarea><button type="button" class="pp-px" tabindex="-1" aria-label="Borrar este pendiente" title="Borrar este pendiente"${String(t).trim()?"":" hidden"}>×</button></div>`; }   /* renglón multilínea: se ajusta a su texto; × borra el renglón; sin texto, la casilla es fantasma */
+function ppPendFit(t){ try{ if(!t.offsetParent) return; t.style.height="auto"; if(t.scrollHeight) t.style.height=t.scrollHeight+"px"; }catch(_){} }
+function ppPendFitAll(root){ try{ root.querySelectorAll(".pp-pt").forEach(ppPendFit); }catch(_){} }
 function ppPendBuild(rows){ rows=rows.slice(); if(!rows.length||String(rows[rows.length-1].t).trim()) rows.push({d:false,t:""}); return rows.map((r,i)=>ppPendRow(r.d,r.t,i===0?"Pendientes":"")).join(""); }
 function ppPendRead(c){ return [...c.querySelectorAll(".pp-pi")].map(r=>({d:r.querySelector(".pp-pc").checked,t:r.querySelector(".pp-pt").value})); }
 function ppPendHTML(f){ return `<div class="pp-pend" data-pendbox><div class="pp-pl" data-pend="${f.id}" role="group" aria-label="Pendientes">${ppPendBuild(ppPendParse(ppRowPend(f)))}</div></div>`; }
-function ppPendSave(c){ clearTimeout(c._pt); const f=DRIVE_FILES.find(x=>x&&x.id===c.dataset.pend); if(!f) return; const v=ppPendSer(ppPendRead(c)).slice(0,400); if(v===ppPendNorm(ppRowPend(f))) return; ppPendCacheSet(f.id,v); ppApply(f,{pendientes:v},{quiet:true}); }
-function ppPendTidy(c){ c.innerHTML=ppPendBuild(ppPendRead(c).filter(r=>String(r.t).trim())); }
+function ppPendSave(c){ clearTimeout(c._pt); const f=DRIVE_FILES.find(x=>x&&x.id===c.dataset.pend); if(!f) return; const v=ppPendSer(ppPendRead(c)).slice(0,400); if(v===ppPendNorm(ppRowPend(f))) return; ppPendCacheSet(f.id,v); PP_PQ[f.id]={v,ts:Date.now()}; ppPqStore(); ppPqRun(f.id); }
+function ppPendSet(c,rows){ c.innerHTML=ppPendBuild(rows); ppPendFitAll(c); }
+function ppPendTidy(c){ ppPendSet(c,ppPendRead(c).filter(r=>String(r.t).trim())); }
 function ppIngHTML(f){ const v=ppRowIng(f); return `<span class="pp-ing" data-ing><i>Ingreso</i><b>${v?esc(v):"—"}</b></span>`; }
 function ppRowPaint(f){ const el=document.querySelector('#ppList [data-id="'+f.id+'"]'); if(!el) return;
   const a=el.querySelector("[data-fn]"); if(a) a.textContent=ppRowFn(f)?"FN. "+ppRowFn(f):"";
   const b=el.querySelector("[data-ing] b"); if(b) b.textContent=ppRowIng(f)||"—";
-  const pc=el.querySelector("[data-pend]"); if(pc&&!pc.contains(document.activeElement)){ const w=ppPendNorm(ppRowPend(f)); if(ppPendSer(ppPendRead(pc))!==w) pc.innerHTML=ppPendBuild(ppPendParse(w)); } }
+  const pc=el.querySelector("[data-pend]"); if(pc&&!pc.contains(document.activeElement)){ const w=ppPendNorm(ppRowPend(f)); if(ppPendSer(ppPendRead(pc))!==w) ppPendSet(pc,ppPendParse(w)); } }
 async function ppRowFill(on,list){ if(!on||!list||!list.length) return; const now=Date.now();
   const need=list.filter(f=>f&&f.id&&!ppRowD(f)&&!PP_ROW_BUSY.has(f.id)&&!(PP_ROW_BAD.get(f.id)>now));
   need.forEach(f=>{ ppRowPaint(f); });
@@ -6227,8 +6246,9 @@ function renderPP(){
     :filtOn?'<div class="dlg-empty">Ningún paciente con ese filtro en esta vista. Puedes borrar el filtro o cambiar a «Todos». Los pacientes se asocian al adscrito la próxima vez que se guardan.</div>':camaMode?'<div class="dlg-empty">Sin pacientes hospitalizados modificados en las últimas 36 horas. Usa «Todos» o el buscador.</div>':`<button type="button" class="dlg-item pp-new" data-pp-new><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H5v18h14V8l-5-5zM14 3v5h5M8 14h8M12 10v8"/></svg><b>Nuevo Paciente</b></button>`;
   try{ ppCensusSync(!!camaMode); }catch(_){}
   try{ ppRowFill(!!camaMode,items.slice(0,ppShown)); }catch(_){}
+  try{ ppPendFitAll($("ppList")); }catch(_){}
   ppMarkCurrent();
-  if(_keep){ try{ const c=document.querySelector('#ppList [data-pend="'+_keep.id+'"]'); if(c){ c.innerHTML=ppPendBuild(_keep.rows); const t=c.children[_keep.i]&&c.children[_keep.i].querySelector(".pp-pt"); if(t){ t.focus({preventScroll:true}); t.setSelectionRange(_keep.s,_keep.e); } } }catch(_){} }
+  if(_keep){ try{ const c=document.querySelector('#ppList [data-pend="'+_keep.id+'"]'); if(c){ ppPendSet(c,_keep.rows); const t=c.children[_keep.i]&&c.children[_keep.i].querySelector(".pp-pt"); if(t){ t.focus({preventScroll:true}); t.setSelectionRange(_keep.s,_keep.e); } } }catch(_){} }
 }
 
 /* ---------- v2.174 · Menú de tres puntos en cada paciente: Cambiar cama · Dar de alta ---------- */
@@ -6263,7 +6283,7 @@ function ppOverlay(){ PPQ.over.forEach((o,id)=>{ const f=DRIVE_FILES.find(x=>x&&
 function adsNormalize(v){ const t=String(v||""), sl=t.indexOf("/"), first=(sl<0?t:t.slice(0,sl)).trim(), extras=sl<0?[]:t.slice(sl).split("/").map(x=>x.trim()).filter(Boolean); const a=first?adsComplete(first):null; const nm=a?a.nombre:first; return nm+(extras.length?"/"+extras.join("/"):""); }
 function ppApply(f,changes,opt){ const quiet=!!(opt&&opt.quiet);
   const exp=ppExp(f);
-  if(hasSelectedPatient()&&exp&&String($("expediente").value||"").trim()===exp){ Object.entries(changes).forEach(([k,v])=>{ const c=$(k); if(c){ c.value=v; c.dispatchEvent(new Event("input",{bubbles:true})); c.dispatchEvent(new Event("change",{bubbles:true})); } }); if(!quiet) toast("Actualizado en el paciente abierto"); return; }
+  if(hasSelectedPatient()&&exp&&String($("expediente").value||"").trim()===exp){ Object.entries(changes).forEach(([k,v])=>{ const c=$(k); if(c){ c.value=v; c.dispatchEvent(new Event("input",{bubbles:true})); c.dispatchEvent(new Event("change",{bubbles:true})); } }); if(!quiet) toast("Actualizado en el paciente abierto"); if(opt&&opt.save){ try{ driveSaveNow({silent:true}); }catch(_){} } if(opt&&opt.done) try{ opt.done(null); }catch(_){} return; }
   const id=f.id, metaNew={}, metaOld={}; Object.entries(changes).forEach(([k,v])=>{ const mk=PP_META_KEY[k]; metaOld[mk]=f.meta?f.meta[mk]:undefined; metaNew[mk]=String(v).slice(0,k==="cama"?20:k==="diagnostico"?300:k==="pendientes"?400:80); });
   const o=PPQ.over.get(id)||{meta:{},n:0}; o.meta=Object.assign({},o.meta,metaNew); o.n++; PPQ.over.set(id,o);
   f.meta=Object.assign({},f.meta,metaNew); if(!quiet) renderPP();
@@ -6272,17 +6292,22 @@ function ppApply(f,changes,opt){ const quiet=!!(opt&&opt.quiet);
     let err=null;
     try{
       const cur=DRIVE_FILES.find(x=>x&&x.id===id)||f;
-      const r=await gcall("hjmReadFull",id), mod=(r&&r.modified)||""; let d=null; try{ d=JSON.parse(r&&r.content); }catch(_){}
-      if(!d||d.app!=="solicitudes-hjm"||!d.datos) throw new Error("Archivo no reconocido");
-      Object.entries(changes).forEach(([k,v])=>{ d.datos[k]=v; });
-      const meta=Object.assign({},cur.meta,metaNew);
-      const res=await gcall("hjmSave",FOLDER.id,cur.name,JSON.stringify(d),JSON.stringify(meta),JSON.stringify({forzar:true,base:mod}));
+      const meta=Object.assign({},cur.meta,metaNew); let res=null;
+      for(let i=0;i<4;i++){   /* si alguien guardó entre la lectura y la subida, se vuelve a leer y aplicar */
+        const r=await gcall("hjmReadFull",id), mod=(r&&r.modified)||""; let d=null; try{ d=JSON.parse(r&&r.content); }catch(_){}
+        if(!d||d.app!=="solicitudes-hjm"||!d.datos) throw new Error("Archivo no reconocido");
+        Object.entries(changes).forEach(([k,v])=>{ d.datos[k]=v; });
+        res=await gcall("hjmSave",FOLDER.id,cur.name,JSON.stringify(d),JSON.stringify(meta),JSON.stringify({forzar:true,base:mod}));
+        if(!(res&&res.conflicto)) break; await new Promise(z=>setTimeout(z,400*(i+1)));
+      }
       if(res&&res.conflicto) throw new Error("Lo editaron mientras tanto");
       o.n--; if(o.n<=0) PPQ.over.delete(id);
       if(res&&res.id&&res.modified) upsertDriveFile(Object.assign({},res,{meta:Object.assign({},res.meta,metaNew)})); else { const g=DRIVE_FILES.find(x=>x&&x.id===id); if(g) g.meta=meta; }
-    }catch(e){ err=e; o.n--; Object.keys(metaOld).forEach(k=>{ if(o.meta[k]===metaNew[k]){ if(metaOld[k]===undefined) delete o.meta[k]; else o.meta[k]=metaOld[k]; } }); const g=DRIVE_FILES.find(x=>x&&x.id===id); if(g) g.meta=Object.assign({},g.meta,metaOld); if(o.n<=0) PPQ.over.delete(id); }
+    }catch(e){ err=e; o.n--; if(!(opt&&opt.keep)){ Object.keys(metaOld).forEach(k=>{ if(o.meta[k]===metaNew[k]){ if(metaOld[k]===undefined) delete o.meta[k]; else o.meta[k]=metaOld[k]; } }); const g=DRIVE_FILES.find(x=>x&&x.id===id); if(g) g.meta=Object.assign({},g.meta,metaOld); if(o.n<=0) PPQ.over.delete(id); } }
     PPQ_N--; PPQ_DONE_AT=Date.now(); renderSync(); setTimeout(renderSync,4200); try{ if(!quiet||err) renderPP(); }catch(_){}
-    if(err) notify("No se pudo guardar el cambio de "+(f.meta&&f.meta.nombre||"un paciente")+": "+friendly(err)+". Se restauró el valor anterior.","warn");
+    if(opt&&opt.done) try{ opt.done(err); }catch(_){}
+    if(err&&opt&&opt.keep){ if(Date.now()-(window.__pqWarn||0)>60000){ window.__pqWarn=Date.now(); notify("No se pudieron subir algunos pendientes a Drive. Quedan guardados en este equipo y se reintentan solos.","warn"); } }
+    else if(err) notify("No se pudo guardar el cambio de "+(f.meta&&f.meta.nombre||"un paciente")+": "+friendly(err)+". Se restauró el valor anterior.","warn");
   });
 }
 const camaOk=v=>v===""||camaValida(v)||/^CE$/i.test(v);
@@ -6321,18 +6346,21 @@ const ppScroll=d=>{ const l=$("ppList"); l.scrollBy({left:d*Math.max(200,l.clien
 $("ppPrev").onclick=()=>ppScroll(-1); $("ppNext").onclick=()=>ppScroll(1);
 const ppPCont=t=>t&&t.closest?t.closest("[data-pend]"):null, ppIsPT=t=>!!(t&&t.classList&&t.classList.contains("pp-pt"));
 $("ppList").addEventListener("input",e=>{ const t=e.target; if(!ppIsPT(t)) return; const c=ppPCont(t); if(!c) return;
-  const last=c.lastElementChild; if(last&&last.contains(t)&&t.value.trim()) last.insertAdjacentHTML("afterend",ppPendRow(false,""));   /* siempre queda un renglón vacío al final para seguir agregando */
+  const row0=t.closest(".pp-pi"), has=!!t.value.trim(); if(row0){ row0.classList.toggle("ghost",!has); const xb=row0.querySelector(".pp-px"); if(xb) xb.hidden=!has; } ppPendFit(t);
+  const last=c.lastElementChild; if(last&&last.contains(t)&&has) last.insertAdjacentHTML("afterend",ppPendRow(false,""));   /* siempre queda un renglón vacío al final para seguir agregando */
   clearTimeout(c._pt); c._pt=setTimeout(()=>ppPendSave(c),900); });
 $("ppList").addEventListener("change",e=>{ const t=e.target; if(!(t&&t.classList&&t.classList.contains("pp-pc"))) return; const c=ppPCont(t); if(!c) return; t.closest(".pp-pi").classList.toggle("done",t.checked); ppPendSave(c); });
 $("ppList").addEventListener("keydown",e=>{ const t=e.target; if(!ppIsPT(t)||e.isComposing) return; const row=t.closest(".pp-pi"), c=ppPCont(t); if(!row||!c) return;
   const foc=r=>{ const x=r&&r.querySelector(".pp-pt"); if(x){ x.focus(); const n=x.value.length; try{ x.setSelectionRange(n,n); }catch(_){} } };
   if(e.key==="Enter"){ e.preventDefault(); if(!t.value.trim()) return; let nx=row.nextElementSibling; if(!nx||nx.querySelector(".pp-pt").value.trim()){ row.insertAdjacentHTML("afterend",ppPendRow(false,"")); nx=row.nextElementSibling; } foc(nx); }
   else if(e.key==="Backspace"&&!t.value){ const pv=row.previousElementSibling; if(!pv) return; e.preventDefault(); foc(pv); row.remove(); clearTimeout(c._pt); c._pt=setTimeout(()=>ppPendSave(c),900); }
-  else if(e.key==="ArrowUp"&&row.previousElementSibling){ e.preventDefault(); foc(row.previousElementSibling); }
-  else if(e.key==="ArrowDown"&&row.nextElementSibling){ e.preventDefault(); foc(row.nextElementSibling); } });
+  else if(e.key==="ArrowUp"&&row.previousElementSibling&&t.selectionStart===0&&t.selectionEnd===0){ e.preventDefault(); foc(row.previousElementSibling); }
+  else if(e.key==="ArrowDown"&&row.nextElementSibling&&t.selectionStart===t.value.length){ e.preventDefault(); foc(row.nextElementSibling); } });
+$("ppList").addEventListener("mousedown",e=>{ if(e.target.closest&&e.target.closest(".pp-px")) e.preventDefault(); });   /* la tacha no abre el teclado */
+$("ppList").addEventListener("click",e=>{ const x=e.target.closest&&e.target.closest(".pp-px"); if(!x) return; const row=x.closest(".pp-pi"), c=ppPCont(row); if(!c) return; row.remove(); ppPendSet(c,ppPendRead(c).filter(r=>String(r.t).trim())); ppPendSave(c); });
 $("ppList").addEventListener("paste",e=>{ const t=e.target; if(!ppIsPT(t)) return; const tx=(e.clipboardData&&e.clipboardData.getData("text"))||""; if(!/\r?\n/.test(tx)) return; const c=ppPCont(t), row=t.closest(".pp-pi"); if(!c||!row) return; e.preventDefault();
   const parts=tx.split(/\r?\n/).map(x=>x.replace(/^\s*[•✔✓☑☐▪◦\-*]+\s*/,"").trim()).filter(Boolean); if(!parts.length) return;
-  t.value=(t.value+" "+parts[0]).trim(); let at=row; parts.slice(1).forEach(x=>{ at.insertAdjacentHTML("afterend",ppPendRow(false,x)); at=at.nextElementSibling; });
+  t.value=(t.value+" "+parts[0]).trim(); let at=row; parts.slice(1).forEach(x=>{ at.insertAdjacentHTML("afterend",ppPendRow(false,x)); at=at.nextElementSibling; }); ppPendFitAll(c);
   if(c.lastElementChild.querySelector(".pp-pt").value.trim()) c.insertAdjacentHTML("beforeend",ppPendRow(false,"")); clearTimeout(c._pt); c._pt=setTimeout(()=>ppPendSave(c),400); });
 $("ppList").addEventListener("focusout",e=>{ const c=ppPCont(e.target); if(c&&!c.contains(e.relatedTarget)){ ppPendSave(c); ppPendTidy(c); } });
 /* v3.13 · Android: al cerrar el teclado con el gesto «atrás» el cursor se queda en el campo y, al redibujarse la lista (guardado o cambio de tamaño), se le devolvía el foco y el teclado reaparecía.
@@ -6361,6 +6389,7 @@ form.addEventListener("input",()=>{ if(ppOn()) ppMarkCurrent(); });
    la lista completa solo se vuelve a pedir si alguien guardó o si tiene más de 5 min */
 async function checkListChanges(force){
   if(!ppOn()||PP_LOADING||document.hidden) return;
+  try{ const ae=document.activeElement; if(ae&&ae.matches&&ae.matches(".pp-pt")&&ae.value!==ae.defaultValue&&force) return; }catch(_){}   /* no refrescar mientras se escribe un pendiente */
   if(!force&&Date.now()-PP_LAST<45000) return;
   try{
     if(SRV_OLD) throw {code:"accion"};
@@ -6370,7 +6399,9 @@ async function checkListChanges(force){
   }catch(e){ if(isOldServer(e)&&Date.now()-PP_LAST>45000){ PP_LAST=0; loadPatients(); } }
 }
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) checkListChanges(); });
-setInterval(()=>checkListChanges(true),120000);
+/* v3.14 · Actualización automática: cada 15 s se pregunta (hjmStamp, ligero) si alguien guardó; si es así la lista se recarga sola y el cambio aparece de inmediato */
+setInterval(()=>checkListChanges(true),15000);
+addEventListener("focus",()=>checkListChanges());
 
 /* ---------- Recientes: recetas, interconsultas y estudios de rayos X (se guardan al Guardar/Imprimir y se pueden volver a cargar) ---------- */
 const recNorm=s=>String(s).replace(/\s+/g," ").trim().toUpperCase();
@@ -9731,25 +9762,41 @@ html body.pp-browse #pPanel #ppList .dlg-item .pp-pl{display:flex;flex-direction
 html body.pp-browse #pPanel #ppList .dlg-item .pp-pl:focus-within{outline:2px solid color-mix(in srgb,var(--rd-ink) 55%,transparent);outline-offset:1px}
 /* v3.13 · renglón de pendiente: casilla + texto; al marcarla se tacha */
 html body.pp-browse #pPanel #ppList .dlg-item .pp-pi{display:flex;align-items:center;gap:7px;min-height:23px}
-@media (pointer:coarse){html body.pp-browse #pPanel #ppList .dlg-item .pp-pi{min-height:30px;gap:9px}html body.pp-browse #pPanel #ppList .dlg-item .pp-pc{width:19px!important;height:19px!important}html body.pp-browse #pPanel #ppList .dlg-item .pp-pt{height:28px!important;font-size:14px}}
+@media (pointer:coarse){html body.pp-browse #pPanel #ppList .dlg-item .pp-pi{min-height:30px;gap:9px}html body.pp-browse #pPanel #ppList .dlg-item .pp-pc{width:19px!important;height:19px!important;margin-top:5px}html body.pp-browse #pPanel #ppList .dlg-item .pp-pt{min-height:28px!important;font-size:14px}html body.pp-browse #pPanel #ppList .dlg-item .pp-px{width:26px;height:26px;font-size:19px}}
 html body.pp-browse #pPanel #ppList .dlg-item .pp-pc{-webkit-appearance:none;appearance:none;flex:none;display:grid;place-content:center;width:15px!important;height:15px!important;min-width:0!important;min-height:0!important;margin:0;padding:0;box-shadow:none;border:1.5px solid var(--rd-mute);border-radius:4px;background:transparent;cursor:pointer;transition:background .12s,border-color .12s}
 html body.pp-browse #pPanel #ppList .dlg-item .pp-pc:checked{background:var(--rd-ink);border-color:var(--rd-ink)}
 html body.pp-browse #pPanel #ppList .dlg-item .pp-pc:checked::after{content:"";width:8px;height:4px;margin-top:-2px;border:solid var(--rd-surface);border-width:0 0 2px 2px;transform:rotate(-45deg)}
 html body.pp-browse #pPanel #ppList .dlg-item .pp-pc:focus-visible{outline:2px solid var(--rd-ink);outline-offset:2px}
-html body.pp-browse #pPanel #ppList .dlg-item .pp-pt{flex:1 1 auto;min-width:0!important;min-height:0!important;width:100%;height:21px!important;margin:0;padding:2px 0;border:0!important;outline:0;box-shadow:none!important;background:transparent!important;color:var(--rd-ink);font:500 12.5px/1.3 var(--rd-sans);text-transform:none;letter-spacing:0;text-overflow:ellipsis}
+html body.pp-browse #pPanel #ppList .dlg-item .pp-pt{flex:1 1 auto;display:block;box-sizing:border-box;min-width:0!important;min-height:21px!important;width:100%;margin:0;padding:2px 0;border:0!important;outline:0;box-shadow:none!important;background:transparent!important;color:var(--rd-ink);font:500 12.5px/1.35 var(--rd-sans);text-transform:none;letter-spacing:0;resize:none;overflow:hidden;white-space:pre-wrap;overflow-wrap:anywhere;field-sizing:content}
+html body.pp-browse #pPanel #ppList .dlg-item .pp-pi{align-items:flex-start}
+html body.pp-browse #pPanel #ppList .dlg-item .pp-pc{margin-top:4px}
+html body.pp-browse #pPanel #ppList .dlg-item .pp-px{flex:none;display:grid;place-content:center;width:18px;height:18px;min-width:0!important;min-height:0!important;margin:2px 0 0;padding:0;border:0;border-radius:50%;background:transparent;color:#D93025;font:700 16px/1 var(--rd-sans);opacity:.7;cursor:pointer}
+html body.pp-browse #pPanel #ppList .dlg-item .pp-px:hover{opacity:1;background:rgba(217,48,37,.12)}
+html body.pp-browse #pPanel #ppList .dlg-item .pp-px[hidden]{display:none}
+/* casilla fantasma del renglón vacío: se oscurece al usarla */
+html body.pp-browse #pPanel #ppList .dlg-item .pp-pi.ghost .pp-pc{opacity:.32}
+html body.pp-browse #pPanel #ppList .dlg-item .pp-pi.ghost:focus-within .pp-pc,html body.pp-browse #pPanel #ppList .dlg-item .pp-pi.ghost .pp-pc:checked{opacity:1}
 html body.pp-browse #pPanel #ppList .dlg-item .pp-pt::placeholder{color:var(--rd-mute);opacity:.6}
 html body.pp-browse #pPanel #ppList .dlg-item .pp-pi.done .pp-pt{color:var(--rd-mute);text-decoration:line-through}
 @media (min-width:1101px){
-html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed{grid-template-columns:78px minmax(0,1.35fr) minmax(0,2.1fr) 84px minmax(0,.8fr) minmax(0,1.7fr) 40px!important;grid-template-areas:"bed name dx ing meta pend kebab" "bed exp dx ing meta pend kebab"!important}
+html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed{grid-template-columns:78px minmax(0,1.25fr) minmax(0,2fr) minmax(0,.75fr) minmax(0,2.5fr) 40px!important;grid-template-areas:"bed name dx meta pend kebab" "bed exp dx meta pend kebab" "bed ing dx meta pend kebab"!important}
 }
 @media (min-width:801px) and (max-width:1100px){
-html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed{grid-template-columns:56px minmax(0,.95fr) minmax(0,1.3fr) 78px minmax(0,.9fr) minmax(0,1.5fr) 30px!important;grid-template-areas:"bed name dx ing meta pend kebab" "bed exp dx ing meta pend kebab"!important;column-gap:10px!important}
+html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed{grid-template-columns:56px minmax(0,1fr) minmax(0,1.4fr) minmax(0,.8fr) minmax(0,1.6fr) 30px!important;grid-template-areas:"bed name dx meta pend kebab" "bed exp dx meta pend kebab" "bed ing dx meta pend kebab"!important;column-gap:10px!important}
 }
 @media (min-width:701px) and (max-width:800px){
 html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed{grid-template-columns:52px minmax(0,1fr) minmax(0,1.2fr) 72px minmax(0,.9fr) 34px!important;grid-template-areas:"bed name dx ing meta kebab" "bed exp dx ing meta kebab" "bed pend pend pend pend kebab"!important;column-gap:10px!important;row-gap:4px!important;height:auto!important;padding-bottom:10px!important}
 }
 @media (min-width:701px){
 html body.pp-browse #pPanel #ppList.by-cama .dlg-item .pp-ing{display:flex!important;grid-area:ing}
+}
+@media (min-width:801px){
+html body.pp-browse #pPanel.pp-xl #ppList.by-cama .dlg-item .pp-ing{flex-direction:row!important;align-items:baseline!important;gap:6px!important;align-self:start}
+}
+/* v3.13 · Hospitalizados: la página aprovecha todo el ancho de la pantalla */
+@media (min-width:761px){
+html body.pp-browse #view-data .wrap{max-width:none!important;padding-left:clamp(16px,1.6vw,28px)!important;padding-right:clamp(16px,1.6vw,28px)!important}
+html body.pp-browse #view-data #pPanel{margin-left:0!important;margin-right:0!important}
 }
 @media (min-width:701px) and (max-width:1100px){
 html body.pp-browse #pPanel #ppList.by-cama .dlg-item .pm-ads{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.2!important}
