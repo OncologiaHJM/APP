@@ -2316,7 +2316,7 @@ body.pp-browse #pPanel.pp-xl .pp-list .cama-badge{flex:none;justify-content:cent
   </div>
   <span class="sync-st" id="syncSt" role="status" hidden></span>
   <button class="band-btn" id="bandIdx" type="button" title="Formatos Oficiales" aria-label="Formatos Oficiales"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>Formatos Oficiales</button>
-  <button class="band-btn" id="bandBack" type="button" title="Pacientes"><span class="bb-home"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-6h4v6"/></svg>Inicio</span><span class="bb-pac"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c.5-3 2.7-4.5 5.5-4.5s5 1.5 5.5 4.5M16 5.5a3 3 0 0 1 0 5.5M18 14.8c1.7.6 2.7 2 3 4.2"/></svg>Pacientes</span></button><button class="band-btn" id="bandNew" type="button" title="Nuevo Paciente"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H5v18h14V8l-5-5zM14 3v5h5M8 14h8M12 10v8"/></svg>Nuevo Paciente</button>
+  <button class="band-btn" id="bandBack" type="button" title="Pacientes"><span class="bb-home"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-6h4v6"/></svg>Inicio</span><span class="bb-pac"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c.5-3 2.7-4.5 5.5-4.5s5 1.5 5.5 4.5M16 5.5a3 3 0 0 1 0 5.5M18 14.8c1.7.6 2.7 2 3 4.2"/></svg>Pacientes</span></button><button class="band-btn" id="bandPac" type="button" title="Pacientes" aria-label="Pacientes"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c.5-3 2.7-4.5 5.5-4.5s5 1.5 5.5 4.5M16 5.5a3 3 0 0 1 0 5.5M18 14.8c1.7.6 2.7 2 3 4.2"/></svg>Pacientes</button><button class="band-btn" id="bandNew" type="button" title="Nuevo Paciente"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H5v18h14V8l-5-5zM14 3v5h5M8 14h8M12 10v8"/></svg>Nuevo Paciente</button>
   <button class="band-btn band-gear" id="bandPanel" type="button" title="Configuración" aria-label="Abrir Configuración"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button><button class="band-btn band-exit" id="bandExit" type="button" title="Cambiar de usuario" aria-label="Salir y cambiar de usuario"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"/><path d="M15 8l4 4-4 4"/><path d="M19 12H8"/></svg><span>Salir</span></button>
 </div>
 
@@ -2374,17 +2374,17 @@ body.pp-browse #pPanel.pp-xl .pp-list .cama-badge{flex:none;justify-content:cent
           <div class="f s3"><label for="residente">Residente</label><input id="residente"></div>
           <div class="f s4"><label>Nombre completo</label><div class="auto empty" data-out="nombreCompleto">Se arma con apellidos y nombre</div></div>
           <div class="f servicio-field"><label for="servicio" class="lbl-row"><span>Servicio</span><button type="button" class="hoy" id="btnOnco" title="Poner Oncología">Oncologia</button></label><input id="servicio" class="up"></div>
-          <details class="cen-det" id="cenDet"><summary>CENSO</summary><div class="grid">
+          <div class="cen-det cen-block" id="cenDet"><div class="cen-bh">CENSO</div><div class="grid">
             <div class="f s2"><label for="cenIngProxy">Fecha de ingreso <small>(la misma de HC / Ingreso)</small></label><input id="cenIngProxy" data-nopersist data-date inputmode="numeric" placeholder="DD.MM.AA"></div>
             <div class="f s1"><label>Días de estancia</label><div class="auto empty" id="cenEhOut">—</div></div>
-            <div class="f s3"><label for="censoEstatus">Estatus</label><input id="censoEstatus" class="up"></div>
+            <div class="f s3"><label for="censoEstatus">Estatus</label><input id="censoEstatus" class="up" hidden><div class="estsel" id="censoEstChips" data-estchips></div></div>
             <div class="f s6"><label for="censoCirugias">Cirugías / BJ</label><textarea id="censoCirugias" class="up" rows="3"></textarea></div>
             <div class="f s3"><label for="censoQT">QT / RT</label><textarea id="censoQT" class="up" rows="2"></textarea></div>
             <div class="f s3"><label for="censoMT">MT</label><textarea id="censoMT" class="up" rows="2"></textarea></div>
             <div class="f s6"><label for="censoLabs">Labs</label><textarea id="censoLabs" class="up" rows="3"></textarea></div>
             <div class="f s6"><label>Pendientes</label><div class="pp-pl cen-pl" id="censoPend" data-cenpend role="group" aria-label="Pendientes"></div></div>
             <input type="hidden" id="altaEn"><input type="hidden" id="defEn"><input type="hidden" id="camaPrevia"><input type="hidden" id="modPor"><input type="hidden" id="modEn">
-          </div></details>
+          </div></div>
         </div>
       </fieldset>
       <fieldset>
@@ -2846,6 +2846,33 @@ html body.pp-browse #pPanel.cen-on .pp-head .pp-actions>.pp-census{margin-top:28
 .cen-pl .pp-pi.ghost:focus-within .pp-pc,.cen-pl .pp-pi.ghost .pp-pc:checked{opacity:1}
 .cen-pl .pp-pt::placeholder{color:var(--rd-mute,#797C7E);opacity:.6}
 .cen-pl .pp-pi.done .pp-pt{color:var(--rd-mute,#797C7E);text-decoration:line-through}
+
+/* Pestaña Censo */
+#datos > fieldset:not(.cen-mode) .cen-block{display:none}
+#datos fieldset.cen-mode .cen-block,.cen-add fieldset.cen-mode .cen-block{display:block;order:50}
+fieldset.cen-mode .f:has([data-out=nombreCompleto]){order:98}
+fieldset.cen-mode .f:has(#servicio){order:99}
+.cen-det>.cen-bh{font-weight:700;padding:10px 0;color:var(--cen-acc);letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid color-mix(in srgb,var(--cen-acc) 35%,transparent);margin-bottom:8px}
+#secNav .sn[data-sec=c]{--sn-acc:#6B6FA8}
+
+/* Notas / Indicaciones junto a pendientes */
+html body.pp-browse #pPanel #ppList .dlg-item .pp-pend{flex-direction:row!important;gap:8px;align-items:stretch}
+html body.pp-browse #pPanel #ppList .dlg-item .pp-pend>.pp-pl{flex:1 1 auto;min-width:0}
+.pp-qa{flex:none;display:flex;flex-direction:column;gap:6px;justify-content:center}
+.pp-qa button{display:grid;place-content:center;width:30px;height:30px;padding:0;border:1px solid var(--rd-line2,#C9CBCD);border-radius:9px;background:var(--rd-tint,#EDF1F4);color:var(--rd-ink,#1C1E21);cursor:pointer}
+.pp-qa button:hover{background:color-mix(in srgb,#1F6FB5 18%,transparent);color:#1F6FB5;border-color:#1F6FB5}
+.pp-qa svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+
+/* Estatus multiselector */
+.estsel{display:flex;flex-wrap:wrap;gap:6px}
+.estchip{height:30px;padding:0 12px;border:1px solid var(--rd-line2,#C9CBCD);border-radius:999px;background:transparent;color:inherit;font:600 12px/1 var(--rd-sans,system-ui);cursor:pointer;white-space:nowrap}
+.estchip:hover{background:color-mix(in srgb,#6B6FA8 12%,transparent)}
+.estchip[aria-checked=true]{background:#6B6FA8;border-color:#6B6FA8;color:#fff}
+
+/* Botón Pacientes junto a Inicio */
+#bandPac{display:none}
+body.showing-format:not(.pp-browse) #bandPac,body.showing-clinical:not(.pp-browse) #bandPac,body.showing-archive:not(.pp-browse) #bandPac{display:inline-flex;align-items:center;gap:6px}
+@media print{#bandPac{display:none!important}}
 </style>
 <script id="saved-data" type="application/json">null</script>
 <script>
@@ -5137,8 +5164,8 @@ $("bandBack").onclick=()=>{ if(current||currentClinical||document.body.classList
 const hospitalLogo=document.querySelector(".top > .seal:first-child");
 if(hospitalLogo){
   const homeLogo=document.createElement("button"); homeLogo.type="button"; homeLogo.className="home-logo";
-  homeLogo.setAttribute("aria-label","Ir a Inicio"); homeLogo.title="Inicio";
-  hospitalLogo.before(homeLogo); homeLogo.appendChild(hospitalLogo); homeLogo.onclick=()=>$("bandBack").onclick();
+  homeLogo.setAttribute("aria-label","Ir a Pacientes"); homeLogo.title="Pacientes";
+  hospitalLogo.before(homeLogo); homeLogo.appendChild(hospitalLogo); homeLogo.onclick=()=>{ try{ goHome(); }catch(_){ $("bandBack").onclick(); } };
 }
 /* v53 · El cangrejo del encabezado es botón: lleva al Archivo Clínico del paciente (el logotipo del Hospital sigue llevando a Inicio) */
 const crabLogo=document.querySelector(".top > .seal.crab");
@@ -5677,6 +5704,7 @@ function upsertDriveFile(rec){
 /* ---------- v2.52 · Barra de secciones de la Hoja de Datos (usa el mismo conteo de vacíos de cada sección) ---------- */
 const SEC_SHORT={"Identificación":"Identificación","Cirugía programada":"Cirugía","Solicitud de transfusión":"Transfusión","Resumen / padecimiento actual":"Padecimiento","Resumen clínico":"Resumen clínico","Ingreso e historia clínica":"Ingreso / HC","Ingreso":"Ingreso","Historia clínica":"Historia clínica"};
 const secFieldsets=()=>[...document.querySelectorAll("#datos > fieldset")];
+const ICO_CENA_TAB='<svg class=\"ic\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><rect x=\"5\" y=\"3.5\" width=\"14\" height=\"17\" rx=\"2.5\"/><path d=\"M8.5 8h7M8.5 12h7M8.5 16h4\"/></svg>';
 const SEC_ICONS=[
  '<svg class="ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.5 1.8-2 3-2s2.4.5 3 2M15 10h3M15 14h3"/></svg>',
  '<svg class="ic" viewBox="0 0 24 24"><path d="m3.5 18.5 9-9 2 2-9 9a1.4 1.4 0 0 1-2-2Z"/><path d="m13.5 8.5 7-6c.5 3-1.5 6-5 8l-2-2Z"/></svg>',
@@ -5685,11 +5713,12 @@ const SEC_ICONS=[
  '<svg class="ic" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2.5h6V4M8 10h8M8 14h8M8 18h5"/></svg>'];
 function secTitle(fs){ const lg=fs.querySelector("legend"); const t=lg?[...lg.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent).join("").trim():""; const m=/^(\d+)\s*·\s*(.+)$/.exec(t); return m?{n:m[1],t:SEC_SHORT[m[2].trim()]||m[2].trim(),full:m[2].trim()}:{n:"",t,full:t}; }
 function showDataSection(index,{scroll=false,focusTab=false}={}){
-  const nav=$('secNav'),sections=secFieldsets();if(!nav||!sections[index])return;
-  nav.dataset.activeSection=String(index);
+  const nav=$('secNav'),sections=secFieldsets();const cm=index==='c';if(cm)index=0;if(!nav||!sections[index])return;
+  nav.dataset.activeSection=cm?'c':String(index);
+  try{ cenModeSet(sections[0],cm); }catch(_){}
   sections.forEach((fs,i)=>{fs.hidden=i!==index;});
   nav.querySelectorAll('[data-sec]').forEach(button=>{
-    const active=+button.dataset.sec===index;button.classList.toggle('cur',active);
+    const active=cm?button.dataset.sec==='c':(button.dataset.sec!=='c'&&+button.dataset.sec===index);button.classList.toggle('cur',active);
     button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1;
     if(active){if(focusTab)button.focus({preventScroll:true});nav.scrollTo({left:button.offsetLeft-nav.clientWidth/2+button.offsetWidth/2,behavior:'smooth'});}
   });
@@ -5698,7 +5727,7 @@ function showDataSection(index,{scroll=false,focusTab=false}={}){
     scrollTo({top:Math.max(0,sections[index].getBoundingClientRect().top+scrollY-off),behavior:'smooth'});}
 }
 function revealDataField(el){
-  const index=secFieldsets().indexOf(el?.closest('fieldset'));if(index>=0)showDataSection(index);
+  const index=secFieldsets().indexOf(el?.closest('fieldset'));if(index>=0){ if(index===0&&el.closest('.cen-block')) showDataSection('c'); else if(!(index===0&&secFieldsets()[0].classList.contains('cen-mode'))) showDataSection(index); }
 }
 function buildSecNav(){
   const nav=$('secNav');if(!nav)return;const sections=secFieldsets();
@@ -5707,12 +5736,13 @@ function buildSecNav(){
     if(!fs.id)fs.id='dataSection'+i;fs.setAttribute('role','tabpanel');fs.setAttribute('aria-labelledby','dataTab'+i);
     return `<button type="button" role="tab" id="dataTab${i}" class="sn" data-sec="${i}" aria-controls="${fs.id}"><span class="sn-i" aria-hidden="true">${SEC_ICONS[i]||""}</span><span class="sn-t">${esc(secTitle(fs).t)}</span><span class="sn-p"></span></button>`;
   }).join('');
-  nav.onclick=e=>{const button=e.target.closest('[data-sec]');if(button)showDataSection(+button.dataset.sec);};
+  nav.insertAdjacentHTML('afterbegin','<button type="button" role="tab" id="dataTabC" class="sn" data-sec="c" aria-controls="'+(sections[0]&&sections[0].id||'')+'"><span class="sn-i" aria-hidden="true">'+ICO_CENA_TAB+'</span><span class="sn-t">Censo</span><span class="sn-p"></span></button>');
+  nav.onclick=e=>{const button=e.target.closest('[data-sec]');if(button)showDataSection(button.dataset.sec==='c'?'c':+button.dataset.sec);};
   nav.onkeydown=e=>{
     const button=e.target.closest('[data-sec]');if(!button||!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;
-    e.preventDefault();const n=sections.length,i=+button.dataset.sec;
-    const target=e.key==='Home'?0:e.key==='End'?n-1:(i+(e.key==='ArrowRight'?1:-1)+n)%n;
-    showDataSection(target,{focusTab:true});
+    e.preventDefault();const ids=[...nav.querySelectorAll('[data-sec]')].map(b=>b.dataset.sec),n=ids.length,i=ids.indexOf(button.dataset.sec);
+    const t=e.key==='Home'?0:e.key==='End'?n-1:(i+(e.key==='ArrowRight'?1:-1)+n)%n, tv=ids[t];
+    showDataSection(tv==='c'?'c':+tv,{focusTab:true});
   };
   for(const [field,key,label] of [['hb','transfusion','Solicitud de Transfusión']]){
     const fs=$(field)?.closest('fieldset');if(!fs||fs.querySelector('[data-data-tab-go]'))continue;
@@ -5727,15 +5757,15 @@ function updateSecNav(){
   const nav=$("secNav"); if(!nav||!nav.children.length) return; const fss=secFieldsets(); let DEF=null; try{ DEF=DEFAULTS(); }catch(_){}
   /* Semáforo: rojo = ningún campo lleno · amarillo = incompleto (cuántos faltan) · verde = completo */
   nav.querySelectorAll("[data-sec]").forEach(b=>{
-    const fs=fss[+b.dataset.sec]; if(!fs) return;
-    const els=[...fs.querySelectorAll("input,select,textarea")].filter(el=>!el.closest(".is-off")&&el.type!=="button"&&el.type!=="hidden");
+    const isC=b.dataset.sec==="c", fs=fss[isC?0:+b.dataset.sec]; if(!fs) return;
+    const els=[...fs.querySelectorAll("input,select,textarea")].filter(el=>!el.closest(".is-off")&&el.type!=="button"&&el.type!=="hidden"&&(isC||+b.dataset.sec!==0||!el.closest(".cen-block")));
     const empty=els.filter(fieldEmpty).length, total=els.length;
     /* Los valores predeterminados (fecha de hoy, servicio, riesgos, NEGADAS, usuario actual…) no cuentan como "llenado" para el rojo */
     const userFilled=els.filter(el=>{ const v=String(el.value||"").trim(); if(!v) return false; const d=String((DEF&&DEF[el.id])??"").trim(); if(v===d) return false; if(el.id==="residente"&&v===String(currentResidentName()||"").trim()) return false; return true; }).length;
     const st=!total||empty===0?"done":userFilled===0?"none":"part";
     b.classList.toggle("done",st==="done"); b.classList.toggle("todo",st!=="done"); b.classList.toggle("none",st==="none"); b.classList.toggle("part",st==="part");
     b.querySelector(".sn-p").textContent=st==="done"?"✓":st==="part"?String(empty):"";
-    b.title=secTitle(fs).full+" · "+(st==="done"?"completo":st==="none"?"sin datos":empty+(empty===1?" campo vacío":" campos vacíos"));
+    b.title=(isC?"Censo":secTitle(fs).full)+" · "+(st==="done"?"completo":st==="none"?"sin datos":empty+(empty===1?" campo vacío":" campos vacíos"));
   });
 }
 function secNavTop(){
@@ -6479,7 +6509,7 @@ function ppPendFit(t){ try{ if(!t.offsetParent) return; t.style.height="auto"; i
 function ppPendFitAll(root){ try{ root.querySelectorAll(".pp-pt").forEach(ppPendFit); }catch(_){} }
 function ppPendBuild(rows){ rows=rows.slice(); if(!rows.length||String(rows[rows.length-1].t).trim()) rows.push({d:false,t:""}); return rows.map((r,i)=>ppPendRow(r.d,r.t,i===0?"Pendientes":"")).join(""); }
 function ppPendRead(c){ return [...c.querySelectorAll(".pp-pi")].map(r=>({d:r.querySelector(".pp-pc").checked,t:r.querySelector(".pp-pt").value})); }
-function ppPendHTML(f){ return `<div class="pp-pend" data-pendbox><div class="pp-pl" data-pend="${f.id}" role="group" aria-label="Pendientes">${ppPendBuild(ppPendParse(ppRowPend(f)))}</div></div>`; }
+function ppPendHTML(f){ return `<div class="pp-pend" data-pendbox><div class="pp-pl" data-pend="${f.id}" role="group" aria-label="Pendientes">${ppPendBuild(ppPendParse(ppRowPend(f)))}</div><div class="pp-qa"><button type="button" data-pqa="notas" title="Notas Médicas" aria-label="Notas Médicas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H5v18h14v-9M8 7h4M8 11h3M8 15h2M14 14l2-.5L22 7l-2-2-6 6.5z"/></svg></button><button type="button" data-pqa="indicaciones" title="Indicaciones" aria-label="Indicaciones"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M8 9l1 1 2-2M13 9h3M8 14l1 1 2-2M13 14h3"/></svg></button></div></div>`; }
 function ppPendSave(c){ clearTimeout(c._pt); const f=DRIVE_FILES.find(x=>x&&x.id===c.dataset.pend); if(!f) return; const v=ppPendSer(ppPendRead(c)).slice(0,400); if(v===ppPendNorm(ppRowPend(f))) return; ppPendCacheSet(f.id,v); PP_PQ[f.id]={v,ts:Date.now()}; ppPqStore(); ppPqRun(f.id); }
 function ppPendSet(c,rows){ c.innerHTML=ppPendBuild(rows); ppPendFitAll(c); try{ ppPendDoneSync(c); }catch(_){} }
 function ppPendTidy(c){ ppPendSet(c,ppPendRead(c).filter(r=>String(r.t).trim())); }
@@ -6665,7 +6695,7 @@ $("ppList").addEventListener("focusout",e=>{ const c=ppPCont(e.target); if(c&&!c
     clearTimeout(t); if(wasOpen&&closed){ t=setTimeout(()=>{ try{ const ae=document.activeElement; if(ppIsPT(ae)&&hMax-vv.height<60) ae.blur(); }catch(_){} },120); }
   }); })();
 $("ppList").addEventListener("keydown",e=>{ const it=e.target; if(it&&it.matches&&it.matches('div.dlg-item[role="button"]')&&(e.key==="Enter"||e.key===" ")){ e.preventDefault(); it.click(); } });
-$("ppList").onclick=e=>{ if(e.target.closest&&e.target.closest("[data-pendbox]")) return; const kb=e.target.closest("[data-ppmenu]"); if(kb){ e.preventDefault(); e.stopPropagation(); PP_MENU.toggle(kb); return; } if(e.target.closest("[data-pp-new]")){ $("btnClear").click(); return; } const b=e.target.closest("[data-id]"); if(!b) return;
+$("ppList").onclick=e=>{ if(e.target.closest&&e.target.closest(".pp-pl")) return; const kb=e.target.closest("[data-ppmenu]"); if(kb){ e.preventDefault(); e.stopPropagation(); PP_MENU.toggle(kb); return; } if(e.target.closest("[data-pp-new]")){ $("btnClear").click(); return; } const b=e.target.closest("[data-id]"); if(!b) return;
   if(ppOpenGuard(e,b)) return;   /* v3.15 · texto seleccionado o zona alrededor de los pendientes: no abre al paciente */
   const go=()=>openDriveFile(b.dataset.id).then(ppMarkCurrent).catch(driveError);
   if(e.target.closest("[data-sel]")){ clearTimeout(window._ppOpenT); window._ppOpenT=setTimeout(()=>{ try{ if(String(getSelection()).trim()) return; }catch(_){} go(); },320); return; }   /* un doble clic o arrastre sobre el nombre/exp./FN/edad selecciona el texto sin abrir */
@@ -8276,7 +8306,7 @@ function ppClrSync(){ const b=$("ppClearDone"); if(!b) return; const hosp=!docum
 $("ppList").addEventListener("dblclick",()=>{ clearTimeout(window._ppOpenT); });
 function ppOpenGuard(e,b){
   try{ if(String(getSelection&&getSelection()).trim()) return true; }catch(_){}
-  const pb=b.querySelector("[data-pendbox]"); if(pb){ const r=pb.getBoundingClientRect(), m=16; if(e.clientX>=r.left-m&&e.clientX<=r.right+m&&e.clientY>=r.top-m&&e.clientY<=r.bottom+m) return true; }   /* la zona alrededor de los pendientes no abre al paciente */
+  const pb=b.querySelector(".pp-pl"); if(pb){ const r=pb.getBoundingClientRect(), m=16; if(e.clientX>=r.left-m&&e.clientX<=r.right&&e.clientY>=r.top-m&&e.clientY<=r.bottom+m) return true; }   /* la zona alrededor de los pendientes no abre al paciente */
   return false;
 }
 /* ---------- Censos: arranque ---------- */
@@ -8287,6 +8317,16 @@ setTimeout(()=>{ try{ cenSnapSoon(500); }catch(_){} },4000);
 
 /* v3.15 · selector de página de inicio: mismo orden que el selector de la tabla */
 try{ const ord=["censo","hospitalizados","todos","nuevo"]; HM_OPTS.sort((a,b)=>ord.indexOf(a[0])-ord.indexOf(b[0])); }catch(_){}
+
+/* Hospitalizados: accesos directos a Notas Médicas e Indicaciones del paciente */
+$("ppList").addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest("[data-pqa]"); if(!b) return; e.stopImmediatePropagation(); e.preventDefault(); const card=b.closest("[data-id]"); if(!card) return; const key=b.dataset.pqa;
+  openDriveFile(card.dataset.id).then(()=>{ try{ ppMarkCurrent(); }catch(_){} try{ if(hasSelectedPatient()) openClinical(key); }catch(_){} }).catch(driveError); },true);
+
+/* Al abrir un paciente (Hospitalizados / Todos) la página arranca arriba */
+(function(){ const _o=openDriveFile; const top=()=>{ try{ window.scrollTo(0,0); document.documentElement.scrollTop=0; document.body.scrollTop=0; }catch(_){} };
+  openDriveFile=async function(){ const r=await _o.apply(this,arguments); top(); requestAnimationFrame(top); setTimeout(top,120); setTimeout(top,400); return r; }; })();
+
+$("bandPac").addEventListener("click",()=>{ try{ goHome(); }catch(_){} });
 
 /* v3.15 · Censo Actual › «Agregar paciente»: buscador de Drive que se amplía con Identificación + Censo y guarda como la hoja de datos */
 const CENADD={fs:null,ph:null,open:false,busy:false,wasBrowse:false};
@@ -8311,11 +8351,11 @@ function cenAddPhase(n){
   const host=$("caHost"), form=$("datos");
   if(n===2){
     if(!CENADD.fs){ const fs=form.querySelector(":scope > fieldset"); if(!fs) return; CENADD.ph=document.createComment("cen-add"); fs.before(CENADD.ph); CENADD.fs=fs; }
-    host.appendChild(CENADD.fs); const det=$("cenDet"); if(det) det.open=true;
+    host.appendChild(CENADD.fs); CENADD.fs.classList.add("cen-dlg","cen-mode"); const det=$("cenDet"); if(det) det.dispatchEvent(new Event("toggle"));
   } else cenAddRestore();
   if(n===1){ setTimeout(()=>{ try{ $("caQ").focus(); }catch(_){} },30); }
 }
-function cenAddRestore(){ if(CENADD.fs&&CENADD.ph&&CENADD.ph.parentNode){ CENADD.ph.parentNode.insertBefore(CENADD.fs,CENADD.ph); CENADD.ph.remove(); } CENADD.fs=null; CENADD.ph=null; }
+function cenAddRestore(){ if(CENADD.fs){ CENADD.fs.classList.remove("cen-dlg"); CENADD.fs.classList.toggle("cen-mode",(($("secNav")||{dataset:{}}).dataset.activeSection)==="c"); } if(CENADD.fs&&CENADD.ph&&CENADD.ph.parentNode){ CENADD.ph.parentNode.insertBefore(CENADD.fs,CENADD.ph); CENADD.ph.remove(); } CENADD.fs=null; CENADD.ph=null; }
 function cenAddList(){
   const s=($("caQ").value||"").trim().toUpperCase(), L=$("caList");
   const items=uniqueFiles(DRIVE_FILES||[]).filter(f=>{ const p=f.meta||{}; return !s||(p.nombre||"").toUpperCase().includes(s)||String(expOf(f)).toUpperCase().includes(s)||String(f.name||"").toUpperCase().includes(s)||(p.cama||"").toUpperCase()===s||(p.dx||"").toUpperCase().includes(s); }).slice(0,60);
@@ -8412,7 +8452,7 @@ function cenHistEdit(k){
    <div class="f s3"><label>Clínica</label><input name="clin" class="up" list="chClin" value="${U((row.cf||[]).join("/"))}"><datalist id="chClin">${clinCatalog().map(c=>`<option value="${U(c.n)}">`).join("")}</datalist></div>
    <div class="f s2"><label>Fecha de ingreso</label><input name="ing" data-date inputmode="numeric" maxlength="8" placeholder="DD.MM.AA" value="${U(row.ing)}"></div>
    <div class="f s1"><label>Días de estancia</label><div class="auto" data-o="eh">${U(row.eh)||"—"}</div></div>
-   <div class="f s3"><label>Estatus</label><input name="est" class="up" value="${U(row.est)}"></div>
+   <div class="f s3"><label>Estatus</label><input name="est" class="up" hidden value="${U(row.est)}"><div class="estsel" data-estchips></div></div>
    <div class="f s6"><label>Diagnóstico</label><input name="dx" class="up" value="${U(row.dx)}"></div>
    <div class="f s6"><label>Cirugías / BJ</label><textarea name="cir" class="up" rows="3">${U(row.cir)}</textarea></div>
    <div class="f s3"><label>QT / RT</label><textarea name="qt" class="up" rows="2">${U(row.qt)}</textarea></div>
@@ -8435,7 +8475,7 @@ function cenHistEdit(k){
     const cur={cama:row.cama||"",nombre:row.nombre||"",fnac:row.fnac||"",ing:row.ing||"",ads:row.adsRaw||"",clin:(row.cf||[]).join("/"),est:row.est||"",dx:row.dx||"",cir:row.cir||"",qt:row.qt||"",mt:row.mt||"",labs:row.labs||"",pend:row.pend||""};
     let ops=[]; Object.keys(nv).forEach(f=>{ if(nv[f]!==String(cur[f])) ops=ops.concat(cenHistOps(row,f,nv[f])); });
     close(); if(ops.length){ ops.forEach(o=>CEN.hist.queue(o)); if(nv.clin!==cur.clin||nv.ads!==cur.ads) { try{ cenRecalcHist(); }catch(_){} } cenRender(); } };
-  { const pb=d.querySelector("#chPend"); ppPendSet(pb,ppPendParse(String(row.pend||"").split("\n").filter(Boolean).map(x=>"• "+x).join("\n"))); cenPendWire(pb,()=>{}); }
+  { const pb=d.querySelector("#chPend"); ppPendSet(pb,ppPendParse(String(row.pend||"").split("\n").filter(Boolean).map(x=>"• "+x).join("\n"))); cenPendWire(pb,()=>{}); cenEstChips(d.querySelector("[data-estchips]"),g("est")); }
   d.showModal(); try{ ppPendFitAll(d); }catch(_){}
 }
 
@@ -8523,6 +8563,21 @@ function cenPendWire(box,onChange){ if(box._w) return; box._w=1; const ch=()=>{ 
   const d=Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,"value"); try{ Object.defineProperty(h,"value",{configurable:true,get(){ return d.get.call(this); },set(x){ d.set.call(this,x); show(); }}); }catch(_){}
   cenPendWire(u,v=>{ if(v!==ppPendNorm(h.value)){ h.value=v; h.dispatchEvent(new Event("input",{bubbles:true})); h.dispatchEvent(new Event("change",{bubbles:true})); } });
   const det=$("cenDet"); if(det) det.addEventListener("toggle",()=>{ show(); ppPendFitAll(u); }); show(); })();
+
+/* Pestaña «Censo»: la misma hoja de Identificación con el bloque de censo visible y nombre completo / servicio al final */
+function cenModeSet(fs,on){ if(!fs) return; const was=fs.classList.contains("cen-mode"); fs.classList.toggle("cen-mode",!!on||fs.classList.contains("cen-dlg"));
+  const lg=fs.querySelector("legend"); if(lg){ const tn=[...lg.childNodes].find(n=>n.nodeType===3&&n.textContent.trim()); if(tn){ if(!lg.dataset.o) lg.dataset.o=tn.textContent; tn.textContent=on?"2 · Censo":lg.dataset.o; } }
+  if(on&&!was){ try{ const d=$("cenDet"); if(d) d.dispatchEvent(new Event("toggle")); }catch(_){} } }
+
+/* Estatus: multiselector (INGRESO · RE INGRESO · GRAVE · DELICADO · VIGILANCIA PO); se guarda como texto separado por « / » */
+const CEN_EST=["INGRESO","RE INGRESO","GRAVE","DELICADO","VIGILANCIA PO"];
+function cenEstChips(host,inp){ if(!host||!inp) return; const norm=s=>String(s||"").toLocaleUpperCase("es-MX").replace(/\s+/g," ").trim();
+  const toks=()=>String(inp.value||"").split(/\s*[\/,;]\s*/).map(norm).filter(Boolean);
+  const paint=()=>{ const t=toks(); host.innerHTML=CEN_EST.map(o=>`<button type="button" class="estchip" role="checkbox" aria-checked="${t.includes(o)}" data-o="${o}">${o}</button>`).join(""); };
+  host.onclick=e=>{ const b=e.target.closest("[data-o]"); if(!b) return; const o=b.dataset.o; let t=toks(); t=t.includes(o)?t.filter(x=>x!==o):t.concat(o); const ord=x=>{ const i=CEN_EST.indexOf(x); return i<0?99:i; }; t.sort((a,b)=>ord(a)-ord(b)); const v=t.join(" / "); inp.value=v; inp.dispatchEvent(new Event("input",{bubbles:true})); inp.dispatchEvent(new Event("change",{bubbles:true})); paint(); };
+  try{ const d=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"value"); Object.defineProperty(inp,"value",{configurable:true,get(){ return d.get.call(this); },set(x){ d.set.call(this,x); paint(); }}); }catch(_){}
+  paint(); }
+(function(){ const i=$("censoEstatus"), h=$("censoEstChips"); if(i&&h) cenEstChips(h,i); })();
 
 </script>
 <script>
