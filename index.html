@@ -6337,8 +6337,13 @@ $("ppList").addEventListener("paste",e=>{ const t=e.target; if(!ppIsPT(t)) retur
 $("ppList").addEventListener("focusout",e=>{ const c=ppPCont(e.target); if(c&&!c.contains(e.relatedTarget)){ ppPendSave(c); ppPendTidy(c); } });
 /* v3.13 · Android: al cerrar el teclado con el gesto «atrás» el cursor se queda en el campo y, al redibujarse la lista (guardado o cambio de tamaño), se le devolvía el foco y el teclado reaparecía.
    Ahora, si la pantalla visible crece (se cerró el teclado) y el cursor está en un pendiente, se le quita el foco. */
-(function(){ const vv=window.visualViewport; if(!vv) return; let h0=vv.height;
-  vv.addEventListener("resize",()=>{ const h=vv.height; try{ const ae=document.activeElement; if(h>h0+60&&ppIsPT(ae)) ae.blur(); }catch(_){} h0=h; }); })();
+(function(){ const vv=window.visualViewport; if(!vv) return; let hMax=vv.height, h0=vv.height, w0=window.innerWidth, t=0;
+  vv.addEventListener("resize",()=>{
+    const h=vv.height; if(window.innerWidth!==w0){ w0=window.innerWidth; hMax=h; h0=h; return; }   /* girar o plegar/desplegar el equipo: se vuelve a medir */
+    if(h>hMax) hMax=h;
+    const wasOpen=hMax-h0>140, closed=hMax-h<60; h0=h;                                            /* solo cuenta como «cerró el teclado» si antes estaba abierto (pantalla visible mucho menor) y ahora volvió a su tamaño */
+    clearTimeout(t); if(wasOpen&&closed){ t=setTimeout(()=>{ try{ const ae=document.activeElement; if(ppIsPT(ae)&&hMax-vv.height<60) ae.blur(); }catch(_){} },120); }
+  }); })();
 $("ppList").addEventListener("keydown",e=>{ const it=e.target; if(it&&it.matches&&it.matches('div.dlg-item[role="button"]')&&(e.key==="Enter"||e.key===" ")){ e.preventDefault(); it.click(); } });
 $("ppList").onclick=e=>{ if(e.target.closest&&e.target.closest("[data-pendbox]")) return; const kb=e.target.closest("[data-ppmenu]"); if(kb){ e.preventDefault(); e.stopPropagation(); PP_MENU.toggle(kb); return; } if(e.target.closest("[data-pp-new]")){ $("btnClear").click(); return; } const b=e.target.closest("[data-id]"); if(b) openDriveFile(b.dataset.id).then(ppMarkCurrent).catch(driveError); };
 (function(){
