@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oncología · Hospital Juárez de México</title>
-<meta name="application-version" content="3.21">
+<meta name="application-version" content="3.22">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2482,7 +2482,7 @@ body.pp-browse #pPanel.pp-xl .pp-list .cama-badge{flex:none;justify-content:cent
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 3.21 · Fecha de publicación: 25.10.26</div>
+  <div class="app-footer-version">Versión 3.22 · Fecha de publicación: 25.10.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p>Los datos viajan por conexión segura (HTTPS) y se almacenan en la cuenta de Google del Servicio de Oncología del Hospital Juárez de México; protegidos mediante clave de acceso.</p>
     <p id="hjmOffInfo" role="status" hidden></p>
@@ -6444,9 +6444,11 @@ function ppFiltClear(){ ppMsClose(); PP_FILT={ads:[],clin:[]}; try{ ppFiltDraw()
   window.addEventListener("scroll",e=>{ if(PP_MS_OPEN&&!(e.target&&e.target.nodeType===1&&e.target.closest("#ppMsPop"))) ppMsClose(); },true);
 })();
 /* v3.01 · Imprimir Censo Actual (vista Hospitalizados): tabla horizontal con los pacientes visibles, el filtro aplicado y Periféricos */
-const PP_CEN_CACHE=new Map(), PP_CEN_LAST=new Map(), PP_CEN_LSK="hjm-pp-cen-v1"; let PP_CEN_T=0;
-(function(){ try{ const o=JSON.parse(LS.get(PP_CEN_LSK)||"{}"); Object.keys(o).forEach(id=>{ const e=o[id]; if(!e||!e[1]) return; const d={fnac:e[1][0]||"",fIngreso:e[1][1]||"",diagnostico:e[1][2]||"",pendientes:e[1][3]||""}; PP_CEN_CACHE.set(id+"|"+e[0],d); PP_CEN_LAST.set(id,d); }); }catch(_){} })();
-function ppCenSave(){ clearTimeout(PP_CEN_T); PP_CEN_T=setTimeout(()=>{ try{ const o={}; PP_CEN_CACHE.forEach((d,k)=>{ const i=k.lastIndexOf("|"); o[k.slice(0,i)]=[k.slice(i+1),[d.fnac||"",d.fIngreso||"",d.diagnostico||"",d.pendientes||""]]; }); const ids=Object.keys(o); if(ids.length>600) ids.slice(0,ids.length-600).forEach(k=>delete o[k]); LS.set(PP_CEN_LSK,JSON.stringify(o)); }catch(_){} },1500); }
+const PP_CEN_CACHE=new Map(), PP_CEN_LAST=new Map(), PP_CEN_LSK="hjm-pp-cen-v2"; let PP_CEN_T=0;
+const PP_CEN_KEYS=["apPaterno","apMaterno","nombres","fnac","fIngreso","diagnostico","pendientes","medico","clinica","cama","camaPrevia","genero","censoEstatus","censoCirugias","censoQT","censoMT","censoLabs","expediente"];
+try{ LS.del("hjm-pp-cen-v1"); }catch(_){}
+(function(){ try{ const o=JSON.parse(LS.get(PP_CEN_LSK)||"{}"); Object.keys(o).forEach(id=>{ const e=o[id]; if(!e||!e[1]||typeof e[1]!=="object") return; PP_CEN_CACHE.set(id+"|"+e[0],e[1]); PP_CEN_LAST.set(id,e[1]); }); }catch(_){} })();
+function ppCenSave(){ clearTimeout(PP_CEN_T); PP_CEN_T=setTimeout(()=>{ try{ const o={}; PP_CEN_CACHE.forEach((d,k)=>{ const i=k.lastIndexOf("|"); const r={}; PP_CEN_KEYS.forEach(c=>{ if(d[c]!==undefined&&d[c]!==null&&d[c]!=="") r[c]=d[c]; }); o[k.slice(0,i)]=[k.slice(i+1),r]; }); const ids=Object.keys(o); if(ids.length>400) ids.slice(0,ids.length-400).forEach(k=>delete o[k]); LS.set(PP_CEN_LSK,JSON.stringify(o)); }catch(_){} },1500); }
 function ppCensusSync(on){ const w=$("ppCensus"); if(w) w.hidden=!on; }
 async function ppCensusDatos(f){
   const key=f.id+"|"+(f.modified||""); if(PP_CEN_CACHE.has(key)) return PP_CEN_CACHE.get(key);
@@ -8460,6 +8462,8 @@ async function listPoll(){
 setInterval(()=>{ try{ if(pendViewOn()) pendPoll(); }catch(_){} },15000);
 setInterval(()=>{ try{ if(pendViewOn()&&!cenDirtyFocus($("cenWrap"))) listPoll(); }catch(_){} },30000);
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden&&pendViewOn()){ setTimeout(pendPoll,300); setTimeout(listPoll,600); } });
+setTimeout(()=>{ try{ if(pendViewOn()) pendPoll(); }catch(_){} },3000);
+document.addEventListener("click",e=>{ try{ if(e.target.closest&&e.target.closest("[data-pp-view]")) setTimeout(()=>{ if(pendViewOn()) pendPoll(); },800); }catch(_){} },true);
 
 /* v3.15 · Censo Actual › «Agregar paciente»: buscador de Drive que se amplía con Identificación + Censo y guarda como la hoja de datos */
 const CENADD={fs:null,ph:null,open:false,busy:false,wasBrowse:false};
