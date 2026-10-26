@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oncología · Hospital Juárez de México</title>
-<meta name="application-version" content="3.19">
+<meta name="application-version" content="3.20">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2482,7 +2482,7 @@ body.pp-browse #pPanel.pp-xl .pp-list .cama-badge{flex:none;justify-content:cent
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 3.19 · Fecha de publicación: 25.10.26</div>
+  <div class="app-footer-version">Versión 3.20 · Fecha de publicación: 25.10.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p>Los datos viajan por conexión segura (HTTPS) y se almacenan en la cuenta de Google del Servicio de Oncología del Hospital Juárez de México; protegidos mediante clave de acceso.</p>
     <p id="hjmOffInfo" role="status" hidden></p>
@@ -8081,7 +8081,7 @@ function cenKeep(w,paint){
 }
 function cenFit(t){ try{ if(!t.offsetParent) return; t.style.height="auto"; if(t.scrollHeight) t.style.height=t.scrollHeight+"px"; }catch(_){} }
 function cenFitAll(w){ try{ w.querySelectorAll("table.cen textarea,table.rev textarea").forEach(cenFit); }catch(_){} }
-function cenDirtyFocus(w){ const ae=document.activeElement; return !!(ae&&w.contains(ae)&&ae.matches("textarea,input")&&ae.value!==ae.defaultValue); }
+function cenDirtyFocus(w){ const ae=document.activeElement; return !!(ae&&w.contains(ae)&&ae.matches("textarea,input")); }   /* v3.20 · con el cursor dentro de una celda nunca se redibuja la tabla (el guardado es mientras se escribe) */
 
 function cenHeaderSync(on,printOn){ const b=$("cenPrint"); if(b) b.hidden=!on; const pc=$("ppCount"); if(pc&&!on) {} }
 function cenShow(on){ const w=$("cenWrap"), p=$("pPanel"); if(!w||!p) return; w.hidden=!on; p.classList.toggle("cen-on",!!on); try{ ppCensusSync(false); }catch(_){} const b=$("cenPrint"); if(b) b.hidden=!on; if(!on){ try{ const h=document.querySelector("#pPanel .pp-head h2"); if(h&&h.textContent!=="Pacientes") h.textContent="Pacientes"; const bar=$("cenResBar"); if(bar) bar.hidden=true; cenBandSync(false); }catch(_){} } const nb=$("cenNavBtn"); if(nb) nb.hidden=!on; const sv=$("cenSave"); if(sv&&!on) sv.textContent=""; }
@@ -8269,6 +8269,7 @@ async function cenHistAct(k,act){
   w.addEventListener("input",e=>{ const t=e.target;
     if(t.matches&&t.matches('textarea[data-f="pend"]')){ const s=t.selectionStart, before=t.value; const nv=before.split("\n").map(l=>l.trim()===""?l:"• "+l.replace(/^[•\-*\s]+/,"")).join("\n"); if(nv!==before){ const d=nv.length-before.length; t.value=nv; try{ t.setSelectionRange(Math.max(0,s+d),Math.max(0,s+d)); }catch(_){} } }
     if(t.tagName==="TEXTAREA") cenFit(t);
+    if(t.matches&&t.matches("[data-f]")&&t.dataset.f!=="ing"){ clearTimeout(t._as); t._as=setTimeout(()=>{ try{ if(t.isConnected) cenCommit(t); }catch(_){} },700); }   /* v3.20 · guarda mientras se escribe (700 ms sin teclear) */
     if(t.matches('[data-f="ing"]')){ const dg=t.value.replace(/\D/g,"").slice(0,6); t.value=dg.replace(/^(\d{2})(\d)/,"$1.$2").replace(/^(\d{2}\.\d{2})(\d)/,"$1.$2"); }
     if(t.id==="cenRes"){ const p=t.selectionStart; t.value=t.value.toLocaleUpperCase("es-MX"); try{ t.setSelectionRange(p,p); }catch(_){} } });
   w.addEventListener("keydown",e=>{ const t=e.target; if((e.key==="Enter"||e.key===" ")&&t.matches("td[data-open]")){ e.preventDefault(); const tr=t.closest("tr[data-k]"); if(tr) cenOpenEditor(tr.dataset.k); return; } if(e.key==="Enter"&&t.matches('input.cc,#cenRes,[data-rk]:not(textarea)')){ e.preventDefault(); t.blur(); } if(e.key==="Escape"&&t.matches("textarea,input")){ t.value=t.defaultValue; t.blur(); } });
