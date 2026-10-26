@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oncología · Hospital Juárez de México</title>
-<meta name="application-version" content="3.25">
+<meta name="application-version" content="3.33">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2482,7 +2482,7 @@ body.pp-browse #pPanel.pp-xl .pp-list .cama-badge{flex:none;justify-content:cent
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 3.25 · Fecha de publicación: 25.10.26</div>
+  <div class="app-footer-version">Versión 3.33 · Fecha de publicación: 25.10.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p>Los datos viajan por conexión segura (HTTPS) y se almacenan en la cuenta de Google del Servicio de Oncología del Hospital Juárez de México; protegidos mediante clave de acceso.</p>
     <p id="hjmOffInfo" role="status" hidden></p>
@@ -7856,6 +7856,8 @@ async function cenPrevSet(prevDay){ const name=cenFile(prevDay); if(CEN.prevSets
   if(v!==undefined){ CEN.prevSets.set(name,v); CEN.prevSets.set(name+"@",Date.now()); } return v; }
 function cenSetPath(o,path,v){ const a=path.split("."); let c=o; for(let i=0;i<a.length-1;i++){ if(!c[a[i]]||typeof c[a[i]]!=="object") c[a[i]]={}; c=c[a[i]]; } c[a[a.length-1]]=v; }
 /* Cambios pequeños («operaciones») que se pueden volver a aplicar sobre una versión más nueva del archivo */
+/* «Quitar del censo» es transitorio: se guarda por paciente Y por situación (en censo = A, alta = E, defunción = D). Si el paciente cambia de situación (p. ej. reingresa), vuelve a aparecer solo; y solo vale para el censo del día. */
+const cenExKey=r=>r.k+"|"+((r.sec==="E"||r.sec==="D")?r.sec:"A");
 function cenOpApply(o,op){
   if(!o) return;
   if(op.t==="p") cenSetPath(o,op.p,op.v);
@@ -7953,8 +7955,8 @@ function cenBuild(Td,now,opt){
   const hoy=cenDot(Td), ayer=cenDot(prevDay);
   rows.forEach(r=>{ r.nu=(r.ing&&r.ing===hoy)||(r.ing&&r.ing===ayer&&(pv==="none"||(pv instanceof Set&&!pv.has(String(r.exp).trim()))))?1:0; if(r.sec==="H"&&r.nu&&!r.est) r.est="INGRESO"; if(r.sec==="E") r.est=r.est||"ALTA"; if(r.sec==="D") r.est=r.est||"DEFUNCIÓN"; });
   const actO=CEN.act&&CEN.act.obj, exc=(actO&&actO.fecha===hoy&&Array.isArray(actO.exc))?actO.exc:[];
-  let shown=rows; if(exc.length){ rows.forEach(r=>{ if(exc.includes(r.k)) r.exc=1; }); shown=CEN.showEx?rows:rows.filter(r=>!r.exc); }
-  return { app:"censo-hjm", v:1, fecha:hoy, corte:new Date(Td.ts).toISOString(), pac:shown, nexc:exc.length, res:"", rev:{f:{}}, _files:{H:fs.H,E:fs.E,D:fs.D} };
+  let shown=rows; if(exc.length){ rows.forEach(r=>{ if(exc.includes(cenExKey(r))) r.exc=1; }); shown=CEN.showEx?rows:rows.filter(r=>!r.exc); }
+  return { app:"censo-hjm", v:1, fecha:hoy, corte:new Date(Td.ts).toISOString(), pac:shown, nexc:rows.filter(r=>r.exc).length, res:"", rev:{f:{}}, _files:{H:fs.H,E:fs.E,D:fs.D} };
 }
 async function cenLoadDatos(files){ let fallos=0; await ppPool(files,6,async f=>{ if(ppRowD(f)) return; const d=await ppCensusDatos(f); if(!d) fallos++; }); return fallos; }
 
@@ -7982,7 +7984,7 @@ async function cenSnapEnsure(){
     const now=Date.now(), pv=await cenPrevSet(cenDay(Td.y,Td.m,Td.d,-1)); if(pv===undefined) throw new Error("censo previo");
     const b0=cenBuild(Td,now,{prevSet:pv}), fallos=await cenLoadDatos(b0._files.H.concat(b0._files.E,b0._files.D)); if(fallos) throw new Error("faltan datos");
     const cen=cenBuild(Td,now,{prevSet:pv});
-    const act=await cenActualRaw(); if(act&&act.fecha===cen.fecha&&Array.isArray(act.exc)&&act.exc.length) cen.pac=cen.pac.filter(r=>!act.exc.includes(r.k)); if(act&&act.fecha===cen.fecha){ cen.res=act.res||""; cen.rev={f:Object.assign({},(act.rev&&act.rev.f)||{})}; }
+    const act=await cenActualRaw(); if(act&&act.fecha===cen.fecha&&Array.isArray(act.exc)&&act.exc.length) cen.pac=cen.pac.filter(r=>!act.exc.includes(cenExKey(r))); if(act&&act.fecha===cen.fecha){ cen.res=act.res||""; cen.rev={f:Object.assign({},(act.rev&&act.rev.f)||{})}; }
     cenRevFreeze(cen); delete cen._files; cen.pac.forEach(r=>{ delete r.ok; delete r.ts; });
     cen.creado=new Date().toISOString(); cen.por=cenUser(); cen.snap=1;
     await gcall("hjmCensoSave",name,JSON.stringify(cen),JSON.stringify({crearSiNoExiste:true}));
@@ -8028,7 +8030,7 @@ function cenRowHTML(r){
     else return `<td class="ro">${esc(v)}</td>`;
     const kb=(i===0&&r.sec==="H")?`<button type="button" class="kb pp-kebab" data-cenkb aria-haspopup="menu" aria-label="Acciones del paciente" title="Acciones">${CEN_ICO_KB}</button>`:"";
     return `<td>${kb}${inner}</td>`; }).join("");
-  const kbc=`<td class="kbc"><span class="kbw"><button type="button" class="kb cp" data-cencopy aria-label="Copiar la fila" title="Copiar la fila (para pegar en la hoja de cálculo)">${CEN_ICO_CPY}</button>${r.sec==="H"?`<button type="button" class="kb pp-kebab" data-cenkb aria-haspopup="menu" aria-label="Acciones del paciente" title="Acciones">${CEN_ICO_KB}</button>`:'<span class="kbs"></span>'}</span></td>`;
+  const kbc=`<td class="kbc"><span class="kbw"><button type="button" class="kb cp" data-cencopy aria-label="Copiar la fila" title="Copiar la fila (para pegar en la hoja de cálculo)">${CEN_ICO_CPY}</button><button type="button" class="kb pp-kebab" data-cenkb aria-haspopup="menu" aria-label="Acciones del paciente" title="Acciones">${CEN_ICO_KB}</button></span></td>`;
   return `<tr data-k="${esc(r.k)}" data-id="${esc(r.k)}"${r.exc?' class="excl"':(r.nu?' class="nuevo"':"")}>${kbc}${tds}</tr>`;
 }
 function cenTableHTML(cen){
@@ -8240,10 +8242,10 @@ async function cenHistPen(row,f){
     const full=clinClean(v), ops=[{t:"r",k,f:"clin",v:full.split("/").map(x=>PP_CEN_CLIN[normalizeStaffName(x)]||x).join("/").toUpperCase()},{t:"r",k,f:"cf",v:full.split("/").map(normalizeStaffName)}]; Q(ops); cenRecalcHist(); }
 }
 function cenRecalcHist(){ const cf=CEN.hist; if(!cf) return; const ops=cenRevRecalcOps(cf.obj); ops.forEach(o=>cf.queue(o)); cenRender(); }
-function cenMenuHist(btn){
+function cenMenuHist(btn,onlyQuit,exc){
   document.querySelectorAll(".pp-menu.cen-hm").forEach(x=>x.remove()); const k=btn.closest("tr").dataset.k;
   const el=document.createElement("div"); el.className="pp-menu cen-hm"; el.setAttribute("role","menu");
-  el.innerHTML=`<button type="button" role="menuitem" data-act="cama">${PP_ICO.bed}<span>Cambiar cama</span></button><button type="button" role="menuitem" class="danger" data-act="alta">${PP_ICO.out}<span>Dar de alta</span></button><button type="button" role="menuitem" class="def" data-act="def">${PP_ICO.def}<span>Defunción</span></button><button type="button" role="menuitem" data-act="quitar">${PP_ICO.out}<span>Quitar del censo</span></button>`;
+  el.innerHTML=onlyQuit?`<button type="button" role="menuitem" data-act="${exc?"volver":"quitar"}">${PP_ICO.out}<span>${exc?"Volver al censo":"Quitar del censo"}</span></button>`:`<button type="button" role="menuitem" data-act="cama">${PP_ICO.bed}<span>Cambiar cama</span></button><button type="button" role="menuitem" class="danger" data-act="alta">${PP_ICO.out}<span>Dar de alta</span></button><button type="button" role="menuitem" class="def" data-act="def">${PP_ICO.def}<span>Defunción</span></button><button type="button" role="menuitem" data-act="quitar">${PP_ICO.out}<span>Quitar del censo</span></button>`;
   document.body.appendChild(el); const r=btn.getBoundingClientRect(), w=el.offsetWidth, h=el.offsetHeight; let x=Math.min(Math.max(8,r.left),innerWidth-w-8), y=r.bottom+4; if(y+h>innerHeight-8) y=Math.max(8,r.top-h-4); el.style.left=Math.round(x)+"px"; el.style.top=Math.round(y)+"px";
   const off=e=>{ if(!el.contains(e.target)) close(); }, close=()=>{ el.remove(); document.removeEventListener("pointerdown",off,true); removeEventListener("scroll",close,true); };
   document.addEventListener("pointerdown",off,true); addEventListener("scroll",close,true);
@@ -8252,7 +8254,8 @@ function cenMenuHist(btn){
 async function cenHistAct(k,act){
   const row=(CEN.cur&&CEN.cur.pac||[]).find(x=>x.k===k); if(!row) return;
   if(act==="cama") return cenHistPen(row,"cama");
-  if(act==="quitar"){ const ok=await ppAsk({title:"Quitar del censo",text:"¿Quitar a "+(row.nombre||"este paciente")+" de ESTE censo? Solo cambia la copia del censo, no al paciente.",ok:"Quitar",danger:true}); if(!ok) return; CEN.hist.queue({t:"del",k}); cenRecalcHist(); return; }
+  if(act==="volver"){ cenActOp({t:"ex",k:cenExKey(row),on:false}); return; }
+  if(act==="quitar"){ const ok=await ppAsk({title:"Quitar del censo",text:"¿Quitar a "+(row.nombre||"este paciente")+" de ESTE censo? Solo cambia la copia del censo, no al paciente.",ok:"Quitar",danger:true}); if(!ok) return; if(CEN.mode!=="hist"){ cenActOp({t:"ex",k:cenExKey(row),on:true}); try{ toast("Quitado del censo"); }catch(_){} return; } CEN.hist.queue({t:"del",k}); cenRecalcHist(); return; }
   const name=act==="alta"?"Dar de alta":"Defunción", sec=act==="alta"?"E":"D", est=act==="alta"?"ALTA":"DEFUNCIÓN";
   const ok=await ppAsk({title:name,text:(act==="alta"?"¿Pasar a ":"¿Registrar como ")+(row.nombre||"este paciente")+(act==="alta"?" a Egresos":" en Defunciones")+" de ESTE censo? Solo cambia la copia del censo, no al paciente.",ok:name,danger:act==="alta"}); if(!ok) return;
   CEN.hist.queue({t:"mv",k,sec,est:row.est&&!/^(ALTA|DEFUNCIÓN)$/i.test(row.est)?row.est:est});
@@ -8262,7 +8265,8 @@ async function cenHistAct(k,act){
 (function(){
   const w=$("cenWrap"); if(!w) return;
   w.addEventListener("click",e=>{
-    const kb=e.target.closest("[data-cenkb]"); if(kb){ e.preventDefault(); e.stopPropagation(); if(CEN.mode==="hist") cenMenuHist(kb); else { PP_MENU.toggle(kb); cenMenuExtra(kb); } return; }
+    const kb=e.target.closest("[data-cenkb]"); if(kb){ e.preventDefault(); e.stopPropagation(); const tr0=kb.closest("tr[data-k]"), row0=tr0&&(CEN.cur&&CEN.cur.pac||[]).find(x=>x.k===tr0.dataset.k), full=!row0||row0.sec==="H"||row0.sec==="P";
+      if(CEN.mode==="hist") cenMenuHist(kb,!full); else if(full) { PP_MENU.toggle(kb); cenMenuExtra(kb); } else cenMenuHist(kb,true,tr0.classList.contains("excl")); return; }
     const cp=e.target.closest("[data-cencopy]"); if(cp){ e.preventDefault(); e.stopPropagation(); cenCopyRow(cp); return; }
     const ep=e.target.closest("td[data-estpop]"); if(ep){ const tr=ep.closest("tr[data-k]"); if(tr){ e.preventDefault(); cenEstPop(ep,tr.dataset.k); return; } }
     const bt=e.target.closest("td[data-open]"); if(bt){ const tr=bt.closest("tr[data-k]"); if(tr){ e.preventDefault(); cenOpenEditor(tr.dataset.k); return; } }
@@ -8305,7 +8309,7 @@ const CEN_PRINT_CSS=`@page{size:letter landscape;margin:7mm}@page cenp{size:lett
 *{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}
 html,body{margin:0;padding:0;background:#fff;color:#000}
 body{font-family:"HJM Calibri",Calibri,Carlito,"Segoe UI",Arial,sans-serif}
-.pg{break-after:page;page-break-after:always}.pg:last-child{break-after:auto;page-break-after:auto}
+.pg{break-after:page;page-break-after:always}.pg.tb{height:752px;overflow:visible}.pg:last-child{break-after:auto;page-break-after:auto}
 table.cenp.cm td,table.cenp.cm th{white-space:var(--cmws)!important;overflow-wrap:var(--cmow)!important}table.cenp{width:100%;border-collapse:collapse;table-layout:auto;font-family:"HJM Calibri",Calibri,Carlito,Arial,sans-serif;font-size:8pt;line-height:1.1}
 .cenp th,.cenp td{border:1px solid #000;padding:1px 2px;text-align:center;vertical-align:middle;overflow-wrap:break-word;white-space:pre-wrap}
 .cenp thead{display:table-header-group}.cenp tr{break-inside:avoid;page-break-inside:avoid}
@@ -8318,12 +8322,12 @@ table.rev td.c{text-align:center}table.rev td.g{background:#ccc}table.rev td.o{b
 async function cenPrintDocs(items){
   const fr=document.createElement("iframe"); fr.setAttribute("aria-hidden","true"); fr.style.cssText="position:fixed;left:-3000px;top:0;width:1003px;height:760px;border:0;visibility:hidden";
   document.body.appendChild(fr); const doc=fr.contentDocument; doc.open();
-  doc.write(`<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Censo ${esc(items[0].cen.fecha)}</title><style>${cenFontsCSS()}\n${CEN_PRINT_CSS}</style></head><body>${items.map(it=>`<section class="pg">${cenPrintTable(it.cen,it.rows)}</section><section class="pg"><div class="revw">${cenRevHTML(Object.assign({},it.cen,{rev:it.cen.rev}),false)}</div></section>`).join("")}</body></html>`); doc.close();
+  doc.write(`<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Censo ${esc(items[0].cen.fecha)}</title><style>${cenFontsCSS()}\n${CEN_PRINT_CSS}</style></head><body>${items.map(it=>`<section class="pg tb">${cenPrintTable(it.cen,it.rows)}</section><section class="pg"><div class="revw">${cenRevHTML(Object.assign({},it.cen,{rev:it.cen.rev}),false)}</div></section>`).join("")}</body></html>`); doc.close();
   try{ await (doc.fonts&&doc.fonts.ready?doc.fonts.ready:Promise.resolve()); }catch(_){}
   await cenWait(150);
   const LIM=748;   // alto útil de una hoja carta horizontal (px a 96 dpi) con márgenes de 7 mm
   /* v3.25 · Calibri 8 fijo; el ancho de cada columna sale del contenido (tabla automática). Debe caber en máximo 2 hojas horizontales; solo si no cabe se baja la letra de a medio punto. */
-  doc.querySelectorAll("table.cenp").forEach(t=>{ for(const fs of [8,7.5,7,6.5,6,5.5,5]){ t.style.fontSize=fs+"pt"; cenFitCols(t); if(t.getBoundingClientRect().height<=LIM*2-60) break; } });
+  doc.querySelectorAll("table.cenp").forEach(t=>{ let ok=false; for(let fs=8;fs>=3.5;fs-=0.25){ t.style.fontSize=fs+"pt"; cenFitCols(t,true); if(cenPagesNeeded(t)<=2){ ok=true; break; } } cenSplitPages(t); });
   /* v3.15 · el reverso va en hoja VERTICAL; si el navegador no admite páginas con nombre, se gira el contenido dentro de la hoja horizontal */
   const named=(()=>{ try{ return !!(fr.contentWindow.CSS&&fr.contentWindow.CSS.supports("page","a")); }catch(_){ return false; } })();
   doc.querySelectorAll(".revw").forEach(wr=>{ const t=wr.querySelector("table.rev"); if(!t) return; const h=t.getBoundingClientRect().height, W1=561;
@@ -8378,11 +8382,11 @@ function cenMenuExtra(kb){ const tr=kb.closest("tr[data-k]"); if(!tr) return; co
   b.addEventListener("click",async e=>{ e.stopPropagation(); e.preventDefault(); try{ PP_MENU.close(); }catch(_){}
     const row=(CEN.cur&&CEN.cur.pac||[]).find(x=>x.k===k); if(!row) return;
     if(!ex){ const ok=await ppAsk({title:"Quitar del censo",text:"¿Quitar a "+(row.nombre||"este paciente")+" del censo? Solo deja de verse en esta vista; el paciente no cambia. Podrás volver a mostrarlo.",ok:"Quitar",danger:true}); if(!ok) return; }
-    cenActOp({t:"ex",k,on:!ex}); try{ toast(ex?"Paciente de vuelta en el censo":"Quitado del censo"); }catch(_){} });
+    cenActOp({t:"ex",k:cenExKey(row),on:!ex}); try{ toast(ex?"Paciente de vuelta en el censo":"Quitado del censo"); }catch(_){} });
   m.appendChild(b); }
 
 /* v3.25 · ancho de columnas según el contenido: ideal = la línea más larga sin cortar; mínimo = la palabra más larga / el encabezado. Si todo cabe se reparte el sobrante; si no, cada columna crece desde su mínimo en proporción a lo que le falta. */
-function cenFitCols(t){
+function cenFitCols(t,opt){
   const W=t.parentNode.clientWidth||1000, cols=CEN_COLS.length;
   t.querySelectorAll("colgroup").forEach(c=>c.remove()); t.style.tableLayout="auto"; t.style.width="auto";
   const rowsT=[...t.tBodyRows||t.querySelectorAll("tbody tr:not(.sec):not(.res)")], hdr=[...t.querySelectorAll("thead tr:nth-child(2) th")];
@@ -8393,7 +8397,52 @@ function cenFitCols(t){
   else if(sm>=W) w=mn.map(n=>n*W/sm);
   else { const k=(W-sm)/(sn-sm); w=mn.map((m,i)=>m+(nat[i]-m)*k); }
   const cg=document.createElement("colgroup"); cg.innerHTML=w.map(x=>`<col style="width:${(x/W*100).toFixed(2)}%">`).join(""); t.prepend(cg); t.style.tableLayout="fixed"; t.style.width="100%";
+  if(opt) cenOptCols(t,w,W,mn);
 }
+/* v3.30 · reparte el ancho para MINIMIZAR el alto: en cada fila se detecta la columna que más líneas ocupa (la que "manda" el alto) y se le pasa ancho tomado de las columnas con más holgura */
+function cenOptCols(t,w,W,mn){
+  const rows=[...t.querySelectorAll("tbody tr:not(.sec):not(.res)")], cg=t.querySelector("colgroup"), cols=[...cg.children], n=w.length, rg=document.createRange();
+  const apply=()=>cols.forEach((c,i)=>{ c.style.width=(w[i]/W*100).toFixed(3)+"%"; });
+  const score=()=>{ const lim=new Array(n).fill(0), slack=new Array(n).fill(0); let tot=0;
+    rows.forEach(tr=>{ const hs=[...tr.children].map(td=>{ rg.selectNodeContents(td); return rg.getBoundingClientRect().height; }); const mx=Math.max(...hs); tot+=tr.getBoundingClientRect().height; hs.forEach((h,i)=>{ if(h>=mx-0.5) lim[i]+=mx; else slack[i]+=(mx-h); }); });
+    return {lim,slack,tot}; };
+  apply(); let cur=score(), step=W*0.02;
+  for(let it=0;it<40;it++){
+    let a=-1,b=-1,ba=-1,bb=1e9;
+    for(let i=0;i<n;i++){ if(cur.lim[i]>ba){ ba=cur.lim[i]; a=i; } }
+    for(let i=0;i<n;i++){ if(i!==a&&w[i]-step>=mn[i]&&cur.lim[i]<bb){ bb=cur.lim[i]; b=i; } }
+    if(a<0||b<0||ba<=0) break;
+    w[a]+=step; w[b]-=step; apply(); const nx=score();
+    if(nx.tot<cur.tot-0.2) cur=nx; else { w[a]-=step; w[b]+=step; step/=2; apply(); if(step<W*0.002) break; }
+  }
+  apply();
+}
+
+/* Simula el corte de hojas (encabezado repetido y filas que no se parten) con holgura para que el censo salga en máximo 2 hojas aunque cambie el margen de la impresora */
+function cenPagesNeeded(t){
+  const CAP=725, hh=t.querySelector("thead").getBoundingClientRect().height; let pages=1, used=hh;
+  t.querySelectorAll("tbody tr").forEach(tr=>{ const h=tr.getBoundingClientRect().height; if(used+h>CAP){ pages++; used=hh; } used+=h; });
+  return pages;
+}
+
+/* v3.27 · la hoja se corta aquí mismo (no lo decide el navegador): máximo 2 hojas con alto fijo; lo que no cabe en la 1.ª pasa a la 2.ª con su encabezado */
+function cenSplitPages(t){
+  const CAP=725, hh=t.querySelector("thead").getBoundingClientRect().height, trs=[...t.querySelectorAll("tbody tr")], hs=trs.map(r=>r.getBoundingClientRect().height); let cut=-1;
+  if(hh+hs.reduce((a,c)=>a+c,0)<=CAP){ cenFillPage(t,738); return; }
+  /* reparto parejo (como el ejemplo: 9 + 10 filas): se elige el corte que deja las dos hojas lo más parecidas posible; no se corta justo antes de una fila de sección vacía */
+  let best=1e9, acc=0; const tot=hs.reduce((a,c)=>a+c,0);
+  for(let i=1;i<trs.length;i++){ acc+=hs[i-1]; const m=Math.max(hh+acc,hh+tot-acc); if(trs[i-1].classList.contains("sec")) continue; if(m<best){ best=m; cut=i; } }
+  if(cut<0){ cenFillPage(t,738); return; }
+  const sec=t.parentNode, t2=t.cloneNode(true); t2.querySelectorAll("tbody tr").forEach((tr,i)=>{ if(i<cut) tr.remove(); }); trs.forEach((tr,i)=>{ if(i>=cut) tr.remove(); });
+  const h2=t2.querySelector("thead tr:first-child th"); if(h2) h2.textContent+=" (2/2)"; const h1=t.querySelector("thead tr:first-child th"); if(h1) h1.textContent+=" (1/2)";
+  const s2=sec.cloneNode(false); s2.appendChild(t2); sec.after(s2);
+  /* garantía: si por cualquier diferencia de letra una hoja queda más alta que el área útil, se reduce con zoom para que NO se pierda ningún paciente */
+  [t,t2].forEach(x=>{ const h=x.getBoundingClientRect().height; if(h>738){ x.style.zoom=(738/h).toFixed(4); } else cenFillPage(x,738); });
+}
+
+/* aprovecha toda la hoja: el alto que sobra se reparte entre las filas (centrado vertical), con tope para que no se vean exageradas */
+function cenFillPage(x,H){ const h=x.getBoundingClientRect().height, trs=[...x.querySelectorAll("tbody tr:not(.res)")]; if(!trs.length||h>=H) return; const ex=Math.min((H-h)/trs.length,26); if(ex<1) return;
+  trs.forEach(tr=>{ const hh=tr.getBoundingClientRect().height; tr.style.height=(hh+ex).toFixed(1)+"px"; }); }
 
 /* ---------- Identificación · bloque «Censo»: la fecha de ingreso es la MISMA de HC / Ingreso ---------- */
 function cenProxySync(){ const a=$("fIngreso"), b=$("cenIngProxy"); if(a&&b&&b.value!==a.value&&document.activeElement!==b) b.value=a.value;
