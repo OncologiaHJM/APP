@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oncología · Hospital Juárez de México</title>
-<meta name="application-version" content="3.20">
+<meta name="application-version" content="3.21">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2482,7 +2482,7 @@ body.pp-browse #pPanel.pp-xl .pp-list .cama-badge{flex:none;justify-content:cent
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 3.20 · Fecha de publicación: 25.10.26</div>
+  <div class="app-footer-version">Versión 3.21 · Fecha de publicación: 25.10.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p>Los datos viajan por conexión segura (HTTPS) y se almacenan en la cuenta de Google del Servicio de Oncología del Hospital Juárez de México; protegidos mediante clave de acceso.</p>
     <p id="hjmOffInfo" role="status" hidden></p>
@@ -8426,6 +8426,40 @@ function ppCpyDo(b){ const prev=b.previousElementSibling; if(!prev) return; let 
   try{ navigator.clipboard.writeText(t).then(done,fb); }catch(_){ fb(); } }
 $("ppList").addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest("[data-cpy]"); if(!b) return; e.stopImmediatePropagation(); e.preventDefault(); ppCpyDo(b); },true);
 $("ppList").addEventListener("keydown",e=>{ const b=e.target.closest&&e.target.closest("[data-cpy]"); if(!b||(e.key!=="Enter"&&e.key!==" ")) return; e.stopImmediatePropagation(); e.preventDefault(); ppCpyDo(b); },true);
+
+/* v3.21 · Censo / Hospitalizados al día: (1) la lista se refresca sola cada 30 s mientras se ve el censo u Hospitalizados (antes solo cuando alguien guardaba desde la app, o cada 5 min); (2) los cambios que Claude deja en PendientesJCF (campos de la hoja) se muestran de inmediato, sin abrir paciente por paciente */
+const PEND_DAT=new Map(), PEND_SEEN=new Map(); let PEND_BUSY=false, LIST_BUSY2=false;
+const pendExpOf=n=>{ const m=/^JCF(.+?)\.nota-\d{8}-\d{4}\.json$/i.exec(String(n||"")); return m?m[1]:""; };
+(function(){ const _s=ppRowS;
+  ppRowS=function(f){ const b=_s(f); try{ const e=PEND_DAT.get(expKey(ppExp(f))); if(e&&(!f.modified||e.mod>String(f.modified))) return Object.assign({},b||{},e.d); }catch(_){} return b; }; })();
+function pendViewOn(){ return !document.hidden&&document.body.classList.contains("pp-browse")&&(PP_VIEW==="censoActual"||PP_VIEW==="hospitalizados"||PP_VIEW==="cama"||PP_VIEW==="censos"); }
+async function pendPoll(){
+  if(PEND_BUSY) return; PEND_BUSY=true;
+  try{
+    const all=await gcall("hjmPendientes",""); if(!Array.isArray(all)) return;
+    const live=new Set(all.map(x=>x.id)); Array.from(PEND_SEEN.keys()).forEach(id=>{ if(!live.has(id)) PEND_SEEN.delete(id); });
+    const exps=new Set(); all.forEach(x=>{ if(PEND_SEEN.get(x.id)!==x.modified){ const e=pendExpOf(x.name); if(e) exps.add(e); } });
+    let changed=false;
+    for(const e of exps){
+      let items=[]; try{ items=await gcall("hjmPendientes",e); }catch(_){ continue; }
+      const acc={}; let mod="";
+      (items||[]).forEach(it=>{ PEND_SEEN.set(it.id,it.modified); try{ const o=JSON.parse(it.content||""); if(o&&o.datos&&typeof o.datos==="object"){ Object.assign(acc,o.datos); if(String(it.modified)>mod) mod=String(it.modified); } }catch(_){} });
+      const k=expKey(e), old=PEND_DAT.get(k);
+      if(Object.keys(acc).length){ PEND_DAT.set(k,{d:acc,mod}); changed=true; } else if(old){ PEND_DAT.delete(k); changed=true; }
+    }
+    PEND_DAT.forEach((v,k)=>{ if(!Array.from(live).length){ PEND_DAT.delete(k); changed=true; } });
+    if(changed){ try{ cenRender(); }catch(_){} try{ renderPP(); }catch(_){} }
+  }catch(_){} finally{ PEND_BUSY=false; }
+}
+async function listPoll(){
+  if(LIST_BUSY2||PP_LOADING||!ppOn()) return; LIST_BUSY2=true;
+  try{ const r=onlyJsonFiles(await call("hjmList",null,{fresco:true})); const sig=a=>a.map(f=>f.id+"|"+f.modified).join(",");
+    if(sig(r)!==sig(DRIVE_FILES)){ DRIVE_FILES=r; PP_LAST=Date.now(); LIST_FULL=Date.now(); renderPP(); } }
+  catch(_){} finally{ LIST_BUSY2=false; }
+}
+setInterval(()=>{ try{ if(pendViewOn()) pendPoll(); }catch(_){} },15000);
+setInterval(()=>{ try{ if(pendViewOn()&&!cenDirtyFocus($("cenWrap"))) listPoll(); }catch(_){} },30000);
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden&&pendViewOn()){ setTimeout(pendPoll,300); setTimeout(listPoll,600); } });
 
 /* v3.15 · Censo Actual › «Agregar paciente»: buscador de Drive que se amplía con Identificación + Censo y guarda como la hoja de datos */
 const CENADD={fs:null,ph:null,open:false,busy:false,wasBrowse:false};
