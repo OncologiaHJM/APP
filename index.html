@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oncología · Hospital Juárez de México</title>
-<meta name="application-version" content="3.17">
+<meta name="application-version" content="3.19">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2482,7 +2482,7 @@ body.pp-browse #pPanel.pp-xl .pp-list .cama-badge{flex:none;justify-content:cent
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 3.17 · Fecha de publicación: 25.10.26</div>
+  <div class="app-footer-version">Versión 3.19 · Fecha de publicación: 25.10.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p>Los datos viajan por conexión segura (HTTPS) y se almacenan en la cuenta de Google del Servicio de Oncología del Hospital Juárez de México; protegidos mediante clave de acceso.</p>
     <p id="hjmOffInfo" role="status" hidden></p>
@@ -2909,6 +2909,21 @@ html body #pPanel #ppList [data-fn]:empty + .cpy{display:none}
 html body #pPanel #ppList .tgw:has([data-fn]:empty){display:none}
 html body #pPanel #ppList .nmw{display:inline-flex;align-items:center;min-width:0;max-width:100%}
 html body #pPanel #ppList .tgw{display:inline-flex;align-items:center;white-space:nowrap}
+
+/* v3.18 · Hospitalizados: copiar pegado al final del nombre, clínica completa, FN en la 3.ª fila */
+html body #pPanel #ppList .nmw{display:block;max-width:100%}
+html body #pPanel #ppList .nmw>b{display:inline!important}
+html body #pPanel #ppList .nmw>.cpy{display:inline-flex;vertical-align:-3px}
+html body #pPanel #ppList .tags>.tgw:first-child{flex:0 0 100%}
+html body #pPanel #ppList .tags{justify-content:flex-start}
+html body #pPanel #ppList .pmeta .pm-cl,html body #pPanel #ppList .pmeta .pm-cl>span,html body #pPanel #ppList .pmeta .pm-ads{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;max-width:none!important;min-width:0}
+html body #pPanel #ppList .pmeta{overflow:visible!important;text-overflow:clip!important;white-space:normal!important}
+/* Censo: encabezados de sección con el fondo de los títulos */
+table.cen tr.sec td{background:var(--cen-head)}
+html body #pPanel #ppList .nmw{display:flex!important;align-items:center;justify-content:flex-start}
+html body #pPanel #ppList .nmw>b{display:block!important;flex:0 1 auto!important;width:auto!important;min-width:0}
+html body #pPanel #ppList .nmw>.cpy{flex:0 0 auto;margin-left:5px}
+html body #pPanel #ppList .tags .tag.fn,html body #pPanel #ppList .tags .tag.edad{padding-left:0!important;margin-left:0!important}
 </style>
 <script id="saved-data" type="application/json">null</script>
 <script>
@@ -7927,7 +7942,7 @@ function cenBuild(Td,now,opt){
   const mk=(list,sec)=>list.map(f=>cenRowOf(f,cenDat(f),Td,sec));
   const rows=cenSortRows(mk(fs.H,"H")).concat(mk(fs.E,"E").sort((a,b)=>a.ts-b.ts),mk(fs.D,"D").sort((a,b)=>a.ts-b.ts));
   const hoy=cenDot(Td), ayer=cenDot(prevDay);
-  rows.forEach(r=>{ r.nu=(r.ing&&r.ing===hoy)||(r.ing&&r.ing===ayer&&(pv==="none"||(pv instanceof Set&&!pv.has(String(r.exp).trim()))))?1:0; if(r.sec==="E") r.est=r.est||"ALTA"; if(r.sec==="D") r.est=r.est||"DEFUNCIÓN"; });
+  rows.forEach(r=>{ r.nu=(r.ing&&r.ing===hoy)||(r.ing&&r.ing===ayer&&(pv==="none"||(pv instanceof Set&&!pv.has(String(r.exp).trim()))))?1:0; if(r.sec==="H"&&r.nu&&!r.est) r.est="INGRESO"; if(r.sec==="E") r.est=r.est||"ALTA"; if(r.sec==="D") r.est=r.est||"DEFUNCIÓN"; });
   return { app:"censo-hjm", v:1, fecha:hoy, corte:new Date(Td.ts).toISOString(), pac:rows, res:"", rev:{f:{}}, _files:{H:fs.H,E:fs.E,D:fs.D} };
 }
 async function cenLoadDatos(files){ let fallos=0; await ppPool(files,6,async f=>{ if(ppRowD(f)) return; const d=await ppCensusDatos(f); if(!d) fallos++; }); return fallos; }
@@ -7981,7 +7996,11 @@ const CEN_ICO_LST='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v
 const CEN_ICO_SAVE='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v13H5zM8 4v5h7V4M8 20v-6h8v6"/></svg>';
 const CEN_ICO_PRT='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9V3h10v6M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M7 14h10v7H7z"/></svg>';
 const cenFecha4=s=>{ const p=parts(s); return p?p.dd+"."+p.mm+".20"+p.yy:String(s||""); };
-const cenSecName={E:"EGRESOS",D:"DEFUNCIONES"};
+const cenSecName={P:"PERIFÉRICOS",E:"ALTAS",D:"DEFUNCIONES"};
+/* Camas 150–197 = piso; cualquier otra (UCI, urgencias, otras) va en PERIFÉRICOS bajo su propia fila */
+function cenInRange(c){ const m=/^\s*(\d{3})/.exec(String(c||"")); if(!m||/^UCI/i.test(String(c||"").trim())) return false; const n=+m[1]; return n>=150&&n<=197; }
+const cenSecKey=r=>r.sec==="H"&&!cenInRange(r.cama)?"P":r.sec;
+function cenOrdered(rows){ const o={H:0,P:1,E:2,D:3}; return rows.map((r,i)=>[r,i]).sort((a,b)=>(o[cenSecKey(a[0])]-o[cenSecKey(b[0])])||(a[1]-b[1])).map(x=>x[0]); }
 function cenRowMatch(r){
   const A=PP_FILT.ads, C=PP_FILT.clin;
   if(A.length){ const a=String(r.adsRaw||"").split("/")[0].trim(); if(!a) return false; const i=ppAdsInfo(a); if(!(i.ok&&A.includes(i.key))) return false; }
@@ -7989,7 +8008,7 @@ function cenRowMatch(r){
   const s=($("ppSearch").value||"").trim().toUpperCase(); if(s&&!(String(r.nombre).includes(s)||String(r.exp).toUpperCase().includes(s)||String(r.cama).includes(s))) return false;
   return true;
 }
-const cenVisible=cen=>(cen.pac||[]).filter(cenRowMatch);
+const cenVisible=cen=>cenOrdered((cen.pac||[]).filter(cenRowMatch));
 function cenRowHTML(r){
   const tds=CEN_COLS.map(([f],i)=>{ const v=r[f]==null?"":String(r[f]); let inner;
     if(CEN_BTN.has(f)) return `<td class="bt" tabindex="0" role="button" data-open title="Editar en ventana"><span>${esc(v)}</span></td>`;
@@ -7998,12 +8017,12 @@ function cenRowHTML(r){
     else return `<td class="ro">${esc(v)}</td>`;
     const kb=(i===0&&r.sec==="H")?`<button type="button" class="kb pp-kebab" data-cenkb aria-haspopup="menu" aria-label="Acciones del paciente" title="Acciones">${CEN_ICO_KB}</button>`:"";
     return `<td>${kb}${inner}</td>`; }).join("");
-  const kbc=`<td class="kbc"><span class="kbw">${r.sec==="H"?`<button type="button" class="kb pp-kebab" data-cenkb aria-haspopup="menu" aria-label="Acciones del paciente" title="Acciones">${CEN_ICO_KB}</button>`:'<span class="kbs"></span>'}<button type="button" class="kb cp" data-cencopy aria-label="Copiar la fila" title="Copiar la fila (para pegar en la hoja de cálculo)">${CEN_ICO_CPY}</button></span></td>`;
+  const kbc=`<td class="kbc"><span class="kbw"><button type="button" class="kb cp" data-cencopy aria-label="Copiar la fila" title="Copiar la fila (para pegar en la hoja de cálculo)">${CEN_ICO_CPY}</button>${r.sec==="H"?`<button type="button" class="kb pp-kebab" data-cenkb aria-haspopup="menu" aria-label="Acciones del paciente" title="Acciones">${CEN_ICO_KB}</button>`:'<span class="kbs"></span>'}</span></td>`;
   return `<tr data-k="${esc(r.k)}" data-id="${esc(r.k)}"${r.nu?' class="nuevo"':""}>${kbc}${tds}</tr>`;
 }
 function cenTableHTML(cen){
   const rows=cenVisible(cen); let body="", last="H";
-  rows.forEach(r=>{ if(r.sec!==last){ last=r.sec; body+=`<tr class="sec"><td colspan="17">${cenSecName[r.sec]||""}</td></tr>`; } body+=cenRowHTML(r); });
+  rows.forEach(r=>{ const sk=cenSecKey(r); if(sk!==last){ last=sk; body+=`<tr class="sec"><td class="kbc"></td><td colspan="16">${cenSecName[sk]||""}</td></tr>`; } body+=cenRowHTML(r); });
   if(!rows.length) body=`<tr><td colspan="17" class="ro" style="padding:22px;color:var(--cen-mute)">${(PP_FILT.ads.length||PP_FILT.clin.length||($("ppSearch").value||"").trim())?"Ningún paciente con ese filtro.":"Sin pacientes hospitalizados."}</td></tr>`;
   return `<table class="cen"><colgroup><col style="width:56px">${CEN_COLS.map((c,i)=>`<col style="width:${(CEN_PW2[i]).toFixed(2)}%">`).join("")}</colgroup><thead><tr class="t1"><th class="kbc"></th><th colspan="16">CENSO ${esc(cenFecha4(cen.fecha))}</th></tr><tr class="t2"><th class="kbc"></th>${CEN_COLS.map(c=>`<th>${c[1]}</th>`).join("")}</tr></thead><tbody>${body}</tbody></table>`;
 }
@@ -8263,7 +8282,7 @@ function cenFontsCSS(){ let fonts=""; try{ for(const ss of document.styleSheets)
 const CEN_PW=[4.6,8.4,3.8,5.8,6.0,6.2,14,5.0,3.2,6.2,14,6.4,4.8,13,8.6,5.8];
 function cenPrintTable(cen,rows){
   const tot=CEN_PW.reduce((s,c)=>s+c,0); let body="", last="H";
-  rows.forEach(r=>{ if(r.sec!==last){ last=r.sec; body+=`<tr class="sec"><td colspan="16">${cenSecName[r.sec]||""}</td></tr>`; }
+  cenOrdered(rows).forEach(r=>{ const sk=cenSecKey(r); if(sk!==last){ last=sk; body+=`<tr class="sec"><td colspan="16">${cenSecName[sk]||""}</td></tr>`; }
     body+=`<tr${r.nu?' class="nu"':""}>${CEN_COLS.map(([f])=>`<td>${esc(r[f]==null?"":String(r[f]))}</td>`).join("")}</tr>`; });
   body+=`<tr class="res"><td colspan="16">${esc(cen.res||"")}</td></tr>`;
   return `<table class="cenp"><colgroup>${CEN_COLS.map((c,i)=>`<col style="width:${(CEN_PW[i]/tot*100).toFixed(2)}%">`).join("")}</colgroup><thead><tr><th colspan="16">CENSO ${esc(cenFecha4(cen.fecha))}</th></tr><tr>${CEN_COLS.map(c=>`<th>${c[1]}</th>`).join("")}</tr></thead><tbody>${body}</tbody></table>`;
