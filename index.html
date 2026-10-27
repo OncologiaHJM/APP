@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oncología · Hospital Juárez de México</title>
-<meta name="application-version" content="3.39">
+<meta name="application-version" content="3.42">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2482,7 +2482,7 @@ body.pp-browse #pPanel.pp-xl .pp-list .cama-badge{flex:none;justify-content:cent
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 3.39 · Fecha de publicación: 25.10.26</div>
+  <div class="app-footer-version">Versión 3.42 · Fecha de publicación: 26.10.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p>Los datos viajan por conexión segura (HTTPS) y se almacenan en la cuenta de Google del Servicio de Oncología del Hospital Juárez de México; protegidos mediante clave de acceso.</p>
     <p id="hjmOffInfo" role="status" hidden></p>
@@ -2951,6 +2951,211 @@ table.cen td:has(>textarea):focus-within,table.rev td:has(>textarea):focus-withi
 @media print{.clinical-allergy{display:none!important}}
 .clinical-allergy.has-empty>input{padding-right:34px!important;background-color:var(--input-pending,#FFFBEA)!important;background-image:radial-gradient(circle,#F4C430 0 3.5px,rgba(244,196,48,.22) 4px 7px,transparent 7.5px)!important;background-repeat:no-repeat!important;background-size:15px 15px!important;background-position:calc(100% - 11px) center!important}
 .clinical-allergy.has-empty>input:focus{background-color:var(--surface,#fff)!important}
+
+/* ===== v3.40 · Enviar censo final, chips Guardia/Censo, alerta ===== */
+.cen-chips{order:2;display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap}
+.cen-chip{display:inline-flex;align-items:baseline;gap:5px;padding:2px 10px;border:1px solid var(--cen-line,#CFD2D6);border-radius:999px;font-size:12.5px;line-height:1.5;white-space:nowrap}
+.cen-chip small{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--cen-mute,#6B6F73)}
+.cen-chip b{font-weight:800}
+.cen-chips[hidden]{display:none}
+#cenAlert{flex:1 0 100%;order:3;margin-top:8px!important;display:flex;flex-wrap:wrap;gap:2px 8px;align-items:center;margin-top:6px;padding:5px 10px;border-radius:9px;background:#FFF4D6;border:1px solid #E0A800;color:#6B4B00;font:600 12px/1.35 system-ui,sans-serif}
+#cenAlert::before{content:"!";display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#E0A800;color:#fff;font-weight:900;font-size:11px;flex:0 0 auto}
+#cenAlert[hidden]{display:none}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #cenAlert{background:#3a3010;border-color:#a37d00;color:#f3d68a}}
+html body #pPanel #cenSendBtn.cen-send-btn{background:#1F8A4C!important;border-color:#1F8A4C!important;color:#fff!important;white-space:nowrap;box-shadow:0 0 0 0 rgba(31,138,76,.5);animation:cenPulse 2.4s ease-out infinite}
+html body #pPanel #cenSendBtn.cen-send-btn:hover{background:#17703d!important;animation:none}
+#cenSendBtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px;margin-right:6px}
+#cenSendBtn[hidden]{display:none!important}
+@keyframes cenPulse{0%{box-shadow:0 0 0 0 rgba(31,138,76,.45)}70%{box-shadow:0 0 0 9px rgba(31,138,76,0)}100%{box-shadow:0 0 0 0 rgba(31,138,76,0)}}
+@media (prefers-reduced-motion:reduce){html body #pPanel #cenSendBtn.cen-send-btn{animation:none}}
+dialog.cen-send{width:min(94vw,460px)}
+dialog.cen-send h3{display:flex;align-items:center;gap:8px}
+dialog.cen-send h3 svg,dialog.cen-send .pp-dlg-b svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+dialog.cen-send .pp-dlg-b button.ok{display:inline-flex;align-items:center;gap:6px;background:#1F8A4C;border-color:#1F8A4C;color:#fff;border-radius:10px}
+dialog.cen-send .pp-dlg-b button{border-radius:10px}
+dialog.cen-send .cs-note{background:#EEF7F1;border:1px solid #BFE0CC;border-radius:10px;padding:9px 11px}
+dialog.cen-send .cs-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+dialog.cen-send label{display:grid;gap:4px;font-size:12px;font-weight:800;color:inherit}
+dialog.cen-send .cs-hint{font-size:11.5px;color:var(--cen-mute,#6B6F73);line-height:1.35}
+dialog.cen-send .cs-res{display:grid;gap:4px}
+dialog.cen-send .cs-res label{font-size:12px}
+dialog.cen-send #cenRes{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #D6D8DB;border-radius:10px;font:700 14px system-ui,sans-serif;background:transparent;color:inherit;text-transform:uppercase}
+dialog.cen-send .pp-dlg-err{min-height:15px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) dialog.cen-send .cs-note{background:#16301f;border-color:#2c6b43}}
+@media (max-width:460px){dialog.cen-send .cs-row{grid-template-columns:1fr}}
+/* ===== v3.40 · Rol Administrativo y ventana «Ver» ===== */
+body.is-admv [data-pp-view="cama"]{display:none!important}
+body.is-admv #bandNew,body.is-admv #archiveOpen~*[data-new]{display:none!important}
+body.is-admv #view-archive .rb-del,body.is-admv #view-archive .rb-edit,body.is-admv #view-archive [data-ar-open]{display:none!important}
+body.is-admv #view-archive .ar-act .rb-view:not([data-ar="ver"]){display:none!important}
+dialog.ar-view{width:min(96vw,980px);height:min(92vh,1100px);max-width:none;padding:0;border:0;border-radius:16px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.4);background:#fff;color:#222}
+dialog.ar-view[open]{display:flex;flex-direction:column}
+dialog.ar-view::backdrop{background:rgba(25,27,30,.55)}
+dialog.ar-view .av-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-bottom:1px solid #d8dadd;background:#fff}
+dialog.ar-view .av-t{display:grid;gap:2px;min-width:0}dialog.ar-view .av-t b{font-size:15px}dialog.ar-view .av-t small{font-size:12px;color:#666}
+dialog.ar-view .av-b{display:flex;gap:8px;align-items:center}
+dialog.ar-view .av-print{font:700 13px system-ui,sans-serif;padding:8px 16px;border-radius:10px;border:1px solid #3A3B3B;background:#3A3B3B;color:#fff;cursor:pointer}
+dialog.ar-view .av-x{font-size:26px;line-height:1;border:0;background:transparent;cursor:pointer;color:#444;padding:0 6px}
+dialog.ar-view .av-frame{flex:1 1 auto;width:100%;border:0;background:#e6e7e9}
+.cl-who{display:block;font-size:11px;color:var(--cen-mute,#6B6F73);margin-top:2px}
+dialog.ar-view .rb{display:inline-flex;align-items:center;gap:6px}
+dialog.ar-view .av-b .rb svg{width:16px;height:16px}
+/* ===== v3.41 · móvil / Z Fold desplegado ===== */
+@media screen and (max-width:1100px){
+  #cenWrap table.cen{width:1500px!important;min-width:1500px!important;max-width:none!important;font-size:11px!important}
+  #cenWrap .cen-scroll{overflow-x:auto!important;overflow-y:visible;-webkit-overflow-scrolling:touch}
+}
+@media screen and (max-width:900px){
+  .band-btn#bandIdx{display:none!important}
+  #archiveOpen2{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;width:100%;box-sizing:border-box;margin:2px 0 0;padding:11px 14px;border:1px solid var(--line,#E4E5E6);border-radius:12px;background:var(--surface,#fff);color:var(--rd-ink,#333);font:700 14px/1.2 var(--rd-sans,system-ui);cursor:pointer}
+  #archiveOpen2 svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+}
+@media screen and (min-width:901px){#archiveOpen2{display:none!important}}
+body.pp-browse #archiveOpen2{display:none!important}
+@media screen and (max-width:900px){html body #view-data #formatos .clinical-index #archiveOpen2{white-space:nowrap!important;text-align:left!important;font-size:14px!important;justify-content:space-between!important;min-height:44px}}
+body.is-admv #bandBack .bb-cen{display:inline!important}
+body.is-admv #bandBack svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+table.cen td.bt.lk{cursor:default}
+table.cen td.bt.lk:hover{background:color-mix(in srgb,var(--cen-tint) 55%,transparent);box-shadow:none}
+.pp-menu.cen-hm button.danger,.pp-menu.cen-hm button.danger span{color:#8A1C1C}
+.pp-menu.cen-hm button.danger svg{stroke:#8A1C1C}
+body.is-admv #bandPac,body.is-admv #cfgStats{display:none!important}
+
+/* ===== v3.42 · Archivo Clínico rediseñado (línea de tiempo compacta) ===== */
+#view-archive{padding:14px clamp(10px,2.4vw,32px) 40px}
+#view-archive .ar-shell{max-width:1060px}
+#view-archive .ar-shell>*:not(#arV2){display:none!important}
+#arV2 svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+#arV2 .av2-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+#arV2 .av2-pt h2{margin:0;font-size:18px;line-height:1.2;color:var(--navy,#303132)}
+#arV2 .av2-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+#arV2 .av2-tags span{font-size:11.5px;color:var(--muted,#6A6E71);background:var(--surface,#fff);border:1px solid var(--line,#E3E5E6);border-radius:999px;padding:2px 9px}
+#arV2 .av2-tags b{color:var(--navy,#303132)}
+#arV2 .av2-by{display:inline-flex;border:1px solid var(--line,#E3E5E6);border-radius:10px;overflow:hidden;background:var(--surface,#fff)}
+#arV2 .av2-by button{border:0;background:transparent;padding:7px 13px;font:700 12px var(--ui,inherit);color:var(--muted,#6A6E71);cursor:pointer}
+#arV2 .av2-by button.on{background:var(--navy,#303132);color:#fff}
+#arV2 .av2-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+#arV2 .av2-search{flex:1 1 240px;display:flex;align-items:center;gap:8px;border:1px solid var(--line,#E3E5E6);background:var(--surface,#fff);border-radius:10px;padding:0 10px;color:var(--muted,#6A6E71)}
+#arV2 .av2-search input{flex:1;border:0;outline:0;background:transparent;padding:9px 0;font:600 13px var(--ui,inherit);color:var(--navy,#303132);min-width:0}
+#arV2 select,#arV2 .av2-ghost{border:1px solid var(--line,#E3E5E6);background:var(--surface,#fff);border-radius:10px;padding:8px 11px;font:700 12px var(--ui,inherit);color:var(--navy,#303132);cursor:pointer}
+#arV2 .av2-ghost:hover,#arV2 .av2-more:hover{background:var(--hover,#F1F2F3)}
+#arV2 .av2-chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:thin}
+#arV2 .av2-chip{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line,#E3E5E6);background:var(--surface,#fff);border-radius:999px;padding:6px 12px;font:700 12px var(--ui,inherit);color:var(--navy,#303132);cursor:pointer}
+#arV2 .av2-chip b{font-size:11px;background:var(--hover,#EDEEEF);border-radius:999px;padding:1px 7px;color:var(--muted,#6A6E71)}
+#arV2 .av2-chip.on{background:var(--navy,#303132);border-color:var(--navy,#303132);color:#fff}
+#arV2 .av2-chip.on b{background:#ffffff30;color:#fff}
+#arV2 .av2-res{font-size:11.5px;color:var(--muted,#6A6E71);margin:0 2px 8px}
+#arV2 .av2-sec{background:var(--surface,#fff);border:1px solid var(--line,#E3E5E6);border-radius:12px;margin-bottom:8px;overflow:hidden}
+#arV2 .av2-sec>summary{list-style:none;display:flex;align-items:center;gap:9px;padding:10px 12px;cursor:pointer;user-select:none}
+#arV2 .av2-sec>summary::-webkit-details-marker{display:none}
+#arV2 .av2-sec>summary:hover{background:var(--hover,#F6F7F7)}
+#arV2 .av2-chev{display:grid;transition:transform .15s;color:var(--muted,#6A6E71)}
+#arV2 .av2-sec[open]>summary .av2-chev{transform:rotate(90deg)}
+#arV2 .av2-sic{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;color:var(--c);background:color-mix(in srgb,var(--c) 13%,transparent)}
+#arV2 .av2-st{font-weight:800;font-size:13.5px;color:var(--navy,#303132)}
+#arV2 .av2-ss{display:flex;gap:5px;flex-wrap:wrap;flex:1;min-width:0}
+#arV2 .av2-ss i{font-style:normal;font-size:10.5px;font-weight:700;color:var(--c);background:color-mix(in srgb,var(--c) 12%,transparent);border-radius:999px;padding:1px 8px}
+#arV2 .av2-n{margin-left:auto;font-size:12px;color:var(--muted,#6A6E71)}
+#arV2 .av2-rows{border-top:1px solid var(--line,#E3E5E6)}
+#arV2 .av2-row{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line,#EEF0F0)}
+#arV2 .av2-row:last-child{border-bottom:0}
+#arV2 .av2-row:hover{background:var(--hover,#F8F9F9)}
+#arV2 .av2-ic{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;color:var(--c);background:color-mix(in srgb,var(--c) 13%,transparent)}
+#arV2 .av2-t{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+#arV2 .av2-t b{font-size:13px;color:var(--navy,#303132)}
+#arV2 .av2-kind{font-size:10.5px;font-weight:700;color:var(--c)}
+#arV2 .av2-meta{display:flex;gap:9px;flex-wrap:wrap;font-size:11px;color:var(--muted,#6A6E71)}
+#arV2 .av2-meta span+span:before{content:"·";margin-right:9px}
+#arV2 .av2-pv{margin:2px 0 0;font-size:11.5px;color:var(--muted,#6A6E71);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#arV2 .av2-act{display:flex;gap:4px}
+#arV2 .av2-b{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line,#E3E5E6);background:var(--surface,#fff);border-radius:8px;padding:6px 9px;font:700 11.5px var(--ui,inherit);color:var(--navy,#303132);cursor:pointer}
+#arV2 .av2-b:hover{background:var(--hover,#F1F2F3)}
+#arV2 .av2-b svg{width:15px;height:15px}
+#arV2 .av2-del{color:#8A1C1C}
+#arV2 .av2-dim{opacity:.75}
+#arV2 .av2-more{display:block;width:100%;border:0;border-top:1px solid var(--line,#E3E5E6);background:transparent;padding:9px;font:700 12px var(--ui,inherit);color:var(--navy,#303132);cursor:pointer}
+#arV2 .av2-more span{color:var(--muted,#6A6E71);font-weight:500;margin-left:6px}
+#arV2 .av2-empty{text-align:center;padding:36px 12px;color:var(--muted,#6A6E71);background:var(--surface,#fff);border:1px dashed var(--line,#D5D8D9);border-radius:12px}
+#arV2 .av2-empty strong{color:var(--navy,#303132)}
+@media (max-width:700px){
+  #arV2 .av2-row{grid-template-columns:30px minmax(0,1fr)}
+  #arV2 .av2-act{grid-column:2;flex-wrap:wrap}
+  #arV2 .av2-ss{display:none}
+  #arV2 .av2-ghost{display:none}
+}
+#arV2 .av2-tools>*{width:auto!important;margin:0!important}
+#arV2 .av2-tools .av2-search{width:auto!important;flex:1 1 240px}
+#arV2 .av2-tools .av2-search input{width:100%!important;border:0!important;box-shadow:none!important;background:transparent!important;padding:9px 0!important}
+#arV2 .av2-tools select{flex:0 0 auto;height:auto}
+#arV2.by-date .av2-d{display:none}
+#arV2.by-date .av2-meta span.av2-d+span:before{content:none}
+#arV2 .av2-b,#arV2 .av2-chip,#arV2 .av2-by button,#arV2 .av2-more{width:auto}
+#arV2 .av2-more{width:100%}
+@media (max-width:700px){ #arV2 .av2-b span{display:none} #arV2 .av2-b{padding:8px 11px} #arV2 .av2-search{flex-basis:100%} }
+
+#cenWrap table.cen td.kbc .kb.cp.fl{background:rgba(245,176,0,.22)!important;color:#B07C00!important}
+#cenWrap table.cen td.kbc .kb.cp.fl:hover{background:rgba(245,176,0,.42)!important;color:#8A6100!important}
+
+/* ===== v3.42 · Archivo Clínico en ventana ===== */
+dialog.ar-win-dlg{border:0;padding:0;width:min(1100px,96vw);height:min(92vh,900px);max-width:96vw;border-radius:16px;overflow:hidden;background:var(--bg,#F6F7F7);color:var(--navy,#303132)}
+dialog.ar-win-dlg[open]{display:flex;flex-direction:column}
+dialog.ar-win-dlg::backdrop{background:rgba(25,26,29,.78)}
+.aw-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:var(--surface,#fff);border-bottom:1px solid var(--line,#E3E5E6);flex:none}
+.aw-head b{font-size:14px}
+.aw-x{border:0;background:transparent;font-size:24px;line-height:1;cursor:pointer;color:var(--muted,#6A6E71);padding:2px 8px}
+.aw-body{flex:1;overflow:auto;min-height:0}
+.aw-load{padding:48px;text-align:center;color:var(--muted,#6A6E71);font-weight:700}
+#view-archive.ar-win{display:block!important;padding:12px clamp(8px,2vw,22px) 24px;background:transparent}
+#view-archive.ar-win .av2-del{display:none}
+/* hospitalizados: notas, tres puntos, indicaciones y archivo clínico en cuadrícula 2x2 */
+.pp-qa{display:grid!important;grid-template-columns:30px 30px;grid-auto-rows:30px;gap:6px;align-content:center}
+#ppList.by-cama .dlg-item>.pp-kebab{display:none!important}
+html body #pPanel #ppList .pp-qa .pp-kebab{position:static!important;grid-area:auto!important;margin:0!important;width:30px!important;height:30px!important;align-self:auto!important;justify-self:auto!important;display:grid!important;place-content:center;border:1px solid var(--rd-line2,#C9CBCD);border-radius:9px!important;background:var(--rd-tint,#EDF1F4)!important;color:var(--rd-ink,#1C1E21)!important}
+html body #pPanel #ppList .pp-qa .pp-kebab:hover{background:color-mix(in srgb,#1F6FB5 18%,transparent)!important;color:#1F6FB5!important;border-color:#1F6FB5}
+.pp-qa .pp-kebab svg{width:17px;height:17px;fill:currentColor}
+.pp-qa .pp-file{background:rgba(245,176,0,.22)!important;color:#B07C00!important;border-color:rgba(245,176,0,.55)!important}
+.pp-qa .pp-file:hover{background:rgba(245,176,0,.42)!important;color:#8A6100!important}
+.pp-qa svg{width:17px;height:17px}
+
+/* ===== v3.42 · Z Fold 7 desplegado (≈984×1092) y tabletas: encabezados compactos ===== */
+@media (min-width:700px) and (max-width:1100px){
+  html body .top{padding:6px 16px 4px!important;gap:10px!important;min-height:0!important}
+  html body .top .seal{width:38px!important;height:38px!important;padding:3px!important}
+  html body .top .seal.crab{padding:7px!important}
+  html body .top .brand h1{font-size:20px!important;line-height:1.1!important}
+  html body .top .credit-name{font-size:15px!important;line-height:1.1!important}
+  html body .band{padding:5px 16px 6px!important;gap:8px!important}
+  html body .band-name{font-size:14.5px!important;line-height:1.2!important}
+  html body .band-meta{font-size:11.5px!important;gap:2px 10px!important;line-height:1.25!important}
+  html body .band .band-btn{height:34px!important;min-height:0!important;padding-top:0!important;padding-bottom:0!important}
+  html body .band .band-gear,html body .band #bandOut{width:34px!important;height:34px!important}
+  html body #view-clinical{padding:10px 18px 30px!important}
+  html body #view-clinical .section-switcher,html body #view-format .section-switcher{padding:3px!important}
+  html body #view-clinical .section-switcher .clinical-switch,html body #view-format .section-switcher .clinical-switch{min-height:36px!important;flex-direction:row!important;display:flex!important;gap:7px!important;padding:4px 8px!important}
+  html body #view-clinical .clinical-head,html body #view-format .fbar{padding-bottom:8px!important;margin-bottom:6px!important;gap:8px 12px!important;flex-wrap:nowrap!important;align-items:center!important}
+  html body #view-clinical .clinical-head h1,html body #view-format .fbar h1{font-size:26px!important;line-height:1.05!important}
+  html body #view-clinical .clinical-head .actions .btn,html body #view-format .fbar .actions .btn{height:36px!important;min-height:0!important;padding:0 10px!important;font-size:12.5px!important;gap:6px!important}
+  html body #view-format .fbar .actions,html body #view-clinical .clinical-head .actions{gap:6px!important;flex-wrap:nowrap!important;flex:0 1 auto}
+  html body #view-format .fbar .ftitle,html body #view-clinical .clinical-head .ftitle{flex:1 1 auto;min-width:0}
+  html body #view-format{padding-top:8px!important}
+  html body #view-format .fnote{margin:0 0 6px!important;font-size:11.5px!important}
+  html body #view-format .clinical-switcher{margin-top:6px!important}
+  /* Hospitalizados */
+  html body #pPanel .pp-head{gap:6px!important}
+  html body #pPanel h2{font-size:30px!important;line-height:1.05!important}
+}
+@media (min-width:700px) and (max-width:959px){
+  html body #view-clinical .clinical-head,html body #view-format .fbar{flex-wrap:wrap!important}
+  html body #view-format .fbar .actions,html body #view-clinical .clinical-head .actions{flex-wrap:wrap!important;flex:1 1 100%;justify-content:flex-start}
+}
+
+/* v3.42 · Hospitalizados: el texto del paciente ya no se selecciona (se usan los botones de copiar, más visibles) */
+html body #pPanel #ppList [data-sel],html body #pPanel #ppList .pinfo,html body #pPanel #ppList .pp-ing,html body #pPanel #ppList [data-edad]{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none}
+html body #pPanel #ppList .cpy{width:22px!important;height:22px!important;opacity:1!important;border:1px solid color-mix(in srgb,#1F6FB5 40%,transparent);background:color-mix(in srgb,#1F6FB5 12%,transparent)!important;color:#1F6FB5!important;border-radius:7px!important}
+html body #pPanel #ppList .cpy svg{width:13px!important;height:13px!important}
+html body #pPanel #ppList .cpy:hover{background:color-mix(in srgb,#1F6FB5 26%,transparent)!important;border-color:#1F6FB5}
+html body #pPanel #ppList .cpy.ok{background:#E3F4E6!important;border-color:#2E7D32;color:#2E7D32!important}
 </style>
 <script id="saved-data" type="application/json">null</script>
 <script>
@@ -3095,7 +3300,7 @@ let HJM_USERS=[],HJM_OPS={},HJM_OPS_DIRTY=false,HJM_OPS_MOD="",HJM_OPS_LMOD="",U
 /* LISTA DE USUARIOS INCRUSTADA EN EL HTML (única lista de origen): es la que usa un equipo nuevo o sin internet.
    La pestaña «Index» del panel tiene el botón «Descargar Index con Usuarios Actualizados» que reescribe SOLO esta línea.
    En Drive (_USUARIOS_HJM.json) solo viven los CAMBIOS que aún no están aquí; al abrir la app con un HTML que ya los trae, se borran solos de Drive. */
-const HJM_USERS_BASE=/*USUARIOS_BASE_INI*/{"ts":1792926944996,"usuarios":[{"usuario":"DR. PAUL ERNESTO CHARIS TRUJILLO","nombre":"DR. PAUL ERNESTO CHARIS TRUJILLO","tipo":"adscrito","servicio":"TUMORES MIXTOS","cp":"14887451"},{"usuario":"DR. ZIAD ABO HARP HASAN","nombre":"DR. ZIAD ABO HARP HASAN","tipo":"adscrito","servicio":"TUMORES MIXTOS","cp":"0020562"},{"usuario":"DR. ERIK EFRAIN SOSA DURAN","nombre":"DR. ERIK EFRAIN SOSA DURAN","tipo":"adscrito","servicio":"TUMORES MIXTOS","cp":"6982509"},{"usuario":"DR. EDUARDO ROVELO LIMA","nombre":"DR. EDUARDO ROVELO LIMA","tipo":"adscrito","servicio":"TUMORES MIXTOS","cp":"6323548"},{"usuario":"DR. OSCAR ZENON ROSAS GUERRA","nombre":"DR. OSCAR ZENON ROSAS GUERRA","tipo":"adscrito","servicio":"TUMORES MIXTOS","cp":"10554858"},{"usuario":"DRA. STEPHANY DE LUNA JIMENEZ","nombre":"DRA. STEPHANY DE LUNA JIMENEZ","tipo":"adscrito","servicio":"TUMORES MIXTOS","cp":"12868221"},{"usuario":"DRA. CRISTINA ALVARADO SILVA","nombre":"DRA. CRISTINA ALVARADO SILVA","tipo":"adscrito","servicio":"ONCOLOGÍA MÉDICA","cp":"3412446"},{"usuario":"DR. EDUARDO REYES SANCHEZ","nombre":"DR. EDUARDO REYES SANCHEZ","tipo":"adscrito","servicio":"ONCOLOGÍA MÉDICA","cp":"11994458"},{"usuario":"DR. OTONIEL LOPEZ RIVEROL","nombre":"DR. OTONIEL LOPEZ RIVEROL","tipo":"adscrito","servicio":"ONCOLOGÍA MÉDICA","cp":"8536588"},{"usuario":"DRA. ALEJANDRA VILLEGAS","nombre":"DRA. DIANA ALEJANDRA VILLEGAS OSORNO","tipo":"adscrito","servicio":"ONCOLOGÍA MÉDICA","cp":"12779426"},{"usuario":"DRA. LETICIA OLIVEROS HERRERA","nombre":"DRA. LETICIA OLIVEROS HERRERA","tipo":"adscrito","servicio":"ONCOLOGÍA MÉDICA","cp":"3412449"},{"usuario":"DRA. ANA MARIA CALDERON ESCUTIA","nombre":"DRA. ANA MARIA CALDERON ESCUTIA","tipo":"adscrito","servicio":"ONCOLOGÍA MÉDICA","cp":"11301472"},{"usuario":"DR. XICOTENCATL JIMENEZ","nombre":"DR. XICOTENCATL JIMENEZ VILLANUEVA","tipo":"adscrito","servicio":"TUMORES GINECOLÓGICOS","cp":"0023916"},{"usuario":"DR. JOSE FRANCISCO VARELAS ROJANO","nombre":"DR. JOSE FRANCISCO VARELAS ROJANO","tipo":"adscrito","servicio":"TUMORES GINECOLÓGICOS","cp":"3279509"},{"usuario":"DRA. ANGELA HERNANDEZ RUBIO","nombre":"DRA. ANGELA HERNANDEZ RUBIO","tipo":"adscrito","servicio":"MAMA","cp":"0023907"},{"usuario":"DR. ARMANDO RAMIREZ RAMIREZ","nombre":"DR. ARMANDO RAMIREZ RAMIREZ","tipo":"adscrito","servicio":"MAMA","cp":"4768048"},{"usuario":"DR. ALFREDO MALDONADO","nombre":"DR. JOSÉ ALFREDO MALDONADO CABRERA","tipo":"adscrito","servicio":"RADIO ONCOLOGÍA","cp":"13563944"},{"usuario":"DR. GABRIEL SANCHEZ MARIN","nombre":"DR. GABRIEL SANCHEZ MARIN","tipo":"adscrito","servicio":"RADIO ONCOLOGÍA","cp":"5088370"},{"usuario":"DRA. REBECA GIL","nombre":"DRA. REBECA GIL GARCÍA","tipo":"adscrito","servicio":"RADIO ONCOLOGÍA","cp":"0024427"},{"usuario":"DR. OMAR SOTO BECERRIL","nombre":"DR. OMAR ANTONIO SOTO BECERRIL","tipo":"adscrito","servicio":"CABEZA Y CUELLO","cp":"09940985"},{"usuario":"DR. JORGE DEL BOSQUE MENDEZ","nombre":"DR. JORGE DEL BOSQUE MENDEZ","tipo":"adscrito","servicio":"CABEZA Y CUELLO","cp":"3277627"},{"usuario":"DR. EDUARDO MARTINEZ ANTA","nombre":"DR. EDUARDO MARTINEZ ANTA","tipo":"adscrito","servicio":"INTERVENCIONISMO"},{"usuario":"JAIME CALDERA","nombre":"JAIME CALDERA","tipo":"residente","servicio":"Cirugía Oncológica","anio":"5","esp":"CO"},{"usuario":"MALENY RUIZ","nombre":"MALENY RUIZ","tipo":"residente","servicio":"Cirugía Oncológica","anio":"5","esp":"CO"},{"usuario":"ARIEL JOB DIAZ","nombre":"ARIEL JOB DIAZ","tipo":"residente","servicio":"Cirugía Oncológica","anio":"5","esp":"CO"},{"usuario":"NATHALIA GRISALES","nombre":"NATHALIA GRISALES","tipo":"residente","servicio":"Cirugía Oncológica","anio":"5","esp":"CO"},{"usuario":"VALERIA RAMIREZ","nombre":"VALERIA RAMIREZ","tipo":"residente","servicio":"Cirugía Oncológica","anio":"5","esp":"CO"},{"usuario":"XIMENA VARGAS","nombre":"XIMENA VARGAS","tipo":"residente","servicio":"Ginecología Oncológica","anio":"5","esp":"GO"},{"usuario":"GABRIELA ORTIZ","nombre":"GABRIELA ORTIZ","tipo":"residente","servicio":"Ginecología Oncológica","anio":"5","esp":"GO"},{"usuario":"DAVID ROMERO","nombre":"DAVID ROMERO","tipo":"residente","servicio":"Ginecología Oncológica","anio":"5","esp":"GO"},{"usuario":"CARLOS QUINTERO","nombre":"CARLOS QUINTERO","tipo":"residente","servicio":"Ginecología Oncológica","anio":"5","esp":"GO"},{"usuario":"TANIA ACEVEDO","nombre":"TANIA ACEVEDO","tipo":"residente","servicio":"Ginecología Oncológica","anio":"5","esp":"GO"},{"usuario":"ROSA NELLY HERRERA","nombre":"ROSA NELLY HERRERA","tipo":"residente","servicio":"Ginecología Oncológica","anio":"6","esp":"GO"},{"usuario":"BLANCA MACIAS","nombre":"BLANCA MACIAS","tipo":"residente","servicio":"Ginecología Oncológica","anio":"6","esp":"GO"},{"usuario":"ESTEFANIA TASCON","nombre":"ESTEFANIA TASCON","tipo":"residente","servicio":"Ginecología Oncológica","anio":"6","esp":"GO"},{"usuario":"EDGAR PADILLA","nombre":"EDGAR PADILLA","tipo":"residente","servicio":"Ginecología Oncológica","anio":"7","esp":"GO"},{"usuario":"ELIZABETH ESCALANTE","nombre":"ELIZABETH ESCALANTE","tipo":"residente","servicio":"Ginecología Oncológica","anio":"7","esp":"GO"},{"usuario":"ZABDIEL SANCHEZ","nombre":"ZABDIEL SANCHEZ","tipo":"residente","servicio":"Ginecología Oncológica","anio":"6","esp":"GO"},{"usuario":"JONATHAN MORENO","nombre":"JONATHAN MORENO","tipo":"residente","servicio":"Oncología Médica","anio":"5","esp":"OM"},{"usuario":"CLAUDIA ALMENDAREZ","nombre":"CLAUDIA ALMENDAREZ","tipo":"residente","servicio":"Cirugía Oncológica","anio":"6","esp":"CO"},{"usuario":"DIEGO CARVAJAL","nombre":"DIEGO CARVAJAL","tipo":"residente","servicio":"Cirugía Oncológica","anio":"6","esp":"CO"},{"usuario":"JUAN MANUEL NARVAEZ","nombre":"JUAN MANUEL NARVAEZ","tipo":"residente","servicio":"Cirugía Oncológica","anio":"6","esp":"CO"},{"usuario":"JHON ERIK SANABRIA","nombre":"JHON ERIK SANABRIA","tipo":"residente","servicio":"Oncología Cabeza y Cuello","anio":"6","esp":"OCyC"},{"usuario":"CARLOS PEREZ","nombre":"CARLOS PEREZ","tipo":"residente","servicio":"Cirugía Oncológica","anio":"6","esp":"CO"},{"usuario":"JENNIFFER PLAZA","nombre":"JENNIFFER PLAZA","tipo":"residente","servicio":"Cirugía Oncológica","anio":"6","esp":"CO"},{"usuario":"URIEL REYES","nombre":"URIEL REYES","tipo":"residente","servicio":"Cirugía Oncológica","anio":"7","esp":"CO"},{"usuario":"LUCERO SOLARES","nombre":"LUCERO SOLARES","tipo":"residente","servicio":"Cirugía Oncológica","anio":"7","esp":"CO"},{"usuario":"DANIELA HERNANDEZ","nombre":"DANIELA HERNANDEZ","tipo":"residente","servicio":"Oncología Médica","anio":"5","esp":"OM"},{"usuario":"MARIA JOSE BARRUETA","nombre":"MARIA JOSE BARRUETA","tipo":"residente","servicio":"Oncología Cabeza y Cuello","anio":"5","esp":"OCyC"},{"usuario":"CAROLINA RAMIREZ","nombre":"CAROLINA RAMIREZ","tipo":"residente","servicio":"Oncología Médica","anio":"5","esp":"OM"},{"usuario":"DR. BYRON SIMMONS","nombre":"DR. BYRON SIMMONS","tipo":"residente","servicio":"Fellow de Laparoscopia Avanzada"},{"usuario":"DRA. ALEJANDRA ZARATE","nombre":"DRA. ALEJANDRA PAOLA ZÁRATE GÓMEZ","tipo":"adscrito","servicio":"RADIO ONCOLOGÍA","cp":"14020474"}]}/*USUARIOS_BASE_FIN*/;
+const HJM_USERS_BASE=/*USUARIOS_BASE_INI*/{"ts":1792926944996,"usuarios":[{"usuario":"DR. REYNALDO SANCHEZ","nombre":"DR. REYNALDO SANCHEZ","tipo":"administrativo","servicio":""},{"usuario":"DR. PAUL ERNESTO CHARIS TRUJILLO","nombre":"DR. PAUL ERNESTO CHARIS TRUJILLO","tipo":"adscrito","servicio":"TUMORES MIXTOS","cp":"14887451"},{"usuario":"DR. ZIAD ABO HARP HASAN","nombre":"DR. ZIAD ABO HARP HASAN","tipo":"adscrito","servicio":"TUMORES MIXTOS","cp":"0020562"},{"usuario":"DR. ERIK EFRAIN SOSA DURAN","nombre":"DR. ERIK EFRAIN SOSA DURAN","tipo":"adscrito","servicio":"TUMORES MIXTOS","cp":"6982509"},{"usuario":"DR. EDUARDO ROVELO LIMA","nombre":"DR. EDUARDO ROVELO LIMA","tipo":"adscrito","servicio":"TUMORES MIXTOS","cp":"6323548"},{"usuario":"DR. OSCAR ZENON ROSAS GUERRA","nombre":"DR. OSCAR ZENON ROSAS GUERRA","tipo":"adscrito","servicio":"TUMORES MIXTOS","cp":"10554858"},{"usuario":"DRA. STEPHANY DE LUNA JIMENEZ","nombre":"DRA. STEPHANY DE LUNA JIMENEZ","tipo":"adscrito","servicio":"TUMORES MIXTOS","cp":"12868221"},{"usuario":"DRA. CRISTINA ALVARADO SILVA","nombre":"DRA. CRISTINA ALVARADO SILVA","tipo":"adscrito","servicio":"ONCOLOGÍA MÉDICA","cp":"3412446"},{"usuario":"DR. EDUARDO REYES SANCHEZ","nombre":"DR. EDUARDO REYES SANCHEZ","tipo":"adscrito","servicio":"ONCOLOGÍA MÉDICA","cp":"11994458"},{"usuario":"DR. OTONIEL LOPEZ RIVEROL","nombre":"DR. OTONIEL LOPEZ RIVEROL","tipo":"adscrito","servicio":"ONCOLOGÍA MÉDICA","cp":"8536588"},{"usuario":"DRA. ALEJANDRA VILLEGAS","nombre":"DRA. DIANA ALEJANDRA VILLEGAS OSORNO","tipo":"adscrito","servicio":"ONCOLOGÍA MÉDICA","cp":"12779426"},{"usuario":"DRA. LETICIA OLIVEROS HERRERA","nombre":"DRA. LETICIA OLIVEROS HERRERA","tipo":"adscrito","servicio":"ONCOLOGÍA MÉDICA","cp":"3412449"},{"usuario":"DRA. ANA MARIA CALDERON ESCUTIA","nombre":"DRA. ANA MARIA CALDERON ESCUTIA","tipo":"adscrito","servicio":"ONCOLOGÍA MÉDICA","cp":"11301472"},{"usuario":"DR. XICOTENCATL JIMENEZ","nombre":"DR. XICOTENCATL JIMENEZ VILLANUEVA","tipo":"adscrito","servicio":"TUMORES GINECOLÓGICOS","cp":"0023916"},{"usuario":"DR. JOSE FRANCISCO VARELAS ROJANO","nombre":"DR. JOSE FRANCISCO VARELAS ROJANO","tipo":"adscrito","servicio":"TUMORES GINECOLÓGICOS","cp":"3279509"},{"usuario":"DRA. ANGELA HERNANDEZ RUBIO","nombre":"DRA. ANGELA HERNANDEZ RUBIO","tipo":"adscrito","servicio":"MAMA","cp":"0023907"},{"usuario":"DR. ARMANDO RAMIREZ RAMIREZ","nombre":"DR. ARMANDO RAMIREZ RAMIREZ","tipo":"adscrito","servicio":"MAMA","cp":"4768048"},{"usuario":"DR. ALFREDO MALDONADO","nombre":"DR. JOSÉ ALFREDO MALDONADO CABRERA","tipo":"adscrito","servicio":"RADIO ONCOLOGÍA","cp":"13563944"},{"usuario":"DR. GABRIEL SANCHEZ MARIN","nombre":"DR. GABRIEL SANCHEZ MARIN","tipo":"adscrito","servicio":"RADIO ONCOLOGÍA","cp":"5088370"},{"usuario":"DRA. REBECA GIL","nombre":"DRA. REBECA GIL GARCÍA","tipo":"adscrito","servicio":"RADIO ONCOLOGÍA","cp":"0024427"},{"usuario":"DR. OMAR SOTO BECERRIL","nombre":"DR. OMAR ANTONIO SOTO BECERRIL","tipo":"adscrito","servicio":"CABEZA Y CUELLO","cp":"09940985"},{"usuario":"DR. JORGE DEL BOSQUE MENDEZ","nombre":"DR. JORGE DEL BOSQUE MENDEZ","tipo":"adscrito","servicio":"CABEZA Y CUELLO","cp":"3277627"},{"usuario":"DR. EDUARDO MARTINEZ ANTA","nombre":"DR. EDUARDO MARTINEZ ANTA","tipo":"adscrito","servicio":"INTERVENCIONISMO"},{"usuario":"JAIME CALDERA","nombre":"JAIME CALDERA","tipo":"residente","servicio":"Cirugía Oncológica","anio":"5","esp":"CO"},{"usuario":"MALENY RUIZ","nombre":"MALENY RUIZ","tipo":"residente","servicio":"Cirugía Oncológica","anio":"5","esp":"CO"},{"usuario":"ARIEL JOB DIAZ","nombre":"ARIEL JOB DIAZ","tipo":"residente","servicio":"Cirugía Oncológica","anio":"5","esp":"CO"},{"usuario":"NATHALIA GRISALES","nombre":"NATHALIA GRISALES","tipo":"residente","servicio":"Cirugía Oncológica","anio":"5","esp":"CO"},{"usuario":"VALERIA RAMIREZ","nombre":"VALERIA RAMIREZ","tipo":"residente","servicio":"Cirugía Oncológica","anio":"5","esp":"CO"},{"usuario":"XIMENA VARGAS","nombre":"XIMENA VARGAS","tipo":"residente","servicio":"Ginecología Oncológica","anio":"5","esp":"GO"},{"usuario":"GABRIELA ORTIZ","nombre":"GABRIELA ORTIZ","tipo":"residente","servicio":"Ginecología Oncológica","anio":"5","esp":"GO"},{"usuario":"DAVID ROMERO","nombre":"DAVID ROMERO","tipo":"residente","servicio":"Ginecología Oncológica","anio":"5","esp":"GO"},{"usuario":"CARLOS QUINTERO","nombre":"CARLOS QUINTERO","tipo":"residente","servicio":"Ginecología Oncológica","anio":"5","esp":"GO"},{"usuario":"TANIA ACEVEDO","nombre":"TANIA ACEVEDO","tipo":"residente","servicio":"Ginecología Oncológica","anio":"5","esp":"GO"},{"usuario":"ROSA NELLY HERRERA","nombre":"ROSA NELLY HERRERA","tipo":"residente","servicio":"Ginecología Oncológica","anio":"6","esp":"GO"},{"usuario":"BLANCA MACIAS","nombre":"BLANCA MACIAS","tipo":"residente","servicio":"Ginecología Oncológica","anio":"6","esp":"GO"},{"usuario":"ESTEFANIA TASCON","nombre":"ESTEFANIA TASCON","tipo":"residente","servicio":"Ginecología Oncológica","anio":"6","esp":"GO"},{"usuario":"EDGAR PADILLA","nombre":"EDGAR PADILLA","tipo":"residente","servicio":"Ginecología Oncológica","anio":"7","esp":"GO"},{"usuario":"ELIZABETH ESCALANTE","nombre":"ELIZABETH ESCALANTE","tipo":"residente","servicio":"Ginecología Oncológica","anio":"7","esp":"GO"},{"usuario":"ZABDIEL SANCHEZ","nombre":"ZABDIEL SANCHEZ","tipo":"residente","servicio":"Ginecología Oncológica","anio":"6","esp":"GO"},{"usuario":"JONATHAN MORENO","nombre":"JONATHAN MORENO","tipo":"residente","servicio":"Oncología Médica","anio":"5","esp":"OM"},{"usuario":"CLAUDIA ALMENDAREZ","nombre":"CLAUDIA ALMENDAREZ","tipo":"residente","servicio":"Cirugía Oncológica","anio":"6","esp":"CO"},{"usuario":"DIEGO CARVAJAL","nombre":"DIEGO CARVAJAL","tipo":"residente","servicio":"Cirugía Oncológica","anio":"6","esp":"CO"},{"usuario":"JUAN MANUEL NARVAEZ","nombre":"JUAN MANUEL NARVAEZ","tipo":"residente","servicio":"Cirugía Oncológica","anio":"6","esp":"CO"},{"usuario":"JHON ERIK SANABRIA","nombre":"JHON ERIK SANABRIA","tipo":"residente","servicio":"Oncología Cabeza y Cuello","anio":"6","esp":"OCyC"},{"usuario":"CARLOS PEREZ","nombre":"CARLOS PEREZ","tipo":"residente","servicio":"Cirugía Oncológica","anio":"6","esp":"CO"},{"usuario":"JENNIFFER PLAZA","nombre":"JENNIFFER PLAZA","tipo":"residente","servicio":"Cirugía Oncológica","anio":"6","esp":"CO"},{"usuario":"URIEL REYES","nombre":"URIEL REYES","tipo":"residente","servicio":"Cirugía Oncológica","anio":"7","esp":"CO"},{"usuario":"LUCERO SOLARES","nombre":"LUCERO SOLARES","tipo":"residente","servicio":"Cirugía Oncológica","anio":"7","esp":"CO"},{"usuario":"DANIELA HERNANDEZ","nombre":"DANIELA HERNANDEZ","tipo":"residente","servicio":"Oncología Médica","anio":"5","esp":"OM"},{"usuario":"MARIA JOSE BARRUETA","nombre":"MARIA JOSE BARRUETA","tipo":"residente","servicio":"Oncología Cabeza y Cuello","anio":"5","esp":"OCyC"},{"usuario":"CAROLINA RAMIREZ","nombre":"CAROLINA RAMIREZ","tipo":"residente","servicio":"Oncología Médica","anio":"5","esp":"OM"},{"usuario":"DR. BYRON SIMMONS","nombre":"DR. BYRON SIMMONS","tipo":"residente","servicio":"Fellow de Laparoscopia Avanzada"},{"usuario":"DRA. ALEJANDRA ZARATE","nombre":"DRA. ALEJANDRA PAOLA ZÁRATE GÓMEZ","tipo":"adscrito","servicio":"RADIO ONCOLOGÍA","cp":"14020474"}]}/*USUARIOS_BASE_FIN*/;
 /* v3.08 · Selector deslizable de «Página de inicio» (como Hospitalizados / Todos, con Nuevo Paciente); el valor vive en un input oculto */
 const HM_OPTS=[["hospitalizados","Hospitalizados",'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18V6M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="10.5" r="1.6"/></svg>'],["todos","Todos",'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c.5-3 2.7-4.5 5.5-4.5s5 1.5 5.5 4.5M16 5.5a3 3 0 0 1 0 5.6M18 14.8c1.6.6 2.6 2 3 4.2"/></svg>'],["censo","Censo",'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4"/></svg>'],["nuevo","Nuevo Paciente",'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 11.5v6M9 14.5h6"/></svg>']];
 function homeSegHTML(id,val){ val=val==="todos"||val==="nuevo"||val==="censo"?val:"hospitalizados"; return `<span class="hm-seg" role="group" aria-label="Página de inicio"><input type="hidden" id="${id}" value="${val}">${HM_OPTS.map(([v,l,ic])=>`<button type="button" data-hv="${v}" aria-pressed="${v===val}">${ic}<span>${l}</span></button>`).join("")}</span>`; }
@@ -3109,7 +3314,7 @@ function cleanUsers(list){
   const out=[],seen=new Set();
   (Array.isArray(list)?list:[]).forEach(x=>{
     if(!x||typeof x!=="object")return;
-    const tipo=x.tipo==="adscrito"?"adscrito":"residente";
+    const tipo=x.tipo==="adscrito"?"adscrito":(x.tipo==="administrativo"?"administrativo":"residente");
     let usuario=String(x.usuario||"").trim().toLocaleUpperCase("es-MX");
     if(tipo==="residente") usuario=usuario.replace(/\s+R[1-9]\s*(OCYC|CYC|CO|GO|OM)\s*$/i,"").trim()||usuario;   /* v3.09 · el usuario del residente tampoco lleva «R5CO» */
     if(!usuario)return;
@@ -4548,7 +4753,7 @@ function altaHalfHTML(fmt){return `<span class="lbl">Hoja completa</span><div cl
 function altaToggleHTML(fmt,label,help,extra=""){const on=!!ALTA_COMPOSE[fmt];return `<button type="button" class="alta-check ${extra}" role="checkbox" aria-checked="${on}" data-alta-toggle="${fmt}"><span class="alta-box">${on?"✓":""}</span><span>${esc(label)}<small>${esc(help)}</small></span></button>`;}
 function altaSuppToggleHTML(key,label,ready=true){const on=!!ALTA_COMPOSE[key];return `<button type="button" class="alta-check" role="checkbox" aria-checked="${on}" data-alta-supp="${key}" ${ready?"":"disabled"}><span class="alta-box">${on?"✓":""}</span><span>${esc(label)}${ready?"":'<small class="soon">Formato pendiente</small>'}</span></button>`;}
 function altaDatesHTML(){return `<div class="alta-dates"><label class="alta-date-field">Fecha de Ingreso<input data-alta-date="ingreso" data-date inputmode="numeric" placeholder="DD.MM.AA" value="${esc(ALTA_DATES.ingreso||"")}"></label><label class="alta-date-field">Fecha de Egreso<input data-alta-date="egreso" data-date inputmode="numeric" placeholder="DD.MM.AA" value="${esc(ALTA_DATES.egreso||"")}"></label></div>`;}
-function altaRecentsHTML(){const a=HIST.altas||[];return '<div class="alta-prev"><h3>Altas previas</h3><small>Se conserva la captura completa; aquí se muestra únicamente la fecha.</small>'+(a.length?'<table><thead><tr><th>Fecha del alta</th><th>Acciones</th></tr></thead><tbody>'+a.map(r=>'<tr><td>'+esc((r.p&&r.p.fecha)||r.t||'')+'<small class="alta-saved-by">'+savedChangeLabel(r)+': '+esc(savedBy(r))+'</small></td><td>'+rbBtn("edit","Editar",'data-alta-load="'+esc(r.id)+'"')+rbBtn("print","Imprimir",'data-alta-print="'+esc(r.id)+'"')+'</td></tr>').join('')+'</tbody></table>':'<div class="alta-prev-empty">Todavía no hay altas guardadas para este paciente.</div>')+'</div>';}
+function altaRecentsHTML(){const a=HIST.altas||[];return '<div class="alta-prev"><h3>Altas previas</h3><small>Se conserva la captura completa; aquí se muestra únicamente la fecha.</small>'+(a.length?'<table><thead><tr><th>Fecha del alta</th><th>Acciones</th></tr></thead><tbody>'+a.map(r=>'<tr><td>'+esc((r.p&&r.p.fecha)||r.t||'')+'<small class="alta-saved-by">'+savedChangeLabel(r)+': '+esc(savedBy(r))+'</small></td><td>'+rbBtn("edit","Editar",'data-alta-load="'+esc(r.id)+'"')+rbBtn("view","Ver",'data-ar-ver="altas|'+esc(r.id)+'"')+rbBtn("print","Imprimir",'data-alta-print="'+esc(r.id)+'"')+'</td></tr>').join('')+'</tbody></table>':'<div class="alta-prev-empty">Todavía no hay altas guardadas para este paciente.</div>')+'</div>';}
 function applyAltaDates(){const root=BUILT.alta;if(!root)return;[['D11','ingreso'],['G11','egreso']].forEach(([ref,key])=>{const cell=root.querySelector(':scope > .paper:not(.alta-attach) [data-x="'+ref+'"]'),sp=cell&&cell.firstElementChild;if(!sp)return;const v=ALTA_DATES[key]||'';sp.textContent=v;cell.toggleAttribute('data-ov',!!v);});}
 function syncAltaDateControls(){document.querySelectorAll('[data-alta-date]').forEach(i=>{const v=ALTA_DATES[i.dataset.altaDate]||'';if(i.value!==v)i.value=v;});}
 /* v2.11 · Captura del alta; la plantilla y sus copias impresas se conservan. */
@@ -5849,7 +6054,7 @@ function updateSecNav(){
 function secNavTop(){
   const band=document.querySelector(".band"), nav=$("secNav"); if(!band||!nav) return;
   const cs=getComputedStyle(band), top=cs.position==="sticky"?(parseFloat(cs.top)||0)+band.offsetHeight:0;
-  const pp=$("pPanel"), ppH=(pp&&!pp.hidden&&pp.classList.contains("collapsed")&&getComputedStyle(pp).position==="sticky")?pp.offsetHeight+8:0;
+  const pp=$("pPanel"), ppH=(pp&&!pp.hidden&&pp.classList.contains("collapsed")&&getComputedStyle(pp).position==="sticky")?pp.offsetHeight+4:0;
   document.documentElement.style.setProperty("--pp-top",top+"px");
   nav.style.setProperty("--secnav-top",(top+ppH)+"px");
   document.documentElement.style.setProperty("--sec-scroll",(top+ppH+nav.offsetHeight+12)+"px");
@@ -6555,8 +6760,9 @@ tr{page-break-inside:avoid;break-inside:avoid}
 .t2 th{font-size:12pt;font-weight:700}
 .sec td{font-weight:700}
 td.pend{text-align:left;white-space:pre-wrap;font-size:9pt}
--webkit-print-color-adjust:exact;print-color-adjust:exact
-</style></head><body><table><colgroup>${cols.map(c=>`<col style="width:${c[1]}%">`).join("")}</colgroup><thead><tr class="t1"><th colspan="11">${esc(todayStr())}</th></tr><tr class="t2">${cols.map(c=>`<th>${esc(c[0])}</th>`).join("")}</tr></thead><tbody>${body}</tbody></table></body></html>`.replace("-webkit-print-color-adjust:exact;print-color-adjust:exact\n","");
+*{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.t1 th,.t2 th,.sec td{background:#d9d9d9!important}
+</style></head><body><table><colgroup>${cols.map(c=>`<col style="width:${c[1]}%">`).join("")}</colgroup><thead><tr class="t1"><th colspan="11">${esc(todayStr())}</th></tr><tr class="t2">${cols.map(c=>`<th>${esc(c[0])}</th>`).join("")}</tr></thead><tbody>${body}</tbody></table></body></html>`.replace("","");
     const fr=document.createElement("iframe"); fr.setAttribute("aria-hidden","true"); fr.style.cssText="position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden";
     document.body.appendChild(fr); const doc=fr.contentDocument; doc.open(); doc.write(html); doc.close();
     const go=()=>{ try{ fr.contentWindow.focus(); fr.contentWindow.print(); }catch(_){ } setTimeout(()=>{ try{ fr.remove(); }catch(_){} },120000); };
@@ -6589,7 +6795,7 @@ function ppPendFit(t){ try{ if(!t.offsetParent) return; t.style.height="auto"; i
 function ppPendFitAll(root){ try{ root.querySelectorAll(".pp-pt").forEach(ppPendFit); }catch(_){} }
 function ppPendBuild(rows){ rows=rows.slice(); if(!rows.length||String(rows[rows.length-1].t).trim()) rows.push({d:false,t:""}); return rows.map((r,i)=>ppPendRow(r.d,r.t,i===0?"Pendientes":"")).join(""); }
 function ppPendRead(c){ return [...c.querySelectorAll(".pp-pi")].map(r=>({d:r.querySelector(".pp-pc").checked,t:r.querySelector(".pp-pt").value})); }
-function ppPendHTML(f){ return `<div class="pp-pend" data-pendbox><div class="pp-pl" data-pend="${f.id}" role="group" aria-label="Pendientes">${ppPendBuild(ppPendParse(ppRowPend(f)))}</div><div class="pp-qa"><button type="button" data-pqa="notas" title="Notas Médicas" aria-label="Notas Médicas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H5v18h14v-9M8 7h4M8 11h3M8 15h2M14 14l2-.5L22 7l-2-2-6 6.5z"/></svg></button><button type="button" data-pqa="indicaciones" title="Indicaciones" aria-label="Indicaciones"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M8 9l1 1 2-2M13 9h3M8 14l1 1 2-2M13 14h3"/></svg></button></div></div>`; }
+function ppPendHTML(f){ return `<div class="pp-pend" data-pendbox><div class="pp-pl" data-pend="${f.id}" role="group" aria-label="Pendientes">${ppPendBuild(ppPendParse(ppRowPend(f)))}</div><div class="pp-qa"><button type="button" data-pqa="notas" title="Notas Médicas" aria-label="Notas Médicas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H5v18h14v-9M8 7h4M8 11h3M8 15h2M14 14l2-.5L22 7l-2-2-6 6.5z"/></svg></button><span class="pp-kebab" role="button" tabindex="0" data-ppmenu aria-haspopup="menu" aria-expanded="false" title="Acciones" aria-label="Acciones del paciente"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></span><button type="button" data-pqa="indicaciones" title="Indicaciones" aria-label="Indicaciones"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M8 9l1 1 2-2M13 9h3M8 14l1 1 2-2M13 14h3"/></svg></button><button type="button" class="pp-file" data-pqa="file" title="Archivo clínico (ventana)" aria-label="Archivo clínico del paciente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v1M3 7v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H3z"/></svg></button></div></div>`; }
 function ppPendSave(c){ clearTimeout(c._pt); const f=DRIVE_FILES.find(x=>x&&x.id===c.dataset.pend); if(!f) return; const v=ppPendSer(ppPendRead(c)).slice(0,400); if(v===ppPendNorm(ppRowPend(f))) return; ppPendCacheSet(f.id,v); PP_PQ[f.id]={v,ts:Date.now()}; ppPqStore(); ppPqRun(f.id); }
 function ppPendSet(c,rows){ c.innerHTML=ppPendBuild(rows); ppPendFitAll(c); try{ ppPendDoneSync(c); }catch(_){} }
 function ppPendTidy(c){ ppPendSet(c,ppPendRead(c).filter(r=>String(r.t).trim())); }
@@ -6653,7 +6859,7 @@ const PP_MENU=(()=>{ let el=null,btn=null;
   function close(){ if(el){ el.remove(); el=null; } if(btn){ btn.setAttribute("aria-expanded","false"); btn=null; } }
   function open(b){ close(); const card=b.closest("[data-id]"); if(!card) return; const id=card.dataset.id; btn=b; b.setAttribute("aria-expanded","true");
     el=document.createElement("div"); el.className="pp-menu"; el.setAttribute("role","menu");
-    el.innerHTML=`<button type="button" role="menuitem" data-act="cama">${PP_ICO.bed}<span>Cambiar cama</span></button><button type="button" role="menuitem" data-act="adscrito">${PP_ICO.ads}<span>Cambiar adscrito</span></button><button type="button" role="menuitem" data-act="clinica">${PP_ICO.clin}<span>Cambiar clínica</span></button><button type="button" role="menuitem" data-act="dx">${PP_ICO.dx}<span>Cambiar diagnóstico</span></button><button type="button" role="menuitem" data-act="ing">${PP_ICO.ing}<span>Cambiar F. Ingreso</span></button><button type="button" role="menuitem" class="danger" data-act="alta">${PP_ICO.out}<span>Dar de alta</span></button><button type="button" role="menuitem" class="def" data-act="def">${PP_ICO.def}<span>Defunción</span></button>`;
+    el.innerHTML=`<button type="button" role="menuitem" data-act="cama">${PP_ICO.bed}<span>Cambiar cama</span></button><button type="button" role="menuitem" data-act="adscrito">${PP_ICO.ads}<span>Cambiar adscrito</span></button><button type="button" role="menuitem" data-act="clinica">${PP_ICO.clin}<span>Cambiar clínica</span></button><button type="button" role="menuitem" data-act="dx">${PP_ICO.dx}<span>Cambiar diagnóstico</span></button><button type="button" role="menuitem" data-act="ing">${PP_ICO.ing}<span>Cambiar F. Ingreso</span></button><button type="button" role="menuitem" class="danger" data-act="alta">${PP_ICO.out}<span>Dar de alta</span></button><button type="button" role="menuitem" class="danger def" data-act="def">${PP_ICO.def}<span>Defunción</span></button>`;
     document.body.appendChild(el);
     const r=b.getBoundingClientRect(), w=el.offsetWidth, h=el.offsetHeight; let x=Math.min(Math.max(8,r.right-w),innerWidth-w-8), y=r.bottom+4; if(y+h>innerHeight-8) y=Math.max(8,r.top-h-4);
     el.style.left=Math.round(x)+"px"; el.style.top=Math.round(y)+"px";
@@ -7244,7 +7450,7 @@ function renderClinicalRecents(tp){
   $("clinicalRecentTitle").textContent=tp==="notas"?"Últimas notas":"Últimas indicaciones";
   const list=arCollect([tp]); // Fecha y hora del documento, de más nueva a más antigua.
   $("clinicalRecentList").innerHTML=list.length?`<table class="clinical-table"><thead><tr><th>Fecha</th><th>Tipo</th><th>Acciones</th></tr></thead><tbody>${list.map(e=>{const r=e.r,own=e.tp===tp;
-    const acts=own?`${rbBtn("edit","Editar",`data-cl-edit="${esc(r.id)}"`)}${rbBtn("print","Imprimir",`data-cl-print="${esc(r.id)}"`)}`:arActions(e);
+    const acts=own?`${rbBtn("edit","Editar",`data-cl-edit="${esc(r.id)}"`)}${rbBtn("view","Ver",`data-ar-ver="${tp}|${esc(r.id)}"`)}${rbBtn("print","Imprimir",`data-cl-print="${esc(r.id)}"`)}`:arActions(e);
     return `<tr data-src="${esc(e.tp)}"><td><strong>${esc(e.fecha||"")}</strong><small>${esc(e.hora||"")}</small></td><td>${esc(own?((r.p&&r.p.tipo)||(tp==="notas"?"Nota":"Indicaciones")):e.tipo)}${!own&&e.detail?`<small class="clinical-detail">${esc(e.detail)}</small>`:""}<small class="clinical-saved-by">${savedChangeLabel(r)}: ${esc(savedBy(r))}</small></td><td>${acts}</td></tr>`;}).join("")}</tbody></table>`:`<div class="clinical-empty">Todavía no hay registros para este paciente.</div>`;
 }
 function openClinical(tp){
@@ -7367,7 +7573,7 @@ function arEntry(tp,r){
 }
 function arCollect(src){return src.flatMap(tp=>(HIST[tp]||[]).map(r=>arEntry(tp,r))).sort((a,b)=>(b.ms-a.ms)||((b.r.ts||0)-(a.r.ts||0)));}
 const AR_EDIT=new Set(["notas","indicaciones","prequx","altas","solCx","repCx"]);   // v2.58 · Editar en notas, indicaciones, procedimientos y altas
-function arActions(e,allowDelete=false){const a=`data-ar-tp="${esc(e.tp)}" data-ar-id="${esc(e.r.id)}"`;return (AR_EDIT.has(e.tp)?rbBtn("edit","Editar",a+' data-ar="view"'):rbBtn("view","Ver",a+' data-ar="view"'))+rbBtn("print","Imprimir",a+' data-ar="print"')+(allowDelete?rbBtn("del","Borrar",a+' data-ar="del"'):"");}
+function arActions(e,allowDelete=false){const a=`data-ar-tp="${esc(e.tp)}" data-ar-id="${esc(e.r.id)}"`;return rbBtn("edit","Editar",a+' data-ar="view"')+rbBtn("view","Ver",a+' data-ar="ver"')+rbBtn("print","Imprimir",a+' data-ar="print"')+(allowDelete?rbBtn("del","Borrar",a+' data-ar="del"'):"");}
 const ARCHIVE_UI={patient:"",query:"",group:"all",sort:"desc",limits:{}};
 const AR_ICON_PATHS={all:'<path d="M3 7V5a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/><path d="M3 10h18"/>',notas:'<path d="M6 3h9l4 4v14H6zM15 3v5h4M9 12h7M9 16h7"/>',indicaciones:'<rect x="5" y="4" width="14" height="17" rx="2"/><rect x="9" y="2" width="6" height="4" rx="1"/><path d="m8 11 1 1 2-2M13 11h3m-8 6 1 1 2-2M13 17h3"/>',solCx:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 10h18m-9 3v5m-2.5-2.5h5"/>',repCx:'<path d="m3.5 18.5 9-9 2 2-9 9a1.4 1.4 0 0 1-2-2Z"/><path d="m13.5 8.5 7-6c.5 3-1.5 6-5 8l-2-2Z"/><path d="m12.5 9.5 1-1m0 2 1-1M7 16l2-2"/>',other:'<path d="M4 4h12v16H4zM8 8h5m-5 4h5m-5 4h3M16 7h4v15H8"/>'};
 function arIcon(key){return `<svg viewBox="0 0 24 24" aria-hidden="true">${AR_ICON_PATHS[key]||AR_ICON_PATHS.other}</svg>`;}
@@ -7424,6 +7630,7 @@ function openArchive(){
 function arPrintFormat(){setTimeout(()=>{document.activeElement&&document.activeElement.blur();autoSaveOnPrint();addPrintCopies();window.print();setTimeout(removePrintCopies,1500);},120);}
 function arAct(tp,id,act,btn){
   const kind=AR_KIND[tp];
+  if(act==="ver"){ arViewPop(tp,id); return; }
   if(act==="del"){
     if(!document.body.classList.contains("showing-archive")||!btn||!btn.closest("#view-archive"))return;
     if(!(HIST[tp]||[]).some(r=>r.id===id))return;
@@ -7584,13 +7791,13 @@ function savedRoleLabel(r){
   const name=savedBy(r);return name==="Sin identificar"?"Usuario":authorRoleForName(name)==="adscrito"?"Adscrito":"Residente";
 }
 function savedChangeLabel(r){return "Elaboró";}
-function reportRecentsTableHTML(newId){return '<div class="rc-head"><h2>Reportes Previos</h2></div>'+((HIST.repCx||[]).length?'<table class="report-recents-table"><thead><tr><th>Cirugía</th><th>Elaboró</th><th>Último cambio</th><th>Acciones</th></tr></thead><tbody>'+HIST.repCx.map(r=>'<tr class="rc-item'+(r.id===newId?' new':'')+'" data-id="'+esc(r.id)+'"><td>'+esc(r.t)+'</td><td>'+esc(savedBy(r))+'</td><td>'+esc(relTime(r.ts))+'</td><td><div class="rc-act">'+rbBtn('edit','Editar','data-ra="use" data-n="0"')+rbBtn('print','Imprimir','data-ra="print" data-n="0"')+'</div></td></tr>').join('')+'</tbody></table>':'<div class="rc-empty">Todavía no hay reportes guardados para este paciente.</div>');}
+function reportRecentsTableHTML(newId){return '<div class="rc-head"><h2>Reportes Previos</h2></div>'+((HIST.repCx||[]).length?'<table class="report-recents-table"><thead><tr><th>Cirugía</th><th>Elaboró</th><th>Último cambio</th><th>Acciones</th></tr></thead><tbody>'+HIST.repCx.map(r=>'<tr class="rc-item'+(r.id===newId?' new':'')+'" data-id="'+esc(r.id)+'"><td>'+esc(r.t)+'</td><td>'+esc(savedBy(r))+'</td><td>'+esc(relTime(r.ts))+'</td><td><div class="rc-act">'+rbBtn('edit','Editar','data-ra="use" data-n="0"')+rbBtn('view','Ver','data-ar-ver="repCx|'+esc(r.id)+'"')+rbBtn('print','Imprimir','data-ra="print" data-n="0"')+'</div></td></tr>').join('')+'</tbody></table>':'<div class="rc-empty">Todavía no hay reportes guardados para este paciente.</div>');}
 function recentsHTML(tp,newId,owner=current){
   if(tp==='repCx')return reportRecentsTableHTML(newId);
   const C=RECENT_CFG[tp], R={list:HIST[tp]}, two=tp==="receta"&&recFields(owner).length>1;
   const trash='<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>';
   return `<div class="rc-head"><h2>${C.title}</h2><small>Historial del paciente</small></div><div class="rc-list">`
-   +(R.list.length?R.list.map(r=>{ const s=C.show(r.t); return `<div class="rc-item${r.id===newId?" new":""}" data-id="${esc(r.id)}">${s.head?`<div class="rc-hd">${esc(s.head)}</div>`:""}<div class="rc-txt">${esc(s.body)}</div><div class="rc-meta">${relTime(r.ts)}<span class="recent-resident">${savedChangeLabel(r)}: ${esc(savedBy(r))}</span></div><div class="rc-act">${two?rbBtn("view","Ver 1",'data-ra="use" data-n="0"')+rbBtn("view","Ver 2",'data-ra="use" data-n="1"'):(["solCx","prequx","consInf"].includes(tp)?rbBtn("edit","Editar",'data-ra="use" data-n="0"'):rbBtn("view","Ver",'data-ra="use" data-n="0"'))}${rbBtn("print","Imprimir",'data-ra="print" data-n="0"')}</div></div>`; }).join(""):`<div class="rc-empty">${C.empty}${tp==="rx"?"":"<br>Se guardan al presionar <b>Guardar</b> o <b>Imprimir</b>."}</div>`)
+   +(R.list.length?R.list.map(r=>{ const s=C.show(r.t); return `<div class="rc-item${r.id===newId?" new":""}" data-id="${esc(r.id)}">${s.head?`<div class="rc-hd">${esc(s.head)}</div>`:""}<div class="rc-txt">${esc(s.body)}</div><div class="rc-meta">${relTime(r.ts)}<span class="recent-resident">${savedChangeLabel(r)}: ${esc(savedBy(r))}</span></div><div class="rc-act">${two?rbBtn("view","Ver 1",'data-ra="use" data-n="0"')+rbBtn("view","Ver 2",'data-ra="use" data-n="1"'):rbBtn("edit","Editar",'data-ra="use" data-n="0"')+rbBtn("view","Ver",'data-ar-ver="'+tp+'|'+esc(r.id)+'"')}${rbBtn("print","Imprimir",'data-ra="print" data-n="0"')}</div></div>`; }).join(""):`<div class="rc-empty">${C.empty}${tp==="rx"?"":"<br>Se guardan al presionar <b>Guardar</b> o <b>Imprimir</b>."}</div>`)
    +'</div>';
 }
 function surgeryRelatedButtonHTML(key){
@@ -7787,7 +7994,7 @@ function resolveGateUser(){
  chooseGateUser(entered);return entered;
 }
 /* Subtítulo de cada resultado: la clínica (adscrito) o el servicio (residente) */
-function gateSubtitle(name){const r=userRecord(name);return r?(r.servicio||(r.tipo==="adscrito"?"Adscrito":"Residente")):"";}
+function gateSubtitle(name){const r=userRecord(name);return r?(r.servicio||(r.tipo==="adscrito"?"Adscrito":(r.tipo==="administrativo"?"Administrativo":"Residente"))):"";}
 function renderGateSuggestions(){
  const input=$("residentGateName"),list=$("residentGateSuggestions"),matches=gateUserMatches(input.value);
  hideGateSuggestions();if(!matches.length)return;
@@ -7845,7 +8052,7 @@ document.addEventListener("input",e=>{
 </script>
 <script id="hjm-censo-js">
 /* ===================== v3.15 · CENSOS ===================== */
-/* Corte: Lun–Vie 06:00 · Sáb–Dom 08:00 (hora de la Ciudad de México, UTC−6 todo el año). Cada corte genera JCF<DDMMAA>.json en la carpeta de censos. */
+/* Corte: Lun–Vie 05:30 · Sáb–Dom 07:30 (hora de la Ciudad de México, UTC−6 todo el año). Cada corte genera JCF<DDMMAA>.json en la carpeta de censos. */
 const CEN={ list:null, listAt:0, cache:new Map(), prevSets:new Map(), act:null, actAt:0, hist:null, histName:"", snapDone:"", snapBusy:false, snapFail:0, busyFill:new Set(), pend:false, loadingN:0, openMenu:null };
 const CEN_ACT="_CENSO_ACTUAL.json", CEN_OFF=6*36e5;
 const CEN_DIAS=["DOMINGO","LUNES","MARTES","MIÉRCOLES","JUEVES","VIERNES","SÁBADO"];
@@ -7854,10 +8061,20 @@ const cenP2=n=>String(n).padStart(2,"0");
 const cenUser=()=>String((typeof sessionUserName==="function"&&sessionUserName())||"").toLocaleUpperCase("es-MX").trim();
 function cenMx(ts){ const d=new Date(ts-CEN_OFF); return {y:d.getUTCFullYear(),m:d.getUTCMonth(),d:d.getUTCDate()}; }
 function cenDay(y,m,d,add){ const t=new Date(Date.UTC(y,m,d+add)); return {y:t.getUTCFullYear(),m:t.getUTCMonth(),d:t.getUTCDate(),w:t.getUTCDay()}; }
-function cenCut(o){ const w=new Date(Date.UTC(o.y,o.m,o.d)).getUTCDay(); return Date.UTC(o.y,o.m,o.d,(w===0||w===6?8:6))+CEN_OFF; }
+function cenCut(o){ const w=new Date(Date.UTC(o.y,o.m,o.d)).getUTCDay(); return Date.UTC(o.y,o.m,o.d,(w===0||w===6?7:5),30)+CEN_OFF; }
 const cenWithTs=o=>Object.assign({ts:cenCut(o)},o);
 /* prev = último corte ya ocurrido · next = corte que cierra el censo en curso */
-function cenPeriod(now){ now=now||Date.now(); const t=cenMx(now); let p=cenDay(t.y,t.m,t.d,0); if(cenCut(p)>now) p=cenDay(t.y,t.m,t.d,-1); const n=cenDay(p.y,p.m,p.d,1); return {prev:cenWithTs(p),next:cenWithTs(n)}; }
+function cenPeriodRaw(now){ now=now||Date.now(); const t=cenMx(now); let p=cenDay(t.y,t.m,t.d,0); if(cenCut(p)>now) p=cenDay(t.y,t.m,t.d,-1); const n=cenDay(p.y,p.m,p.d,1); return {prev:cenWithTs(p),next:cenWithTs(n)}; }
+/* v3.40 · Último censo final enviado (carpeta de censos + memoria local) */
+function cenSentDay(){ let best=null; const take=o=>{ if(o&&(!best||cenCut(o)>cenCut(best))) best=o; };
+  try{ (CEN.list||[]).forEach(x=>{ if(/^JCF\d{6}\.json$/i.test(x.name)) take(cenFromName(x.name)); }); }catch(_){}
+  try{ const s=localStorage.getItem("cenSentName"); if(s) take(cenFromName(s)); }catch(_){}
+  return best; }
+/* Periodo efectivo: mientras el censo final del último corte no se envíe, sigue vigente el censo anterior (pending) */
+function cenPeriod(now){ const per=cenPeriodRaw(now); const sd=cenSentDay(); if(!sd&&!CEN.list) return per;
+  if(sd&&cenCut(sd)>=per.prev.ts) return per;
+  let nx=sd?cenDay(sd.y,sd.m,sd.d,1):per.prev; if(cenCut(nx)<per.prev.ts-14*864e5) nx=per.prev; const pv=cenDay(nx.y,nx.m,nx.d,-1);
+  return {prev:cenWithTs(pv),next:cenWithTs(nx),pending:true}; }
 const cenDot=o=>cenP2(o.d)+"."+cenP2(o.m+1)+"."+cenP2(o.y%100);
 const cenDot4=o=>cenP2(o.d)+"."+cenP2(o.m+1)+"."+o.y;
 const cenFile=o=>"JCF"+cenP2(o.d)+cenP2(o.m+1)+cenP2(o.y%100)+".json";
@@ -7895,7 +8112,7 @@ CenFile.prototype.flush=async function(){
   if(this.busy){ this.again=true; return; } if(!this.ops.length) return; clearTimeout(this.t); this.busy=true; let mine=this.ops.splice(0), ok=false;
   try{
     for(let i=0;i<5;i++){
-      const payload=JSON.parse(JSON.stringify(this.obj)); payload.guardado=new Date().toISOString(); payload.por=cenUser();
+      const payload=JSON.parse(JSON.stringify(this.obj)); payload.guardado=new Date().toISOString(); if(this.name===CEN_ACT||!payload.por) payload.por=cenUser(); if(this.name!==CEN_ACT) payload.editado=cenUser();
       const res=await gcall("hjmCensoSave",this.name,JSON.stringify(payload),JSON.stringify(this.mod?{base:this.mod}:{}));
       if(res&&res.conflicto){ const r=await gcall("hjmCensoRead",res.id); let o=null; try{ o=JSON.parse(r.content); }catch(_){ throw new Error("Censo no reconocido"); }
         this.id=r.id; this.mod=r.modified; mine.concat(this.ops).forEach(op=>cenOpApply(o,op)); this.obj=o; await cenWait(300*(i+1)); continue; }
@@ -7953,7 +8170,7 @@ function cenRowOf(f,d,Td,sec){
   let est=String(d.censoEstatus||"").trim();
   return { k:f.id, exp:expOf(f), sec, cama:cama.replace(/^UCI\s*/i,"UCI ").toUpperCase(), nombre:nom.toUpperCase(), edad:ed, fnac:fn,
     adsRaw, ads:adsRaw?(ppCensusAds(adsRaw)||adsRaw).toUpperCase():"", dx:String(d.diagnostico||m.dx||"").trim().toUpperCase(),
-    clin:ppCensusClin(Object.assign({},f,{meta:Object.assign({},m,{clinica:d.clinica!==undefined?d.clinica:m.clinica})})), eh:cenEH(ing,Td), ing,
+    clin:ppCensusClin(Object.assign({},f,{meta:Object.assign({},m,{clinica:d.clinica!==undefined?d.clinica:m.clinica})})), cf:ppFileClins(Object.assign({},f,{meta:Object.assign({},m,{clinica:d.clinica!==undefined?d.clinica:m.clinica})})), eh:cenEH(ing,Td), ing,
     cir:String(d.censoCirugias||"").trim(), qt:String(d.censoQT||"").trim(), mt:String(d.censoMT||"").trim(), labs:String(d.censoLabs||"").trim(), pend, est,
     nu:0, ok:!!ppRowD(f), ts:Date.parse(m.egr||m.def||"")||0 };
 }
@@ -7984,44 +8201,81 @@ async function cenLoadDatos(files){ let fallos=0; await ppPool(files,6,async f=>
 
 /* ---------- Censo en curso: archivo compartido con residentes de guardia y reverso (lo demás sale de cada paciente) ---------- */
 async function cenActualRaw(){ const list=await cenList(true), e=list.find(x=>x.name===CEN_ACT); if(!e) return null; const r=await cenReadEntry(e); return r.obj; }
-async function cenActualEnsure(per){
-  const fecha=cenDot(per.next);
+async function cenActualEnsure(){
+  let per=cenPeriod(), fecha=cenDot(per.next);
   if(CEN.act&&CEN.act.obj&&CEN.act.obj.fecha===fecha&&Date.now()-CEN.actAt<2500) return CEN.act;
   if(CEN.act&&CEN.act.pending()) return CEN.act;
-  const list=await cenList(true), e=list.find(x=>x.name===CEN_ACT); let obj=null, id="", mod="";
+  const list=await cenList(true); per=cenPeriod(); fecha=cenDot(per.next);
+  const e=list.find(x=>x.name===CEN_ACT); let obj=null, id="", mod="";
   if(e){ const r=await gcall("hjmCensoRead",e.id); try{ obj=JSON.parse(r.content); }catch(_){} id=r.id; mod=r.modified; }
-  if(!obj||obj.fecha!==fecha){ try{ await cenSnapEnsure(); }catch(_){} obj={app:"censo-hjm",tipo:"actual",v:1,fecha,res:"",rev:{f:{}}}; }
-  const cf=CEN.act||new CenFile(CEN_ACT); const changed=!CEN.act||CEN.act.mod!==mod||!CEN.act.obj||CEN.act.obj.fecha!==fecha;
-  if(changed){ cf.obj=obj; cf.id=id; cf.mod=mod; }
-  CEN.act=cf; CEN.actAt=Date.now(); CEN.actChanged=changed; return cf;
+  if(!obj||obj.fecha!==fecha) obj={app:"censo-hjm",tipo:"actual",v:1,fecha,res:"",rev:{f:{}}};
+  const pk=fecha+(per.pending?"!":"");
+  const cf=CEN.act||new CenFile(CEN_ACT); const changed=!CEN.act||CEN.act.mod!==mod||!CEN.act.obj||CEN.act.obj.fecha!==fecha||CEN.perKey!==pk;
+  if(!CEN.act||CEN.act.mod!==mod||!CEN.act.obj||CEN.act.obj.fecha!==fecha){ cf.obj=obj; cf.id=id; cf.mod=mod; }
+  CEN.perKey=pk; CEN.act=cf; CEN.actAt=Date.now(); CEN.actChanged=changed; return cf;
 }
 
-/* ---------- Corte: crea JCF<DDMMAA>.json en la primera conexión posterior al corte ---------- */
-async function cenSnapEnsure(){
-  if(CEN.snapBusy||!ppOn()||!DRIVE_FILES.length||navigator.onLine===false) return;
-  const Td=cenPeriod().prev, name=cenFile(Td); if(CEN.snapDone===name) return;
-  CEN.snapBusy=true;
-  try{
-    const list=await cenList(true); if(list.some(x=>x.name===name)){ CEN.snapDone=name; return; }
-    const now=Date.now(), pv=await cenPrevSet(cenDay(Td.y,Td.m,Td.d,-1)); if(pv===undefined) throw new Error("censo previo");
-    const b0=cenBuild(Td,now,{prevSet:pv}), fallos=await cenLoadDatos(b0._files.H.concat(b0._files.E,b0._files.D)); if(fallos) throw new Error("faltan datos");
-    const cen=cenBuild(Td,now,{prevSet:pv});
-    const act=await cenActualRaw(); if(act&&act.fecha===cen.fecha&&Array.isArray(act.exc)&&act.exc.length) cen.pac=cen.pac.filter(r=>!act.exc.includes(cenExKey(r))); if(act&&act.fecha===cen.fecha){ cen.res=act.res||""; cen.rev={f:Object.assign({},(act.rev&&act.rev.f)||{})}; }
-    cenRevFreeze(cen); delete cen._files; cen.pac.forEach(r=>{ delete r.ok; delete r.ts; });
-    cen.creado=new Date().toISOString(); cen.por=cenUser(); cen.snap=1;
-    await gcall("hjmCensoSave",name,JSON.stringify(cen),JSON.stringify({crearSiNoExiste:true}));
-    CEN.snapDone=name; CEN.list=null; CEN.snapFail=0;
-  }catch(e){ CEN.snapFail++; }
-  finally{ CEN.snapBusy=false; }
+/* ---------- v3.40 · El censo ya NO se guarda solo en el corte: se envía con «Enviar censo final» ---------- */
+async function cenSnapEnsure(){ return; }
+function cenSnapSoon(){}
+const cenResNorm=v=>String(v||"").replace(/\s*\/\s*/g,"/").replace(/\s+/g," ").trim().toLocaleUpperCase("es-MX").replace(/^\/+|\/+$/g,"");
+async function cenSendFinal(Td,res){
+  Td=cenWithTs(Td); const name=cenFile(Td);
+  if(CEN.act&&CEN.act.pending()){ clearTimeout(CEN.act.t); await CEN.act.flush(); }
+  const list=await cenList(true); if(list.some(x=>x.name===name)) throw new Error("Ya existe un censo guardado con esa fecha");
+  const now=Date.now(), pv=await cenPrevSet(cenDay(Td.y,Td.m,Td.d,-1)); if(pv===undefined) throw new Error("No se pudo leer el censo previo");
+  const b0=cenBuild(Td,now,{prevSet:pv}), fallos=await cenLoadDatos(b0._files.H.concat(b0._files.E,b0._files.D)); if(fallos) throw new Error("Aún faltan datos de algunos pacientes; intenta de nuevo en unos segundos");
+  const cen=cenBuild(Td,now,{prevSet:pv});
+  const act=await cenActualRaw(); if(act&&act.fecha===cen.fecha&&Array.isArray(act.exc)&&act.exc.length) cen.pac=cen.pac.filter(r=>!act.exc.includes(cenExKey(r)));
+  cen.res=cenResNorm(res); cen.rev={f:Object.assign({},(act&&act.fecha===cen.fecha&&act.rev&&act.rev.f)||{})};
+  cenRevFreeze(cen); delete cen._files; cen.pac.forEach(r=>{ delete r.ok; delete r.ts; });
+  cen.creado=new Date().toISOString(); cen.por=cenUser(); cen.final=1; cen.guardia=cenDot(cenDay(Td.y,Td.m,Td.d,-1));
+  await gcall("hjmCensoSave",name,JSON.stringify(cen),JSON.stringify({crearSiNoExiste:true}));
+  try{ localStorage.setItem("cenSentName",name); }catch(_){}
+  CEN.list=null; CEN.act=null; CEN.actAt=0; CEN.snapDone=name; try{ CEN.prevSets.delete(name); }catch(_){}
+  try{ await cenList(true); }catch(_){}
 }
-function cenSnapSoon(ms){ clearTimeout(CEN._st); CEN._st=setTimeout(()=>{ try{ cenSnapEnsure(); }catch(_){} },ms==null?2500:ms); }
-setInterval(()=>{ try{ if(!document.hidden) cenSnapEnsure(); }catch(_){} },5*60*1000);
-
+const cenValidDot=s=>{ const o=cenFromDot(s); if(!o) return null; const t=cenDay(o.y,o.m,o.d,0); return t.y===o.y&&t.m===o.m&&t.d===o.d?t:null; };
+function cenSendOpen(){
+  const per=cenPeriod(); if(!per.pending) return;
+  let d=$("dlgCenSend"); if(!d){ d=document.createElement("dialog"); d.id="dlgCenSend"; d.className="pp-dlg cen-send"; document.body.appendChild(d); }
+  d.innerHTML=`<form method="dialog" class="pp-dlg-f"><h3>${CEN_ICO_SEND}Enviar censo final</h3>
+    <p class="cs-note"><b>Este será el censo final que se va a guardar.</b> Revisa las fechas y los residentes de guardia antes de enviarlo.</p>
+    <div class="cs-row"><label>Fecha de guardia<input id="csG" inputmode="numeric" maxlength="8" placeholder="DD.MM.AA" autocomplete="off"></label><label>Fecha de censo<input id="csC" inputmode="numeric" maxlength="8" placeholder="DD.MM.AA" autocomplete="off"></label></div>
+    <small class="cs-hint">El censo es del día siguiente a la guardia (guardia 24.10.26 → censo 25.10.26). Si escribes una fecha, la otra se llena sola.</small>
+    <div class="cs-res"><label for="cenRes">Residentes de guardia</label><div id="csResHost"></div></div>
+    <small id="csErr" class="pp-dlg-err" role="alert"></small>
+    <div class="pp-dlg-b"><button type="button" data-no>Cancelar</button><button type="submit" class="ok" id="csOk">${CEN_ICO_SEND}Enviar censo final</button></div></form>`;
+  const g=d.querySelector("#csG"), c=d.querySelector("#csC"), err=d.querySelector("#csErr"), host=d.querySelector("#csResHost"), inp=$("cenRes"), bar=$("cenResBar");
+  const back=()=>{ try{ if(inp&&bar&&inp.parentNode!==bar) bar.appendChild(inp); }catch(_){} };
+  if(inp){ host.appendChild(inp); inp.readOnly=false; inp.value=String((CEN.cur&&CEN.cur.res)||""); }
+  c.value=cenDot(per.next); g.value=cenDot(cenDay(per.next.y,per.next.m,per.next.d,-1));
+  const fmt=el=>{ const dg=el.value.replace(/\D/g,"").slice(0,6); el.value=dg.replace(/^(\d{2})(\d)/,"$1.$2").replace(/^(\d{2}\.\d{2})(\d)/,"$1.$2"); };
+  c.addEventListener("input",()=>{ fmt(c); const o=cenValidDot(c.value); g.value=o?cenDot(cenDay(o.y,o.m,o.d,-1)):""; err.textContent=""; });
+  g.addEventListener("input",()=>{ fmt(g); const o=cenValidDot(g.value); c.value=o?cenDot(cenDay(o.y,o.m,o.d,1)):""; err.textContent=""; });
+  let busy=false; const close=()=>{ back(); try{ d.close(); }catch(_){} };
+  d.querySelector("[data-no]").onclick=()=>{ if(!busy) close(); };
+  d.oncancel=e=>{ e.preventDefault(); if(!busy) close(); };
+  d.querySelector("form").onsubmit=async e=>{ e.preventDefault(); if(busy) return;
+    const Td=cenValidDot(c.value); if(!Td){ err.textContent="Escribe una fecha válida (DD.MM.AA)."; return; }
+    const T=cenWithTs(Td); if(T.ts>Date.now()){ err.textContent="Ese censo aún no llega a su hora de corte ("+(Td.w===0||Td.w===6?"07:30":"05:30")+")."; return; }
+    const exists=(CEN.list||[]).some(x=>x.name===cenFile(Td)); if(exists){ err.textContent="Ya hay un censo guardado con esa fecha. Para modificarlo usa «Censos anteriores»."; return; }
+    const res=cenResNorm(inp?inp.value:""); const gd=cenDot(cenDay(Td.y,Td.m,Td.d,-1)), cd=cenDot(Td);
+    const ok=await ppAsk({title:"¿Enviar el censo final?",text:"Guardia del "+gd+" · Censo del "+cd+". "+(res?"":"Aún no escribiste los residentes de guardia. ")+"Este será el censo final que quedará guardado en «Censos anteriores», y el Censo actual pasará al siguiente día. Aún podrás corregirlo después desde «Censos anteriores». ¿Estás seguro de que esto es lo final?",ok:"Sí, enviar censo final",danger:true});
+    if(!ok) return;
+    busy=true; const b=d.querySelector("#csOk"); b.disabled=true; b.lastChild.textContent="Enviando…";
+    try{ await cenSendFinal(Td,res); busy=false; close(); try{ notify("Censo final enviado: guardia "+gd+" · censo "+cd+".","ok"); }catch(_){} cenRender(); }
+    catch(x){ busy=false; b.disabled=false; b.lastChild.textContent="Enviar censo final"; err.textContent="No se pudo enviar: "+friendly(x); }
+  };
+  d.addEventListener("close",back,{once:true});
+  d.showModal(); (c.value?inp:c).focus();
+}
 /* ---------- Pantalla ---------- */
 const CEN_COLS=[["cama","CAMA",66],["nombre","NOMBRE",130],["edad","EDAD",54],["exp","EXP",84],["fnac","F.NAC",84],["ads","ADSCRITO",100],["dx","DIAGNÓSTICO",300],["clin","CLINICA",80],["eh","EH",40],["ing","INGRESO",88],["cir","CIRUGIAS / BJ",380],["qt","QT / RT",220],["mt","MT",120],["labs","LABS",380],["pend","PENDIENTE",170],["est","ESTATUS",120]];
 const CEN_PW2=[3.52, 6.71, 2.69, 4.53, 4.7, 4.7, 11.58, 3.86, 2.35, 4.87, 12.25, 6.21, 4.36, 11.92, 6.88, 5.37];
-const CEN_BTN=new Set(["cama","nombre","edad","exp","fnac","ads","clin","eh","ing"]), CEN_TA=new Set(["dx","cir","qt","mt","labs","pend","est"]);
+const CEN_BTN=new Set(["cama","nombre","edad","exp","fnac","ads","clin","eh"]), CEN_TA=new Set(["dx","ing","cir","qt","mt","labs","pend","est"]);
 const CEN_ICO_PEN='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></svg>';
+const CEN_ICO_FLD='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v1M3 7v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H3z"/></svg>';
 const CEN_ICO_CPY='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/></svg>';
 const CEN_ICO_KB='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>';
 const CEN_ICO_CEN='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5h16M4 12h16M4 16.5h10"/></svg>';
@@ -8029,6 +8283,7 @@ const CEN_ICO_EDT='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L
 const CEN_ICO_BACK='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/></svg>';
 const CEN_ICO_LST='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v4H4zM4 11h16v8H4zM8 14h8"/></svg>';
 const CEN_ICO_SAVE='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v13H5zM8 4v5h7V4M8 20v-6h8v6"/></svg>';
+const CEN_ICO_SEND='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 3 10 14M21 3l-7 18-4-7-7-4z"/></svg>';
 const CEN_ICO_PRT='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9V3h10v6M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M7 14h10v7H7z"/></svg>';
 const cenFecha4=s=>{ const p=parts(s); return p?p.dd+"."+p.mm+".20"+p.yy:String(s||""); };
 const cenSecName={P:"PERIFÉRICOS",E:"ALTAS",D:"DEFUNCIONES"};
@@ -8046,13 +8301,13 @@ function cenRowMatch(r){
 const cenVisible=cen=>cenOrdered((cen.pac||[]).filter(r=>(!r.exc||CEN.showEx)&&cenRowMatch(r)));
 function cenRowHTML(r){
   const tds=CEN_COLS.map(([f],i)=>{ const v=r[f]==null?"":String(r[f]); let inner;
-    if(CEN_BTN.has(f)) return `<td class="bt" tabindex="0" role="button" data-open title="Editar en ventana"><span>${esc(v)}</span></td>`;
+    if(CEN_BTN.has(f)) return `<td class="bt lk" data-cf="${f}" title="Doble clic para cambiar"><span>${esc(v)}</span></td>`;
     else if(f==="est"&&r.sec==="H") return `<td class="bt estc" tabindex="0" role="button" data-estpop title="Elegir estatus"><span>${esc(v)}</span></td>`;
     else if(CEN_TA.has(f)) inner=`<textarea data-f="${f}" rows="1" spellcheck="false" autocomplete="off">${esc(v)}</textarea>`;
     else return `<td class="ro">${esc(v)}</td>`;
     const kb=(i===0&&r.sec==="H")?`<button type="button" class="kb pp-kebab" data-cenkb aria-haspopup="menu" aria-label="Acciones del paciente" title="Acciones">${CEN_ICO_KB}</button>`:"";
     return `<td>${kb}${inner}</td>`; }).join("");
-  const kbc=`<td class="kbc"><span class="kbw"><button type="button" class="kb pp-kebab" data-cenkb aria-haspopup="menu" aria-label="Acciones del paciente" title="Acciones">${CEN_ICO_KB}</button><button type="button" class="kb cp" data-cencopy aria-label="Copiar la fila" title="Copiar la fila (para pegar en la hoja de cálculo)">${CEN_ICO_CPY}</button></span></td>`;
+  const kbc=`<td class="kbc"><span class="kbw"><button type="button" class="kb pp-kebab" data-cenkb aria-haspopup="menu" aria-label="Acciones del paciente" title="Acciones">${CEN_ICO_KB}</button><button type="button" class="kb cp fl" data-cenfile aria-label="Abrir el archivo clínico del paciente" title="Archivo clínico del paciente">${CEN_ICO_FLD}</button></span></td>`;
   return `<tr data-k="${esc(r.k)}" data-id="${esc(r.k)}"${r.exc?' class="excl"':(r.nu?' class="nuevo"':"")}>${kbc}${tds}</tr>`;
 }
 function cenTableHTML(cen){
@@ -8089,8 +8344,9 @@ function cenRevHTML(cen,ed){
   return `<table class="rev"><colgroup>${CEN_RW.map(w=>`<col style="width:${w}px">`).join("")}</colgroup><tbody>${out.join("")}</tbody></table>`;
 }
 function cenBarHTML(){ if(arguments.length) return ""; const n=(CEN.cur&&CEN.cur.nexc)||0; return n&&CEN.mode!=="hist"?`<div class="cen-exbar"><button type="button" data-cenact="exshow">${CEN.showEx?"Ocultar":"Mostrar"} ${n} paciente${n>1?"s":""} quitado${n>1?"s":""} del censo</button></div>`:""; }
-function cenNavSync(){ const p=$("cenPrint"); if(!p) return; let nb=$("cenNavBtn"); if(!nb){ nb=document.createElement("button"); nb.type="button"; nb.id="cenNavBtn"; nb.className="pp-census cen-nav"; p.before(nb); const sv=document.createElement("small"); sv.id="cenSave"; sv.className="cen-savei"; sv.setAttribute("aria-live","polite"); (cenResBar()||nb.parentNode).appendChild(sv); nb.addEventListener("click",()=>{ if(CEN.mode==="hist"&&CEN.hist){ CEN.hist=null; CEN.histName=""; CEN.list=null; cenRender(); } else cenListOpen(); }); }
-  const h=CEN.mode==="hist"; nb.innerHTML=h?CEN_ICO_BACK+"Censo actual":CEN_ICO_LST+"Censos"; nb.title=h?"Volver al censo actual":"Censos guardados en cada corte"; nb.hidden=false;
+function cenNavSync(){ const p=$("cenPrint"); if(!p) return; let nb=$("cenNavBtn"); if(!nb){ nb=document.createElement("button"); nb.type="button"; nb.id="cenNavBtn"; nb.className="pp-census cen-nav"; p.before(nb); const sb=document.createElement("button"); sb.type="button"; sb.id="cenSendBtn"; sb.className="pp-census cen-send-btn"; sb.hidden=true; nb.before(sb); sb.addEventListener("click",()=>cenSendOpen()); const sv=document.createElement("small"); sv.id="cenSave"; sv.className="cen-savei"; sv.setAttribute("aria-live","polite"); (cenResBar()?cenResBar().parentNode:nb.parentNode).appendChild(sv); nb.addEventListener("click",()=>{ if(CEN.mode==="hist"&&CEN.hist){ CEN.hist=null; CEN.histName=""; CEN.list=null; cenRender(); } else cenListOpen(); }); }
+  const h=CEN.mode==="hist"; nb.innerHTML=h?CEN_ICO_BACK+"Censo actual":CEN_ICO_LST+"Censos anteriores"; nb.title=h?"Volver al censo actual":"Ver o editar los censos finales ya guardados"; nb.hidden=false;
+  const sb2=$("cenSendBtn"); if(sb2){ sb2.innerHTML=CEN_ICO_SEND+"Enviar censo final"; sb2.title="Enviar y guardar el censo final de la guardia"; sb2.hidden=!(CEN.mode==="live"&&cenPeriod().pending)||isAdmv(); }
   let eb=$("cenEditBtn"); if(!eb){ eb=document.createElement("button"); eb.type="button"; eb.id="cenEditBtn"; eb.className="pp-census cen-edit"; nb.before(eb);
     eb.addEventListener("click",async()=>{ if(!CEN.hist) return; if(!CEN.edit){ CEN.edit=true; cenNavSync(); return; } eb.disabled=true; try{ clearTimeout(CEN.hist.t); await CEN.hist.flush(); }catch(_){} eb.disabled=false; CEN.edit=false; cenNavSync(); try{ notify(CEN.hist.err?"No se pudo guardar el censo.":"Cambios guardados en el censo.",CEN.hist.err?"warn":"ok"); }catch(_){} }); }
   eb.hidden=!h; eb.innerHTML=(CEN.edit?CEN_ICO_SAVE+"Guardar cambios":CEN_ICO_EDT+"Editar Censo"); eb.title=CEN.edit?"Guardar los cambios hechos en este censo":"Habilitar la edición de este censo"; eb.classList.toggle("on",!!CEN.edit);
@@ -8098,7 +8354,15 @@ function cenNavSync(){ const p=$("cenPrint"); if(!p) return; let nb=$("cenNavBtn
 function cenResBar(){ let bar=$("cenResBar"); if(bar) return bar; const h=document.querySelector("#pPanel .pp-head h2"), pc=$("ppCount"); if(!h) return null;
   const wrap=document.createElement("div"); wrap.className="pp-ttl"; h.before(wrap); wrap.appendChild(h); if(pc) wrap.appendChild(pc);
   bar=document.createElement("div"); bar.id="cenResBar"; bar.hidden=true; bar.innerHTML='<label for="cenRes">Residentes de guardia</label><input id="cenRes" data-cenres placeholder="Escribe para buscar · pulsa / para agregar otro residente" role="combobox" aria-haspopup="listbox" aria-autocomplete="list" aria-expanded="false" autocomplete="off" spellcheck="false">'; wrap.appendChild(bar); return bar; }
-function cenSetTitle(t,cen){ try{ const h=document.querySelector("#pPanel .pp-head h2"); if(h) h.textContent=t; const pc=$("ppCount"); if(pc) pc.textContent=""; const bar=cenResBar(); if(bar){ bar.hidden=false; const i=$("cenRes"); const v=String((cen&&cen.res)||""); if(i&&document.activeElement!==i&&i.value!==v) i.value=v; } cenBandSync(true); cenNavSync(); }catch(_){} }
+function cenChipsSync(cen){ const bar=$("cenResBar"); if(!bar) return; const wrap=bar.parentNode;
+  let ch=$("cenChips"); if(!ch){ ch=document.createElement("span"); ch.id="cenChips"; ch.className="cen-chips"; bar.before(ch); }
+  let al=$("cenAlert"); if(!al){ al=document.createElement("div"); al.id="cenAlert"; al.setAttribute("role","status"); al.hidden=true; bar.before(al); }
+  const o=cenFromDot(cen&&cen.fecha); if(!o){ ch.hidden=true; al.hidden=true; return; } const g=cenDay(o.y,o.m,o.d,-1);
+  ch.hidden=false; ch.innerHTML=`<span class="cen-chip" title="Fecha de la guardia"><small>Guardia</small><b>${cenDot(g)}</b></span><span class="cen-chip" title="Fecha del censo"><small>Censo</small><b>${cenDot(o)}</b></span>`;
+  const pend=CEN.mode==="live"&&cenPeriod().pending; al.hidden=!pend;
+  if(pend) al.innerHTML=`<b>Censo final de guardia aún no guardado.</b> <span>Si deseas ver o editar un censo previo, presiona el botón «Censos anteriores».</span>`;
+  const sv=$("cenSave"); if(sv&&sv.parentNode!==wrap) wrap.appendChild(sv); }
+function cenSetTitle(t,cen){ try{ const h=document.querySelector("#pPanel .pp-head h2"); if(h) h.textContent=t; const pc=$("ppCount"); if(pc) pc.textContent=""; const bar=cenResBar(); if(bar){ bar.hidden=CEN.mode!=="hist"; const i=$("cenRes"); const v=String((cen&&cen.res)||""); if(i&&document.activeElement!==i&&i.value!==v) i.value=v; } cenChipsSync(cen); cenBandSync(true); cenNavSync(); }catch(_){} }
 const cenResSub=cen=>{ const r=String((cen&&cen.res)||"").trim(); return r?"Residentes de guardia: "+r.split("/").join(" · "):"Residentes de guardia: sin asignar"; };
 function cenResHTML(cen){ return ""; }
 
@@ -8121,7 +8385,7 @@ function cenFitAll(w){ try{ w.querySelectorAll("table.cen textarea,table.rev tex
 function cenDirtyFocus(w){ const ae=document.activeElement; return !!(ae&&w.contains(ae)&&ae.matches("textarea,input")); }   /* v3.20 · con el cursor dentro de una celda nunca se redibuja la tabla (el guardado es mientras se escribe) */
 
 function cenHeaderSync(on,printOn){ const b=$("cenPrint"); if(b) b.hidden=!on; const pc=$("ppCount"); if(pc&&!on) {} }
-function cenShow(on){ const w=$("cenWrap"), p=$("pPanel"); if(!w||!p) return; w.hidden=!on; p.classList.toggle("cen-on",!!on); try{ ppCensusSync(false); }catch(_){} const b=$("cenPrint"); if(b) b.hidden=!on; if(!on){ try{ const h=document.querySelector("#pPanel .pp-head h2"); if(h&&h.textContent!=="Pacientes") h.textContent="Pacientes"; const bar=$("cenResBar"); if(bar) bar.hidden=true; cenBandSync(false); }catch(_){} } const nb=$("cenNavBtn"); if(nb) nb.hidden=!on; const sv=$("cenSave"); if(sv&&!on) sv.textContent=""; }
+function cenShow(on){ const w=$("cenWrap"), p=$("pPanel"); if(!w||!p) return; w.hidden=!on; p.classList.toggle("cen-on",!!on); try{ ppCensusSync(false); }catch(_){} const b=$("cenPrint"); if(b) b.hidden=!on; if(!on){ try{ const h=document.querySelector("#pPanel .pp-head h2"); if(h&&h.textContent!=="Pacientes") h.textContent="Pacientes"; const bar=$("cenResBar"); if(bar) bar.hidden=true; const c1=$("cenChips"), c2=$("cenAlert"); if(c1) c1.hidden=true; if(c2) c2.hidden=true; cenBandSync(false); }catch(_){} } const sb=$("cenSendBtn"); if(sb&&!on) sb.hidden=true; const nb=$("cenNavBtn"); if(nb) nb.hidden=!on; const sv=$("cenSave"); if(sv&&!on) sv.textContent=""; }
 function cenRender(){
   const w=$("cenWrap"); if(!w) return;
   if(!document.body.classList.contains("pp-browse")||(PP_VIEW!=="censoActual"&&PP_VIEW!=="censos")){ cenShow(false); return; }
@@ -8160,8 +8424,8 @@ function cenFillMissing(files){
 async function cenRenderList(w){
   CEN.mode="list"; try{ const pc=$("ppCount"); if(pc) pc.textContent=""; }catch(_){}
   const draw=list=>{ const rows=(list||[]).filter(x=>/^JCF\d{6}\.json$/i.test(x.name)).map(x=>({x,t:cenFromName(x.name)})).filter(z=>z.t).sort((a,b)=>cenCut(b.t)-cenCut(a.t));
-    cenKeep(w,()=>{ w.innerHTML=cenBarHTML("Censos","Un censo por cada corte (Lun–Vie 06:00 · Sáb–Dom 08:00)",`<button type="button" class="cen-btn" data-cenact="reload" title="Actualizar la lista">Actualizar</button>`)
-      +(rows.length?`<div class="cen-scroll"><table class="cenlist"><thead><tr><th>Censo</th><th>Día</th><th>Corte</th><th>Última modificación</th><th></th></tr></thead><tbody>${rows.map(({x,t})=>{ const wd=new Date(Date.UTC(t.y,t.m,t.d)).getUTCDay(); return `<tr data-cn="${esc(x.name)}"><td><b>${esc(cenDot4(t))}</b></td><td>${CEN_DIAS[wd].toLowerCase()}</td><td>${wd===0||wd===6?"08:00":"06:00"}</td><td>${esc(new Date(x.modified).toLocaleString("es-MX",{day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"}))}</td><td class="a"><button type="button" class="cen-btn" data-cenact="edit">Editar</button><button type="button" class="cen-btn" data-cenact="print">${CEN_ICO_PRT}Imprimir</button></td></tr>`; }).join("")}</tbody></table></div>`:`<div class="cen-empty">${list?"Aún no hay censos guardados. El primero se crea solo en la primera conexión después del siguiente corte.":"Cargando…"}</div>`); }); };
+    cenKeep(w,()=>{ w.innerHTML=cenBarHTML("Censos","Censos finales ya enviados (corte: Lun–Vie 05:30 · Sáb–Dom 07:30)",`<button type="button" class="cen-btn" data-cenact="reload" title="Actualizar la lista">Actualizar</button>`)
+      +(rows.length?`<div class="cen-scroll"><table class="cenlist"><thead><tr><th>Censo</th><th>Día</th><th>Corte</th><th>Última modificación</th><th></th></tr></thead><tbody>${rows.map(({x,t})=>{ const wd=new Date(Date.UTC(t.y,t.m,t.d)).getUTCDay(); return `<tr data-cn="${esc(x.name)}"><td><b>${esc(cenDot4(t))}</b></td><td>${CEN_DIAS[wd].toLowerCase()}</td><td>${wd===0||wd===6?"07:30":"05:30"}</td><td>${esc(new Date(x.modified).toLocaleString("es-MX",{day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"}))}</td><td class="a"><button type="button" class="cen-btn" data-cenact="edit">Editar</button><button type="button" class="cen-btn" data-cenact="print">${CEN_ICO_PRT}Imprimir</button></td></tr>`; }).join("")}</tbody></table></div>`:`<div class="cen-empty">${list?"Aún no hay censos guardados. Aparecerán aquí cuando se envíe el primer censo final.":"Cargando…"}</div>`); }); };
   draw(CEN.list);
   if(!CEN.listBusy&&(!CEN.list||Date.now()-CEN.listAt>10000)){ CEN.listBusy=true; try{ const l=await cenList(true); if(PP_VIEW==="censos"&&!CEN.hist) draw(l); }catch(e){ cenKeep(w,()=>{ w.innerHTML=cenBarHTML("Censos","")+`<div class="cen-empty">No se pudo leer la carpeta de censos: ${esc(friendly(e))}</div>`; }); } finally{ CEN.listBusy=false; } }
 }
@@ -8286,8 +8550,8 @@ async function cenHistAct(k,act){
   w.addEventListener("click",e=>{ const td=e.target.closest&&e.target.closest("table.cen td, table.rev td"); if(td&&!e.target.closest("textarea,input,button,[data-open],[data-estpop]")){ const ta=td.querySelector(":scope>textarea,:scope>input"); if(ta){ try{ ta.focus({preventScroll:true}); const n=ta.value.length; ta.setSelectionRange(n,n); }catch(_){} } } },true);
   w.addEventListener("click",e=>{
     const kb=e.target.closest("[data-cenkb]"); if(kb){ e.preventDefault(); e.stopPropagation(); const tr0=kb.closest("tr[data-k]"), row0=tr0&&(CEN.cur&&CEN.cur.pac||[]).find(x=>x.k===tr0.dataset.k), full=!row0||row0.sec==="H"||row0.sec==="P";
-      if(CEN.mode==="hist") cenMenuHist(kb,!full); else if(full) { PP_MENU.toggle(kb); cenMenuExtra(kb); } else cenMenuHist(kb,true,tr0.classList.contains("excl")); return; }
-    const cp=e.target.closest("[data-cencopy]"); if(cp){ e.preventDefault(); e.stopPropagation(); cenCopyRow(cp); return; }
+      cenMenu(kb,full,tr0&&tr0.classList.contains("excl")); return; }
+    const cp=e.target.closest("[data-cenfile]"); if(cp){ e.preventDefault(); e.stopPropagation(); cenOpenFile(cp); return; }
     const ep=e.target.closest("td[data-estpop]"); if(ep){ const tr=ep.closest("tr[data-k]"); if(tr){ e.preventDefault(); cenEstPop(ep,tr.dataset.k); return; } }
     const bt=e.target.closest("td[data-open]"); if(bt){ const tr=bt.closest("tr[data-k]"); if(tr){ e.preventDefault(); cenOpenEditor(tr.dataset.k); return; } }
     const a=e.target.closest("[data-cenact]"); if(!a) return; const act=a.dataset.cenact, tr=a.closest("tr[data-cn]"), name=tr&&tr.dataset.cn;
@@ -8386,7 +8650,7 @@ function cenEstPop(td,k){ const old=document.getElementById("cenEstPop"); if(old
   document.addEventListener("keydown",function esc(e){ if(e.key==="Escape"){ pop.remove(); document.removeEventListener("keydown",esc); } }); }
 
 /* Copiar fila: una línea separada por tabuladores (CAMA … ESTATUS), lista para pegar en la hoja de cálculo del censo */
-function cenCopyRow(btn){ const tr=btn.closest("tr[data-k]"); const row=tr&&(CEN.cur&&CEN.cur.pac||[]).find(x=>x.k===tr.dataset.k); if(!row) return;
+function cenCopyRow(k){ const row=(CEN.cur&&CEN.cur.pac||[]).find(x=>x.k===k); if(!row) return; const btn={classList:{add(){},remove(){}}};
   const q=s=>{ s=String(s==null?"":s).replace(/\r/g,""); return /[\n\t"]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; };
   const txt=CEN_COLS.map(([f])=>q(row[f])).join("\t");
   const done=()=>{ btn.classList.add("ok"); setTimeout(()=>btn.classList.remove("ok"),1200); try{ toast("Fila copiada"); }catch(_){} };
@@ -8461,6 +8725,41 @@ function cenSplitPages(t){
 function cenFillPage(x,H){ const h=x.getBoundingClientRect().height, trs=[...x.querySelectorAll("tbody tr:not(.res)")]; if(!trs.length||h>=H) return; const ex=Math.min((H-h)/trs.length,26); if(ex<1) return;
   trs.forEach(tr=>{ const hh=tr.getBoundingClientRect().height; tr.style.height=(hh+ex).toFixed(1)+"px"; }); }
 
+/* v3.42 · menú de tres puntos del censo: Editar paciente, cama, adscrito, clínica, alta, defunción y borrar del censo */
+const CEN_IC={ copy:CEN_ICO_CPY, edit:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></svg>', del:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>' };
+function cenMenu(btn,full,exc){
+  document.querySelectorAll(".pp-menu").forEach(x=>x.remove()); try{ PP_MENU.close(); }catch(_){}
+  const k=btn.closest("tr").dataset.k, I=(i,t,a,c)=>`<button type="button" role="menuitem" data-act="${a}"${c?` class="${c}"`:""}>${i}<span>${t}</span></button>`;
+  const el=document.createElement("div"); el.className="pp-menu cen-hm"; el.setAttribute("role","menu");
+  el.innerHTML=full?I(CEN_IC.edit,"Editar paciente","edit")+I(PP_ICO.bed,"Cambiar cama","cama")+I(PP_ICO.ads,"Cambiar adscrito","ads")+I(PP_ICO.clin,"Cambiar clínica","clin")+I(CEN_IC.copy,"Copiar fila","copy")+I(PP_ICO.out,"Dar de alta","alta","danger")+I(PP_ICO.def,"Defunción","def","danger")+I(CEN_IC.del,"Borrar del censo","quitar","danger"):I(exc?PP_ICO.out:CEN_IC.del,exc?"Volver al censo":"Borrar del censo",exc?"volver":"quitar",exc?"":"danger");
+  document.body.appendChild(el); const r=btn.getBoundingClientRect(), w=el.offsetWidth, h=el.offsetHeight; let x=Math.min(Math.max(8,r.left),innerWidth-w-8), y=r.bottom+4; if(y+h>innerHeight-8) y=Math.max(8,r.top-h-4); el.style.left=Math.round(x)+"px"; el.style.top=Math.round(y)+"px";
+  const off=e=>{ if(!el.contains(e.target)) close(); }, close=()=>{ el.remove(); document.removeEventListener("pointerdown",off,true); removeEventListener("scroll",close,true); };
+  document.addEventListener("pointerdown",off,true); addEventListener("scroll",close,true);
+  el.onclick=e=>{ const a=e.target.closest("[data-act]"); if(!a) return; close(); const act=a.dataset.act;
+    if(act==="edit") return cenOpenEditor(k);
+    if(act==="copy") return cenCopyRow(k);
+    if(CEN.mode!=="hist"){ if(act==="cama") return ppChangeBed(k); if(act==="ads") return ppChangeAds(k); if(act==="clin") return ppChangeClinic(k); if(act==="alta") return ppDischarge(k); if(act==="def") return ppDefuncion(k); }
+    else if(act==="ads"||act==="clin"){ const row=(CEN.cur&&CEN.cur.pac||[]).find(x=>x.k===k); if(row) cenHistPen(row,act); return; }
+    cenHistAct(k,act); };
+  const b0=el.querySelector("button"); if(b0) b0.focus();
+}
+
+/* v3.42 · doble clic en las celdas bloqueadas del censo abre su ventana de cambio (también en censos anteriores, que solo editan su propia copia) */
+(function(){ const w=$("cenWrap"); if(!w) return;
+  w.addEventListener("dblclick",e=>{ const td=e.target.closest&&e.target.closest("td[data-cf]"); if(!td) return; const tr=td.closest("tr[data-k]"); if(!tr) return; e.preventDefault(); try{ getSelection().removeAllRanges(); }catch(_){}
+    const k=tr.dataset.k, f=td.dataset.cf, hist=CEN.mode==="hist", row=(CEN.cur&&CEN.cur.pac||[]).find(x=>x.k===k); if(!row) return;
+    if(f==="cama"){ if(hist) cenHistPen(row,"cama"); else ppChangeBed(k); }
+    else if(f==="ads"){ if(hist) cenHistPen(row,"ads"); else ppChangeAds(k); }
+    else if(f==="clin"){ if(hist) cenHistPen(row,"clin"); else ppChangeClinic(k); }
+    else if(["nombre","edad","exp","fnac"].includes(f)) cenOpenEditor(k); });
+})();
+
+/* v3.42 · botón amarillo: abre el Archivo Clínico del paciente de esa fila */
+function cenOpenFile(btn){ const tr=btn.closest("tr[data-k]"); const k=tr&&tr.dataset.k, row=(CEN.cur&&CEN.cur.pac||[]).find(x=>x.k===k); if(!row) return;
+  let f=DRIVE_FILES.find(x=>x&&x.id===k); if(!f&&row.exp) f=DRIVE_FILES.find(x=>{ try{ return String(expOf(x))===String(row.exp); }catch(_){ return false; } });
+  if(!f){ try{ notify("No se encontró el expediente de este paciente en Drive.","warn"); }catch(_){} return; }
+  arWinOpen(f.id); }
+
 /* ---------- Identificación · bloque «Censo»: la fecha de ingreso es la MISMA de HC / Ingreso ---------- */
 function cenProxySync(){ const a=$("fIngreso"), b=$("cenIngProxy"); if(a&&b&&b.value!==a.value&&document.activeElement!==b) b.value=a.value;
   const o=$("cenEhOut"); if(o){ let v=""; try{ v=a&&parts(a.value)?String(cenEH(a.value,cenMx(Date.now()))):""; }catch(_){} o.textContent=v||"—"; o.classList.toggle("empty",!v); } }
@@ -8507,7 +8806,7 @@ setTimeout(()=>{ try{ cenSnapSoon(500); }catch(_){} },4000);
 try{ const ord=["censo","hospitalizados","todos","nuevo"]; HM_OPTS.sort((a,b)=>ord.indexOf(a[0])-ord.indexOf(b[0])); }catch(_){}
 
 /* Hospitalizados: accesos directos a Notas Médicas e Indicaciones del paciente */
-$("ppList").addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest("[data-pqa]"); if(!b) return; e.stopImmediatePropagation(); e.preventDefault(); const card=b.closest("[data-id]"); if(!card) return; const key=b.dataset.pqa;
+$("ppList").addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest("[data-pqa]"); if(!b) return; e.stopImmediatePropagation(); e.preventDefault(); const card=b.closest("[data-id]"); if(!card) return; const key=b.dataset.pqa; if(key==="file"){ arWinOpen(card.dataset.id); return; }
   openDriveFile(card.dataset.id).then(()=>{ try{ ppMarkCurrent(); }catch(_){} try{ if(hasSelectedPatient()) openClinical(key); }catch(_){} }).catch(driveError); },true);
 
 /* Al abrir un paciente (Hospitalizados / Todos) la página arranca arriba */
@@ -8569,7 +8868,11 @@ document.addEventListener("click",e=>{ try{ if(e.target.closest&&e.target.closes
 /* v3.24 · Censo Actual casi en tiempo real (varios dispositivos a la vez): mientras se ve el Censo Actual se consulta cada ~3 s (pacientes + archivo del censo) y cada ~6 s (PendientesJCF). No se interrumpe lo que se está escribiendo: el redibujado espera a que se suelte la celda. */
 let CEN_RT_BUSY=false, CEN_RT_N=0;
 async function cenRealtime(){
-  if(CEN_RT_BUSY||document.hidden||PP_VIEW!=="censoActual"||!document.body.classList.contains("pp-browse")) return;
+  if(CEN_RT_BUSY||document.hidden||!document.body.classList.contains("pp-browse")) return;
+  if(PP_VIEW==="hospitalizados"||PP_VIEW==="cama"){   /* v3.40 · Hospitalizados casi en tiempo real: lista cada ~3 s y pendientes de Claude cada ~6 s; no se interrumpe lo que se está escribiendo */
+    const ae=document.activeElement; if(ae&&$("ppList")&&$("ppList").contains(ae)&&ae.matches("input,textarea,[contenteditable]")) return;
+    CEN_RT_BUSY=true; try{ await listPoll(); if((++CEN_RT_N)%2===0) await pendPoll(); }catch(_){} finally{ CEN_RT_BUSY=false; } return; }
+  if(PP_VIEW!=="censoActual") return;
   CEN_RT_BUSY=true;
   try{
     const dirty=cenDirtyFocus($("cenWrap"));
@@ -8676,6 +8979,7 @@ async function cenEditOpen(k){
     CENADD.open=true; document.body.classList.add("cen-add-on"); d.classList.add("edit"); $("caTitle").textContent="Editar paciente"; $("caOk").textContent="Guardar";
     cenAddPhase(2); $("caOk").disabled=true; if(!d.open) d.showModal();
     await openDriveFile(k);
+    if(!CENADD.open){ try{ fill(DEFAULTS()); }catch(_){} return; }   /* v3.42 · si la cerraron mientras cargaba, no se vuelve a abrir vacía */
     document.body.classList.add("cen-add-on"); if(!d.open) d.showModal();
     const e=$("expediente"); if(e) e.readOnly=true;
     try{ refresh(); }catch(_){}
@@ -8742,7 +9046,7 @@ function cenHistEdit(k){
     list.addEventListener("mousedown",e=>e.preventDefault()); list.addEventListener("click",e=>{ const b=e.target.closest("[data-rc]"); if(b) choose(b.dataset.rc); }); return list; };
   const hide=()=>{ if(list) list.hidden=true; active=-1; const i=inp(); if(i) i.setAttribute("aria-expanded","false"); };
   const segInfo=i=>{ const v=i.value, p=i.selectionStart==null?v.length:i.selectionStart, a=v.lastIndexOf("/",p-1)+1, bEnd=v.indexOf("/",p), b=bEnd<0?v.length:bEnd; return {v,a,b,text:v.slice(a,b)}; };
-  const suggest=()=>{ const i=inp(); if(!i||document.activeElement!==i){ hide(); return; } mk();
+  const suggest=()=>{ const i=inp(); if(!i||document.activeElement!==i){ hide(); return; } mk(); const host=document.querySelector("dialog.cen-send[open]")||document.body; if(list.parentNode!==host) host.appendChild(list);
     const s=segInfo(i), words=normalizeStaffName(s.text).split(" ").filter(Boolean), taken=i.value.split("/").map(x=>normalizeStaffName(x));
     const items=HJM_STAFF.residentes.filter(n=>{ const nn=normalizeStaffName(n); return words.every(w=>nn.includes(w))&&!(taken.includes(nn)&&normalizeStaffName(s.text)!==nn); });
     list.innerHTML=items.map((n,k)=>`<button type="button" role="option" id="cenres-opt-${k}" aria-selected="false" data-rc="${esc(n)}">${esc(n)}</button>`).join("");
@@ -8768,7 +9072,7 @@ function cenHistEdit(k){
 async function cenListOpen(){
   let d=$("dlgCenList"); if(!d){ d=document.createElement("dialog"); d.id="dlgCenList"; d.className="dlg cen-add cen-ld"; document.body.appendChild(d);
     d.addEventListener("cancel",e=>{ e.preventDefault(); d.close(); });
-    d.addEventListener("click",e=>{ if(e.target.closest("[data-x]")){ d.close(); return; } const b=e.target.closest("[data-cl]"); if(!b) return; const name=b.closest("tr").dataset.cn; if(b.dataset.cl==="edit"){ d.close(); cenOpenHist(name); } else if(b.dataset.cl==="print") cenPrintByName(name); else if(b.dataset.cl==="reload") cenListLoad(d,true); });
+    d.addEventListener("click",e=>{ if(e.target.closest("[data-x]")){ d.close(); return; } const b=e.target.closest("[data-cl]"); if(!b) return; const name=b.closest("tr").dataset.cn; if(b.dataset.cl==="edit"){ d.close(); cenOpenHist(name); } else if(b.dataset.cl==="ver") cenViewPop(name); else if(b.dataset.cl==="print") cenPrintByName(name); else if(b.dataset.cl==="reload") cenListLoad(d,true); });
     d.addEventListener("change",e=>{ if(e.target.matches("#clY,#clM")) cenListDraw(d); }); }
   d.innerHTML=`<div class="ca-head"><b>Censos guardados</b><button type="button" class="ca-x" data-x aria-label="Cerrar">×</button></div><div class="ca-s1"><div class="cl-filt"><label>Año <select id="clY"></select></label><label>Mes <select id="clM"></select></label><button type="button" class="cen-btn" data-cl="reload">Actualizar</button></div><div id="clBody" class="cl-body"><div class="cen-empty">Cargando…</div></div></div>`;
   d.style.display=""; d.showModal(); cenListLoad(d,false);
@@ -8784,7 +9088,8 @@ function cenListDraw(d){
   const MN=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"], y=+$("clY").value, rows=(d._rows||[]).filter(r=>r.t.y===y);
   const ms=[...new Set(rows.map(r=>r.t.m))].sort((a,b)=>b-a), prev=$("clM").value; $("clM").innerHTML=`<option value="">Todos</option>`+ms.map(m=>`<option value="${m}">${MN[m]}</option>`).join(""); if(prev!==""&&ms.map(String).includes(prev)) $("clM").value=prev;
   const m=$("clM").value, list=rows.filter(r=>m===""||String(r.t.m)===m);
-  $("clBody").innerHTML=list.length?`<table class="cenlist"><thead><tr><th>Censo</th><th>Día</th><th>Corte</th><th>Última modificación</th><th></th></tr></thead><tbody>${list.map(({x,t})=>{ const wd=new Date(Date.UTC(t.y,t.m,t.d)).getUTCDay(); return `<tr data-cn="${esc(x.name)}"><td><b>${esc(cenDot4(t))}</b></td><td>${CEN_DIAS[wd].toLowerCase()}</td><td>${wd===0||wd===6?"08:00":"06:00"}</td><td>${esc(new Date(x.modified).toLocaleString("es-MX",{day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"}))}</td><td class="a"><button type="button" class="cen-btn" data-cl="edit">${CEN_ICO_EDT}Editar</button><button type="button" class="cen-btn" data-cl="print">${CEN_ICO_PRT}Imprimir</button></td></tr>`; }).join("")}</tbody></table>`:`<div class="cen-empty">${(d._rows||[]).length?"No hay censos en ese periodo.":"Aún no hay censos guardados. El primero se crea solo en la primera conexión después del siguiente corte."}</div>`;
+  $("clBody").innerHTML=list.length?`<table class="cenlist"><thead><tr><th>Censo</th><th>Día</th><th>Corte</th><th>Última modificación</th><th></th></tr></thead><tbody>${list.map(({x,t})=>{ const wd=new Date(Date.UTC(t.y,t.m,t.d)).getUTCDay(); return `<tr data-cn="${esc(x.name)}"><td><b>${esc(cenDot4(t))}</b></td><td>${CEN_DIAS[wd].toLowerCase()}</td><td>${wd===0||wd===6?"07:30":"05:30"}</td><td>${esc(new Date(x.modified).toLocaleString("es-MX",{day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"}))}<small class="cl-who" data-who="${esc(x.name)}"></small></td><td class="a"><button type="button" class="cen-btn" data-cl="edit">${CEN_ICO_EDT}Editar</button><button type="button" class="cen-btn" data-cl="ver">${CEN_ICO_VIEW}Ver</button><button type="button" class="cen-btn" data-cl="print">${CEN_ICO_PRT}Imprimir</button></td></tr>`; }).join("")}</tbody></table>`:`<div class="cen-empty">${(d._rows||[]).length?"No hay censos en ese periodo.":"Aún no hay censos guardados. Aparecerán aquí cuando se envíe el primer censo final."}</div>`;
+  try{ cenListWho(d,list); }catch(_){}
 }
 
 /* Encabezado: en la página Censo, «Nuevo Paciente» pasa a «Agregar Paciente» y abre la ventana de identificación */
@@ -8852,6 +9157,235 @@ document.addEventListener("input",e=>{ const i=e.target.closest&&e.target.closes
 document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest("[data-cl-allergy-fill]"); if(!b) return; e.preventDefault(); const i=b.closest("[data-cl-allergy]").querySelector("input"); i.value=b.dataset.clAllergyFill; clinAllergySet(i.value,i); },true);
 (function(){ const w=window.refresh; if(typeof w==="function"&&!w.__al){ window.refresh=function(...a){ const r=w.apply(this,a); try{ clinAllergySync(); }catch(_){} return r; }; window.refresh.__al=1; } })();
 setInterval(()=>{ try{ if(document.querySelector("[data-cl-allergy-in]")) clinAllergySync(); }catch(_){} },1500);
+
+/* ===================== v3.40 · Rol Administrativo + botón «Ver» del Archivo Clínico ===================== */
+function isAdmv(){ try{ const r=userRecord(sessionUserName()); return !!(r&&r.tipo==="administrativo"); }catch(_){ return false; } }
+function admvSync(){ try{ const on=isAdmv(); document.body.classList.toggle("is-admv",on);
+  document.querySelectorAll('[data-pp-view="recientes"]').forEach(b=>{ const t=[...b.childNodes].reverse().find(n=>n.nodeType===3&&n.textContent.trim()); const want=on?"Expedientes":"Todos"; if(t&&t.textContent.trim()!==want) t.textContent=t.textContent.replace(/Todos|Expedientes/,want); else if(!t){ const sp=[...b.querySelectorAll("span")].reverse().find(x=>/Todos|Expedientes/.test(x.textContent)); if(sp&&sp.textContent.trim()!==want) sp.textContent=want; } b.title=on?"Buscar entre todos los expedientes":b.title; }); }catch(_){} }
+(function(){
+  const w=(n,f)=>{ const o=window[n]; if(typeof o!=="function") return; window[n]=function(...a){ const r=f(o,this,a); return r; }; };
+  /* Al iniciar sesión / salir se actualiza la clase del cuerpo */
+  w("applyGateUser",(o,t,a)=>{ const r=o.apply(t,a); admvSync(); if(isAdmv()){ PP_VIEW="censoActual"; try{ ppSyncViewBtns(); renderPP(); }catch(_){} } return r; });
+  /* Administrativo: toda vista de pacientes es Censo */
+  w("renderPP",(o,t,a)=>{ if(isAdmv()&&PP_VIEW!=="censoActual"&&PP_VIEW!=="censos"&&PP_VIEW!=="recientes"){ PP_VIEW="censoActual"; try{ ppSyncViewBtns(); }catch(_){} } return o.apply(t,a); });
+  /* Abrir un paciente → directo a su Archivo Clínico (solo lectura) */
+  w("openDriveFile",(o,t,a)=>{ const skip=window.__arWin||document.body.classList.contains("cen-add-on")||!!(typeof CENADD!=="undefined"&&CENADD.open); const r=o.apply(t,a); if(isAdmv()&&!skip&&r&&r.then) r.then(()=>{ try{ if(hasSelectedPatient()&&!document.body.classList.contains("showing-archive")) openArchive(); }catch(_){} }); return r; });
+  /* Sin acceso a hoja de datos, formatos ni edición */
+  w("openFormat",(o,t,a)=>{ if(isAdmv()&&!window.__arPass){ try{ notify("Tu perfil es de consulta: solo puedes ver el Archivo Clínico.","warn"); }catch(_){} return; } return o.apply(t,a); });
+  w("openClinical",(o,t,a)=>{ if(isAdmv()){ try{ notify("Tu perfil es de consulta: solo puedes ver el Archivo Clínico.","warn"); }catch(_){} return; } return o.apply(t,a); });
+  w("back",(o,t,a)=>{ const r=o.apply(t,a); if(isAdmv()){ try{ goHome(); PP_VIEW="censoActual"; ppSyncViewBtns(); renderPP(); }catch(_){} } return r; });
+  document.addEventListener("click",e=>{ if(!isAdmv()) return; const b=e.target.closest&&e.target.closest("[data-ar-open],[data-ar='view'],[data-ar='del']"); if(b&&b.closest("#view-archive")){ e.stopImmediatePropagation(); e.preventDefault(); } },true);
+  setTimeout(admvSync,1500); setInterval(admvSync,4000);
+})();
+
+/* ---------- «Ver»: ventana con el documento en su diseño de impresión (texto seleccionable y copiable) ---------- */
+function arViewCss(){ let css=""; try{ document.querySelectorAll("style").forEach(s=>{ if(s.id==="arViewCss") return; css+=s.textContent.replace(/@media\s+print/gi,"@media all")+"\n"; }); }catch(_){} return css; }
+function arValues(v,out){ if(v==null) return; if(typeof v==="string"){ const t=arPlain(v); if(t) out.push(t); return; } if(typeof v==="number") return; if(Array.isArray(v)){ v.forEach(x=>arValues(x,out)); return; } if(typeof v==="object"){ Object.keys(v).forEach(k=>{ if(/^(enc|ts|id|fmt)$/.test(k)&&typeof v[k]!=="object") return; arValues(v[k],out); }); } }
+function arGenericHTML(tp,r){
+  const d=data(), title=(CAT[tp]&&CAT[tp].tt)||(FORMATS[tp]&&FORMATS[tp].title)||"Documento";
+  const out=[]; arValues(r.p&&r.p.altaBundle?r.p.altaBundle.pages.map(p=>p.fields.map(f=>f.h)):(r.p&&(r.p.cells||r.p.fmt||r.p)),out);
+  const lines=[...new Set(out)].filter(x=>x.length>0);
+  return `<div class="cp-page cp-note cp-note-free">${patientPrintHeader(d)}<h1 class="cp-title">${esc(String(title).toUpperCase())}</h1><div class="cp-free-date"><div>${esc(r.t||"")}</div></div><div class="cp-content">${lines.length?lines.map(l=>`<p>${esc(l)}</p>`).join(""):"<p>(Sin contenido de texto guardado)</p>"}</div></div>`;
+}
+function arViewPop(tp,id){
+  const r=(HIST[tp]||[]).find(x=>x&&x.id===id), kind=AR_KIND[tp]; let html;
+  if(r&&(kind==="fmt"||kind==="alta")){ arFmtView(tp,id,r); return; }
+  if(!r||!r.p){ try{ notify("No se encontró el registro.","warn"); }catch(_){} return; }
+  try{ html=kind==="cl"?clinicalPrintHTML(tp,r.p,data()):arGenericHTML(tp,r); }catch(_){ html=arGenericHTML(tp,r); }
+  let d=$("dlgArView"); if(!d){ d=document.createElement("dialog"); d.id="dlgArView"; d.className="ar-view"; document.body.appendChild(d); }
+  const ttl=(kind==="cl"&&r.p.tipo)?String(r.p.tipo):((CAT[tp]&&CAT[tp].tt)||(FORMATS[tp]&&FORMATS[tp].title)||"Documento");
+  d.innerHTML=`<div class="av-head"><div class="av-t"><b>${esc(ttl)}</b><small>${esc(r.t||"")} · Elaboró: ${esc(savedBy(r))}</small></div><div class="av-b">${isAdmv()?"":rbBtn("edit","Editar","data-ave")}${rbBtn("print","Imprimir","data-avp")}<button type="button" class="av-x" data-avx aria-label="Cerrar">×</button></div></div><iframe class="av-frame" title="Vista previa de ${esc(ttl)}"></iframe>`;
+  const fr=d.querySelector("iframe");
+  const doc=`<!doctype html><html><head><meta charset="utf-8"><style>${arViewCss()}</style><style id="arViewCss">html,body{margin:0!important;padding:0!important;background:#e6e7e9!important;height:auto!important;overflow:auto!important;-webkit-user-select:text!important;user-select:text!important}body>*:not(#clinicalPrint){display:none!important}html body,html body #clinicalPrint,html body #clinicalPrint *{visibility:visible!important}#clinicalPrint{display:block!important;position:static!important;width:auto!important;height:auto!important;padding:14px 0 24px}.cp-page{margin:0 auto 16px!important;box-shadow:0 2px 14px rgba(0,0,0,.28);zoom:var(--z,1);-webkit-user-select:text;user-select:text}.cp-page *{-webkit-user-select:text;user-select:text}</style></head><body class="printing-clinical"><div id="clinicalPrint">${html}</div></body></html>`;
+  fr.srcdoc=doc;
+  const fit=()=>{ try{ const W=fr.clientWidth-30, z=Math.max(.35,Math.min(1,W/(8.5*96))); fr.contentDocument.documentElement.style.setProperty("--z",String(z)); }catch(_){} };
+  fr.addEventListener("load",fit); d.onclick=e=>{ if(e.target.closest("[data-avx]")||e.target===d) d.close(); const p=e.target.closest("[data-avp]"); if(p){ d.close(); if(kind==="cl") printClinical(tp,id); else arAct(tp,id,"print",null); return; } if(e.target.closest("[data-ave]")){ d.close(); arAct(tp,id,"view",null); } };
+  d.oncancel=()=>{}; if(!d.open) d.showModal(); setTimeout(fit,80); addEventListener("resize",fit);
+}
+
+/* ---------- v3.40 · Censos anteriores: quién envió / quién editó por última vez + «Ver» ---------- */
+const CEN_ICO_VIEW='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+async function cenListWho(d,list){
+  const rows=(list||[]).slice(); const next=async()=>{ const it=rows.shift(); if(!it) return; const x=it.x;
+    try{ const r=await cenReadEntry(x), o=r.obj||{}; const who=String(o.editado||o.por||"").trim(), sent=!o.editado&&who;
+      const el=d.querySelector('.cl-who[data-who="'+x.name+'"]'); if(el) el.textContent=who?(sent?"Envió: ":"Editó: ")+who:""; }catch(_){}
+    return next(); };
+  await Promise.all([next(),next(),next(),next()]);
+}
+async function cenViewPop(name){
+  let o; try{ const list=await cenList(true), e=list.find(x=>x.name===name); if(!e) throw new Error("No existe ese censo"); const r=await gcall("hjmCensoRead",e.id); o=JSON.parse(r.content); o.pac=o.pac||[]; }catch(e){ try{ notify("No se pudo abrir el censo: "+friendly(e),"warn"); }catch(_){} return; }
+  let d=$("dlgArView"); if(!d){ d=document.createElement("dialog"); d.id="dlgArView"; d.className="ar-view"; document.body.appendChild(d); }
+  const who=String(o.editado||o.por||"").trim(), ttl="Censo "+o.fecha;
+  d.innerHTML=`<div class="av-head"><div class="av-t"><b>${esc(ttl)}</b><small>${o.guardia?"Guardia "+esc(o.guardia)+" · ":""}${who?(o.editado?"Última edición: ":"Envió: ")+esc(who):""}</small></div><div class="av-b">${rbBtn("edit","Editar","data-ave")}${rbBtn("print","Imprimir","data-avp")}<button type="button" class="av-x" data-avx aria-label="Cerrar">×</button></div></div><iframe class="av-frame" title="Vista previa del censo"></iframe>`;
+  const fr=d.querySelector("iframe");
+  fr.srcdoc=`<!doctype html><html><head><meta charset="utf-8"><style>${cenFontsCSS()}\n${CEN_PRINT_CSS}\nhtml,body{background:#e6e7e9;-webkit-user-select:text;user-select:text}.pg{break-after:auto;height:auto!important;background:#fff;margin:12px auto;padding:10px;width:max-content;max-width:none;box-shadow:0 2px 14px rgba(0,0,0,.28)}.revw{justify-content:center}</style></head><body><section class="pg">${cenPrintTable(o,o.pac)}</section><section class="pg"><div class="revw">${cenRevHTML(o,false)}</div></section></body></html>`;
+  d.onclick=e=>{ if(e.target.closest("[data-avx]")||e.target===d){ d.close(); return; } if(e.target.closest("[data-ave]")){ d.close(); try{ const l=$("dlgCenList"); if(l&&l.open) l.close(); }catch(_){} cenOpenHist(name); return; } if(e.target.closest("[data-avp]")){ d.close(); cenPrintByName(name); } };
+  if(!d.open) d.showModal();
+}
+document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest("[data-ar-ver]"); if(!b) return; e.preventDefault(); e.stopPropagation(); const [tp,id]=b.dataset.arVer.split("|"); arViewPop(tp,id); },true);
+
+/* v3.41 · Las pestañas flotantes de la hoja de datos siguen pegadas al buscador de pacientes (sin hueco) */
+try{ const pp=$("pPanel"); if(pp&&window.ResizeObserver){ new ResizeObserver(()=>{ try{ secNavTop(); }catch(_){} }).observe(pp); const nb=document.querySelector(".band"); if(nb) new ResizeObserver(()=>{ try{ secNavTop(); }catch(_){} }).observe(nb); } }catch(_){}
+setTimeout(()=>{ try{ secNavTop(); }catch(_){} },1200);
+
+/* v3.41 · Móvil / Z Fold: botón «Archivo Clínico» junto a los cuatro botones de Notas, Indicaciones, Reporte y Alta */
+(function(){ try{ const ci=document.querySelector("#formatos .clinical-index"); if(!ci||$("archiveOpen2")) return; const b=document.createElement("button"); b.type="button"; b.id="archiveOpen2"; b.title="Ver todo el archivo clínico del paciente"; b.innerHTML='<span>Archivo Clínico</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>'; b.addEventListener("click",()=>openArchive()); ci.appendChild(b); }catch(_){} })();
+
+/* v3.41 · Administrativo viendo un expediente: el botón superior pasa a «Censo» para regresar al censo */
+function admvBand(){ try{ const bb=$("bandBack"); if(!bb) return; const on=isAdmv()&&document.body.classList.contains("showing-archive");
+  if(on&&!bb.dataset.orig){ bb.dataset.orig=bb.innerHTML; bb.dataset.ot=bb.title; bb.innerHTML=CEN_ICO_LST+'<span class="bb-cen">Censo</span>'; bb.title="Volver al censo"; bb.setAttribute("aria-label","Volver al censo"); }
+  else if(!on&&bb.dataset.orig){ bb.innerHTML=bb.dataset.orig; bb.title=bb.dataset.ot||"Pacientes"; bb.removeAttribute("aria-label"); delete bb.dataset.orig; delete bb.dataset.ot; } }catch(_){} }
+try{ new MutationObserver(admvBand).observe(document.body,{attributes:true,attributeFilter:["class"]}); }catch(_){}
+setInterval(admvBand,1000);
+
+/* ===================== v3.42 · Ver / Imprimir de formatos oficiales SIN salir del Archivo Clínico ===================== */
+/* Carga el registro en el formato oficial (en segundo plano), toma una copia de las hojas y regresa al archivo. */
+async function arFmtSnap(tp,id){
+  const prev={cls:document.body.className,cur:current,cc:currentClinical,rp:$("recPanel").hidden,bi:$("bandIdx").hidden};
+  const key=tp==="altas"?"alta":tp, sy=window.scrollY, toastO=window.toast, aoAlta=(typeof ALTA_OWN!=="undefined")?ALTA_OWN:null;
+  window.__arPass=true; window.toast=function(){};
+  let host=null;
+  try{
+    openFormat(key);
+    if(tp==="altas"){ loadAltaRecent(id,false); try{ await prewarmAltaSupp(); }catch(_){} }
+    else useRecent(tp,id,0);
+    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+    addPrintCopies();
+    const src=$("paper"); host=src.cloneNode(true); host.removeAttribute("id");
+    host.querySelectorAll(".alta-preset-toolbar,.alta-mobile-controls,.section-switcher,.preset-toolbar").forEach(e=>e.remove());
+    host.querySelectorAll("[contenteditable]").forEach(e=>e.removeAttribute("contenteditable"));
+    host.style.transform=""; host.style.position="";
+  }catch(e){ host=null; }
+  finally{
+    try{ removePrintCopies(); }catch(_){}
+    try{ delete VIEWED[key]; }catch(_){}
+    try{ if(typeof ALTA_OWN!=="undefined") ALTA_OWN=aoAlta; }catch(_){}
+    window.toast=toastO; window.__arPass=false;
+    current=prev.cur; currentClinical=prev.cc; document.body.className=prev.cls;
+    try{ $("recPanel").hidden=prev.rp; $("bandIdx").hidden=prev.bi; renderArchive(); }catch(_){}
+    window.scrollTo(0,sy);
+  }
+  return host;
+}
+function arFmtDocHTML(host){
+  let css=""; document.querySelectorAll("style").forEach(s=>{ if(s.id==="arViewCss") return; css+=s.textContent+"\n"; });
+  return `<!doctype html><html class="hjm-rdy"><head><meta charset="utf-8"><style>${css}</style><style id="arViewCss">@media screen{html,body{margin:0!important;padding:0!important;background:#e6e7e9!important;height:auto!important;overflow:auto!important}#view-format{display:block!important}.stage{padding:14px 0 22px!important;display:block!important;overflow:visible!important;--stage-max:none!important;max-width:none!important}.paper-holder{margin:0 auto!important}.papers{transform-origin:top left}.print-copy,.print-supplement{display:none!important}}</style></head><body class="showing-format"><section id="view-format"><div class="fbody"><div class="stage"><div class="paper-holder" id="holder"><div class="papers" id="paper">${host.innerHTML}</div></div></div></div></section></body></html>`;
+}
+function arFmtFit(fr){ try{ const doc=fr.contentDocument, pa=doc.getElementById("paper"), ho=doc.getElementById("holder"); if(!pa) return; pa.style.transform="none"; ho.style.width=""; ho.style.height=""; const w=pa.scrollWidth, h=pa.scrollHeight, W=fr.clientWidth-24, s=Math.max(.3,Math.min(1,W/w)); pa.style.transform=`scale(${s})`; ho.style.width=Math.round(w*s)+"px"; ho.style.height=Math.round(h*s)+"px"; }catch(_){} }
+async function arFmtView(tp,id,r){
+  const key=tp==="altas"?"alta":tp, ttl=(CAT[key]&&CAT[key].tt)||(FORMATS[key]&&FORMATS[key].title)||"Documento";
+  let d=$("dlgArView"); if(!d){ d=document.createElement("dialog"); d.id="dlgArView"; d.className="ar-view"; document.body.appendChild(d); }
+  d.innerHTML=`<div class="av-head"><div class="av-t"><b>${esc(ttl)}</b><small>${esc(r.t||"")} · Elaboró: ${esc(savedBy(r))}</small></div><div class="av-b">${isAdmv()?"":rbBtn("edit","Editar","data-ave")}${rbBtn("print","Imprimir","data-avp")}<button type="button" class="av-x" data-avx aria-label="Cerrar">×</button></div></div><iframe class="av-frame" title="Vista previa de ${esc(ttl)}"></iframe>`;
+  const fr=d.querySelector("iframe"); let ready=false;
+  d.onclick=e=>{ if(e.target.closest("[data-avx]")||e.target===d){ d.close(); return; } if(e.target.closest("[data-avp]")){ if(ready){ try{ fr.contentWindow.focus(); fr.contentWindow.print(); }catch(_){} } return; } if(e.target.closest("[data-ave]")){ d.close(); arAct(tp,id,"view",null); } };
+  d.oncancel=()=>{}; if(!d.open) d.showModal();
+  fr.srcdoc='<body style="font:14px sans-serif;color:#555;display:grid;place-items:center;height:80vh">Cargando documento…</body>';
+  const host=await arFmtSnap(tp,id);
+  if(!host){ d.close(); try{ notify("No se pudo cargar el documento.","warn"); }catch(_){} return; }
+  fr.addEventListener("load",()=>{ ready=true; arFmtFit(fr); setTimeout(()=>arFmtFit(fr),150); },{once:true});
+  fr.srcdoc=arFmtDocHTML(host);
+  addEventListener("resize",()=>arFmtFit(fr));
+}
+async function arFmtPrint(tp,id){
+  const host=await arFmtSnap(tp,id); if(!host){ try{ notify("No se pudo cargar el documento para imprimir.","warn"); }catch(_){} return; }
+  const fr=document.createElement("iframe"); fr.setAttribute("aria-hidden","true"); fr.style.cssText="position:fixed;left:-9999px;top:0;width:8.5in;height:11in;border:0;opacity:0;pointer-events:none";
+  fr.addEventListener("load",()=>{ setTimeout(()=>{ try{ fr.contentWindow.focus(); fr.contentWindow.print(); }catch(_){} setTimeout(()=>fr.remove(),60000); },400); },{once:true});
+  fr.srcdoc=arFmtDocHTML(host); document.body.appendChild(fr);
+}
+(function(){ const o=window.arAct; if(typeof o!=="function") return; window.arAct=function(tp,id,act,btn){ const k=AR_KIND[tp]; if(act==="print"&&(k==="fmt"||k==="alta")&&(btn?!!btn.closest("#view-archive"):document.body.classList.contains("showing-archive"))){ arFmtPrint(tp,id); return; } if(act==="view"&&ARW.open) arWinClose(true); return o.apply(this,arguments); }; })();
+
+/* ===================== v3.42 · Archivo Clínico en ventana (desde Censo y Hospitalizados, sin salir de la página) ===================== */
+const ARW={open:false,busy:false,home:null,next:null};
+function arWinEnsure(){ let d=$("dlgArWin"); if(d) return d; d=document.createElement("dialog"); d.id="dlgArWin"; d.className="ar-win-dlg";
+  d.innerHTML='<div class="aw-head"><b id="awTitle">Archivo clínico</b><button type="button" class="aw-x" id="awX" aria-label="Cerrar">×</button></div><div class="aw-body" id="awBody"><div class="aw-load">Cargando archivo clínico…</div></div>';
+  document.body.appendChild(d); $("awX").onclick=()=>d.close(); d.addEventListener("close",()=>arWinClose(false)); d.addEventListener("click",e=>{ if(e.target===d) d.close(); }); return d; }
+function arWinClose(keep){
+  if(!ARW.open) return; ARW.open=false; window.__arWin=false;
+  const v=$("view-archive"); try{ if(v&&ARW.home){ v.classList.remove("ar-win"); ARW.home.insertBefore(v,ARW.next); } }catch(_){}
+  const d=$("dlgArWin"); if(d&&d.open) d.close();
+  if(keep) return;
+  try{ current=null; currentClinical=null; document.body.classList.remove("showing-format","showing-clinical","showing-archive","rec-side","transfusion-side"); fill(DEFAULTS()); PP_AUTO=false; PP_MANUAL=false; PP_BROWSE=true; ppLayout(); renderPP(); }catch(_){}
+}
+async function arWinOpen(id){
+  if(ARW.busy) return; ARW.busy=true; const d=arWinEnsure(); ARW.open=true; window.__arWin=true;
+  const body=$("awBody"); body.innerHTML='<div class="aw-load">Cargando archivo clínico…</div>'; if(!d.open) d.showModal();
+  try{
+    await openDriveFile(id);
+    if(!ARW.open) return;
+    try{ PP_BROWSE=true; ppLayout(); renderPP(); }catch(_){}   /* el fondo sigue siendo el censo / hospitalizados */
+    const v=$("view-archive"); if(!ARW.home){ ARW.home=v.parentNode; ARW.next=v.nextSibling; } body.innerHTML=""; body.appendChild(v); v.classList.add("ar-win");
+    ARCHIVE_UI.patient=null; renderArchive(); body.scrollTop=0;
+    const dd=data(); $("awTitle").textContent="Archivo clínico · "+(dd.nombreCompleto||"Paciente");
+  }catch(e){ try{ driveError(e); }catch(_){} arWinClose(false); }
+  finally{ ARW.busy=false; }
+}
+
+
+/* ===================== v3.42 · Archivo Clínico rediseñado: línea de tiempo compacta con desplegables ===================== */
+const AR2_META={notas:{n:"Nota médica",c:"#2E75B6",i:"notas"},prequx:{n:"Nota prequirúrgica",c:"#2E75B6",i:"notas"},altas:{n:"Nota de alta",c:"#7B5EA7",i:"notas"},indicaciones:{n:"Indicaciones médicas",c:"#2E8B63",i:"indicaciones"},solCx:{n:"Solicitud de cirugía",c:"#C27A1A",i:"solCx"},repCx:{n:"Reporte de cirugía",c:"#B5483F",i:"repCx"},rx:{n:"Rayos X",c:"#5F6B76",i:"other"},interconsulta:{n:"Interconsulta",c:"#5F6B76",i:"other"},receta:{n:"Receta",c:"#5F6B76",i:"other"},consInf:{n:"Consentimiento informado",c:"#5F6B76",i:"other"}};
+const AR2_GROUPS=[{key:"notas",t:"Notas",tps:["notas","prequx","altas"]},{key:"indicaciones",t:"Indicaciones",tps:["indicaciones"]},{key:"cx",t:"Cirugía",tps:["solCx","repCx"]},{key:"otras",t:"Otras solicitudes",tps:["rx","interconsulta","receta","consInf","*"]}];
+const AR2_STATE={by:"date",open:{},limits:{},init:false};
+const AR2_DAYS=["dom","lun","mar","mié","jue","vie","sáb"],AR2_MON=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+function ar2Groups(tp){ const g=AR2_GROUPS.find(g=>g.tps.includes(tp)); return g?g.key:"otras"; }
+function ar2All(){
+  const tps=["notas","prequx","altas","indicaciones","solCx","repCx",...AR_MINI.filter(m=>FORMATS[m.key]).map(m=>m.key)];
+  let list=arCollect(tps).filter(arMatches);
+  const dates=AR_OTHER.filter(k=>FORMATS[k]&&!AR_MINI.some(m=>m.key===k)).map(k=>[k,arOtherInfo(k)]).filter(x=>x[1]).map(([k,i])=>({tp:k,dateOnly:true,r:{id:k,by:i.by,p:{},t:""},fecha:i.fecha,hora:"",tipo:(CAT[k]&&CAT[k].tt)||FORMATS[k].title,detail:"",ms:arDateMs(i.fecha)})).filter(arMatches);
+  list=list.concat(dates); list.sort((a,b)=>(b.ms-a.ms)||((b.r.ts||0)-(a.r.ts||0)));
+  return ARCHIVE_UI.sort==="asc"?list.reverse():list;
+}
+function ar2Row(e){
+  const m=AR2_META[e.tp]||{n:e.tipo||"Documento",c:"#5F6B76",i:"other"}, adm=isAdmv();
+  const title=e.tp==="notas"?(e.tipo||m.n):(e.dateOnly?e.tipo:(["rx","interconsulta","receta","consInf"].includes(e.tp)?(e.tipo||m.n):m.n));
+  let pv=e.dateOnly?"Solicitud registrada · sin copia guardada":arPreview(e); if(pv.length>240) pv=pv.slice(0,240);
+  const a=`data-ar-tp="${esc(e.tp)}" data-ar-id="${esc(e.r.id)}"`, B=(k,t,ar,x)=>`<button type="button" class="av2-b${x||""}" ${a} data-ar="${ar}" title="${t}" aria-label="${t}">${RB_IC[k]}<span>${t}</span></button>`;
+  const acts=e.dateOnly?"":(adm?"":B("edit","Editar","view"))+B("view","Ver","ver")+B("print","Imprimir","print")+(adm?"":B("del","Borrar","del"," av2-del"));
+  return `<article class="av2-row${e.dateOnly?" av2-dim":""}" style="--c:${m.c}" data-src="${esc(e.tp)}"><span class="av2-ic">${arIcon(m.i)}</span><div class="av2-main"><div class="av2-t"><b>${esc(title)}</b>${m.n!==title?`<span class="av2-kind">${esc(m.n)}</span>`:""}</div><div class="av2-meta">${e.hora?`<span>${esc(e.hora)} h</span>`:""}${e.fecha?`<span class="av2-d">${esc(e.fecha)}</span>`:""}<span>${esc(savedBy(e.r))}</span></div>${pv?`<p class="av2-pv">${esc(pv)}</p>`:""}</div><div class="av2-act">${acts}</div></article>`;
+}
+function ar2DayLabel(e){ if(!e.ms) return "Sin fecha"; const d=new Date(e.ms); return `${AR2_DAYS[d.getDay()]} ${d.getDate()} ${AR2_MON[d.getMonth()]} ${d.getFullYear()}`; }
+function ar2Counts(list){ const c={}; list.forEach(e=>{ const k=ar2Groups(e.tp); c[k]=(c[k]||0)+1; }); const nm={notas:["nota","notas"],indicaciones:["indicación","indicaciones"],cx:["cirugía","cirugía"],otras:["otra","otras"]}; return AR2_GROUPS.filter(g=>c[g.key]).map(g=>`<i style="--c:${(AR2_META[g.tps[0]]||{}).c||"#5F6B76"}">${c[g.key]} ${nm[g.key][c[g.key]===1?0:1]}</i>`).join(""); }
+function ar2Sect(key,icon,color,title,sub,count,rows,open,extra){
+  return `<details class="av2-sec" data-key="${esc(key)}" style="--c:${color}"${open?" open":""}><summary><span class="av2-chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></span>${icon?`<span class="av2-sic">${icon}</span>`:""}<span class="av2-st">${esc(title)}</span><span class="av2-ss">${sub}</span><b class="av2-n">${count}</b></summary><div class="av2-rows">${rows}${extra||""}</div></details>`;
+}
+function renderArchive(){
+  const d=data(), patient=d.expediente||d.nombreCompleto||"", root=$("arV2"); if(!root) return;
+  if(ARCHIVE_UI.patient!==patient){ ARCHIVE_UI.patient=patient; ARCHIVE_UI.query=""; ARCHIVE_UI.group="all"; ARCHIVE_UI.sort="desc"; ARCHIVE_UI.limits={}; AR2_STATE.open={}; AR2_STATE.limits={}; const s=$("arSearch2"); if(s) s.value=""; const o=$("arSort2"); if(o) o.value="desc"; }
+  const all=ar2All(), g=ARCHIVE_UI.group, q=!!ARCHIVE_UI.query.trim();
+  const list=g==="all"?all:all.filter(e=>ar2Groups(e.tp)===g);
+  $("arPat2").innerHTML=`<h2>${esc(d.nombreCompleto||"Paciente sin nombre")}</h2><div class="av2-tags">${d.expediente?`<span>Exp. <b>${esc(d.expediente)}</b></span>`:""}${d.cama?`<span>Cama <b>${esc(d.cama)}</b></span>`:""}${d.fnac?`<span>Nac. <b>${esc(d.fnac)}</b></span>`:""}</div>`;
+  $("arChips").innerHTML=[{key:"all",t:"Todo",n:all.length},...AR2_GROUPS.map(x=>({key:x.key,t:x.t,n:all.filter(e=>ar2Groups(e.tp)===x.key).length}))].map(x=>`<button type="button" class="av2-chip${g===x.key?" on":""}" data-ar2-g="${x.key}" aria-pressed="${g===x.key}">${esc(x.t)}<b>${x.n}</b></button>`).join("");
+  $("arBy").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.ar2By===AR2_STATE.by));
+  $("arRes2").textContent=`${list.length} ${list.length===1?"documento":"documentos"}${q?" encontrados":""}`;
+  const clr=$("arClr2"); if(clr) clr.hidden=!q&&g==="all"&&ARCHIVE_UI.sort==="desc";
+  let html="";
+  if(!list.length) html=`<div class="av2-empty"><strong>${all.length||q?"Sin coincidencias":"Sin documentos todavía"}</strong><p>${q?"Prueba con otro nombre, fecha o contenido.":"Los documentos guardados de este paciente aparecerán aquí."}</p></div>`;
+  else if(AR2_STATE.by==="date"){
+    const days=[]; list.forEach(e=>{ const k=e.ms?new Date(e.ms).toDateString():"sin"; let x=days[days.length-1]; if(!x||x.k!==k){ x={k,l:ar2DayLabel(e),items:[]}; days.push(x); } x.items.push(e); });
+    html=days.map((x,i)=>{ const key="d|"+x.k, st=AR2_STATE.open[key], open=q||(st===undefined?i<2:st); return ar2Sect(key,"","#636465",x.l,ar2Counts(x.items),x.items.length,x.items.map(ar2Row).join(""),open); }).join("");
+  } else {
+    const secs=AR2_GROUPS.map(gp=>({gp,items:list.filter(e=>ar2Groups(e.tp)===gp.key)})).filter(s=>s.items.length);
+    html=secs.map((s,i)=>{ const key="t|"+s.gp.key, st=AR2_STATE.open[key], open=q||(st===undefined?i<2:st), lim=AR2_STATE.limits[key]||12, m=AR2_META[s.gp.tps[0]]; return ar2Sect(key,arIcon(m.i),m.c,s.gp.t,"",s.items.length,s.items.slice(0,lim).map(ar2Row).join(""),open,s.items.length>lim?`<button type="button" class="av2-more" data-ar2-more="${key}">Mostrar más <span>${lim} de ${s.items.length}</span></button>`:""); }).join("");
+  }
+  $("arList2").innerHTML=html; $("arV2").classList.toggle("by-date",AR2_STATE.by==="date");
+}
+(function(){
+  const sh=document.querySelector("#view-archive .ar-shell"); if(!sh||$("arV2")) return;
+  const r=document.createElement("div"); r.id="arV2";
+  r.innerHTML=`<header class="av2-head"><div id="arPat2" class="av2-pt"></div><div class="av2-by" id="arBy" role="group" aria-label="Organizar"><button type="button" data-ar2-by="date" class="on">Por fecha</button><button type="button" data-ar2-by="type">Por tipo</button></div></header>
+<div class="av2-tools"><label class="av2-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><input id="arSearch2" type="search" placeholder="Buscar fecha, autor o contenido…" aria-label="Buscar en el archivo clínico" autocomplete="off"></label><select id="arSort2" aria-label="Ordenar"><option value="desc">Más recientes primero</option><option value="asc">Más antiguos primero</option></select><button type="button" class="av2-ghost" data-ar2-all="1">Expandir todo</button><button type="button" class="av2-ghost" data-ar2-all="0">Contraer todo</button><button type="button" class="av2-ghost" id="arClr2" hidden>Limpiar</button></div>
+<div class="av2-chips" id="arChips"></div><div class="av2-res" id="arRes2" role="status" aria-live="polite"></div><div id="arList2"></div>`;
+  sh.prepend(r);
+  $("arSearch2").addEventListener("input",()=>{ ARCHIVE_UI.query=$("arSearch2").value; renderArchive(); });
+  $("arSort2").addEventListener("change",()=>{ ARCHIVE_UI.sort=$("arSort2").value; renderArchive(); });
+  $("arClr2").onclick=()=>{ ARCHIVE_UI.query="";ARCHIVE_UI.group="all";ARCHIVE_UI.sort="desc"; $("arSearch2").value=""; $("arSort2").value="desc"; renderArchive(); };
+  r.addEventListener("click",e=>{
+    const g=e.target.closest("[data-ar2-g]"); if(g){ ARCHIVE_UI.group=ARCHIVE_UI.group===g.dataset.ar2G?"all":g.dataset.ar2G; renderArchive(); return; }
+    const b=e.target.closest("[data-ar2-by]"); if(b){ AR2_STATE.by=b.dataset.ar2By; renderArchive(); return; }
+    const m=e.target.closest("[data-ar2-more]"); if(m){ const k=m.dataset.ar2More; AR2_STATE.limits[k]=(AR2_STATE.limits[k]||12)+12; renderArchive(); return; }
+    const a=e.target.closest("[data-ar2-all]"); if(a){ const on=a.dataset.ar2All==="1"; r.querySelectorAll("details.av2-sec").forEach(x=>{ x.open=on; AR2_STATE.open[x.dataset.key]=on; }); }
+  });
+  r.addEventListener("toggle",e=>{ const x=e.target; if(x.matches&&x.matches("details.av2-sec")) AR2_STATE.open[x.dataset.key]=x.open; },true);
+})();
 
 </script>
 <script>
@@ -9158,7 +9692,7 @@ async function readStats(){ const f=await findStats(); if(!f) return {obj:null,m
 async function writeStats(obj,base){ const wire=Object.assign({},obj,{app:"solicitudes-hjm",tipo:"hjm-stats",datos:{expediente:"_ESTADISTICAS",nombres:"Estadísticas de uso"}}); return await G("hjmSave",FOLDER.id,STATS_NAME,JSON.stringify(wire),JSON.stringify({app:"hjm-stats",nombre:"Estadísticas de uso",exp:"_estadisticas",cama:"",dx:""}),JSON.stringify({forzar:true,base:base||""})); }
 let STATS_HEALED=false, STATS_BAK_T=0;
 /* Respaldo del corte: ESTADISTICAS_<DDMMAA>.json en RespaldosJCF, con la fecha de corte del censo; se actualiza como máximo 1 vez por hora durante ese corte y los de días anteriores quedan guardados */
-async function statBackup(o){ try{ if(Date.now()-STATS_BAK_T<3600e3) return; STATS_BAK_T=Date.now(); const name="ESTADISTICAS_"+cenFile(cenPeriod().prev).slice(3);
+async function statBackup(o){ try{ if(Date.now()-STATS_BAK_T<3600e3) return; STATS_BAK_T=Date.now(); const name="ESTADISTICAS_"+cenFile(cenPeriodRaw().prev).slice(3);
   const wire=Object.assign({},o,{app:"solicitudes-hjm",tipo:"hjm-stats",datos:{expediente:"_ESTADISTICAS",nombres:"Estadísticas de uso"}}); await G("hjmEstadisticasRespaldo",name,JSON.stringify(wire),JSON.stringify({})); }catch(_){ STATS_BAK_T=Date.now()-3300e3; } }
 const statMerge=(a,b)=>{ if(typeof a==="number"&&typeof b==="number") return Math.max(a,b); if(a&&b&&typeof a==="object"&&typeof b==="object"&&!Array.isArray(a)&&!Array.isArray(b)){ const o=Object.assign({},a); Object.keys(b).forEach(k=>{ o[k]=(k in a)?statMerge(a[k],b[k]):b[k]; }); return o; } return b===undefined?a:b; };   /* los contadores solo crecen: se conserva el mayor de lo guardado en Drive y de lo local */
 async function syncRemote(extra){
@@ -9624,7 +10158,7 @@ function usrDraw(){
   const l=$s("stUsrList"); if(!l) return;
   const L=usrGroup(usrSub);
   l.innerHTML=L.length?L.map(usrItem).join(""):'<div class="st-msg">Sin resultados.</div>';
-  [["residente","stUsrTR","Residentes"],["adscrito","stUsrTA","Adscritos"]].forEach(([t,id,nm])=>{
+  [["residente","stUsrTR","Residentes"],["adscrito","stUsrTA","Adscritos"],["administrativo","stUsrTD","Administrativos"]].forEach(([t,id,nm])=>{
     const b=$s(id); if(!b) return; const all=HJM_USERS.filter(u=>u.tipo===t), np=all.filter(usrPend).length;
     b.innerHTML=`${nm} <span class="st-cnt">${all.length}</span>${np?` <span class="usr-dot" title="${np} sin integrar al Index">${np}</span>`:""}`;
     b.classList.toggle("on",usrSub===t); b.setAttribute("aria-selected",usrSub===t?"true":"false");
@@ -9647,7 +10181,7 @@ function usrEditor(key,tipoNuevo){
     <h3>${cur?"Editar usuario":"Agregar usuario"}</h3>
     <label><span>Usuario <small>(lo que se escribe al ingresar)</small></span><input id="usrfU" value="${esc(cur?cur.usuario:"")}" autocomplete="off" spellcheck="false"></label>
     <label><span>Nombre completo <small>(el que se llena e imprime en los formatos)</small></span><input id="usrfN" value="${esc(cur?cur.nombre:"")}" autocomplete="off" spellcheck="false"></label>
-    <label><span>Tipo</span><select id="usrfT"><option value="residente"${tipo==="residente"?" selected":""}>Residente</option><option value="adscrito"${tipo==="adscrito"?" selected":""}>Adscrito</option></select></label>
+    <label><span>Tipo</span><select id="usrfT"><option value="residente"${tipo==="residente"?" selected":""}>Residente</option><option value="adscrito"${tipo==="adscrito"?" selected":""}>Adscrito</option><option value="administrativo"${tipo==="administrativo"?" selected":""}>Administrativo</option></select></label>
     <label><span id="usrfSL">${tipo==="adscrito"?"Clínica":"Servicio"}</span><input id="usrfS" list="usrfList" value="${esc(cur?cur.servicio:"")}" autocomplete="off"${tipo==="residente"?" hidden":""}><select id="usrfSS"${tipo==="residente"?"":" hidden"}><option value="">—</option>${(()=>{ const L=[...USR_SERV,"Fellow de Laparoscopia Avanzada"], v=cur&&cur.tipo==="residente"?cur.servicio:""; if(v&&!L.includes(v)) L.push(v); return L.map(x=>`<option value="${esc(x)}"${x===v?" selected":""}>${esc(x)}</option>`).join(""); })()}</select></label><datalist id="usrfList"></datalist>
     <div class="usr-two" id="usrfRW"${tipo==="residente"?"":" hidden"}><label><span>Año de Residencia <small>(se imprime tras el nombre junto con la especialidad: R5CO)</small></span><select id="usrfY"><option value="">—</option>${[1,2,3,4,5,6,7].map(n=>`<option value="${n}"${cur&&String(cur.anio||"")===String(n)?" selected":""}>R${n}</option>`).join("")}</select></label></div>
     <label><span>Cédula profesional <small>(se imprime solo en Notas Médicas, Indicaciones y Nota de Alta)</small></span><input id="usrfP" value="${esc(cur&&cur.cp?cur.cp:"")}" inputmode="text" autocomplete="off" spellcheck="false" maxlength="16"></label>
@@ -9655,7 +10189,7 @@ function usrEditor(key,tipoNuevo){
     <div class="cfg-hf" id="usrfHF" hidden></div>
     <label class="usr-chk"><input type="checkbox" id="usrfA"${cur&&(cur.admin||admName(normalizeStaffName(cur.nombre)))?" checked":""}${cur&&admName(normalizeStaffName(cur.nombre))?" disabled":""}><span>Administrador <small>(puede entrar al panel y a estadísticas${cur&&admName(normalizeStaffName(cur.nombre))?" · permanente":""})</small></span></label>
     <p class="usr-err" id="usrfE" role="alert"></p>
-    <div class="usr-btns"><button type="button" class="st-btn" id="usrfC">Cancelar</button><button type="submit" class="st-btn usr-ok">Guardar</button></div></form>`;
+    <div class="usr-btns">${cur&&usrPend(cur)==="edit"?'<button type="button" class="st-btn" id="usrfR" title="Vuelve a los datos que ya trae el Index. Después presiona Guardar para quitar el cambio pendiente de Drive.">Restablecer</button>':""}<button type="button" class="st-btn" id="usrfC">Cancelar</button><button type="submit" class="st-btn usr-ok">Guardar</button></div></form>`;
   const U=dlg.querySelector("#usrfU"),N=dlg.querySelector("#usrfN"),T=dlg.querySelector("#usrfT"),S=dlg.querySelector("#usrfS"),E=dlg.querySelector("#usrfE");
   let linked=cur?cur.nombre===cur.usuario:true;
   const lists=()=>{ dlg.querySelector("#usrfList").innerHTML=usrOptions(T.value).map(x=>`<option value="${esc(x)}"></option>`).join(""); dlg.querySelector("#usrfSL").textContent=T.value==="adscrito"?"Clínica":"Servicio"; };
@@ -9664,16 +10198,24 @@ function usrEditor(key,tipoNuevo){
   N.oninput=()=>{ linked=upc(N.value.trim())===upc(U.value.trim()); };
   /* v3.11 · En residentes el Servicio es una lista y de ahí sale la especialidad que se imprime (CO, GO, OCyC, OM) */
   const SERV_ESP={"Cirugía Oncológica":"CO","Ginecología Oncológica":"GO","Oncología Cabeza y Cuello":"OCyC","Oncología Médica":"OM"}, RW=dlg.querySelector("#usrfRW"), SS=dlg.querySelector("#usrfSS");
-  const vis=()=>{ const r=T.value==="residente"; S.hidden=r; SS.hidden=!r; RW.hidden=!r; };
-  T.onchange=()=>{ if(T.value==="adscrito") S.value=upc(S.value); vis(); lists(); };
+  const vis=()=>{ const r=T.value==="residente", ad=T.value==="administrativo"; S.hidden=r||ad; SS.hidden=!r; RW.hidden=!r; const sl=dlg.querySelector("#usrfSL"); if(sl&&sl.parentNode) sl.parentNode.hidden=ad; [dlg.querySelector("#usrfP"),dlg.querySelector("#usrfI")].forEach(x=>{ const l=x&&x.closest("label"); if(l) l.hidden=ad; }); const hf=dlg.querySelector("#usrfHF"); if(hf&&ad) hf.hidden=true; };
+  T.onchange=()=>{ if(T.value==="adscrito") S.value=upc(S.value); vis(); lists(); }; vis();
   /* v3.13 · El administrador también define la página de inicio y los filtros (Clínica / Adscrito) de cada usuario */
   const UHF={clin:cur&&Array.isArray(cur.fclin)?cur.fclin.slice():[],ads:cur&&Array.isArray(cur.fads)?cur.fads.slice():[],open:""}, HF=dlg.querySelector("#usrfHF"), UI=dlg.querySelector("#usrfI");
   const hfShow=()=>{ HF.hidden=UI.value==="nuevo"; if(!HF.hidden) hfRender(HF,UHF); };
   hfWire(HF,UHF); UI.addEventListener("change",hfShow); hfShow();
   dlg.querySelector("#usrfC").onclick=()=>dlg.close();
+  { const R=dlg.querySelector("#usrfR"); if(R) R.onclick=()=>{ const b=BASE_MAP.get(key); if(!b) return;
+    U.value=b.usuario; N.value=b.nombre; linked=b.nombre===b.usuario; T.value=b.tipo; vis(); lists();
+    if(b.tipo==="adscrito") S.value=b.servicio||""; else SS.value=b.servicio||"";
+    dlg.querySelector("#usrfY").value=b.anio||""; dlg.querySelector("#usrfP").value=b.cp||"";
+    UI.value=b.inicio||"hospitalizados"; homeSegSync(dlg);
+    const A=dlg.querySelector("#usrfA"); if(A&&!A.disabled) A.checked=!!b.admin;
+    UHF.clin=(b.fclin||[]).slice(); UHF.ads=(b.fads||[]).slice(); hfShow(); E.textContent="";
+    try{ toast("Restablecido a lo del Index. Presiona Guardar para aplicarlo."); }catch(_){} }; }
   dlg.querySelector("#usrForm").onsubmit=e=>{
     e.preventDefault();
-    const u=upc(U.value).trim(), n=upc(N.value).trim()||u, t=T.value, sv=(t==="adscrito"?upc(S.value):SS.value).trim(), k=ukey(u);
+    const u=upc(U.value).trim(), n=upc(N.value).trim()||u, t=T.value, sv=(t==="adscrito"?upc(S.value):(t==="administrativo"?"":SS.value)).trim(), k=ukey(u);
     const fail=m=>{ E.textContent=m; };
     if(!u||!k) return fail("Escribe el usuario.");
     if(HJM_USERS.some(x=>ukey(x.usuario)===k&&ukey(x.usuario)!==key)) return fail("Ya existe un usuario «"+u+"».");
@@ -9688,7 +10230,7 @@ function renderUsr(host){
     <div class="st-msg" style="margin:0 0 10px"><b>Usuario</b> es lo que se escribe al ingresar; <b>Nombre completo</b> es el que se llena e imprime en los formatos.</div>
     <div class="usr-bar"><input class="st-in" id="stUsrQ" type="search" placeholder="Buscar por nombre, usuario o servicio…" value="${esc(usrQ)}" autocomplete="off" aria-label="Buscar usuario"><button type="button" class="st-btn" id="stUsrAdd">+ Agregar usuario</button><button type="button" class="st-btn" id="stUsrDiscard" hidden>Descartar cambios</button></div>
     <div class="usr-state" id="stUsrState" role="status"></div>
-    <div class="usr-tabs" role="tablist"><button type="button" role="tab" class="usr-tab" id="stUsrTR" data-sub="residente"></button><button type="button" role="tab" class="usr-tab" id="stUsrTA" data-sub="adscrito"></button></div>
+    <div class="usr-tabs" role="tablist"><button type="button" role="tab" class="usr-tab" id="stUsrTR" data-sub="residente"></button><button type="button" role="tab" class="usr-tab" id="stUsrTA" data-sub="adscrito"></button><button type="button" role="tab" class="usr-tab" id="stUsrTD" data-sub="administrativo"></button></div>
     <div class="usr-list" id="stUsrList"></div></div>`;
   usrDraw();
   $s("stUsrQ").oninput=e=>{ usrQ=e.target.value; usrDraw(); };
@@ -9859,7 +10401,7 @@ document.addEventListener("click",e=>{ if(e.target.closest&&e.target.closest("#b
 let CFG_ONLY=false, cfgPer=7, cfgLoadAt=0;
 const CFG_COLS=[["acc","Accesos"],["opn","Pacientes abiertos"],["crt","Pacientes creados"],["upd","Pacientes actualizados"],["nts","Notas realizadas"],["ind","Indicaciones realizadas"],["prt","Impresiones"]];
 function cfgRec(){ try{ return userRecord(sessionUserName()); }catch(_){ return null; } }
-function homePref(){ const r=cfgRec(); return r&&(r.inicio==="todos"||r.inicio==="nuevo"||r.inicio==="censo")?r.inicio:"hospitalizados"; }
+function homePref(){ const r=cfgRec(); if(r&&r.tipo==="administrativo") return "censo"; return r&&(r.inicio==="todos"||r.inicio==="nuevo"||r.inicio==="censo")?r.inicio:"hospitalizados"; }
 window.__hjmHomePref=homePref;
 /* Página de inicio de cada usuario: Hospitalizados (de fábrica) · Todos · Nuevo Paciente. Se aplica al ingresar (y al volver al inicio con «Pacientes»/«Inicio» en las tablas). */
 /* v3.13 · Filtro predeterminado (Clínica / Adscrito) de las vistas Hospitalizados y Todos. Al ingresar solo se aplica si el usuario eligió alguno; al guardarlo en Configuración (force) se aplica de inmediato. */
@@ -9951,7 +10493,7 @@ function cfgHFDraw(){
   const h=document.getElementById("cfgHF"); if(!h) return;
   const c=cfgRec(), I=document.getElementById("cfgI");
   CFG_HF.clin=c&&Array.isArray(c.fclin)?c.fclin.slice():[]; CFG_HF.ads=c&&Array.isArray(c.fads)?c.fads.slice():[];
-  h.hidden=!(c&&I&&I.value!=="nuevo"); if(h.hidden) return;
+  h.hidden=!(c&&I&&I.value!=="nuevo"&&c.tipo!=="administrativo"); if(h.hidden) return;
   hfRender(h,CFG_HF);
 }
 function cfgHFWire(host){ hfWire(host.querySelector("#cfgHF"),CFG_HF,()=>cfgCommit(true)); }
@@ -9986,9 +10528,9 @@ function renderCfg(host){
       <label><span>Nombre de usuario</span><input id="cfgU" autocomplete="off" spellcheck="false"${dis}></label>
       <label><span>Nombre completo</span><input id="cfgN" autocomplete="off" spellcheck="false"${dis}></label>
       <label><span>Cédula profesional</span><input id="cfgP" inputmode="text" autocomplete="off" spellcheck="false" maxlength="16"${dis}></label>
-      <label><span>Página de inicio</span>${homeSegHTML("cfgI",c&&c.inicio)}</label>
+      <label${c&&c.tipo==="administrativo"?" hidden":""}><span>Página de inicio</span>${homeSegHTML("cfgI",c&&c.inicio)}</label>
     </div>
-    <div class="cfg-hf" id="cfgHF"${c&&c.inicio!=="nuevo"?"":" hidden"}></div>
+    <div class="cfg-hf" id="cfgHF"${c&&c.inicio!=="nuevo"&&c.tipo!=="administrativo"?"":" hidden"}></div>
     <div class="usr-state" id="cfgState" role="status" style="margin-top:10px"></div></div>
   <div class="st-card" id="cfgStats"></div>`;
   cfgHFWire(host); cfgFill(); if(!c) host.querySelectorAll(".hm-seg button").forEach(b=>b.disabled=true);
