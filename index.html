@@ -3309,6 +3309,42 @@ td .st-sub{display:inline;font-size:11px;color:#8A8D90}
 .st-rng label{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:#4A4D50}
 .st-rng input[type=date]{font:inherit;font-weight:600;padding:5px 8px;border:1px solid #C9CBCD;border-radius:9px;background:#fff;color:#1C1E21}
 .st-rng small{color:#8A8D90;font-size:11px}
+/* v3.44 · aviso «Cargando…» y vista «Ver» del censo a todo el ancho */
+dialog.cen-busy{border:0;border-radius:16px;padding:18px 26px;display:none;align-items:center;gap:14px;box-shadow:0 18px 50px rgba(0,0,0,.35);font:700 15px system-ui,sans-serif;color:#1C1E21;background:#fff}
+dialog.cen-busy[open]{display:flex}
+dialog.cen-busy::backdrop{background:rgba(25,27,30,.35)}
+.cen-busy .cb-sp{width:22px;height:22px;border-radius:50%;border:3px solid #D5D8DB;border-top-color:#1F6FB5;animation:cbspin .8s linear infinite}
+@keyframes cbspin{to{transform:rotate(360deg)}}
+dialog.ar-view.cen-vw{width:99vw!important;height:96vh!important;max-width:none!important}
+dialog.cen-vw .av-body{flex:1 1 auto;overflow:auto;background:#e6e7e9;padding:10px 12px 24px}
+dialog.cen-vw .av-res{font-size:13px;padding:2px 4px 8px;color:#1C1E21}
+dialog.cen-vw .av-tab{background:#fff;border-radius:10px;padding:4px;box-shadow:0 2px 10px rgba(0,0,0,.18);overflow-x:auto}
+dialog.cen-vw .av-tab table.cen{width:100%;table-layout:fixed;font-size:13px}
+dialog.cen-vw .av-tab table.cen td{white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;line-height:1.25;vertical-align:middle}
+dialog.cen-vw .av-tab .kbc button,dialog.cen-vw .av-tab .kbc .kbw{visibility:hidden}
+dialog.cen-vw .av-rev{display:flex;justify-content:center;margin-top:16px}
+dialog.cen-vw .av-rev table.rev{background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+dialog.cen-vw .av-tab .vt{white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;font:inherit;line-height:1.28;text-align:inherit}
+dialog.cen-vw .av-tab td.l .vt{text-align:left}
+.estfree{height:30px;min-width:150px;flex:1 1 150px;padding:0 12px;border:1px dashed var(--rd-line2,#C9CBCD);border-radius:999px;background:transparent;color:inherit;font:600 12px/1 var(--rd-sans,system-ui)}
+.estfree:focus{outline:2px solid color-mix(in srgb,#6B6FA8 55%,transparent);border-style:solid}
+.estchip.cus{background:#6B6FA8;color:#fff}
+/* v3.44 · botón «Archivo Censos» en dos renglones y «Ver» con cuadrícula y títulos en gris */
+#cenNavBtn .nb2{display:inline-flex;flex-direction:column;align-items:flex-start;line-height:1.05;vertical-align:middle;text-align:left}
+#cenNavBtn .nb2 b{font:inherit;font-weight:700}
+#cenNavBtn:has(.nb2){display:inline-flex;align-items:center;padding-top:5px;padding-bottom:5px}
+dialog.cen-vw .av-tab{--cen-bg:#fff;--cen-ink:#1C1E21;--cen-mute:#797C7E;--cen-line:#9EA2A6;--cen-head:#D9DADB;--cen-tint:#EDF1F4}
+dialog.cen-vw .av-tab table.cen{border-collapse:collapse;color:var(--cen-ink)}
+dialog.cen-vw .av-tab table.cen th,dialog.cen-vw .av-tab table.cen td{border:1px solid #8E9296}
+dialog.cen-vw .av-tab table.cen thead th{background:#D9DADB;position:static}
+dialog.cen-vw .av-tab table.cen tr.sec td{background:#D9DADB}
+dialog.cen-vw .av-rev table.rev th,dialog.cen-vw .av-rev table.rev td{border:1px solid #8E9296}
+dialog.cen-vw .av-rev table.rev td.g,dialog.cen-vw .av-rev table.rev th{background:#D9DADB}
+/* v3.44 · botón Archivo Censos un poco más amplio; botón Deshacer */
+html body #pPanel #cenNavBtn:has(.nb2){padding:7px 16px;gap:8px;min-width:118px;line-height:1.15}
+#cenNavBtn .nb2{line-height:1.2}
+.cen-exbar{display:flex;gap:8px;flex-wrap:wrap}
+.cen-exbar .cen-undo{border-style:solid}.cen-exbar .cen-undo:disabled{opacity:.45;cursor:default}
 </style>
 <script id="saved-data" type="application/json">null</script>
 <script>
@@ -3578,7 +3614,7 @@ async function usersSync(){
   try{
     for(let i=0;i<3;i++){
       const snap=HJM_OPS;
-      const files=await call("hjmList",null,{}),f=(Array.isArray(files)?files:[]).find(x=>x&&String(x.name||"").trim()===HJM_USERS_FILE);
+      const files=await call("hjmList",null,{fresco:i>0}),f=(Array.isArray(files)?files:[]).find(x=>x&&String(x.name||"").trim()===HJM_USERS_FILE);
       let remote={},mod="",lmod=f?(f.modified||""):"";
       if(f){
         let r;try{r=await call("hjmReadFull",f.id);}catch(_){r={content:await call("hjmRead",f.id),modified:""};}
@@ -3591,8 +3627,9 @@ async function usersSync(){
       if(need){
         const wire={app:"solicitudes-hjm",tipo:"hjm-usuarios",v:2,datos:{expediente:"_USUARIOS",nombres:"Usuarios pendientes de integrar al HTML"},cambios:merged,actualizado:{ts:Date.now()}};
         const res=await call("hjmSave",null,HJM_USERS_FILE,JSON.stringify(wire),"{}",JSON.stringify({forzar:true,base:mod||""}));
-        if(res&&res.conflicto)continue;
+        if(res&&res.conflicto){ if(i===2) throw new Error("otro equipo estaba guardando"); continue; }
         newMod=(res&&res.modified)||mod;lmod=newMod;
+        try{ const vr=await call("hjmReadFull",(res&&res.id)||f&&f.id); const vo=JSON.parse((vr&&vr.content)||""); if(!opsSame(opsClean(vo&&vo.cambios),merged)) throw new Error("Drive no conservó el cambio"); }catch(ve){ if(/conserv/.test(String(ve&&ve.message))) throw ve; }
       }
       if(HJM_OPS!==snap){HJM_OPS=opsMerge(merged,HJM_OPS);HJM_OPS_DIRTY=true;USERS_SYNC_AGAIN=true;}
       else{HJM_OPS=merged;HJM_OPS_DIRTY=false;}
@@ -8444,9 +8481,9 @@ function cenSendOpen(){
   d.querySelector("form").onsubmit=async e=>{ e.preventDefault(); if(busy) return;
     const Td=cenValidDot(c.value); if(!Td){ err.textContent="Escribe una fecha válida (DD.MM.AA)."; return; }
     const T=cenWithTs(Td); if(T.ts>Date.now()){ err.textContent="Ese censo aún no llega a su hora de corte ("+(Td.w===0||Td.w===6?"07:30":"05:30")+")."; return; }
-    const exists=(CEN.list||[]).some(x=>x.name===cenFile(Td)); if(exists){ err.textContent="Ya hay un censo guardado con esa fecha. Para modificarlo usa «Censos Anteriores»."; return; }
+    const exists=(CEN.list||[]).some(x=>x.name===cenFile(Td)); if(exists){ err.textContent="Ya hay un censo guardado con esa fecha. Para modificarlo usa «Archivo Censos»."; return; }
     const res=cenResNorm(inp?inp.value:""); const gd=cenDot(cenDay(Td.y,Td.m,Td.d,-1)), cd=cenDot(Td);
-    const ok=await ppAsk({title:"¿Enviar el censo final?",text:"Guardia del "+gd+" · Censo del "+cd+". "+(res?"":"Aún no escribiste los residentes de guardia. ")+"Este será el censo final que quedará guardado en «Censos anteriores», y el Censo actual pasará al siguiente día. Aún podrás corregirlo después desde «Censos anteriores». ¿Estás seguro de que esto es lo final?",ok:"Sí, enviar censo final",danger:true});
+    const ok=await ppAsk({title:"¿Enviar el censo final?",text:"Guardia del "+gd+" · Censo del "+cd+". "+(res?"":"Aún no escribiste los residentes de guardia. ")+"Este será el censo final que quedará guardado en «Archivo Censos», y el Censo actual pasará al siguiente día. Aún podrás corregirlo después desde «Archivo Censos». ¿Estás seguro de que esto es lo final?",ok:"Sí, enviar censo final",danger:true});
     if(!ok) return;
     busy=true; const b=d.querySelector("#csOk"); b.disabled=true; b.lastChild.textContent="Enviando…";
     try{ await cenSendFinal(Td,res); busy=false; close(); try{ notify("Censo final enviado: guardia "+gd+" · censo "+cd+".","ok"); }catch(_){} cenRender(); }
@@ -8528,9 +8565,26 @@ function cenRevHTML(cen,ed){
   row(`<td class="al">TOTAL DE PACIENTES</td><td colspan="5" class="c">${I("tot")}</td>`);
   return `<table class="rev"><colgroup>${CEN_RW.map(w=>`<col style="width:${w}px">`).join("")}</colgroup><tbody>${out.join("")}</tbody></table>`;
 }
-function cenBarHTML(){ if(arguments.length) return ""; const n=(CEN.cur&&CEN.cur.nexc)||0; return n&&CEN.mode!=="hist"?`<div class="cen-exbar"><button type="button" data-cenact="exshow">${CEN.showEx?"Ocultar":"Mostrar"} ${n} paciente${n>1?"s":""} quitado${n>1?"s":""} del censo</button></div>`:""; }
+function cenBarHTML(){ if(arguments.length) return ""; const n=(CEN.cur&&CEN.cur.nexc)||0, ro=CEN.mode==="hist"&&!CEN.edit;
+  const ex=n&&CEN.mode!=="hist"?`<button type="button" data-cenact="exshow">${CEN.showEx?"Ocultar":"Mostrar"} ${n} paciente${n>1?"s":""} quitado${n>1?"s":""} del censo</button>`:"";
+  const nu=cenUndoCount(), un=ro?"":`<button type="button" class="cen-undo" data-cenundo ${nu?"":"disabled"} title="Deshace el último cambio de texto hecho en una celda (también Ctrl+Z fuera de la celda)">↶ Deshacer${nu?" ("+nu+")":""}</button>`;
+  return ex||un?`<div class="cen-exbar">${un}${ex}</div>`:""; }
+/* v3.44 · Deshacer cambios de texto de las celdas del censo */
+function cenUndoScope(){ return CEN.mode+":"+((CEN.cur&&CEN.cur.fecha)||""); }
+function cenUndoList(){ CEN.undo=CEN.undo||[]; const sc=cenUndoScope(); return CEN.undo.filter(u=>u.sc===sc); }
+function cenUndoCount(){ try{ return cenUndoList().length; }catch(_){ return 0; } }
+function cenUndoPush(k,f,old){ CEN.undo=CEN.undo||[]; CEN.undo.push({sc:cenUndoScope(),k,f,old:String(old==null?"":old)}); if(CEN.undo.length>60) CEN.undo.shift(); }
+function cenUndo(){ const L=cenUndoList(); const u=L[L.length-1]; if(!u){ try{ toast("No hay cambios para deshacer."); }catch(_){} return; }
+  CEN.undo.splice(CEN.undo.lastIndexOf(u),1); CEN._undoing=true;
+  try{
+    if(CEN.mode==="hist"){ const ops=[{t:"r",k:u.k,f:u.f,v:u.old}]; if(u.f==="ing") ops.push({t:"r",k:u.k,f:"eh",v:cenEH(u.old,cenFromDot(CEN.hist.obj.fecha)||cenMx(Date.now()))}); ops.forEach(o=>CEN.hist.queue(o)); cenRender(); }
+    else { const file=DRIVE_FILES.find(x=>x&&x.id===u.k), key=CEN_F2D[u.f]; if(file&&key) cenLiveApply(file,{[key]:u.old}); }
+    try{ toast("Cambio deshecho."); }catch(_){}
+  } finally { CEN._undoing=false; } }
+document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest("[data-cenundo]"); if(b&&!b.disabled) cenUndo(); });
+document.addEventListener("keydown",e=>{ if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&(e.key==="z"||e.key==="Z")){ const w=$("cenWrap"); if(!w||w.hidden) return; const ae=document.activeElement; if(ae&&ae.matches&&ae.matches("textarea,input,select,[contenteditable]")) return; if(!cenUndoCount()) return; e.preventDefault(); cenUndo(); } });
 function cenNavSync(){ const p=$("cenPrint"); if(!p) return; let nb=$("cenNavBtn"); if(!nb){ nb=document.createElement("button"); nb.type="button"; nb.id="cenNavBtn"; nb.className="pp-census cen-nav"; p.before(nb); const sb=document.createElement("button"); sb.type="button"; sb.id="cenSendBtn"; sb.className="pp-census cen-send-btn"; sb.hidden=true; nb.before(sb); sb.addEventListener("click",()=>cenSendOpen()); const sv=document.createElement("small"); sv.id="cenSave"; sv.className="cen-savei"; sv.setAttribute("aria-live","polite"); (cenResBar()?cenResBar().parentNode:nb.parentNode).appendChild(sv); nb.addEventListener("click",()=>{ if(CEN.mode==="hist"&&CEN.hist){ CEN.hist=null; CEN.histName=""; CEN.list=null; cenRender(); } else cenListOpen(); }); }
-  const h=CEN.mode==="hist"; nb.innerHTML=h?CEN_ICO_BACK+"Censo actual":CEN_ICO_LST+"Censos Anteriores"; nb.title=h?"Volver al censo actual":"Ver o editar los censos finales ya guardados"; nb.hidden=false;
+  const h=CEN.mode==="hist"; nb.innerHTML=h?CEN_ICO_BACK+"Censo actual":CEN_ICO_LST+'<span class="nb2"><b>Archivo</b><b>Censos</b></span>'; nb.title=h?"Volver al censo actual":"Archivo Censos: ver o editar los censos finales ya guardados"; nb.hidden=false;
   const sb2=$("cenSendBtn"); if(sb2){ sb2.innerHTML=CEN_ICO_SAVE+"Guardar Censo Final"; sb2.title="Enviar y guardar el censo final de la guardia"; sb2.hidden=!(CEN.mode==="live"&&cenPeriod().pending)||isAdmv(); }
   let eb=$("cenEditBtn"); if(!eb){ eb=document.createElement("button"); eb.type="button"; eb.id="cenEditBtn"; eb.className="pp-census cen-edit"; nb.before(eb);
     eb.addEventListener("click",async()=>{ if(!CEN.hist) return; if(!CEN.edit){ CEN.edit=true; cenNavSync(); return; } eb.disabled=true; try{ clearTimeout(CEN.hist.t); await CEN.hist.flush(); }catch(_){} eb.disabled=false; CEN.edit=false; cenNavSync(); try{ notify(CEN.hist.err?"No se pudo guardar el censo.":"Cambios guardados en el censo.",CEN.hist.err?"warn":"ok"); }catch(_){} }); }
@@ -8545,9 +8599,9 @@ function cenChipsSync(cen){ const bar=$("cenResBar"); if(!bar) return; const wra
   const o=cenFromDot(cen&&cen.fecha); if(!o){ ch.hidden=true; al.hidden=true; return; } const g=cenDay(o.y,o.m,o.d,-1);
   ch.hidden=false; ch.innerHTML=`<span class="cen-chip" title="Fecha de la guardia"><small>Guardia</small><b>${cenDot(g)}</b></span><span class="cen-chip" title="Fecha del censo"><small>Censo</small><b>${cenDot(o)}</b></span>`;
   const live=CEN.mode==="live", pend=live&&cenPeriod().pending; al.hidden=!pend;
-  if(pend) al.innerHTML=`<b>Censo final de guardia aún no guardado.</b>`;
+  if(pend) al.innerHTML=`<b>Censo final de guardia aún no guardado.</b> <span>Al guardarlo, se abrirá el censo nuevo del día.</span>`;
   let lg=$("cenLegend"); if(!lg){ lg=document.createElement("div"); lg.id="cenLegend"; bar.before(lg); } lg.hidden=!live;
-  lg.textContent="Si deseas editar o ver un censo previo, presiona el botón «Censos Anteriores».";
+  lg.textContent=pend?"Una vez guardado, el censo de la guardia queda en el archivo. Para verlo o editarlo, presiona «Archivo Censos».":"Para ver o editar un censo anterior, presiona «Archivo Censos».";
   const sv=$("cenSave"); if(sv&&sv.parentNode!==wrap) wrap.appendChild(sv); }
 function cenSetTitle(t,cen){ try{ const h=document.querySelector("#pPanel .pp-head h2"); if(h) h.textContent=t; const pc=$("ppCount"); if(pc) pc.textContent=""; const bar=cenResBar(); if(bar){ bar.hidden=CEN.mode!=="hist"; const i=$("cenRes"); const v=String((cen&&cen.res)||""); if(i&&document.activeElement!==i&&i.value!==v) i.value=v; } cenChipsSync(cen); cenBandSync(true); cenNavSync(); }catch(_){} }
 const cenResSub=cen=>{ const r=String((cen&&cen.res)||"").trim(); return r?"Residentes de guardia: "+r.split("/").join(" · "):"Residentes de guardia: sin asignar"; };
@@ -8568,7 +8622,15 @@ function cenKeep(w,paint){
   w.style.minHeight=""; anc.forEach(([n,y,x])=>{ n.scrollTop=y; n.scrollLeft=x; }); if(window.scrollY!==wsy||window.scrollX!==wsx) window.scrollTo(wsx,wsy);
 }
 function cenFit(t){ try{ if(!t.offsetParent) return; t.style.height="auto"; if(t.scrollHeight) t.style.height=t.scrollHeight+"px"; }catch(_){} }
-function cenFitAll(w){ try{ w.querySelectorAll("table.cen textarea,table.rev textarea").forEach(cenFit); }catch(_){} }
+/* v3.44 · Ajuste en pantalla: columnas con más texto reciben más ancho (las vacías se minimizan) y las celdas muy largas bajan un poco la letra (mínimo 10 px) para recorrer menos hacia abajo */
+const CEN_TXT_IDX=[6,10,11,12,13,14];
+function cenScrFit(w){ try{ const t=w.querySelector("table.cen"); if(!t||!t.offsetParent) return; const cols=[...t.querySelectorAll("colgroup col")].slice(1); if(cols.length!==CEN_COLS.length) return;
+  const rows=[...t.querySelectorAll("tbody tr[data-k]")], tot=CEN_TXT_IDX.map(()=>0);
+  rows.forEach(tr=>{ CEN_TXT_IDX.forEach((ci,j)=>{ const ta=tr.querySelector('[data-f="'+CEN_COLS[ci][0]+'"]'); const n=ta?String(ta.value||"").length:0; tot[j]+=n; if(ta){ const L=n; ta.style.fontSize=L>320?"10px":(L>200?"10.5px":(L>110?"11px":"")); } }); });
+  const pool=CEN_TXT_IDX.reduce((a,ci)=>a+CEN_PW2[ci],0), MIN=3.4, wt=tot.map(n=>n>0?Math.sqrt(n)+4:0), sw=wt.reduce((a,c)=>a+c,0);
+  const free=pool-MIN*CEN_TXT_IDX.length; CEN_TXT_IDX.forEach((ci,j)=>{ const pc=sw>0?MIN+free*wt[j]/sw:CEN_PW2[ci]; cols[ci].style.width=pc.toFixed(2)+"%"; });
+  }catch(_){} }
+function cenFitAll(w){ try{ cenScrFit(w); w.querySelectorAll("table.cen textarea,table.rev textarea").forEach(cenFit); }catch(_){} }
 function cenDirtyFocus(w){ const ae=document.activeElement; return !!(ae&&w.contains(ae)&&ae.matches("textarea,input")); }   /* v3.20 · con el cursor dentro de una celda nunca se redibuja la tabla (el guardado es mientras se escribe) */
 
 function cenHeaderSync(on,printOn){ const b=$("cenPrint"); if(b) b.hidden=!on; const pc=$("ppCount"); if(pc&&!on) {} }
@@ -8636,7 +8698,8 @@ function cenStatRec(cen,fname){
   const lst=(key,cnt,two)=>[...Array(cnt)].map((_,i)=>two?{t:V(key+"."+i+".t"),e:V(key+"."+i+".e")}:V(key+"."+i)).filter(x=>two?(x.t||x.e):x);
   const ing={},egr={},nt={}; CEN_SRV.forEach(s=>{ ing[s]=n("ing."+s); egr[s]=n("egr."+s); nt[s]=V("nt."+s); });
   const o=cenFromName(fname)||cenFromDot(cen.fecha), key=o?o.y+"-"+String(o.m+1).padStart(2,"0")+"-"+String(o.d).padStart(2,"0"):"";
-  return {k:key,f:cen.fecha,g:cen.guardia||"",res:cen.res||"",por:cen.por||"",ts:Date.now(),ing,egr,nt,nttot:V("nt.TOT"),
+  const est={}; (cen.pac||[]).filter(r=>!r.exc&&(r.sec||"H")==="H").forEach(r=>{ String(r.est||"").split(/\s*[\/,;]\s*/).map(x=>x.toLocaleUpperCase("es-MX").replace(/\s+/g," ").trim()).filter(Boolean).forEach(t=>{ const k=CEN_EST.includes(t)?t:"OTROS"; est[k]=(est[k]||0)+1; }); });
+  return {k:key,f:cen.fecha,est,g:cen.guardia||"",res:cen.res||"",por:cen.por||"",ts:Date.now(),ing,egr,nt,nttot:V("nt.TOT"),
     cr:lst("cr",5,1),cp:lst("cp",5,1),cs:lst("cs",2,1),cpe:lst("cpe",3),pr:lst("pr",2),tr:lst("tr",5),gr:lst("gr",5),
     ic:{ce:n("ic.ce"),ho:n("ic.ho"),ur:n("ic.ur"),te:n("ic.te"),qx:n("ic.qx")},iso:V("iso"),dfn:V("dfn"),ev:V("ev"),tot:n("tot")||((cen.pac||[]).filter(r=>!r.exc).length),pac:(cen.pac||[]).length};
 }
@@ -8647,12 +8710,14 @@ function cenStatPush(cen,now){
   if(now) return go(); clearTimeout(CEN_STAT_T[rec.k]); CEN_STAT_T[rec.k]=setTimeout(go,4000);
 }
 /* Importa a las estadísticas los censos finales que ya estaban guardados (botón del panel de estadísticas) */
-async function cenStatBackfill(onTick){
-  const list=(await cenList(true)).filter(x=>/^JCF\d{6}\.json$/i.test(x.name)), recs={}; let i=0, leidos=0;
+async function cenStatBackfill(onTick,have){
+  const all=(await cenList(true)).filter(x=>/^JCF\d{6}\.json$/i.test(x.name)), recs={}; let i=0, leidos=0, omit=0; have=have||{};
+  /* v3.44 · solo se leen los censos nuevos o modificados después de su última importación */
+  const list=all.filter(x=>{ const o=cenFromName(x.name), k=o?o.y+"-"+String(o.m+1).padStart(2,"0")+"-"+String(o.d).padStart(2,"0"):"", h=k&&have[k], mt=Date.parse(x.modified||"")||0; if(h&&h.ts&&mt&&h.ts>mt){ omit++; return false; } return true; });
   for(const x of list){ try{ const r=await cenReadEntry(x), o=r&&r.obj; if(o&&Array.isArray(o.pac||[])){ leidos++; const rec=cenStatRec(Object.assign({},o,{pac:o.pac||[]}),x.name); if(rec.k) recs[rec.k]=rec; } }catch(_){} i++; if(onTick) onTick(i,list.length); }
   const n=Object.keys(recs).length;
   if(n){ if(typeof window.__statSync!=="function") throw new Error("Las estadísticas aún no están listas"); const ok=await window.__statSync({censos:recs,keep:false}); if(!ok) throw new Error("No se pudieron guardar en el archivo de estadísticas de Drive; intenta de nuevo"); }
-  return {n,total:list.length,leidos};
+  return {n,total:all.length,nuevos:list.length,omit,leidos,recs};
 }
 
 
@@ -8704,6 +8769,7 @@ function cenCommit(el){
   if(f==="ing"&&v!==""&&!parts(v)){ try{ toast("Usa el formato DD.MM.AA (ej. 10.10.26)"); }catch(_){} el.value=el.defaultValue; return; }
   el.defaultValue=el.value;
   const row=(CEN.cur&&CEN.cur.pac||[]).find(x=>x.k===k); if(!row) return; if(String(row[f]==null?"":row[f])===v) { cenFlushPend(); return; }
+  if(!CEN._undoing) cenUndoPush(k,f,row[f]);
   if(CEN.mode==="hist"){
     const ops=[{t:"r",k,f,v}]; if(f==="ing") ops.push({t:"r",k,f:"eh",v:cenEH(v,cenFromDot(CEN.hist.obj.fecha)||cenMx(Date.now()))});
     ops.forEach(o=>CEN.hist.queue(o)); cenRender(); return;
@@ -8854,7 +8920,7 @@ async function cenPrintDocs(items){
   await cenWait(150);
   const LIM=748;   // alto útil de una hoja carta horizontal (px a 96 dpi) con márgenes de 7 mm
   /* v3.25 · Calibri 8 fijo; el ancho de cada columna sale del contenido (tabla automática). Debe caber en máximo 2 hojas horizontales; solo si no cabe se baja la letra de a medio punto. */
-  doc.querySelectorAll("table.cenp").forEach(t=>{ let ok=false; for(let fs=8;fs>=3.5;fs-=0.25){ t.style.fontSize=fs+"pt"; cenFitCols(t,true); if(cenPagesNeeded(t)<=2){ ok=true; break; } } cenSplitPages(t); });
+  doc.querySelectorAll("table.cenp").forEach(t=>{ let ok=false; for(let fs=10;fs>=6.5&&!ok;fs-=0.25){ t.style.fontSize=fs+"pt"; cenFitCols(t,true); if(cenPagesNeeded(t)<=1) ok=true; } for(let fs=10;fs>=3.5&&!ok;fs-=0.25){ t.style.fontSize=fs+"pt"; cenFitCols(t,true); if(cenPagesNeeded(t)<=2) ok=true; } cenSplitPages(t); });
   /* v3.15 · el reverso va en hoja VERTICAL; si el navegador no admite páginas con nombre, se gira el contenido dentro de la hoja horizontal */
   const named=(()=>{ try{ return !!(fr.contentWindow.CSS&&fr.contentWindow.CSS.supports("page","a")); }catch(_){ return false; } })();
   doc.querySelectorAll(".revw").forEach(wr=>{ const t=wr.querySelector("table.rev"); if(!t) return; const h=t.getBoundingClientRect().height, W1=561;
@@ -9383,8 +9449,12 @@ function cenModeSet(fs,on){ if(!fs) return; const was=fs.classList.contains("cen
 const CEN_EST=["INGRESO","RE INGRESO","GRAVE","DELICADO","VIGILANCIA PO"];
 function cenEstChips(host,inp){ if(!host||!inp) return; const norm=s=>String(s||"").toLocaleUpperCase("es-MX").replace(/\s+/g," ").trim();
   const toks=()=>String(inp.value||"").split(/\s*[\/,;]\s*/).map(norm).filter(Boolean);
-  const paint=()=>{ const t=toks(); host.innerHTML=CEN_EST.map(o=>`<button type="button" class="estchip" role="checkbox" aria-checked="${t.includes(o)}" data-o="${o}">${o}</button>`).join(""); };
-  host.onclick=e=>{ const b=e.target.closest("[data-o]"); if(!b) return; const o=b.dataset.o; let t=toks(); t=t.includes(o)?t.filter(x=>x!==o):t.concat(o); const ord=x=>{ const i=CEN_EST.indexOf(x); return i<0?99:i; }; t.sort((a,b)=>ord(a)-ord(b)); const v=t.join(" / "); inp.value=v; inp.dispatchEvent(new Event("input",{bubbles:true})); inp.dispatchEvent(new Event("change",{bubbles:true})); paint(); };
+  const ord=x=>{ const i=CEN_EST.indexOf(x); return i<0?99:i; };
+  const put=t=>{ const seen=new Set(); t=t.filter(x=>x&&!seen.has(x)&&seen.add(x)); const pr=t.filter(x=>CEN_EST.includes(x)).sort((a,b)=>ord(a)-ord(b)), cu=t.filter(x=>!CEN_EST.includes(x)); inp.value=pr.concat(cu).join(" / "); inp.dispatchEvent(new Event("input",{bubbles:true})); inp.dispatchEvent(new Event("change",{bubbles:true})); paint(); };
+  const paint=()=>{ const t=toks(), cu=t.filter(x=>!CEN_EST.includes(x)); host.innerHTML=CEN_EST.map(o=>`<button type="button" class="estchip" role="checkbox" aria-checked="${t.includes(o)}" data-o="${o}">${o}</button>`).join("")+cu.map(o=>`<button type="button" class="estchip cus" role="checkbox" aria-checked="true" data-c="${esc(o)}" title="Quitar">${esc(o)} ✕</button>`).join("")+`<input type="text" class="estfree" maxlength="40" placeholder="Otro estatus… (Enter)" aria-label="Escribir otro estatus" autocomplete="off" spellcheck="false">`; };
+  host.onclick=e=>{ const b=e.target.closest("[data-o],[data-c]"); if(!b) return; const o=b.dataset.o||b.dataset.c; let t=toks(); t=t.includes(o)?t.filter(x=>x!==o):t.concat(o); put(t); };
+  host.addEventListener("keydown",e=>{ const f=e.target.closest&&e.target.closest(".estfree"); if(!f) return; e.stopPropagation(); if(e.key==="Enter"||e.key===","){ e.preventDefault(); const v=norm(f.value.replace(/[\/;]/g," ")); if(v) put(toks().concat(v)); } });
+  host.addEventListener("focusout",e=>{ const f=e.target.closest&&e.target.closest(".estfree"); if(f&&f.value.trim()&&!host.contains(e.relatedTarget)){ const v=norm(f.value.replace(/[\/;]/g," ")); if(v) put(toks().concat(v)); } });
   try{ const d=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"value"); Object.defineProperty(inp,"value",{configurable:true,get(){ return d.get.call(this); },set(x){ d.set.call(this,x); paint(); }}); }catch(_){}
   paint(); }
 (function(){ const i=$("censoEstatus"), h=$("censoEstChips"); if(i&&h) cenEstChips(h,i); })();
@@ -9675,6 +9745,37 @@ document.addEventListener("dblclick",e=>{ try{
   const dlg=document.querySelector("dialog.cen-add[open]"), h=document.getElementById("popHost");
   if(dlg&&h){ dlg.appendChild(h); h.style.position="fixed"; h.style.zIndex="2147483647"; setTimeout(()=>{ try{ document.body.appendChild(h); h.style.position=h.style.zIndex=""; }catch(_){} },3800); }
 }catch(_){} },true);
+
+/* ===== v3.44 · Censos guardados: aviso «Cargando…» y «Ver» a todo el ancho, en multilínea y letra legible ===== */
+function cenBusy(msg){
+  let d=document.getElementById("cenBusy"); if(!d){ d=document.createElement("dialog"); d.id="cenBusy"; d.className="cen-busy"; d.addEventListener("cancel",e=>e.preventDefault()); document.body.appendChild(d); }
+  d._n=(d._n||0)+1; d.innerHTML='<div class="cb-sp" aria-hidden="true"></div><b></b>'; d.querySelector("b").textContent=msg||"Cargando…";
+  try{ if(!d.open) d.showModal(); }catch(_){} const t0=Date.now(); let done=false;
+  return ()=>{ if(done) return; done=true; const go=()=>{ d._n=Math.max(0,(d._n||1)-1); if(!d._n){ try{ d.close(); }catch(_){} } }; const w=Math.max(0,500-(Date.now()-t0)); w?setTimeout(go,w):go(); };
+}
+(function(){
+  const wrap=(name,msg,after)=>{ const o=window[name]; if(typeof o!=="function") return; window[name]=async function(...a){ const end=cenBusy(msg); try{ return await o.apply(this,a); } finally{ try{ if(after) await after(); }catch(_){} end(); } }; };
+  wrap("cenPrintByName","Preparando la impresión…");
+  wrap("cenOpenHist","Abriendo el censo…");
+})();
+async function cenViewPop(name){
+  const end=cenBusy("Cargando el censo…");
+  let o; try{ const list=await cenList(true), e=list.find(x=>x.name===name); if(!e) throw new Error("No existe ese censo"); const r=await gcall("hjmCensoRead",e.id); o=JSON.parse(r.content); o.pac=o.pac||[]; if(!o||o.app!=="censo-hjm") throw new Error("Archivo no reconocido"); }catch(e){ end(); try{ notify("No se pudo abrir el censo: "+friendly(e),"warn"); }catch(_){} return; }
+  try{
+    let d=$("dlgArView"); if(!d){ d=document.createElement("dialog"); d.id="dlgArView"; d.className="ar-view"; document.body.appendChild(d); }
+    d.className="ar-view cen-vw";
+    const who=String(o.editado||o.por||"").trim(), ttl="Censo "+o.fecha;
+    /* la tabla se arma sin los filtros del buscador, Adscrito y Clínica */
+    const sf=PP_FILT, ss=$("ppSearch")?$("ppSearch").value:""; let tb="", rv="";
+    try{ PP_FILT={ads:[],clin:[]}; if($("ppSearch")) $("ppSearch").value=""; tb=cenTableHTML(o).replace(/<textarea[^>]*>([\s\S]*?)<\/textarea>/g,'<div class="vt">$1</div>'); }finally{ PP_FILT=sf; if($("ppSearch")) $("ppSearch").value=ss; }
+    rv=cenRevHTML(o,false);
+    d.innerHTML=`<div class="av-head"><div class="av-t"><b>${esc(ttl)}</b><small>${o.guardia?"Guardia "+esc(o.guardia)+" · ":""}${who?(o.editado?"Última edición: ":"Envió: ")+esc(who):""}</small></div><div class="av-b">${rbBtn("edit","Editar","data-ave")}${rbBtn("print","Imprimir","data-avp")}<button type="button" class="av-x" data-avx aria-label="Cerrar">×</button></div></div><div class="av-body"><div class="av-res">${o.res?"<b>Residentes de guardia:</b> "+esc(o.res):""}</div><div class="av-tab">${tb}</div><div class="av-rev">${rv}</div></div>`;
+    d.onclick=e=>{ if(e.target.closest("[data-avx]")||e.target===d){ d.close(); return; } if(e.target.closest("[data-ave]")){ d.close(); try{ const l=$("dlgCenList"); if(l&&l.open) l.close(); }catch(_){} cenOpenHist(name); return; } if(e.target.closest("[data-avp]")){ d.close(); cenPrintByName(name); } };
+    if(!d.open) d.showModal();
+    const bd=d.querySelector(".av-body"); if(bd) bd.scrollTop=0;
+  }catch(e){ try{ notify("No se pudo mostrar el censo: "+friendly(e),"warn"); }catch(_){} }
+  end();
+}
 
 </script>
 <script>
@@ -10112,7 +10213,7 @@ async function renderStats(body){
   { const ra=body.querySelector("#stRA"), rb=body.querySelector("#stRB"); const fix=()=>{ if(rangeB&&rangeA&&rangeB<rangeA){ const t=rangeA; rangeA=rangeB; rangeB=t; } };
     if(ra) ra.onchange=()=>{ rangeA=ra.value||dayKey(Date.now()); fix(); render(); };
     if(rb) rb.onchange=()=>{ rangeB=rb.value||""; fix(); render(); }; }
-  const bf=body.querySelector("[data-cenbf]"); if(bf) bf.onclick=async()=>{ if(!isAdmin()) return; const m=body.querySelector("#stCenMsg"); bf.disabled=true; try{ const r=await bg(()=>cenStatBackfill((i,t)=>{ if(m) m.textContent="Leyendo censos "+i+" de "+t+"…"; })); period=0; await loadRemote(); await render(); const m2=document.getElementById("stCenMsg"); if(m2) m2.textContent=r.n?"Se importaron "+r.n+" censo(s) de "+r.total+" a las estadísticas.":(r.total?"Se encontraron "+r.total+" censo(s) pero no se pudo leer ninguno.":"No hay censos guardados en la carpeta."); }catch(e){ if(m) m.textContent="No se pudo importar: "+friendly(e); bf.disabled=false; } };
+  const bf=body.querySelector("[data-cenbf]"); if(bf) bf.onclick=async()=>{ if(!isAdmin()) return; const m=body.querySelector("#stCenMsg"); bf.disabled=true; try{ const r=await bg(()=>cenStatBackfill((i,t)=>{ if(m) m.textContent="Leyendo censos "+i+" de "+t+"…"; },(remoteCache&&remoteCache.censos)||{})); period=0; await loadRemote(); let dn={ok:0,bad:0}; if(r.n){ if(m) m.textContent="Actualizando los archivos de estadísticas de cada día…"; dn=await bg(()=>statDayFiles(r.recs,(i,t)=>{ const mm=document.getElementById("stCenMsg"); if(mm) mm.textContent="Actualizando archivos de estadísticas "+i+" de "+t+"…"; })); } await render(); const m2=document.getElementById("stCenMsg"); if(m2) m2.textContent=r.n?"Se importaron "+r.n+" censo(s) nuevo(s) o modificado(s)"+(r.omit?" (se omitieron "+r.omit+" sin cambios)":"")+" a las estadísticas generales y se actualizaron "+dn.ok+" archivo(s) de estadísticas por día"+(dn.bad?" ("+dn.bad+" no se pudieron guardar)":"")+".":(r.total?(r.omit&&!r.nuevos?"Todo al día: los "+r.total+" censo(s) ya estaban importados y no han cambiado.":"Se encontraron "+r.total+" censo(s) pero no se pudo leer ninguno."):"No hay censos guardados en la carpeta."); }catch(e){ if(m) m.textContent="No se pudo importar: "+friendly(e); bf.disabled=false; } };
 }
 /* v3.42 · Estadísticas que vienen del censo final */
 const cenCnt=t=>String(t||"").split(/\n|;/).map(x=>x.trim()).filter(x=>x&&!/^(NINGUN[AO]S?|N\/?A|NO HAY|0|-+|SIN\s.*)$/i.test(x)).length;
@@ -10123,13 +10224,26 @@ function censoCard(remote){
   const sm=f=>rs.reduce((n,r)=>n+(f(r)||0),0), sv=(o,k)=>sm(r=>r[o]&&r[o][k]);
   const SRV=["TM","OM","CYC","GINE","MAMA"], NM={TM:"Tumores mixtos",OM:"Oncología médica",CYC:"Cabeza y cuello",GINE:"Ginecológicos",MAMA:"Mama"};
   const len=k=>sm(r=>(r[k]||[]).length), ic=sm(r=>r.ic&&Object.values(r.ic).reduce((a,b)=>a+(+b||0),0));
-  const K=[[rs.length,"Censos enviados"],[sm(r=>SRV.reduce((n,s)=>n+((r.ing||{})[s]||0),0)),"Ingresos"],[sm(r=>SRV.reduce((n,s)=>n+((r.egr||{})[s]||0),0)),"Egresos"],[len("cr"),"Cirugías realizadas"],[len("cp"),"Cirugías programadas"],[len("cs"),"Suspendidas / diferidas"],[len("pr"),"Procedimientos"],[len("tr"),"Transfusiones"],[ic,"Interconsultas realizadas"],[sm(r=>cenCnt(r.iso)),"Interconsultas solicitadas"],[sm(r=>cenCnt(r.dfn)),"Defunciones"],[len("gr"),"Pacientes graves"]];
+  const K=[[rs.length,"Censos enviados"],[sm(r=>SRV.reduce((n,s)=>n+((r.ing||{})[s]||0),0)),"Ingresos"],[sm(r=>SRV.reduce((n,s)=>n+((r.egr||{})[s]||0),0)),"Egresos"],[len("cr"),"Cirugías realizadas"],[len("cp"),"Cirugías programadas"],[len("cs"),"Suspendidas / diferidas"],[len("pr"),"Procedimientos"],[len("tr"),"Transfusiones"],[ic,"Interconsultas realizadas"],[sm(r=>cenCnt(r.iso)),"Interconsultas solicitadas"],[sm(r=>cenCnt(r.dfn)),"Defunciones"],[len("gr"),"Pacientes graves"]].concat(CEN_EST.map(o=>[sm(r=>(r.est||{})[o]),"Estatus: "+o.charAt(0)+o.slice(1).toLowerCase()]),[[sm(r=>(r.est||{}).OTROS),"Estatus: otro"]]);
   const admin=isAdmin();
   return `<div class="st-card"><h3>Censo final <small style="font-weight:500;color:#7B7E81">· ${lab} · se registra al enviar el censo final</small></h3>
    <div class="st-kpis">${K.map(([n,l])=>`<div class="st-kpi"><b>${n}</b><span>${l}</span></div>`).join("")}</div>
    ${rs.length?`<div class="st-scroll"><table class="st-act"><thead><tr><th>Clínica</th><th>Ingresos</th><th>Egresos</th></tr></thead><tbody>${SRV.map(s=>`<tr><td class="nm">${NM[s]} <small>(${s})</small></td><td>${sv("ing",s)}</td><td>${sv("egr",s)}</td></tr>`).join("")}</tbody></table></div>
-   <div class="st-scroll" style="margin-top:12px"><table class="st-act"><thead><tr><th>Censo</th><th>Guardia</th><th>Ingresos</th><th>Egresos</th><th>Cx realizadas</th><th>Cx programadas</th><th>Interconsultas</th><th>Solicitadas</th><th>Defunciones</th><th>Pacientes</th></tr></thead><tbody>${rs.slice(0,31).map(r=>`<tr><td class="nm">${esc(r.f||r.k)}</td><td>${esc(r.g||"")}</td><td>${SRV.reduce((n,s)=>n+((r.ing||{})[s]||0),0)}</td><td>${SRV.reduce((n,s)=>n+((r.egr||{})[s]||0),0)}</td><td>${(r.cr||[]).length}</td><td>${(r.cp||[]).length}</td><td>${Object.values(r.ic||{}).reduce((a,b)=>a+(+b||0),0)}</td><td>${cenCnt(r.iso)}</td><td title="${esc(r.dfn||"")}">${cenCnt(r.dfn)}</td><td>${r.tot||r.pac||0}</td></tr>`).join("")}</tbody></table></div>`:`<div class="st-msg">Aún no hay censos finales registrados en este periodo.</div>`}
-   ${admin?`<div style="display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap"><button type="button" class="st-btn st-sm" data-cenbf>Importar censos ya guardados</button><span class="st-msg" id="stCenMsg" style="margin:0">Trae a las estadísticas los censos finales anteriores a esta versión.</span></div>`:""}</div>`;
+   <div class="st-scroll" style="margin-top:12px"><table class="st-act"><thead><tr><th>Censo</th><th>Ingresos</th><th>Egresos</th><th>Cx realizadas</th><th>Cx programadas</th><th>Interconsultas</th><th>Solicitadas</th><th>Defunciones</th><th>Pacientes</th></tr></thead><tbody>${rs.slice(0,31).map(r=>`<tr><td class="nm">${esc(r.f||r.k)}</td><td>${SRV.reduce((n,s)=>n+((r.ing||{})[s]||0),0)}</td><td>${SRV.reduce((n,s)=>n+((r.egr||{})[s]||0),0)}</td><td>${(r.cr||[]).length}</td><td>${(r.cp||[]).length}</td><td>${Object.values(r.ic||{}).reduce((a,b)=>a+(+b||0),0)}</td><td>${cenCnt(r.iso)}</td><td title="${esc(r.dfn||"")}">${cenCnt(r.dfn)}</td><td>${r.tot||r.pac||0}</td></tr>`).join("")}</tbody></table></div>`:`<div class="st-msg">Aún no hay censos finales registrados en este periodo.</div>`}
+   ${admin?`<div style="display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap"><button type="button" class="st-btn st-sm" data-cenbf>Importar censos ya guardados</button><span class="st-msg" id="stCenMsg" style="margin:0">Trae los censos nuevos o modificados desde la última importación.</span></div>`:""}</div>`;
+}
+
+/* v3.44 · Al importar censos anteriores también se escribe el archivo de estadísticas de cada día (ESTADISTICAS_DDMMAA.json): el censo de ese día + la actividad de su guardia */
+async function statDayFiles(recs,onTick){
+  const o=remoteCache||{}, ks=Object.keys(recs||{}).sort(); let ok=0,bad=0,i=0;
+  for(const k of ks){ i++; if(onTick) onTick(i,ks.length);
+    try{ const rec=recs[k], f=String(rec.f||"").replace(/\D/g,""); if(f.length!==6) throw new Error("fecha"); const prev=dayKey(new Date(k+"T12:00:00").getTime()-864e5);
+      const dev={}; Object.entries(o.dev||{}).forEach(([d,dd])=>{ const m={}; Object.entries(dd||{}).forEach(([dk,us])=>{ if(dk===k||dk===prev) m[dk]=us; }); if(Object.keys(m).length) dev[d]=m; });
+      const camas=(o.camas||[]).filter(c=>{ const t=c&&c.ts?dayKey(c.ts):""; return t===k||t===prev; });
+      const wire={app:"solicitudes-hjm",tipo:"hjm-stats",v:1,dev,camas,borrados:[],errs:{},censos:{[k]:rec},dia:k,upd:Date.now(),datos:{expediente:"_ESTADISTICAS",nombres:"Estadísticas de uso"}};
+      await G("hjmEstadisticasRespaldo","ESTADISTICAS_"+f+".json",JSON.stringify(wire),JSON.stringify({})); ok++;
+    }catch(_){ bad++; } }
+  return {ok,bad};
 }
 
 
@@ -10273,7 +10387,7 @@ function renderPend(body){
       if(!b.dataset.ok){ b.dataset.ok="1"; b.textContent="¿Seguro?"; b.classList.add("st-danger"); setTimeout(()=>{ if(b.isConnected){ delete b.dataset.ok; b.textContent="Borrar"; b.classList.remove("st-danger"); } },4000); return; }
       const row=pendData.out.find(p=>p.exp===b.dataset.pdelx); b.disabled=true; let n=0;
       for(const it of (row?row.items:[])){ try{ await G("hjmBorrarPendiente",it.id); n++; }catch(e){ msg().textContent="No se pudo borrar: "+friendly(e); } }
-      await refreshExp(b.dataset.pdelx); if(n) msg().textContent=`Se borraron ${n} pendiente(s) del Exp. ${b.dataset.pdelx}.`; bind(); }); };
+      await refreshExp(b.dataset.pdelx); { const left=(pendData.out.find(p=>p.exp===b.dataset.pdelx)||{items:[]}).items.length; if(left) msg().textContent=`Drive no borró ${left} pendiente(s) del Exp. ${b.dataset.pdelx}. Intenta de nuevo o avisa al administrador.`; else if(n) msg().textContent=`Se borraron ${n} pendiente(s) del Exp. ${b.dataset.pdelx}; ya no están en Drive.`; } bind(); }); };
   bind();
   $s("stPendGo").onclick=()=>{ pendData=null; startPend(true); render(); };
   $s("stPendAll").onclick=async()=>{ if(!isAdmin()) return; if(!pendData){ pendData=await scanPend(msg()); }
