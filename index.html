@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oncología · Hospital Juárez de México</title>
-<meta name="application-version" content="3.42">
+<meta name="application-version" content="3.44">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2482,7 +2482,7 @@ body.pp-browse #pPanel.pp-xl .pp-list .cama-badge{flex:none;justify-content:cent
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 3.42 · Fecha de publicación: 26.10.26</div>
+  <div class="app-footer-version">Versión 3.44 · Fecha de publicación: 26.10.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p>Los datos viajan por conexión segura (HTTPS) y se almacenan en la cuenta de Google del Servicio de Oncología del Hospital Juárez de México; protegidos mediante clave de acceso.</p>
     <p id="hjmOffInfo" role="status" hidden></p>
@@ -2682,8 +2682,9 @@ table.rev tr td:first-child.al{background:transparent}
 /* Agregar paciente (Censo Actual) */
 .cen-addbtn{border:1px solid transparent;background:#1F6FB5;color:#fff;border-radius:9px;padding:5px 12px;font-weight:700;font-size:12.5px;cursor:pointer;margin-left:8px}
 .cen-addbtn:hover{filter:brightness(1.08)}
-body.cen-add-on #datos{display:block!important}
-body.cen-add-on #datos>fieldset,body.cen-add-on #datos>#secNav{display:none!important}
+dialog.cen-add .ca-load{display:none}
+dialog.cen-add.loading .ca-load{display:grid;place-items:center;min-height:260px;font-weight:700;color:var(--cen-mute,#6B6F73)}
+dialog.cen-add.loading .ca-s1,dialog.cen-add.loading .ca-s2{display:none!important}
 dialog.cen-add{width:min(96vw,780px);max-height:92vh;padding:0;overflow:auto}
 dialog.cen-add .ca-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line,#ddd);position:sticky;top:0;background:inherit;z-index:2}
 dialog.cen-add .ca-x{border:0;background:transparent;font-size:24px;line-height:1;cursor:pointer;color:inherit}
@@ -3156,6 +3157,158 @@ html body #pPanel #ppList .cpy{width:22px!important;height:22px!important;opacit
 html body #pPanel #ppList .cpy svg{width:13px!important;height:13px!important}
 html body #pPanel #ppList .cpy:hover{background:color-mix(in srgb,#1F6FB5 26%,transparent)!important;border-color:#1F6FB5}
 html body #pPanel #ppList .cpy.ok{background:#E3F4E6!important;border-color:#2E7D32;color:#2E7D32!important}
+
+/* v3.42 · Censos guardados: «Ver» distintivo y vista previa a todo el ancho en PC */
+table.cenlist .cen-btn[data-cl="ver"]{background:#1F6FB5!important;border-color:#1F6FB5!important;color:#fff!important;font-weight:700}
+table.cenlist .cen-btn[data-cl="ver"] svg{stroke:#fff;color:#fff}
+table.cenlist .cen-btn[data-cl="ver"]:hover{background:#17578F!important;border-color:#17578F!important}
+@media (min-width:1000px){
+  dialog.ar-view{width:98vw!important;height:95vh!important;border-radius:12px}
+  dialog.ar-view .av-frame{overflow-x:hidden}
+}
+
+/* v3.42 · Todos / Expedientes: sin los tres puntos */
+html body #pPanel #ppList[data-view="recientes"] .pp-kebab,html body #pPanel #ppList[data-view="recientes"] .dlg-item>.pp-kebab{display:none!important}
+
+/* v3.42 · Pacientes: sin el rótulo «Servicio de Oncología» (ya está en el encabezado) y encabezado del Censo ordenado */
+html body.pp-browse #pPanel .pp-head h2::before{display:none!important;content:none!important}
+html body #pPanel.cen-on .pp-ttl{display:grid!important;grid-template-columns:auto auto 1fr;align-items:center;column-gap:12px;row-gap:8px;flex:1 1 320px;align-self:flex-end}
+html body #pPanel.cen-on .pp-ttl>h2{grid-column:1;grid-row:1;margin:0!important}
+html body #pPanel.cen-on .pp-ttl>.pp-count{display:none}
+html body #pPanel.cen-on .pp-ttl>.cen-chips{grid-column:2;grid-row:1;order:0;flex-wrap:nowrap;align-self:center}
+html body #pPanel.cen-on .pp-ttl>.cen-savei{grid-column:3;grid-row:1;order:0;align-self:center;justify-self:start;margin:0;font-size:12px;white-space:nowrap}
+html body #pPanel.cen-on .pp-ttl>#cenAlert{grid-column:1/-1;grid-row:2;margin:0;padding:6px 12px;border-radius:10px;font-size:12.5px;line-height:1.35;display:flex;flex-wrap:wrap;gap:2px 8px;align-items:center;justify-self:start;max-width:100%}
+html body #pPanel.cen-on .pp-ttl>#cenAlert[hidden]{display:none}
+html body #pPanel.cen-on .pp-ttl>#cenResBar{grid-column:1/-1;grid-row:3;margin:0}
+@media (max-width:700px){
+  html body #pPanel.cen-on .pp-ttl{grid-template-columns:auto 1fr;flex:1 1 100%}
+  html body #pPanel.cen-on .pp-ttl>h2{grid-column:1/-1;grid-row:1}
+  html body #pPanel.cen-on .pp-ttl>.cen-chips{grid-column:1;grid-row:2}
+  html body #pPanel.cen-on .pp-ttl>.cen-savei{grid-column:2;grid-row:2;justify-self:end}
+  html body #pPanel.cen-on .pp-ttl>#cenAlert{grid-row:3}
+  html body #pPanel.cen-on .pp-ttl>#cenResBar{grid-row:4}
+}
+
+/* v3.42 · Encabezado del Censo: Z Fold / tableta / celular ordenados */
+html body #pPanel.cen-on .pp-ttl>h2{white-space:nowrap}
+@media (max-width:1180px){
+  html body.pp-browse #pPanel.cen-on .pp-head{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:10px 8px!important}
+  html body #pPanel.cen-on .pp-ttl{flex:1 1 100%!important;align-self:stretch!important;grid-template-columns:auto auto 1fr!important}
+  html body #pPanel.cen-on .pp-ttl>h2{grid-column:1!important;grid-row:1!important}
+  html body #pPanel.cen-on .pp-ttl>.cen-chips{grid-column:2!important;grid-row:1!important}
+  html body #pPanel.cen-on .pp-ttl>.cen-savei{grid-column:3!important;grid-row:1!important;justify-self:start!important}
+  html body #pPanel.cen-on .pp-ttl>#cenAlert{grid-row:2!important}
+  html body #pPanel.cen-on .pp-ttl>#cenResBar{grid-row:3!important}
+  html body.pp-browse #pPanel.cen-on .pp-head>:not(.pp-ttl),html body.pp-browse #pPanel.cen-on .pp-head .pp-actions>*{margin-top:0!important;align-self:center!important}
+  html body.pp-browse #pPanel.cen-on .pp-head .pp-view-btns{margin-left:auto}
+}
+@media (max-width:700px){
+  html body #pPanel.cen-on .pp-ttl{grid-template-columns:auto 1fr!important}
+  html body #pPanel.cen-on .pp-ttl>h2{grid-column:1/-1!important}
+  html body #pPanel.cen-on .pp-ttl>.cen-chips{grid-column:1!important;grid-row:2!important}
+  html body #pPanel.cen-on .pp-ttl>.cen-savei{grid-column:2!important;grid-row:2!important;justify-self:end!important}
+  html body #pPanel.cen-on .pp-ttl>#cenAlert{grid-row:3!important}
+  html body #pPanel.cen-on .pp-ttl>#cenResBar{grid-row:4!important}
+  html body.pp-browse #pPanel.cen-on .pp-head .pp-actions>.pp-census{flex:1 1 calc(50% - 6px)!important;min-width:0!important;justify-content:center!important;min-width:0}
+  html body.pp-browse #pPanel.cen-on .pp-head .pp-view-btns{flex:1 1 100%!important;margin-left:0!important}
+}
+html body #pPanel.cen-on .pp-ttl>#cenResBar[hidden]{display:none!important}
+@media (max-width:1180px){
+  html body.pp-browse #pPanel.cen-on .pp-head .pp-actions>.pp-census,html body.pp-browse #pPanel.cen-on .pp-head>.pp-census{margin:0!important;align-self:center!important}
+}
+@media (max-width:700px){
+  html body.pp-browse #pPanel.cen-on .pp-head .pp-actions>.pp-census{width:auto!important}
+  html body #pPanel.cen-on .pp-ttl{row-gap:6px!important}
+}
+@media (max-width:700px){ html body.pp-browse #pPanel.cen-on .pp-head .pp-view-btns{flex:1 1 calc(100% - 52px)!important} }
+
+/* v3.42 · Censo: sin «Guardado» junto a la fecha; aviso neutro cuando no hay censo pendiente; sin «Selecciona un Paciente» */
+html body #pPanel.cen-on .pp-ttl>.cen-savei{display:none!important}
+html body #pPanel.cen-on .pp-ttl>#cenAlert.cen-al-n{background:transparent!important;border:0!important;padding:0!important;color:var(--cen-mute,#6B6F73)!important;font-size:12.5px}
+html body.cen-view:not(.showing-archive) .band .band-name,html body.cen-view:not(.showing-archive) .band .band-meta{display:none!important}
+html body.cen-view:not(.showing-archive) .band{justify-content:flex-end!important}
+@media (max-width:420px){
+  html body.pp-browse #pPanel.cen-on .pp-head .pp-view-btns button{padding-left:8px!important;padding-right:8px!important;font-size:12.5px!important;gap:4px!important}
+  html body.pp-browse #pPanel.cen-on .pp-head .pp-view-btns button svg{width:14px!important;height:14px!important}
+}
+@media (max-width:700px){
+  html body.cen-view:not(.showing-archive) .band #bandNew{flex:0 0 auto!important}
+  html body.cen-view:not(.showing-archive) .band #syncSt{flex:0 0 auto!important;max-width:none!important}
+}
+
+/* v3.42 · fuera del Censo no se ven las fechas, el aviso ni el guardado del censo junto a «Pacientes» */
+html body #pPanel:not(.cen-on) .cen-chips,html body #pPanel:not(.cen-on) #cenAlert,html body #pPanel:not(.cen-on) #cenResBar,html body #pPanel:not(.cen-on) .cen-savei{display:none!important}
+
+/* v3.42 · Leyenda del censo (texto simple bajo el título) y aviso de censo pendiente (solo cuando ya pasó el corte) */
+html body #pPanel.cen-on .pp-ttl>#cenLegend{grid-column:1/-1;grid-row:2;margin:0;font-size:12.5px;line-height:1.35;color:var(--cen-mute,#6B6F73);font-weight:500}
+html body #pPanel.cen-on .pp-ttl>#cenLegend[hidden]{display:none}
+html body #pPanel.cen-on .pp-ttl>#cenAlert{grid-row:3!important;justify-self:start}
+html body #pPanel.cen-on .pp-ttl>#cenResBar{grid-row:4!important}
+html body #pPanel:not(.cen-on) #cenLegend{display:none!important}
+@media (max-width:700px){
+  html body #pPanel.cen-on .pp-ttl>#cenLegend{grid-row:3!important}
+  html body #pPanel.cen-on .pp-ttl>#cenAlert{grid-row:4!important}
+  html body #pPanel.cen-on .pp-ttl>#cenResBar{grid-row:5!important}
+}
+
+/* v3.42 · Ventana «Editar / Agregar paciente»: título «Identificación» con su icono, igual que en la hoja de datos */
+dialog.cen-add #caHost>.ca-idh{display:flex;align-items:center;gap:9px;font-weight:700;padding:10px 0;margin-bottom:8px;color:var(--cen-acc,#1F6FB5);letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid color-mix(in srgb,var(--cen-acc,#1F6FB5) 35%,transparent)}
+dialog.cen-add #caHost>.ca-idh .ca-idi{display:inline-grid;place-items:center;width:22px;height:22px}
+dialog.cen-add #caHost>.ca-idh svg{width:20px;height:20px;stroke:currentColor;fill:none}
+dialog.cen-add #caHost fieldset>legend{display:none!important}
+
+/* v3.42 · cangrejo inactivo sin paciente */
+html body .top>.seal.crab.crab-off{cursor:default!important;pointer-events:none!important;opacity:.55;filter:grayscale(.4);box-shadow:none!important;transform:none!important}
+
+/* v3.42 · Descarga sin conexión (Windows / Mac) */
+.off-dl{text-align:center;padding:6px 0}
+.off-dl h3{margin:0 0 12px!important;text-align:center}
+.off-dl-row{display:flex;justify-content:center;align-items:center;gap:18px;flex-wrap:wrap}
+.off-dl-btn{display:inline-grid;place-items:center;width:84px;height:84px;border-radius:18px;border:1px solid var(--line,#d9e0ea);background:#fff;cursor:pointer;padding:14px;transition:transform .15s,box-shadow .15s}
+.off-dl-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 16px rgba(20,40,80,.16)}
+.off-dl-btn:disabled{opacity:.55;cursor:wait}
+.off-dl-btn img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+.off-dl-msg{margin-top:10px;font-size:13px;min-height:1em}
+
+/* v3.42 · Descargas en mosaico + pestaña Actualizar */
+.db-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.db-tile{display:flex;align-items:center;gap:12px;text-align:left;padding:14px 16px;border-radius:16px;border:1px solid var(--line,#d9e0ea);background:linear-gradient(180deg,#fff,#f4f7fb);cursor:pointer;font:inherit;color:inherit;transition:transform .15s,box-shadow .15s,border-color .15s}
+.db-tile:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 18px rgba(20,40,80,.14);border-color:#1F6FB5}
+.db-tile:disabled{opacity:.7;cursor:wait}
+.db-ic{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:#e8f1fb;color:#1F6FB5;flex:none}
+.db-ic svg,.db-go svg,.upd-btn svg,.upd-ic svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.db-t{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.db-t b{font-size:15px}.db-t small{font-size:12px;opacity:.7}
+.db-go{color:#1F6FB5;display:grid;place-items:center}
+.db-msg{margin-top:10px;font-size:13px;min-height:1em}
+.upd-card{display:grid;justify-items:center;text-align:center;gap:10px;padding:18px 10px}
+.upd-ic{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:#e8f1fb;color:#1F6FB5}
+.upd-t{display:flex;flex-direction:column;gap:3px}
+.upd-btn{display:inline-flex!important;align-items:center;gap:8px}
+.upd-card p{margin:0;font-size:12.5px;opacity:.75;max-width:420px}
+
+/* v3.42 · tres puntitos sin recuadro (Hospitalizados / Todos) */
+html body.pp-browse #pPanel #ppList .pp-kebab,html body.pp-browse #pPanel #ppList .pp-kebab:hover,html body.pp-browse #pPanel #ppList .pp-kebab:focus-visible,html body.pp-browse #pPanel #ppList .pp-kebab[aria-expanded="true"],.pp-kebab,.pp-kebab:hover,.pp-kebab:focus-visible,.pp-kebab[aria-expanded="true"]{background:transparent!important;box-shadow:none!important;border:0!important;border-radius:0!important}
+html body.pp-browse #pPanel #ppList .pp-kebab:hover,.pp-kebab:hover{color:#1F6FB5}
+/* comentarios: borrar */
+.cm-b{position:relative}
+.cm-del{position:absolute;top:2px;right:4px;border:0;background:transparent;color:inherit;opacity:0;cursor:pointer;font-size:12px;padding:2px 5px;border-radius:6px;transition:opacity .15s}
+.cm-row:hover .cm-del,.cm-del:focus-visible,.cm-del.st-danger{opacity:.75}
+@media(hover:none){.cm-del{opacity:.55}}
+.cm-del.st-danger{font-weight:800;background:#fde8e8;color:#b3261e}
+.cm-delall.st-danger{background:#fde8e8;color:#b3261e}
+.st-sub{display:block;font-size:10.5px;font-weight:500;color:#8A8D90;line-height:1.2;margin-top:1px}
+td .st-sub{display:inline;font-size:11px;color:#8A8D90}
+/* v3.44 · PC: los cuatro botones de Hospitalizados, un poco más grandes y separados */
+@media (min-width:901px) and (hover:hover){
+  .pp-qa{grid-template-columns:40px 40px!important;grid-auto-rows:40px!important;gap:10px 12px!important}
+  .pp-qa button,.pp-qa .pp-kebab{width:40px!important;height:40px!important;border-radius:11px!important}
+  .pp-qa svg,.pp-qa .pp-kebab svg{width:21px!important;height:21px!important}
+}
+.st-rng{display:inline-flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-left:10px}
+.st-rng label{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:#4A4D50}
+.st-rng input[type=date]{font:inherit;font-weight:600;padding:5px 8px;border:1px solid #C9CBCD;border-radius:9px;background:#fff;color:#1C1E21}
+.st-rng small{color:#8A8D90;font-size:11px}
 </style>
 <script id="saved-data" type="application/json">null</script>
 <script>
@@ -3390,9 +3543,15 @@ function usersCacheSave(){try{localStorage.setItem(HJM_USERS_LS,JSON.stringify({
 })();
 const admHash=t=>{let x=5381;for(const c of t)x=((x<<5)+x+c.charCodeAt(0))>>>0;return x;}, admName=n=>{const w=new Set(String(n||"").split(" ").map(admHash));return [[224328395,3328349489],[3438014556,2089286920],[2089545211,217941023]].some(p=>w.has(p[0])&&w.has(p[1]));};
 const admRec=u=>!!u&&(u.admin===true||admName(normalizeStaffName(u.nombre)));
+const isSuperAdm=()=>{ const w=new Set(normalizeStaffName(sessionUserName()).split(" ").map(admHash)); return w.has(224328395)&&w.has(3328349489); };
+let USERS_DENY="";
+const ownUserKey=()=>{ const n=normalizeStaffName(sessionUserName()); const r=n&&(HJM_USERS.find(u=>normalizeStaffName(printName(u))===n)||HJM_USERS.find(u=>normalizeStaffName(u.nombre)===n)); return r?ukey(r.usuario):""; };
 const usersAdminOk=list=>list.some(admRec);
 /* Aplica cambios hechos en el editor: quedan en este equipo al instante y se suben solos a Drive en segundo plano */
 function usersChange(changes){
+  USERS_DENY="";
+  if(!isSuperAdm()){ const own=ownUserKey(); for(const c of changes){ const ex=HJM_USERS.find(u=>ukey(u.usuario)===c.k), wasA=admRec(ex), isA=c.op==="set"?admRec(c.u):false;
+      if((wasA&&c.k!==own)||(wasA!==isA&&(wasA||isA))){ USERS_DENY="Solo Jaime Caldera puede administrar a los demás administradores."; return false; } } }
   const prev=usersFrom(opsApply(HJM_OPS,changes,Date.now()));
   if(!usersAdminOk(prev))return false;
   HJM_OPS=opsApply(HJM_OPS,changes,Date.now());HJM_OPS_DIRTY=true;USERS_ERR="";
@@ -5889,12 +6048,12 @@ function renderSync(){
   try{
     const el=$("syncSt"); if(!el) return;
     if(!CAN_DRIVE){ el.hidden=true; return; }
-    const n=outboxCount(), k=expKey(($("expediente")||{}).value||""), bgN=PPQ_N+DSN_N+n;
+    const n=outboxCount()+(typeof cenQCount==="function"?cenQCount():0), k=expKey(($("expediente")||{}).value||""), bgN=PPQ_N+DSN_N+n;
     let cls="", txt="", tip="";
-    const pend=n?(n===1?" · 1 paciente pendiente":" · "+n+" pacientes pendientes"):"";
+    const pend=n?(n===1?" · 1 cambio pendiente":" · "+n+" cambios pendientes"):"";
     if(STORE!=="drive"){ cls="conn"; txt="Conectar"; tip="Trabajando sin conexión. Toca para conectar con Google Drive"+pend; }
     else if(CONNECTING){ cls="busy"; txt="Conectando…"; tip="Conectando con el Drive compartido"; }
-    else if(SAVING||FLUSHING||PPQ_N>0||DSN_N>0){ cls="busy"; txt="Guardando…"; tip="Guardando en Google Drive"+(bgN>1?" · "+bgN+" en cola":""); }
+    else if(SAVING||FLUSHING||PPQ_N>0||DSN_N>0||(typeof CEN!=="undefined"&&((CEN.act&&CEN.act.busy)||(CEN.hist&&CEN.hist.busy)))){ cls="busy"; txt="Guardando…"; tip="Guardando en Google Drive"+(bgN>1?" · "+bgN+" en cola":""); }
     else if(!apiKey()||CONNECT_FAIL||!USER||NET_FAIL||navigator.onLine===false){ cls="conn"; txt="Conectar"; tip="Sin conexión con Google Drive. Toca para conectar"+pend; }
     else if(n){ cls="warn"; txt=n===1?"1 pendiente":n+" pendientes"; tip="Guardado en este navegador; se sube solo a Drive en cuanto vuelva la conexión"; }
     else if(!hasSelectedPatient()){ cls="ok"; txt=(Date.now()-PPQ_DONE_AT<4000)?"Guardado":"Conectado"; tip="Conectado con Google Drive"; }
@@ -6496,9 +6655,9 @@ async function integrarAltas(lista){
       renderFormat("alta"); syncAltaCaptureForm(); renderRel("alta"); fitPaper();
       const r=captureAltaRecent(); if(r){ if(a.residente){ r.by=a.residente; r.byRole=authorRoleForName(a.residente); } n++; }
     }
-    if(dup.length===d0) borrar.push(it.id);
+    borrar.push(it.id);   /* v3.42 · si el alta ya existía (misma fecha de egreso) el pendiente ya estaba integrado: se quita para que no siga apareciendo */
   }
-  if(dup.length) notify(`Ya hay una Nota de Alta con egreso ${[...new Set(dup)].join(", ")}: la de PendientesJCF no se agregó para no duplicarla (sigue en la carpeta). Si quieres la nueva, borra la anterior en Notas de Alta y vuelve a abrir al paciente.`,"warn",{ms:15000});
+  if(dup.length) notify(`La Nota de Alta con egreso ${[...new Set(dup)].join(", ")} ya estaba en el expediente: se quitó de Pendientes.`,"info",{ms:6000});
   if(n){ const ok=await driveSaveNow({silent:true}); if(!ok) return 0; }
   for(const pid of borrar){ try{ await gcall("hjmBorrarPendiente",pid); }catch(_){} }
   return n;
@@ -6795,7 +6954,7 @@ function ppPendFit(t){ try{ if(!t.offsetParent) return; t.style.height="auto"; i
 function ppPendFitAll(root){ try{ root.querySelectorAll(".pp-pt").forEach(ppPendFit); }catch(_){} }
 function ppPendBuild(rows){ rows=rows.slice(); if(!rows.length||String(rows[rows.length-1].t).trim()) rows.push({d:false,t:""}); return rows.map((r,i)=>ppPendRow(r.d,r.t,i===0?"Pendientes":"")).join(""); }
 function ppPendRead(c){ return [...c.querySelectorAll(".pp-pi")].map(r=>({d:r.querySelector(".pp-pc").checked,t:r.querySelector(".pp-pt").value})); }
-function ppPendHTML(f){ return `<div class="pp-pend" data-pendbox><div class="pp-pl" data-pend="${f.id}" role="group" aria-label="Pendientes">${ppPendBuild(ppPendParse(ppRowPend(f)))}</div><div class="pp-qa"><button type="button" data-pqa="notas" title="Notas Médicas" aria-label="Notas Médicas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H5v18h14v-9M8 7h4M8 11h3M8 15h2M14 14l2-.5L22 7l-2-2-6 6.5z"/></svg></button><span class="pp-kebab" role="button" tabindex="0" data-ppmenu aria-haspopup="menu" aria-expanded="false" title="Acciones" aria-label="Acciones del paciente"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></span><button type="button" data-pqa="indicaciones" title="Indicaciones" aria-label="Indicaciones"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M8 9l1 1 2-2M13 9h3M8 14l1 1 2-2M13 14h3"/></svg></button><button type="button" class="pp-file" data-pqa="file" title="Archivo clínico (ventana)" aria-label="Archivo clínico del paciente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v1M3 7v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H3z"/></svg></button></div></div>`; }
+function ppPendHTML(f){ return `<div class="pp-pend" data-pendbox><div class="pp-pl" data-pend="${f.id}" role="group" aria-label="Pendientes">${ppPendBuild(ppPendParse(ppRowPend(f)))}</div><div class="pp-qa"><button type="button" data-pqa="notas" title="Notas Médicas" aria-label="Notas Médicas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H5v18h14v-9M8 7h4M8 11h3M8 15h2M14 14l2-.5L22 7l-2-2-6 6.5z"/></svg></button><span class="pp-kebab" role="button" tabindex="0" data-ppmenu aria-haspopup="menu" aria-expanded="false" title="Acciones" aria-label="Acciones del paciente"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></span><button type="button" data-pqa="indicaciones" title="Indicaciones" aria-label="Indicaciones"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M8 9l1 1 2-2M13 9h3M8 14l1 1 2-2M13 14h3"/></svg></button><button type="button" class="pp-file" data-pqa="file" title="Archivo clínico" aria-label="Archivo clínico del paciente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v1M3 7v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H3z"/></svg></button></div></div>`; }
 function ppPendSave(c){ clearTimeout(c._pt); const f=DRIVE_FILES.find(x=>x&&x.id===c.dataset.pend); if(!f) return; const v=ppPendSer(ppPendRead(c)).slice(0,400); if(v===ppPendNorm(ppRowPend(f))) return; ppPendCacheSet(f.id,v); PP_PQ[f.id]={v,ts:Date.now()}; ppPqStore(); ppPqRun(f.id); }
 function ppPendSet(c,rows){ c.innerHTML=ppPendBuild(rows); ppPendFitAll(c); try{ ppPendDoneSync(c); }catch(_){} }
 function ppPendTidy(c){ ppPendSet(c,ppPendRead(c).filter(r=>String(r.t).trim())); }
@@ -8106,21 +8265,39 @@ function cenOpApply(o,op){
   else if(op.t==="del"){ o.pac=(o.pac||[]).filter(x=>x.k!==op.k); }
   else if(op.t==="mv"){ const r=(o.pac||[]).find(x=>x.k===op.k); if(r){ r.sec=op.sec; if(op.est!==undefined) r.est=op.est; if(op.cama!==undefined) r.cama=op.cama; } }
 }
-function CenFile(name){ this.name=name; this.obj=null; this.id=""; this.mod=""; this.ops=[]; this.busy=false; this.t=0; this.again=false; this.err=""; }
-CenFile.prototype.queue=function(op){ this.ops.push(op); cenOpApply(this.obj,op); clearTimeout(this.t); this.t=setTimeout(()=>this.flush(),900); cenSyncUI(); };
+/* ===== v3.42 · COLA SIN CONEXIÓN del censo (se guarda en este equipo hasta que se suba a Drive) =====
+   Reglas: (1) cada cambio es una «operación» pequeña (poner un valor, quitar/mover una fila, etc.) con identificador propio: volver a aplicarla da el mismo resultado, así que nunca duplica;
+   (2) NUNCA se sube una copia vieja completa: al reconectar se lee la versión actual de Drive, se le aplican las operaciones en orden y se guarda con la fecha base; si alguien guardó antes, se vuelve a leer y a aplicar;
+   (3) una operación solo se borra de la cola cuando Drive confirmó el guardado; (4) el censo del día en curso solo recibe operaciones de SU fecha (si ya cambió de día, se descartan y se avisa);
+   (5) un censo final guardado sin conexión se sube con «crear solo si no existe»: si otro equipo ya lo creó, no se sobrescribe. */
+const CENQ_KEY="hjm-cenq-v1", CENQ_FIN="hjm-cenq-final-v1";
+const cenQAll=()=>{ try{ return JSON.parse(localStorage.getItem(CENQ_KEY)||"{}")||{}; }catch(_){ return {}; } };
+const cenQCount=()=>{ let n=0; try{ Object.values(cenQAll()).forEach(q=>n+=(q.ops||[]).length); Object.keys(cenQFinAll()).forEach(()=>n++); }catch(_){} return n; };
+function cenQPut(name,ops,fecha){ try{ const a=cenQAll(); if(ops&&ops.length) a[name]={fecha:fecha||"",ops,ts:Date.now()}; else delete a[name]; localStorage.setItem(CENQ_KEY,JSON.stringify(a)); }catch(_){} try{ renderSync(); }catch(_){} }
+const cenQFinAll=()=>{ try{ return JSON.parse(localStorage.getItem(CENQ_FIN)||"{}")||{}; }catch(_){ return {}; } };
+function cenQFinPut(name,content){ try{ const a=cenQFinAll(); if(content) a[name]={content,ts:Date.now()}; else delete a[name]; localStorage.setItem(CENQ_FIN,JSON.stringify(a)); }catch(_){} try{ renderSync(); }catch(_){} }
+const cenQId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+function cenQLost(name,q,why){ try{ const k="hjm-cenq-lost"; const a=JSON.parse(localStorage.getItem(k)||"[]"); a.push({name,why,ts:Date.now(),ops:(q&&q.ops)||[]}); localStorage.setItem(k,JSON.stringify(a.slice(-20))); }catch(_){} cenQPut(name,[]); try{ notify("Se descartaron cambios sin subir del censo "+name.replace(/^JCF|\.json$/gi,"")+": "+why+".","warn"); }catch(_){} }
+function cenQMerge(cf){ /* al abrir un censo: se le agregan los cambios que quedaron pendientes en este equipo (sin repetir los que ya están) */
+  try{ const q=cenQAll()[cf.name]; if(!q||!cf.obj) return; if(cf.name===CEN_ACT&&q.fecha&&cf.obj.fecha!==q.fecha){ cenQLost(cf.name,q,"el censo en curso ya cambió de día"); return; }
+    const have=new Set(cf.ops.concat(cf.sent||[]).map(o=>o.i)); let n=0; q.ops.forEach(op=>{ if(!op.i||have.has(op.i)) return; cf.ops.push(op); cenOpApply(cf.obj,op); n++; });
+    if(n||cf.ops.length){ clearTimeout(cf.t); cf.t=setTimeout(()=>cf.flush(),1200); } }catch(_){} }
+function CenFile(name){ this.name=name; this.obj=null; this.id=""; this.mod=""; this.ops=[]; this.sent=[]; this.busy=false; this.t=0; this.again=false; this.err=""; }
+CenFile.prototype.queue=function(op){ if(!op.i) op.i=cenQId(); this.ops.push(op); cenOpApply(this.obj,op); cenQPut(this.name,this.sent.concat(this.ops),this.obj&&this.obj.fecha); clearTimeout(this.t); this.t=setTimeout(()=>this.flush(),900); cenSyncUI(); };
 CenFile.prototype.flush=async function(){
-  if(this.busy){ this.again=true; return; } if(!this.ops.length) return; clearTimeout(this.t); this.busy=true; let mine=this.ops.splice(0), ok=false;
+  if(this.busy){ this.again=true; return; } if(!this.ops.length) return; clearTimeout(this.t); this.busy=true; let mine=this.ops.splice(0), ok=false; this.sent=mine;
   try{
     for(let i=0;i<5;i++){
       const payload=JSON.parse(JSON.stringify(this.obj)); payload.guardado=new Date().toISOString(); if(this.name===CEN_ACT||!payload.por) payload.por=cenUser(); if(this.name!==CEN_ACT) payload.editado=cenUser();
       const res=await gcall("hjmCensoSave",this.name,JSON.stringify(payload),JSON.stringify(this.mod?{base:this.mod}:{}));
       if(res&&res.conflicto){ const r=await gcall("hjmCensoRead",res.id); let o=null; try{ o=JSON.parse(r.content); }catch(_){ throw new Error("Censo no reconocido"); }
-        this.id=r.id; this.mod=r.modified; mine.concat(this.ops).forEach(op=>cenOpApply(o,op)); this.obj=o; await cenWait(300*(i+1)); continue; }
+        this.id=r.id; this.mod=r.modified; mine.concat(this.ops).forEach(op=>cenOpApply(o,op)); this.obj=o; this.sent=mine; await cenWait(300*(i+1)); continue; }
       this.id=res.id; this.mod=res.modified; ok=true; break;
     }
     if(!ok) throw new Error("Lo editaron mientras tanto");
-    this.err="";
-  }catch(e){ this.ops=mine.concat(this.ops); this.err=friendly(e); if(Date.now()-(window.__cenWarn||0)>60000){ window.__cenWarn=Date.now(); try{ notify("No se pudo guardar el censo: "+friendly(e)+". Se reintenta solo.","warn"); }catch(_){} } this.t=setTimeout(()=>this.flush(),12000); }
+    this.err=""; this.sent=[]; cenQPut(this.name,this.ops,this.obj&&this.obj.fecha);
+    try{ if(this.name!==CEN_ACT&&this.obj&&this.obj.final&&typeof cenStatPush==="function") cenStatPush(Object.assign({},this.obj,{_fname:this.name})); }catch(_){}
+  }catch(e){ this.ops=mine.concat(this.ops); this.sent=[]; this.err=friendly(e); if(Date.now()-(window.__cenWarn||0)>60000){ window.__cenWarn=Date.now(); try{ notify("No se pudo guardar el censo: "+friendly(e)+". Se reintenta solo.","warn"); }catch(_){} } this.t=setTimeout(()=>this.flush(),12000); }
   finally{ this.busy=false; cenSyncUI(); if(ok&&(this.again||this.ops.length)){ this.again=false; this.flush(); } this.again=false; }
 };
 CenFile.prototype.pending=function(){ return this.busy||this.ops.length>0; };
@@ -8212,25 +8389,33 @@ async function cenActualEnsure(){
   const pk=fecha+(per.pending?"!":"");
   const cf=CEN.act||new CenFile(CEN_ACT); const changed=!CEN.act||CEN.act.mod!==mod||!CEN.act.obj||CEN.act.obj.fecha!==fecha||CEN.perKey!==pk;
   if(!CEN.act||CEN.act.mod!==mod||!CEN.act.obj||CEN.act.obj.fecha!==fecha){ cf.obj=obj; cf.id=id; cf.mod=mod; }
+  cenQMerge(cf);
   CEN.perKey=pk; CEN.act=cf; CEN.actAt=Date.now(); CEN.actChanged=changed; return cf;
 }
 
-/* ---------- v3.40 · El censo ya NO se guarda solo en el corte: se envía con «Enviar censo final» ---------- */
+/* ---------- v3.40 · El censo ya NO se guarda solo en el corte: se envía con «Guardar censo final» ---------- */
 async function cenSnapEnsure(){ return; }
 function cenSnapSoon(){}
 const cenResNorm=v=>String(v||"").replace(/\s*\/\s*/g,"/").replace(/\s+/g," ").trim().toLocaleUpperCase("es-MX").replace(/^\/+|\/+$/g,"");
 async function cenSendFinal(Td,res){
   Td=cenWithTs(Td); const name=cenFile(Td);
   if(CEN.act&&CEN.act.pending()){ clearTimeout(CEN.act.t); await CEN.act.flush(); }
-  const list=await cenList(true); if(list.some(x=>x.name===name)) throw new Error("Ya existe un censo guardado con esa fecha");
-  const now=Date.now(), pv=await cenPrevSet(cenDay(Td.y,Td.m,Td.d,-1)); if(pv===undefined) throw new Error("No se pudo leer el censo previo");
+  let list, pv, offl=false; const pvDay=cenDay(Td.y,Td.m,Td.d,-1);
+  try{ list=await cenList(true); }catch(e){ if(!cenNetErr(e)) throw e; offl=true; list=CEN.list||[]; }
+  if(list.some(x=>x.name===name)) throw new Error("Ya existe un censo guardado con esa fecha");
+  const now=Date.now(); try{ pv=await cenPrevSet(pvDay); }catch(e){ if(!cenNetErr(e)) throw e; pv=undefined; }
+  if(pv===undefined&&offl){ const c=CEN.prevSets.get(cenFile(pvDay)); if(c!==undefined) pv=c; }
+  if(pv===undefined) throw new Error(offl?"Sin conexión: falta leer el censo previo. Intenta de nuevo con conexión":"No se pudo leer el censo previo");
   const b0=cenBuild(Td,now,{prevSet:pv}), fallos=await cenLoadDatos(b0._files.H.concat(b0._files.E,b0._files.D)); if(fallos) throw new Error("Aún faltan datos de algunos pacientes; intenta de nuevo en unos segundos");
   const cen=cenBuild(Td,now,{prevSet:pv});
   const act=await cenActualRaw(); if(act&&act.fecha===cen.fecha&&Array.isArray(act.exc)&&act.exc.length) cen.pac=cen.pac.filter(r=>!act.exc.includes(cenExKey(r)));
   cen.res=cenResNorm(res); cen.rev={f:Object.assign({},(act&&act.fecha===cen.fecha&&act.rev&&act.rev.f)||{})};
   cenRevFreeze(cen); delete cen._files; cen.pac.forEach(r=>{ delete r.ok; delete r.ts; });
   cen.creado=new Date().toISOString(); cen.por=cenUser(); cen.final=1; cen.guardia=cenDot(cenDay(Td.y,Td.m,Td.d,-1));
-  await gcall("hjmCensoSave",name,JSON.stringify(cen),JSON.stringify({crearSiNoExiste:true}));
+  const body=JSON.stringify(cen);
+  try{ const rs=await gcall("hjmCensoSave",name,body,JSON.stringify({crearSiNoExiste:true})); if(rs&&rs.existe) throw new Error("Ya existe un censo guardado con esa fecha"); }
+  catch(e){ if(!cenNetErr(e)) throw e; cenQFinPut(name,body); try{ notify("Sin conexión: el censo final quedó guardado en este equipo y se subirá solo a Drive cuando vuelva la conexión.","warn"); }catch(_){} }
+  try{ cenStatPush(Object.assign({},cen,{_fname:name})); }catch(_){}
   try{ localStorage.setItem("cenSentName",name); }catch(_){}
   CEN.list=null; CEN.act=null; CEN.actAt=0; CEN.snapDone=name; try{ CEN.prevSets.delete(name); }catch(_){}
   try{ await cenList(true); }catch(_){}
@@ -8239,13 +8424,13 @@ const cenValidDot=s=>{ const o=cenFromDot(s); if(!o) return null; const t=cenDay
 function cenSendOpen(){
   const per=cenPeriod(); if(!per.pending) return;
   let d=$("dlgCenSend"); if(!d){ d=document.createElement("dialog"); d.id="dlgCenSend"; d.className="pp-dlg cen-send"; document.body.appendChild(d); }
-  d.innerHTML=`<form method="dialog" class="pp-dlg-f"><h3>${CEN_ICO_SEND}Enviar censo final</h3>
+  d.innerHTML=`<form method="dialog" class="pp-dlg-f"><h3>${CEN_ICO_SAVE}Guardar Censo Final</h3>
     <p class="cs-note"><b>Este será el censo final que se va a guardar.</b> Revisa las fechas y los residentes de guardia antes de enviarlo.</p>
     <div class="cs-row"><label>Fecha de guardia<input id="csG" inputmode="numeric" maxlength="8" placeholder="DD.MM.AA" autocomplete="off"></label><label>Fecha de censo<input id="csC" inputmode="numeric" maxlength="8" placeholder="DD.MM.AA" autocomplete="off"></label></div>
     <small class="cs-hint">El censo es del día siguiente a la guardia (guardia 24.10.26 → censo 25.10.26). Si escribes una fecha, la otra se llena sola.</small>
     <div class="cs-res"><label for="cenRes">Residentes de guardia</label><div id="csResHost"></div></div>
     <small id="csErr" class="pp-dlg-err" role="alert"></small>
-    <div class="pp-dlg-b"><button type="button" data-no>Cancelar</button><button type="submit" class="ok" id="csOk">${CEN_ICO_SEND}Enviar censo final</button></div></form>`;
+    <div class="pp-dlg-b"><button type="button" data-no>Cancelar</button><button type="submit" class="ok" id="csOk">${CEN_ICO_SAVE}Guardar Censo Final</button></div></form>`;
   const g=d.querySelector("#csG"), c=d.querySelector("#csC"), err=d.querySelector("#csErr"), host=d.querySelector("#csResHost"), inp=$("cenRes"), bar=$("cenResBar");
   const back=()=>{ try{ if(inp&&bar&&inp.parentNode!==bar) bar.appendChild(inp); }catch(_){} };
   if(inp){ host.appendChild(inp); inp.readOnly=false; inp.value=String((CEN.cur&&CEN.cur.res)||""); }
@@ -8259,13 +8444,13 @@ function cenSendOpen(){
   d.querySelector("form").onsubmit=async e=>{ e.preventDefault(); if(busy) return;
     const Td=cenValidDot(c.value); if(!Td){ err.textContent="Escribe una fecha válida (DD.MM.AA)."; return; }
     const T=cenWithTs(Td); if(T.ts>Date.now()){ err.textContent="Ese censo aún no llega a su hora de corte ("+(Td.w===0||Td.w===6?"07:30":"05:30")+")."; return; }
-    const exists=(CEN.list||[]).some(x=>x.name===cenFile(Td)); if(exists){ err.textContent="Ya hay un censo guardado con esa fecha. Para modificarlo usa «Censos anteriores»."; return; }
+    const exists=(CEN.list||[]).some(x=>x.name===cenFile(Td)); if(exists){ err.textContent="Ya hay un censo guardado con esa fecha. Para modificarlo usa «Censos Anteriores»."; return; }
     const res=cenResNorm(inp?inp.value:""); const gd=cenDot(cenDay(Td.y,Td.m,Td.d,-1)), cd=cenDot(Td);
     const ok=await ppAsk({title:"¿Enviar el censo final?",text:"Guardia del "+gd+" · Censo del "+cd+". "+(res?"":"Aún no escribiste los residentes de guardia. ")+"Este será el censo final que quedará guardado en «Censos anteriores», y el Censo actual pasará al siguiente día. Aún podrás corregirlo después desde «Censos anteriores». ¿Estás seguro de que esto es lo final?",ok:"Sí, enviar censo final",danger:true});
     if(!ok) return;
     busy=true; const b=d.querySelector("#csOk"); b.disabled=true; b.lastChild.textContent="Enviando…";
     try{ await cenSendFinal(Td,res); busy=false; close(); try{ notify("Censo final enviado: guardia "+gd+" · censo "+cd+".","ok"); }catch(_){} cenRender(); }
-    catch(x){ busy=false; b.disabled=false; b.lastChild.textContent="Enviar censo final"; err.textContent="No se pudo enviar: "+friendly(x); }
+    catch(x){ busy=false; b.disabled=false; b.lastChild.textContent="Guardar Censo Final"; err.textContent="No se pudo enviar: "+friendly(x); }
   };
   d.addEventListener("close",back,{once:true});
   d.showModal(); (c.value?inp:c).focus();
@@ -8307,7 +8492,7 @@ function cenRowHTML(r){
     else return `<td class="ro">${esc(v)}</td>`;
     const kb=(i===0&&r.sec==="H")?`<button type="button" class="kb pp-kebab" data-cenkb aria-haspopup="menu" aria-label="Acciones del paciente" title="Acciones">${CEN_ICO_KB}</button>`:"";
     return `<td>${kb}${inner}</td>`; }).join("");
-  const kbc=`<td class="kbc"><span class="kbw"><button type="button" class="kb pp-kebab" data-cenkb aria-haspopup="menu" aria-label="Acciones del paciente" title="Acciones">${CEN_ICO_KB}</button><button type="button" class="kb cp fl" data-cenfile aria-label="Abrir el archivo clínico del paciente" title="Archivo clínico del paciente">${CEN_ICO_FLD}</button></span></td>`;
+  const kbc=`<td class="kbc"><span class="kbw"><button type="button" class="kb pp-kebab" data-cenkb aria-haspopup="menu" aria-label="Acciones del paciente" title="Acciones">${CEN_ICO_KB}</button><button type="button" class="kb cp fl" data-cenfile aria-label="Abrir el archivo clínico del paciente" title="Archivo clínico">${CEN_ICO_FLD}</button></span></td>`;
   return `<tr data-k="${esc(r.k)}" data-id="${esc(r.k)}"${r.exc?' class="excl"':(r.nu?' class="nuevo"':"")}>${kbc}${tds}</tr>`;
 }
 function cenTableHTML(cen){
@@ -8345,8 +8530,8 @@ function cenRevHTML(cen,ed){
 }
 function cenBarHTML(){ if(arguments.length) return ""; const n=(CEN.cur&&CEN.cur.nexc)||0; return n&&CEN.mode!=="hist"?`<div class="cen-exbar"><button type="button" data-cenact="exshow">${CEN.showEx?"Ocultar":"Mostrar"} ${n} paciente${n>1?"s":""} quitado${n>1?"s":""} del censo</button></div>`:""; }
 function cenNavSync(){ const p=$("cenPrint"); if(!p) return; let nb=$("cenNavBtn"); if(!nb){ nb=document.createElement("button"); nb.type="button"; nb.id="cenNavBtn"; nb.className="pp-census cen-nav"; p.before(nb); const sb=document.createElement("button"); sb.type="button"; sb.id="cenSendBtn"; sb.className="pp-census cen-send-btn"; sb.hidden=true; nb.before(sb); sb.addEventListener("click",()=>cenSendOpen()); const sv=document.createElement("small"); sv.id="cenSave"; sv.className="cen-savei"; sv.setAttribute("aria-live","polite"); (cenResBar()?cenResBar().parentNode:nb.parentNode).appendChild(sv); nb.addEventListener("click",()=>{ if(CEN.mode==="hist"&&CEN.hist){ CEN.hist=null; CEN.histName=""; CEN.list=null; cenRender(); } else cenListOpen(); }); }
-  const h=CEN.mode==="hist"; nb.innerHTML=h?CEN_ICO_BACK+"Censo actual":CEN_ICO_LST+"Censos anteriores"; nb.title=h?"Volver al censo actual":"Ver o editar los censos finales ya guardados"; nb.hidden=false;
-  const sb2=$("cenSendBtn"); if(sb2){ sb2.innerHTML=CEN_ICO_SEND+"Enviar censo final"; sb2.title="Enviar y guardar el censo final de la guardia"; sb2.hidden=!(CEN.mode==="live"&&cenPeriod().pending)||isAdmv(); }
+  const h=CEN.mode==="hist"; nb.innerHTML=h?CEN_ICO_BACK+"Censo actual":CEN_ICO_LST+"Censos Anteriores"; nb.title=h?"Volver al censo actual":"Ver o editar los censos finales ya guardados"; nb.hidden=false;
+  const sb2=$("cenSendBtn"); if(sb2){ sb2.innerHTML=CEN_ICO_SAVE+"Guardar Censo Final"; sb2.title="Enviar y guardar el censo final de la guardia"; sb2.hidden=!(CEN.mode==="live"&&cenPeriod().pending)||isAdmv(); }
   let eb=$("cenEditBtn"); if(!eb){ eb=document.createElement("button"); eb.type="button"; eb.id="cenEditBtn"; eb.className="pp-census cen-edit"; nb.before(eb);
     eb.addEventListener("click",async()=>{ if(!CEN.hist) return; if(!CEN.edit){ CEN.edit=true; cenNavSync(); return; } eb.disabled=true; try{ clearTimeout(CEN.hist.t); await CEN.hist.flush(); }catch(_){} eb.disabled=false; CEN.edit=false; cenNavSync(); try{ notify(CEN.hist.err?"No se pudo guardar el censo.":"Cambios guardados en el censo.",CEN.hist.err?"warn":"ok"); }catch(_){} }); }
   eb.hidden=!h; eb.innerHTML=(CEN.edit?CEN_ICO_SAVE+"Guardar cambios":CEN_ICO_EDT+"Editar Censo"); eb.title=CEN.edit?"Guardar los cambios hechos en este censo":"Habilitar la edición de este censo"; eb.classList.toggle("on",!!CEN.edit);
@@ -8359,8 +8544,10 @@ function cenChipsSync(cen){ const bar=$("cenResBar"); if(!bar) return; const wra
   let al=$("cenAlert"); if(!al){ al=document.createElement("div"); al.id="cenAlert"; al.setAttribute("role","status"); al.hidden=true; bar.before(al); }
   const o=cenFromDot(cen&&cen.fecha); if(!o){ ch.hidden=true; al.hidden=true; return; } const g=cenDay(o.y,o.m,o.d,-1);
   ch.hidden=false; ch.innerHTML=`<span class="cen-chip" title="Fecha de la guardia"><small>Guardia</small><b>${cenDot(g)}</b></span><span class="cen-chip" title="Fecha del censo"><small>Censo</small><b>${cenDot(o)}</b></span>`;
-  const pend=CEN.mode==="live"&&cenPeriod().pending; al.hidden=!pend;
-  if(pend) al.innerHTML=`<b>Censo final de guardia aún no guardado.</b> <span>Si deseas ver o editar un censo previo, presiona el botón «Censos anteriores».</span>`;
+  const live=CEN.mode==="live", pend=live&&cenPeriod().pending; al.hidden=!pend;
+  if(pend) al.innerHTML=`<b>Censo final de guardia aún no guardado.</b>`;
+  let lg=$("cenLegend"); if(!lg){ lg=document.createElement("div"); lg.id="cenLegend"; bar.before(lg); } lg.hidden=!live;
+  lg.textContent="Si deseas editar o ver un censo previo, presiona el botón «Censos Anteriores».";
   const sv=$("cenSave"); if(sv&&sv.parentNode!==wrap) wrap.appendChild(sv); }
 function cenSetTitle(t,cen){ try{ const h=document.querySelector("#pPanel .pp-head h2"); if(h) h.textContent=t; const pc=$("ppCount"); if(pc) pc.textContent=""; const bar=cenResBar(); if(bar){ bar.hidden=CEN.mode!=="hist"; const i=$("cenRes"); const v=String((cen&&cen.res)||""); if(i&&document.activeElement!==i&&i.value!==v) i.value=v; } cenChipsSync(cen); cenBandSync(true); cenNavSync(); }catch(_){} }
 const cenResSub=cen=>{ const r=String((cen&&cen.res)||"").trim(); return r?"Residentes de guardia: "+r.split("/").join(" · "):"Residentes de guardia: sin asignar"; };
@@ -8385,7 +8572,7 @@ function cenFitAll(w){ try{ w.querySelectorAll("table.cen textarea,table.rev tex
 function cenDirtyFocus(w){ const ae=document.activeElement; return !!(ae&&w.contains(ae)&&ae.matches("textarea,input")); }   /* v3.20 · con el cursor dentro de una celda nunca se redibuja la tabla (el guardado es mientras se escribe) */
 
 function cenHeaderSync(on,printOn){ const b=$("cenPrint"); if(b) b.hidden=!on; const pc=$("ppCount"); if(pc&&!on) {} }
-function cenShow(on){ const w=$("cenWrap"), p=$("pPanel"); if(!w||!p) return; w.hidden=!on; p.classList.toggle("cen-on",!!on); try{ ppCensusSync(false); }catch(_){} const b=$("cenPrint"); if(b) b.hidden=!on; if(!on){ try{ const h=document.querySelector("#pPanel .pp-head h2"); if(h&&h.textContent!=="Pacientes") h.textContent="Pacientes"; const bar=$("cenResBar"); if(bar) bar.hidden=true; const c1=$("cenChips"), c2=$("cenAlert"); if(c1) c1.hidden=true; if(c2) c2.hidden=true; cenBandSync(false); }catch(_){} } const sb=$("cenSendBtn"); if(sb&&!on) sb.hidden=true; const nb=$("cenNavBtn"); if(nb) nb.hidden=!on; const sv=$("cenSave"); if(sv&&!on) sv.textContent=""; }
+function cenShow(on){ const w=$("cenWrap"), p=$("pPanel"); if(!w||!p) return; document.body.classList.toggle("cen-view",!!on); w.hidden=!on; p.classList.toggle("cen-on",!!on); try{ ppCensusSync(false); }catch(_){} const b=$("cenPrint"); if(b) b.hidden=!on; if(!on){ try{ const h=document.querySelector("#pPanel .pp-head h2"); if(h&&h.textContent!=="Pacientes") h.textContent="Pacientes"; const bar=$("cenResBar"); if(bar) bar.hidden=true; const c1=$("cenChips"), c2=$("cenAlert"); if(c1) c1.hidden=true; if(c2) c2.hidden=true; cenBandSync(false); }catch(_){} } const sb=$("cenSendBtn"); if(sb&&!on) sb.hidden=true; const nb=$("cenNavBtn"); if(nb) nb.hidden=!on; const sv=$("cenSave"); if(sv&&!on) sv.textContent=""; }
 function cenRender(){
   const w=$("cenWrap"); if(!w) return;
   if(!document.body.classList.contains("pp-browse")||(PP_VIEW!=="censoActual"&&PP_VIEW!=="censos")){ cenShow(false); return; }
@@ -8433,7 +8620,7 @@ async function cenOpenHist(name){
   const w=$("cenWrap"); w.innerHTML=cenBarHTML("Censo","Abriendo…")+'<div class="cen-empty">Cargando…</div>';
   try{ const list=await cenList(true), e=list.find(x=>x.name===name); if(!e) throw new Error("No existe ese censo"); const r=await gcall("hjmCensoRead",e.id); const o=JSON.parse(r.content);
     if(!o||o.app!=="censo-hjm") throw new Error("Archivo no reconocido"); o.pac=o.pac||[]; o.pac.forEach(r=>{ if(!r.cf) r.cf=String(r.clin||"").split("/").map(x=>{ const k=Object.keys(PP_CEN_CLIN).find(c=>PP_CEN_CLIN[c]===x); return k?normalizeStaffName(k):normalizeStaffName(x); }); });
-    const cf=new CenFile(name); cf.obj=o; cf.id=r.id; cf.mod=r.modified; CEN.hist=cf; CEN.histName=name; CEN.edit=false; cenRender();
+    const cf=new CenFile(name); cf.obj=o; cf.id=r.id; cf.mod=r.modified; cenQMerge(cf); CEN.hist=cf; CEN.histName=name; CEN.edit=false; cenRender();
   }catch(e){ CEN.hist=null; cenRender(); try{ notify("No se pudo abrir el censo: "+friendly(e),"warn"); }catch(_){} }
 }
 function cenRenderHist(w){
@@ -8441,6 +8628,65 @@ function cenRenderHist(w){
   cenSetTitle("Censo "+cen.fecha,cen);
   cenKeep(w,()=>{ w.innerHTML=cenBarHTML()+`<div class="cen-scroll">${cenTableHTML(cen)}</div>`+cenResHTML(cen)+`<div class="cen-rev"><h4>Reverso</h4>${cenRevHTML(cen,true)}</div>`; cenSyncUI(); });
 }
+
+
+/* ===== v3.42 · Estadísticas del censo: cada censo final (y sus ediciones) se registra en el archivo de estadísticas ===== */
+function cenStatRec(cen,fname){
+  const A=cenRevAuto(cen), V=k=>String(cenRevVal(cen,k,A)||"").trim(), n=k=>cenNum(V(k));
+  const lst=(key,cnt,two)=>[...Array(cnt)].map((_,i)=>two?{t:V(key+"."+i+".t"),e:V(key+"."+i+".e")}:V(key+"."+i)).filter(x=>two?(x.t||x.e):x);
+  const ing={},egr={},nt={}; CEN_SRV.forEach(s=>{ ing[s]=n("ing."+s); egr[s]=n("egr."+s); nt[s]=V("nt."+s); });
+  const o=cenFromName(fname)||cenFromDot(cen.fecha), key=o?o.y+"-"+String(o.m+1).padStart(2,"0")+"-"+String(o.d).padStart(2,"0"):"";
+  return {k:key,f:cen.fecha,g:cen.guardia||"",res:cen.res||"",por:cen.por||"",ts:Date.now(),ing,egr,nt,nttot:V("nt.TOT"),
+    cr:lst("cr",5,1),cp:lst("cp",5,1),cs:lst("cs",2,1),cpe:lst("cpe",3),pr:lst("pr",2),tr:lst("tr",5),gr:lst("gr",5),
+    ic:{ce:n("ic.ce"),ho:n("ic.ho"),ur:n("ic.ur"),te:n("ic.te"),qx:n("ic.qx")},iso:V("iso"),dfn:V("dfn"),ev:V("ev"),tot:n("tot")||((cen.pac||[]).filter(r=>!r.exc).length),pac:(cen.pac||[]).length};
+}
+const CEN_STAT_T={};
+function cenStatPush(cen,now){
+  if(!cen||!cen.fecha) return; const rec=cenStatRec(cen,cen._fname); if(!rec.k) return;
+  const go=async()=>{ try{ if(typeof window.__statSync==="function") await window.__statSync({censos:{[rec.k]:rec}}); }catch(_){} };
+  if(now) return go(); clearTimeout(CEN_STAT_T[rec.k]); CEN_STAT_T[rec.k]=setTimeout(go,4000);
+}
+/* Importa a las estadísticas los censos finales que ya estaban guardados (botón del panel de estadísticas) */
+async function cenStatBackfill(onTick){
+  const list=(await cenList(true)).filter(x=>/^JCF\d{6}\.json$/i.test(x.name)), recs={}; let i=0, leidos=0;
+  for(const x of list){ try{ const r=await cenReadEntry(x), o=r&&r.obj; if(o&&Array.isArray(o.pac||[])){ leidos++; const rec=cenStatRec(Object.assign({},o,{pac:o.pac||[]}),x.name); if(rec.k) recs[rec.k]=rec; } }catch(_){} i++; if(onTick) onTick(i,list.length); }
+  const n=Object.keys(recs).length;
+  if(n){ if(typeof window.__statSync!=="function") throw new Error("Las estadísticas aún no están listas"); const ok=await window.__statSync({censos:recs,keep:false}); if(!ok) throw new Error("No se pudieron guardar en el archivo de estadísticas de Drive; intenta de nuevo"); }
+  return {n,total:list.length,leidos};
+}
+
+
+/* ===== v3.42 · Subida automática de la cola sin conexión del censo ===== */
+const cenNetErr=e=>{ if(typeof navigator!=="undefined"&&navigator.onLine===false) return true; const m=String((e&&e.message)||e||""); return /^red$|network|failed to fetch|fetch|conexi[oó]n|offline|timeout|tiempo|abort|ocupado|unavailable|503|502/i.test(m); };
+const CEN_TMP={}; let CENQ_RUN=false;
+async function cenQReplay(){
+  if(CENQ_RUN||!cenQCount()) return; if(typeof OFF!=="undefined"&&OFF.on) return; if(navigator.onLine===false) return; CENQ_RUN=true;
+  try{
+    /* 1) censos finales guardados sin conexión: solo se crean si NO existen (nunca se sobrescribe uno de otro equipo) */
+    for(const [name,q] of Object.entries(cenQFinAll())){
+      try{ const rs=await gcall("hjmCensoSave",name,q.content,JSON.stringify({crearSiNoExiste:true})); cenQFinPut(name,null); CEN.list=null;
+        if(rs&&rs.existe){ try{ notify("El censo "+name.replace(/^JCF|\.json$/gi,"")+" ya estaba guardado por otro equipo; no se sobrescribió.","warn"); }catch(_){} }
+        else { try{ cenStatPush(Object.assign({},JSON.parse(q.content),{_fname:name}),true); }catch(_){} try{ notify("Censo final subido a Drive.","ok"); }catch(_){} }
+      }catch(e){ if(cenNetErr(e)) break; }
+    }
+    /* 2) cambios pendientes de censos: se leen de Drive, se les aplican en orden y se guardan con la fecha base */
+    const all=cenQAll(), names=Object.keys(all); if(names.length){ const list=await cenList(true);
+      for(const name of names){ const q=all[name]; if(!q||!q.ops||!q.ops.length){ cenQPut(name,[]); continue; }
+        if((CEN.act&&CEN.act.name===name&&(CEN.act.busy||CEN.act.ops.length))||(CEN.hist&&CEN.hist.name===name&&(CEN.hist.busy||CEN.hist.ops.length))) continue;   /* la sesión abierta lo sube sola */
+        if(CEN_TMP[name]&&CEN_TMP[name].pending()) continue;
+        const e=list.find(x=>x.name===name);
+        if(!e){ if(name===CEN_ACT) continue; cenQLost(name,q,"el censo ya no existe en Drive"); continue; }
+        try{ const r=await gcall("hjmCensoRead",e.id); let o=JSON.parse(r.content); if(!o||o.app!=="censo-hjm") throw new Error("Censo no reconocido");
+          if(name===CEN_ACT&&q.fecha&&o.fecha!==q.fecha){ cenQLost(name,q,"el censo en curso ya cambió de día"); continue; }
+          const cf=new CenFile(name); cf.obj=o; cf.id=r.id; cf.mod=r.modified; CEN_TMP[name]=cf; q.ops.forEach(op=>{ cf.ops.push(op); cenOpApply(o,op); }); await cf.flush(); if(!cf.pending()) delete CEN_TMP[name];
+        }catch(e){ if(!cenNetErr(e)){ /* error no de red: se conserva la cola para no perder nada */ } }
+      } }
+  }catch(_){} finally{ CENQ_RUN=false; try{ renderSync(); }catch(_){} }
+}
+addEventListener("online",()=>setTimeout(cenQReplay,1500));
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") setTimeout(cenQReplay,800); });
+setInterval(()=>{ try{ cenQReplay(); }catch(_){} },20000);
+setTimeout(()=>{ try{ cenQReplay(); }catch(_){} },6000);
 
 /* ---------- Edición ---------- */
 const CEN_F2D={dx:"diagnostico",ing:"fIngreso",cir:"censoCirugias",qt:"censoQT",mt:"censoMT",labs:"censoLabs",pend:"censoPendientes",est:"censoEstatus"};
@@ -8892,8 +9138,8 @@ function cenAddEnsure(){
   d=document.createElement("dialog"); d.id="dlgCenAdd"; d.className="dlg cen-add ph1";
   d.innerHTML=`<div class="ca-head"><b id="caTitle">Agregar paciente al censo</b><button type="button" class="ca-x" id="caClose" aria-label="Cerrar">×</button></div>
   <div class="ca-s1"><input type="search" id="caQ" placeholder="Buscar por nombre, expediente, cama o diagnóstico" autocomplete="off"><div class="dlg-list" id="caList"></div></div>
-  <div class="ca-s2"><div class="ca-back"><button type="button" id="caBack">← Elegir otro paciente</button></div><div id="caHost"></div><div class="ca-foot"><button type="button" id="caCancel">Cancelar</button><button type="button" class="ok" id="caOk">Agregar paciente</button></div></div>`;
-  host.appendChild(d);
+  <div class="ca-load" aria-live="polite">Cargando paciente…</div><div class="ca-s2"><div class="ca-back"><button type="button" id="caBack">← Elegir otro paciente</button></div><div id="caHost"></div><div class="ca-foot"><button type="button" id="caCancel">Cancelar</button><button type="button" class="ok" id="caOk">Agregar paciente</button></div></div>`;
+  document.body.appendChild(d);   /* v3.42 · la ventana vive en el body: ya no hace falta mostrar la hoja de datos al fondo */
   d.addEventListener("cancel",e=>{ e.preventDefault(); cenAddClose(); });
   $("caClose").onclick=$("caCancel").onclick=()=>cenAddClose();
   $("caQ").oninput=cenAddList;
@@ -8907,6 +9153,7 @@ function cenAddPhase(n){
   const host=$("caHost"), form=$("datos");
   if(n===2){
     if(!CENADD.fs){ const fs=form.querySelector(":scope > fieldset"); if(!fs) return; CENADD.ph=document.createComment("cen-add"); fs.before(CENADD.ph); CENADD.fs=fs; }
+    if(!host.querySelector(".ca-idh")){ const h=document.createElement("div"); h.className="ca-idh"; h.innerHTML='<span class="ca-idi" aria-hidden="true">'+((typeof SEC_ICONS!=="undefined"&&SEC_ICONS[0])||"")+'</span>Identificación'; host.prepend(h); }
     host.appendChild(CENADD.fs); CENADD.fs.classList.add("cen-dlg","cen-mode"); const det=$("cenDet"); if(det) det.dispatchEvent(new Event("toggle"));
   } else cenAddRestore();
   if(n===1){ setTimeout(()=>{ try{ $("caQ").focus(); }catch(_){} },30); }
@@ -8928,21 +9175,22 @@ async function cenAddOpen(){
   try{ await ensureFolder(); if(!DRIVE_FILES.length) { DRIVE_FILES=onlyJsonFiles(await gcall("hjmList",FOLDER.id)); } cenAddList(); }catch(_){}
 }
 function cenAddClose(){
-  const d=$("dlgCenAdd"); try{ const e=$("expediente"); if(e) e.readOnly=false; }catch(_){} CENADD.open=false; cenAddRestore(); if(d&&d.open) d.close(); document.body.classList.remove("cen-add-on");
+  const d=$("dlgCenAdd"); try{ const e=$("expediente"); if(e) e.readOnly=false; }catch(_){} CENADD.open=false; cenAddRestore(); if(d){ d.classList.remove("loading"); if(d.open) d.close(); } document.body.classList.remove("cen-add-on"); window.__cenKeepBg=false;
   try{ fill(DEFAULTS()); if($("ppSearch")) $("ppSearch").value=""; PP_AUTO=false; PP_MANUAL=false; PP_BROWSE=true; ppLayout(); renderPP(); }catch(_){}
   try{ if(PP_VIEW!=="censoActual"){ const b=$("ppViewCenA"); if(b) b.click(); } }catch(_){}
 }
 async function cenAddPick(id){
   const d=$("dlgCenAdd"); if(CENADD.busy) return; CENADD.busy=true;
   try{
+    window.__cenKeepBg=true; d.classList.add("loading");
     cenAddPhase(2);                       // el formulario se mueve a la ventana; después se carga el paciente
-    await openDriveFile(id);
+    await openDriveFile(id); d.classList.remove("loading");
     document.body.classList.add("cen-add-on");
     const c=$("cama"); if(c&&/^CE$/i.test(String(c.value||"").trim())) c.value="";   // ya dado de alta: se vuelve a internar
     try{ refresh(); }catch(_){}
     if(!d.open) d.showModal();
     setTimeout(()=>{ try{ $("cama").focus(); }catch(_){} },60);
-  }catch(e){ try{ driveError(e); }catch(_){} cenAddPhase(1); }
+  }catch(e){ try{ driveError(e); }catch(_){} d.classList.remove("loading"); window.__cenKeepBg=false; cenAddPhase(1); }
   finally{ CENADD.busy=false; }
 }
 function cenAddNew(){
@@ -8977,14 +9225,16 @@ async function cenEditOpen(k){
   const d=cenAddEnsure(); if(!d||CENADD.busy) return; CENADD.busy=true; CENADD.mode="edit";
   try{
     CENADD.open=true; document.body.classList.add("cen-add-on"); d.classList.add("edit"); $("caTitle").textContent="Editar paciente"; $("caOk").textContent="Guardar";
+    window.__cenKeepBg=true; d.classList.add("loading");   /* pantalla en blanco con «Cargando…» hasta tener el paciente */
     cenAddPhase(2); $("caOk").disabled=true; if(!d.open) d.showModal();
     await openDriveFile(k);
-    if(!CENADD.open){ try{ fill(DEFAULTS()); }catch(_){} return; }   /* v3.42 · si la cerraron mientras cargaba, no se vuelve a abrir vacía */
+    if(!CENADD.open){ window.__cenKeepBg=false; try{ fill(DEFAULTS()); }catch(_){} return; }
+    d.classList.remove("loading");   /* v3.42 · si la cerraron mientras cargaba, no se vuelve a abrir vacía */
     document.body.classList.add("cen-add-on"); if(!d.open) d.showModal();
     const e=$("expediente"); if(e) e.readOnly=true;
     try{ refresh(); }catch(_){}
   }catch(e){ try{ driveError(e); }catch(_){} cenAddClose(); }
-  finally{ CENADD.busy=false; const o=$("caOk"); if(o) o.disabled=false; }
+  finally{ CENADD.busy=false; d.classList.remove("loading"); const o=$("caOk"); if(o) o.disabled=false; }
 }
 /* ---------- Censos guardados: la misma ventana, pero sobre el archivo del censo ---------- */
 function cenHistOps(row,f,v){
@@ -9218,7 +9468,7 @@ async function cenViewPop(name){
   const who=String(o.editado||o.por||"").trim(), ttl="Censo "+o.fecha;
   d.innerHTML=`<div class="av-head"><div class="av-t"><b>${esc(ttl)}</b><small>${o.guardia?"Guardia "+esc(o.guardia)+" · ":""}${who?(o.editado?"Última edición: ":"Envió: ")+esc(who):""}</small></div><div class="av-b">${rbBtn("edit","Editar","data-ave")}${rbBtn("print","Imprimir","data-avp")}<button type="button" class="av-x" data-avx aria-label="Cerrar">×</button></div></div><iframe class="av-frame" title="Vista previa del censo"></iframe>`;
   const fr=d.querySelector("iframe");
-  fr.srcdoc=`<!doctype html><html><head><meta charset="utf-8"><style>${cenFontsCSS()}\n${CEN_PRINT_CSS}\nhtml,body{background:#e6e7e9;-webkit-user-select:text;user-select:text}.pg{break-after:auto;height:auto!important;background:#fff;margin:12px auto;padding:10px;width:max-content;max-width:none;box-shadow:0 2px 14px rgba(0,0,0,.28)}.revw{justify-content:center}</style></head><body><section class="pg">${cenPrintTable(o,o.pac)}</section><section class="pg"><div class="revw">${cenRevHTML(o,false)}</div></section></body></html>`;
+  fr.srcdoc=`<!doctype html><html><head><meta charset="utf-8"><style>${cenFontsCSS()}\n${CEN_PRINT_CSS}\nhtml,body{background:#e6e7e9;-webkit-user-select:text;user-select:text}.pg{break-after:auto;height:auto!important;background:#fff;margin:12px auto;padding:10px;width:max-content;max-width:none;box-shadow:0 2px 14px rgba(0,0,0,.28)}.revw{justify-content:center}</style></head><body><section class="pg">${cenPrintTable(o,o.pac)}</section><section class="pg"><div class="revw">${cenRevHTML(o,false)}</div></section><script>(function(){function fit(){try{var W=parent.innerWidth,pgs=[].slice.call(document.querySelectorAll(".pg"));pgs.forEach(function(e){e.style.zoom=1});if(W<1000)return;var avail=document.documentElement.clientWidth-40,mx=0;pgs.forEach(function(e){mx=Math.max(mx,e.offsetWidth)});if(!mx)return;var z=Math.min(avail/mx,2.2);pgs.forEach(function(e){e.style.zoom=z})}catch(_){}}window.addEventListener("load",fit);window.addEventListener("resize",fit);setTimeout(fit,300);setTimeout(fit,1200)})()<\/script></body></html>`;
   d.onclick=e=>{ if(e.target.closest("[data-avx]")||e.target===d){ d.close(); return; } if(e.target.closest("[data-ave]")){ d.close(); try{ const l=$("dlgCenList"); if(l&&l.open) l.close(); }catch(_){} cenOpenHist(name); return; } if(e.target.closest("[data-avp]")){ d.close(); cenPrintByName(name); } };
   if(!d.open) d.showModal();
 }
@@ -9386,6 +9636,45 @@ function renderArchive(){
   });
   r.addEventListener("toggle",e=>{ const x=e.target; if(x.matches&&x.matches("details.av2-sec")) AR2_STATE.open[x.dataset.key]=x.open; },true);
 })();
+
+/* v3.42 · Vista «Todos» / «Expedientes»: sin botón de tres puntos; el administrativo abre el archivo clínico en ventana */
+(function(){
+  const o=window.renderPP; if(typeof o==="function") window.renderPP=function(...a){ try{ const l=$("ppList"); if(l) l.dataset.view=PP_VIEW; }catch(_){} return o.apply(this,a); };
+  const l=$("ppList"); if(l){ try{ l.dataset.view=PP_VIEW; }catch(_){}
+    l.addEventListener("click",e=>{ try{ if(!(isAdmv()&&PP_VIEW==="recientes")) return; if(e.target.closest("[data-pendbox],[data-ppmenu],.cpy,[data-pp-new]")) return; const b=e.target.closest("[data-id]"); if(!b) return; e.preventDefault(); e.stopImmediatePropagation(); arWinOpen(b.dataset.id); }catch(_){} },true); }
+})();
+/* v3.42 · Al cerrar el archivo en ventana se regresa a la misma vista (Expedientes / Todos / Censo) */
+(function(){
+  const o=window.arWinOpen, c=window.arWinClose; if(typeof o!=="function"||typeof c!=="function") return;
+  window.arWinOpen=function(id){ try{ if(!ARW.open) ARW.pv=PP_VIEW; }catch(_){} return o.apply(this,arguments); };
+  window.arWinClose=function(keep){ const was=ARW.open, r=c.apply(this,arguments); try{ if(was&&!keep&&ARW.pv&&PP_VIEW!==ARW.pv){ PP_VIEW=ARW.pv; ppSyncViewBtns(); renderPP(); } }catch(_){} return r; };
+})();
+
+/* v3.42 · Mientras la ventana «Editar paciente» / «Agregar paciente» del censo está abierta, la página de fondo NO cambia (ni hoja de datos, ni nueva captura) */
+(function(){
+  const o=window.ppLayout; if(typeof o!=="function") return;
+  window.ppLayout=function(){ if(window.__cenKeepBg){ try{ document.body.classList.add("pp-browse"); }catch(_){} return; } return o.apply(this,arguments); };
+})();
+
+/* v3.42 · Cangrejo: sin paciente cargado queda inactivo (sin acción ni aviso) */
+(function(){
+  const crab=()=>document.querySelector(".top > .seal.crab");
+  const ok=()=>{ try{ return hasSelectedPatient(); }catch(_){ return false; } };
+  const sync=()=>{ const c=crab(); if(!c) return; const off=!ok(); c.classList.toggle("crab-off",off); if(off) c.setAttribute("aria-disabled","true"); else c.removeAttribute("aria-disabled"); c.tabIndex=off?-1:0; };
+  const stop=e=>{ const c=crab(); if(!c||!c.contains(e.target)) return; if(e.type==="keydown"&&e.key!=="Enter"&&e.key!==" ") return; if(!ok()){ e.preventDefault(); e.stopImmediatePropagation(); e.stopPropagation(); } };
+  document.addEventListener("click",stop,true); document.addEventListener("keydown",stop,true);
+  ["input","change","click","focusin"].forEach(t=>document.addEventListener(t,()=>setTimeout(sync,60),true));
+  setInterval(sync,700); setTimeout(sync,300);
+})();
+
+/* v3.42 · Doble clic en «Días de estancia»: aviso pasivo */
+document.addEventListener("dblclick",e=>{ try{
+  const f=e.target.closest&&e.target.closest("#cenEhOut,.auto[data-o=eh]"); const g=f||(e.target.closest&&e.target.closest(".f")); 
+  if(!g) return; const box=f?f:g.querySelector("#cenEhOut,.auto[data-o=eh]"); if(!box) return;
+  notify("Los días de estancia intrahospitalaria se calculan automáticamente a la fecha actual.","info",{ms:3600});
+  const dlg=document.querySelector("dialog.cen-add[open]"), h=document.getElementById("popHost");
+  if(dlg&&h){ dlg.appendChild(h); h.style.position="fixed"; h.style.zIndex="2147483647"; setTimeout(()=>{ try{ document.body.appendChild(h); h.style.position=h.style.zIndex=""; }catch(_){} },3800); }
+}catch(_){} },true);
 
 </script>
 <script>
@@ -9651,7 +9940,7 @@ function mini(text,state){ try{ if(!_mini){ _mini=document.createElement("div");
 let JOBS=0; const G=(...a)=>{ const w=!/^hjm(Read|ReadFull|List|Pendientes)$/.test(a[0]); if(w) JOBS++; return gcall(...a).finally(()=>{ if(w) JOBS--; }); };
 async function bg(fn){ JOBS++; try{ return await fn(); } finally{ JOBS--; } }
 addEventListener("beforeunload",e=>{ if(JOBS>0){ e.preventDefault(); e.returnValue=""; } });
-let dirty=Object.keys(local).length>0, remoteCache=null, period=7, lastSync=0, syncMsg="";
+let dirty=Object.keys(local).length>0, remoteCache=null, period=7, rangeA="", rangeB="", lastSync=0, syncMsg="";
 const pad=n=>String(n).padStart(2,"0");
 const dayKey=t=>{ const d=new Date(t); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); };
 const userName=()=>String(sessionUserName()||"").toLocaleUpperCase("es-MX").trim();
@@ -9670,7 +9959,14 @@ const _once={}; function once(k,ms){ const t=Date.now(); if(_once[k]&&t-_once[k]
 wrap("applyGateUser",()=>{ if(once("acc|"+userName(),5000)) bump("acc"); syncAdminClass(); autoLast=0; [1500,6000,15000].forEach(t=>setTimeout(()=>{ try{ autoLiberar(); }catch(_){} },t)); [3500,12000,30000].forEach(t=>setTimeout(()=>{ try{ autoIntegrarPend(); }catch(_){} },t)); });
 wrap("openFormat",a=>{ if(a[0]==="alta") bump("fmt",a[0]); });
 /* v2.154 · Impresiones: cada vez que se presiona un botón imprimir (todas las pantallas llaman window.print) */
-(function(){ const o=window.print; if(typeof o!=="function") return; window.print=function(...a){ try{ if(once("prt",1500)){ bump("prt"); if(!currentClinical&&current&&current!=="alta") bump("fmt",current); } }catch(_){} return o.apply(this,a); }; })();
+(function(){ const o=window.print; if(typeof o!=="function") return; window.print=function(...a){ try{ if(once("prt",1500)){ bump("prt"); window.__prtPend=true; if(!currentClinical&&current&&current!=="alta") bump("fmt",current); } }catch(_){} try{ return o.apply(this,a); } finally{ if(window.__prtPend){ window.__prtPend=false; try{ bump("pgs",null,1); }catch(_){} } } }; })();
+/* v3.44 · Páginas: se cuentan en beforeprint, cuando ya están armadas las copias y las hojas adicionales */
+function prtPages(){ try{ const b=document.body.classList;
+  if(b.contains("printing-clinical")){ const n=document.querySelectorAll(".cp-page").length; return n||1; }
+  if(b.contains("printing-direct")||b.contains("printing-blank")){ const h=document.getElementById("blankPrint"); return (h&&h.children.length)||1; }
+  const w=BUILT[current]; if(w){ const n=w.querySelectorAll(":scope > .paper:not([hidden]), :scope > .print-supplement").length; if(n) return n; }
+ }catch(_){} return 1; }
+addEventListener("beforeprint",()=>{ try{ if(window.__prtPend){ window.__prtPend=false; const n=prtPages(); if(n>0) bump("pgs",null,n); } }catch(_){} });
 wrap("openClinical",a=>bump("fmt",a[0]));
 (function(){ const o=window.openDriveFile; if(typeof o!=="function") return; window.openDriveFile=function(...a){ const busy=(typeof DRIVE_OPEN_BUSY!=="undefined")&&DRIVE_OPEN_BUSY; const p=o.apply(this,a); if(!busy&&!window.__quietOpen) Promise.resolve(p).then(()=>{ try{ if(hasSelectedPatient()) bump("opn"); }catch(_){} },()=>{}); return p; }; })();   /* solo cuenta si de verdad se abrió un paciente (no doble toque ni errores) */
 /* v2.149 · Notas e indicaciones realizadas (registros nuevos guardados) */
@@ -9706,6 +10002,7 @@ async function syncRemote(extra){
       o.borrados=Array.isArray(o.borrados)?o.borrados:[];
       if(extra&&extra.borrados) extra.borrados.forEach(c=>{ if(!o.borrados.some(x=>x.ts===c.ts&&x.exp===c.exp)) o.borrados.push(c); });
       o.borrados=o.borrados.slice(-1000);
+      o.censos=(o.censos&&typeof o.censos==="object"&&!Array.isArray(o.censos))?o.censos:{}; if(extra&&extra.censos) Object.keys(extra.censos).forEach(k=>{ if(!(extra.keep&&o.censos[k])) o.censos[k]=extra.censos[k]; });
       o.errs=(extra&&extra.clearErrs)?{}:(o.errs||{}); o.errs[dev]=errLocal; if(!STATS_HEALED){ STATS_HEALED=true; try{ const bk=await G("hjmEstadisticasUltimo"); if(bk&&bk.content){ const bo=JSON.parse(bk.content); if(bo&&bo.dev) o.dev=statMerge(o.dev,bo.dev); } }catch(_){} }   /* si Drive perdió algo, se recupera del último respaldo (solo suben los contadores) */
       o.upd=Date.now();
       const res=await writeStats(o,r.modified);
@@ -9715,6 +10012,7 @@ async function syncRemote(extra){
     syncMsg="Otro equipo estaba guardando las estadísticas; se reintentará."; return false;
   }catch(e){ syncMsg="No se pudieron sincronizar las estadísticas: "+friendly(e); return false; }
 }
+window.__statSync=x=>syncRemote(x);
 async function loadRemote(){ if(!driveOK()) return null; try{ const r=await readStats(); remoteCache=r.obj; return r.obj; }catch(e){ syncMsg="No se pudieron leer las estadísticas: "+friendly(e); return remoteCache; } }
 
 /* ---------- Agregación ---------- */
@@ -9727,12 +10025,14 @@ function statUser(u){
   let k=u; try{ const rec=userRecord(u); if(rec&&rec.usuario) k=String(rec.usuario).toLocaleUpperCase("es-MX"); }catch(_){}
   STAT_CANON.set(u,k); return k;
 }
+const rngFmt=k=>k?k.split("-").reverse().join("."):"";
+function rngLabel(){ const a=rangeA||dayKey(Date.now()), b=rangeB; return (!b||b===a)?"día "+rngFmt(a):"del "+rngFmt(a)+" al "+rngFmt(b); }
 function agg(remote,days){
-  const cutoff=days?dayKey(Date.now()-(days-1)*864e5):"0000-00-00", users={}, fmt={}, hr=Array(24).fill(0), perDay={};
+  const cutoff=days>0?dayKey(Date.now()-(days-1)*864e5):(days===-1?(rangeA||dayKey(Date.now())):"0000-00-00"), upper=days===-1?(rangeB||rangeA||dayKey(Date.now())):"9999-99-99", users={}, fmt={}, hr=Array(24).fill(0), perDay={};
   const devs=Object.assign({},(remote&&remote.dev)||{}); devs[dev]=local;
-  Object.values(devs).forEach(dd=>Object.entries(dd||{}).forEach(([dk,us])=>{ if(dk<cutoff) return;
-    Object.entries(us||{}).forEach(([u0,r])=>{ const u=statUser(u0); const o=users[u]=users[u]||{acc:0,sav:0,opn:0,min:0,lib:0,crt:0,nts:0,ind:0,prt:0,upd:0,_u:new Set()};
-      ["acc","sav","opn","min","lib","crt","nts","ind","prt"].forEach(k=>o[k]+=r[k]||0);
+  Object.values(devs).forEach(dd=>Object.entries(dd||{}).forEach(([dk,us])=>{ if(dk<cutoff||dk>upper) return;
+    Object.entries(us||{}).forEach(([u0,r])=>{ const u=statUser(u0); const o=users[u]=users[u]||{acc:0,sav:0,opn:0,min:0,lib:0,crt:0,nts:0,ind:0,prt:0,pgs:0,upd:0,_u:new Set()};
+      ["acc","sav","opn","min","lib","crt","nts","ind","prt","pgs"].forEach(k=>o[k]+=r[k]||0);
       Object.keys(r.upd||{}).forEach(x=>o._u.add(dk+"|"+x)); o.upd=o._u.size;
       Object.entries(r.fmt||{}).forEach(([f,n])=>fmt[f]=(fmt[f]||0)+n);
       Object.entries(r.hr||{}).forEach(([h,n])=>hr[+h]+=n);
@@ -9757,8 +10057,8 @@ async function liberar(sel,msgEl,minH){ minH=minH||INACT_H;
       if(!o||o.app!=="solicitudes-hjm"||!o.datos){ skip.push(exp+" (archivo no reconocido)"); continue; }
       if(mod&&Date.now()-Date.parse(mod)<minH*3600e3){ skip.push(exp+" (se editó hace poco)"); continue; }
       const cama=String(o.datos.cama||"").trim(); if(isCE(cama)){ skip.push(exp+" (ya está en CE)"); continue; }
-      o.datos.cama="CE";
-      const meta=Object.assign({},f.meta,{cama:"CE"});
+      o.datos.cama="CE"; o.datos.altaEn=""; o.datos.defEn=""; o.datos.camaPrevia=""; o.datos.camaLiberada=new Date().toISOString();   /* liberar la cama NO es un alta: sin fecha de egreso ni de defunción, el censo no lo cuenta como alta */
+      const meta=Object.assign({},f.meta,{cama:"CE",egr:"",def:""});
       const res=await G("hjmSave",FOLDER.id,f.name,JSON.stringify(o),JSON.stringify(meta),JSON.stringify({forzar:true,base:mod}));
       if(res&&res.conflicto){ skip.push(exp+" (lo editaron mientras tanto)"); continue; }
       if(res&&res.id&&res.modified) upsertDriveFile(res);
@@ -9784,17 +10084,18 @@ async function renderStats(body){
   const cands=candidates(), conCama=uniqueFiles(DRIVE_FILES).filter(f=>f.meta&&String(f.meta.cama||"").trim()&&!isCE(f.meta.cama)).length;
   const camasLog=((remote&&remote.camas)||[]).slice(-6).reverse(), med=medios();
   body.innerHTML=`
-  <div class="st-per">${[[1,"Hoy"],[7,"7 días"],[30,"30 días"],[0,"Todo"]].map(([d,l])=>`<button type="button" data-per="${d}" aria-pressed="${period===d}">${l}</button>`).join("")}<span class="st-note">${esc(syncMsg||(remote?"Datos de todos los equipos sincronizados":""))}</span></div>
-  <div class="st-kpis">${COLS.map(([k,l])=>`<div class="st-kpi"><b>${sum(k)}</b><span>${l}</span></div>`).join("")}</div>
-  <div class="st-card"><h3>Actividad por usuario <small style="font-weight:500;color:#7B7E81">· ${[[1,"hoy"],[7,"últimos 7 días"],[30,"últimos 30 días"],[0,"todo el historial"]].find(x=>x[0]===period)[1]} · ${rows.length} usuario(s) con actividad</small></h3>
-   ${rows.length?`<div class="st-scroll"><table class="st-act"><thead><tr><th>Usuario <small>(de mayor a menor uso)</small></th>${COLS.map(([k,l])=>`<th>${l}</th>`).join("")}<th>Total</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td class="nm">${i+1}. ${esc(r.u)}</td>${COLS.map(([k])=>`<td>${r.o[k]||0}</td>`).join("")}<td><b>${r.t}</b></td></tr>`).join("")}</tbody><tfoot><tr><td class="nm">Total</td>${COLS.map(([k])=>`<td>${sum(k)}</td>`).join("")}<td>${rows.reduce((n,r)=>n+r.t,0)}</td></tr></tfoot></table></div><div class="st-msg" style="margin-top:8px">El Total no suma «Accesos al sistema». «Pacientes actualizados» cuenta cada paciente distinto con ediciones guardadas por día. Notas e indicaciones cuentan registros nuevos guardados. Los datos de creados, actualizados, notas e indicaciones se registran desde la versión 2.149.</div>`:'<div class="st-msg">Aún no hay actividad registrada en este periodo.</div>'}</div>
+  <div class="st-per">${[[1,"Hoy"],[7,"7 días"],[30,"30 días"],[0,"Todo"],[-1,"Día / Rango"]].map(([d,l])=>`<button type="button" data-per="${d}" aria-pressed="${period===d}">${l}</button>`).join("")}${period===-1?`<span class="st-rng"><label>Desde <input type="date" id="stRA" value="${rangeA||dayKey(Date.now())}" max="${dayKey(Date.now())}"></label><label>Hasta <input type="date" id="stRB" value="${rangeB||""}" min="${rangeA||""}" max="${dayKey(Date.now())}"></label><small>Sin «Hasta» = solo ese día</small></span>`:""}<span class="st-note">${esc(syncMsg||(remote?"Datos de todos los equipos sincronizados":""))}</span></div>
+  <div class="st-kpis">${COLS.map(([k,l])=>`<div class="st-kpi"><b>${sum(k)}</b><span>${l}</span>${k==="prt"?`<small class="st-sub">${sum("pgs")} páginas</small>`:""}</div>`).join("")}</div>
+  <div class="st-card"><h3>Actividad por usuario <small style="font-weight:500;color:#7B7E81">· ${[[1,"hoy"],[7,"últimos 7 días"],[30,"últimos 30 días"],[0,"todo el historial"],[-1,rngLabel()]].find(x=>x[0]===period)[1]} · ${rows.length} usuario(s) con actividad</small></h3>
+   ${rows.length?`<div class="st-scroll"><table class="st-act"><thead><tr><th>Usuario <small>(de mayor a menor uso)</small></th>${COLS.map(([k,l])=>`<th>${l}${k==="prt"?`<br><small class="st-sub">(páginas)</small>`:""}</th>`).join("")}<th>Total</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td class="nm">${i+1}. ${esc(r.u)}</td>${COLS.map(([k])=>`<td>${r.o[k]||0}${k==="prt"?` <span class="st-sub">(${r.o.pgs||0})</span>`:""}</td>`).join("")}<td><b>${r.t}</b></td></tr>`).join("")}</tbody><tfoot><tr><td class="nm">Total</td>${COLS.map(([k])=>`<td>${sum(k)}${k==="prt"?` <span class="st-sub">(${sum("pgs")})</span>`:""}</td>`).join("")}<td>${rows.reduce((n,r)=>n+r.t,0)}</td></tr></tfoot></table></div><div class="st-msg" style="margin-top:8px">El Total no suma «Accesos al sistema» ni las páginas. En Impresiones, el número entre paréntesis son las páginas impresas (alta con copia, receta y hojas adicionales, solicitudes, etc.; se registran desde la versión 3.44). «Pacientes actualizados» cuenta cada paciente distinto con ediciones guardadas por día. Notas e indicaciones cuentan registros nuevos guardados. Los datos de creados, actualizados, notas e indicaciones se registran desde la versión 2.149.</div>`:'<div class="st-msg">Aún no hay actividad registrada en este periodo.</div>'}</div>
+  ${censoCard(remote)}
   <div class="st-grid2">
    <div class="st-card"><h3>Formatos más usados</h3>${fm.length?fm.map(([k,n])=>`<div class="frow"><span>${esc(fmtLabel(k))}</span><div class="bar"><i style="width:${Math.round(n/fmax*100)}%"></i></div><b>${n}</b></div>`).join(""):'<div class="st-msg">Sin datos.</div>'}</div>
    <div class="st-card"><h3>Horas de mayor actividad</h3><div class="hrs">${A.hr.map((n,h)=>`<i title="${h}:00 · ${n} min" style="height:${Math.max(2,Math.round(n/hmax*100))}%"></i>`).join("")}</div><div class="hrl">${A.hr.map((_,h)=>`<span>${h%3===0?h:""}</span>`).join("")}</div></div>
   </div>
   <div class="st-card"><h3>Actividad de los últimos 14 días <small style="font-weight:500;color:#7B7E81">· accesos + guardados</small></h3><div class="hrs">${days.map(d=>`<i title="${d} · ${A.perDay[d]||0}" style="height:${Math.max(2,Math.round((A.perDay[d]||0)/dmax*100))}%"></i>`).join("").replace(/grid-template-columns:repeat\(24/,"")}</div></div>
   <div class="st-card"><h3>Liberación automática de camas</h3>
-   <div class="st-msg" style="margin:0">Pendientes de cambiar ahora: <b>${cands.length}</b>.</div>
+   <div class="st-msg" style="margin:0">Pendientes de cambiar ahora: <b>${cands.length}</b>. <span style="color:#7B7E81">Cambiar una cama a CE de forma automática o manual desde aquí <b>no</b> cuenta como alta ni defunción en el censo.</span></div>
    <div class="st-msg" style="margin:12px 0 6px"><b>Con cama y sin editar entre 36 y ${INACT_H} h</b> (${med.length}) · aún no pasan solos a CE</div>
    ${med.length?`<div style="display:flex;gap:10px;align-items:center;margin:0 0 6px;flex-wrap:wrap"><label style="font-size:12px;font-weight:700;color:#353B40;display:flex;gap:6px;align-items:center"><input type="checkbox" id="stMedAll"> Seleccionar todos</label><button type="button" class="st-btn st-sm" id="stMedSel" disabled>Borrar seleccionados (0)</button></div><div class="cam-list">${med.map((f,i)=>`<div class="cam-row" style="grid-template-columns:22px 52px 1fr auto auto"><input type="checkbox" data-msel="${i}" aria-label="Seleccionar"><span class="bd">${esc(String(f.meta.cama).trim())}</span><span>${esc((f.meta.nombre||"").slice(0,48))} · Exp. ${esc(String(f.meta.exp||""))}</span><small>${Math.floor((Date.now()-fileTime(f))/3600e3)} h</small><button type="button" class="st-btn st-sm" data-bcam="${i}">Borrar cama</button></div>`).join("")}</div>`:'<div class="st-msg">Ninguno.</div>'}<div class="st-msg" id="stMedMsg" style="margin-top:6px">${esc(MEDMSG)}</div>
    ${camasLog.length?`<div class="st-msg" style="margin-top:10px"><b>Últimas liberaciones</b>\n${camasLog.map(c=>`${new Date(c.ts).toLocaleString("es-MX",{dateStyle:"short",timeStyle:"short"})} · cama ${esc(c.cama)} → CE · Exp. ${esc(c.exp)}`).join("\n")}</div>`:""}</div></div>`;
@@ -9807,8 +10108,30 @@ async function renderStats(body){
   const mb=$s("stMedSel"); if(mb&&mb.addEventListener) mb.onclick=async()=>{ if(!isAdmin()) return; const sel=msel().map(c=>med[+c.dataset.msel]); if(!sel.length) return;
     if(!mb.dataset.ok){ mb.dataset.ok="1"; mb.textContent=`¿Cambiar ${sel.length} a CE?`; mb.classList.add("st-danger"); setTimeout(()=>{ if(mb.isConnected&&mb.dataset.ok){ mupd(); } },5000); return; }
     mb.disabled=true; const m=$s("stMedMsg"); const r=await bg(()=>liberar(sel,m||{textContent:""},36)); await render(); MEDMSG=`Se cambiaron ${r.done.length} paciente(s) a CE.`+(r.skip.length?"\nOmitidos: "+r.skip.join("; "):""); const m2=$s("stMedMsg"); if(m2) m2.textContent=MEDMSG; };
-  body.querySelectorAll("[data-per]").forEach(b=>b.onclick=()=>{ period=+b.dataset.per; render(); });
+  body.querySelectorAll("[data-per]").forEach(b=>b.onclick=()=>{ period=+b.dataset.per; if(period===-1&&!rangeA) rangeA=dayKey(Date.now()); render(); });
+  { const ra=body.querySelector("#stRA"), rb=body.querySelector("#stRB"); const fix=()=>{ if(rangeB&&rangeA&&rangeB<rangeA){ const t=rangeA; rangeA=rangeB; rangeB=t; } };
+    if(ra) ra.onchange=()=>{ rangeA=ra.value||dayKey(Date.now()); fix(); render(); };
+    if(rb) rb.onchange=()=>{ rangeB=rb.value||""; fix(); render(); }; }
+  const bf=body.querySelector("[data-cenbf]"); if(bf) bf.onclick=async()=>{ if(!isAdmin()) return; const m=body.querySelector("#stCenMsg"); bf.disabled=true; try{ const r=await bg(()=>cenStatBackfill((i,t)=>{ if(m) m.textContent="Leyendo censos "+i+" de "+t+"…"; })); period=0; await loadRemote(); await render(); const m2=document.getElementById("stCenMsg"); if(m2) m2.textContent=r.n?"Se importaron "+r.n+" censo(s) de "+r.total+" a las estadísticas.":(r.total?"Se encontraron "+r.total+" censo(s) pero no se pudo leer ninguno.":"No hay censos guardados en la carpeta."); }catch(e){ if(m) m.textContent="No se pudo importar: "+friendly(e); bf.disabled=false; } };
 }
+/* v3.42 · Estadísticas que vienen del censo final */
+const cenCnt=t=>String(t||"").split(/\n|;/).map(x=>x.trim()).filter(x=>x&&!/^(NINGUN[AO]S?|N\/?A|NO HAY|0|-+|SIN\s.*)$/i.test(x)).length;
+function censoCard(remote){
+  const all=(remote&&remote.censos&&typeof remote.censos==="object")?Object.values(remote.censos):[];
+  const cut=period>0?dayKey(Date.now()-Math.max(period,3)*864e5):(period===-1?(rangeA||dayKey(Date.now())):""), hi=period===-1?(rangeB||rangeA||dayKey(Date.now())):"9999-99-99", rs=all.filter(r=>r&&r.k&&(!cut||r.k>=cut)&&r.k<=hi).sort((a,b)=>b.k.localeCompare(a.k));
+  const lab=[[1,"últimos 3 días"],[7,"últimos 7 días"],[30,"últimos 30 días"],[0,"todo el historial"],[-1,rngLabel()]].find(x=>x[0]===period)[1];
+  const sm=f=>rs.reduce((n,r)=>n+(f(r)||0),0), sv=(o,k)=>sm(r=>r[o]&&r[o][k]);
+  const SRV=["TM","OM","CYC","GINE","MAMA"], NM={TM:"Tumores mixtos",OM:"Oncología médica",CYC:"Cabeza y cuello",GINE:"Ginecológicos",MAMA:"Mama"};
+  const len=k=>sm(r=>(r[k]||[]).length), ic=sm(r=>r.ic&&Object.values(r.ic).reduce((a,b)=>a+(+b||0),0));
+  const K=[[rs.length,"Censos enviados"],[sm(r=>SRV.reduce((n,s)=>n+((r.ing||{})[s]||0),0)),"Ingresos"],[sm(r=>SRV.reduce((n,s)=>n+((r.egr||{})[s]||0),0)),"Egresos"],[len("cr"),"Cirugías realizadas"],[len("cp"),"Cirugías programadas"],[len("cs"),"Suspendidas / diferidas"],[len("pr"),"Procedimientos"],[len("tr"),"Transfusiones"],[ic,"Interconsultas realizadas"],[sm(r=>cenCnt(r.iso)),"Interconsultas solicitadas"],[sm(r=>cenCnt(r.dfn)),"Defunciones"],[len("gr"),"Pacientes graves"]];
+  const admin=isAdmin();
+  return `<div class="st-card"><h3>Censo final <small style="font-weight:500;color:#7B7E81">· ${lab} · se registra al enviar el censo final</small></h3>
+   <div class="st-kpis">${K.map(([n,l])=>`<div class="st-kpi"><b>${n}</b><span>${l}</span></div>`).join("")}</div>
+   ${rs.length?`<div class="st-scroll"><table class="st-act"><thead><tr><th>Clínica</th><th>Ingresos</th><th>Egresos</th></tr></thead><tbody>${SRV.map(s=>`<tr><td class="nm">${NM[s]} <small>(${s})</small></td><td>${sv("ing",s)}</td><td>${sv("egr",s)}</td></tr>`).join("")}</tbody></table></div>
+   <div class="st-scroll" style="margin-top:12px"><table class="st-act"><thead><tr><th>Censo</th><th>Guardia</th><th>Ingresos</th><th>Egresos</th><th>Cx realizadas</th><th>Cx programadas</th><th>Interconsultas</th><th>Solicitadas</th><th>Defunciones</th><th>Pacientes</th></tr></thead><tbody>${rs.slice(0,31).map(r=>`<tr><td class="nm">${esc(r.f||r.k)}</td><td>${esc(r.g||"")}</td><td>${SRV.reduce((n,s)=>n+((r.ing||{})[s]||0),0)}</td><td>${SRV.reduce((n,s)=>n+((r.egr||{})[s]||0),0)}</td><td>${(r.cr||[]).length}</td><td>${(r.cp||[]).length}</td><td>${Object.values(r.ic||{}).reduce((a,b)=>a+(+b||0),0)}</td><td>${cenCnt(r.iso)}</td><td title="${esc(r.dfn||"")}">${cenCnt(r.dfn)}</td><td>${r.tot||r.pac||0}</td></tr>`).join("")}</tbody></table></div>`:`<div class="st-msg">Aún no hay censos finales registrados en este periodo.</div>`}
+   ${admin?`<div style="display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap"><button type="button" class="st-btn st-sm" data-cenbf>Importar censos ya guardados</button><span class="st-msg" id="stCenMsg" style="margin:0">Trae a las estadísticas los censos finales anteriores a esta versión.</span></div>`:""}</div>`;
+}
+
 
 /* ---------- Pestañas ---------- */
 const kb=n=>n>=1048576?(n/1048576).toFixed(2)+" MB":n>=1024?Math.round(n/1024)+" KB":n+" B";
@@ -9942,7 +10265,7 @@ function pendHtml(){ updPendBadge(); if(!pendData) return '<div class="st-msg">R
   (d.out.length?`<div class="st-msg" style="margin:8px 0"><b>${d.out.length}</b> expediente(s) con pendientes · <b>${nf}</b> archivo(s)</div><div class="st-tw"><table><thead><tr><th>Expediente</th><th>Paciente</th><th>Pend.</th><th>Contenido</th><th>Creó</th><th></th></tr></thead><tbody>${d.out.map(p=>{ const inf=p.items.map(pendInfo), kinds=[...new Set(inf.map(x=>x.kind))].join(" · "), by=[...new Set(inf.map(x=>x.by).filter(Boolean))].join(", ")||"—", bad=inf.some(x=>x.bad), alt=inf.some(x=>x.hasAltas)&&!inf.some(x=>x.hasOther);
     return `<tr><td class="nm">${esc(p.exp)}</td><td>${esc(String(p.nombre||"").slice(0,34))}</td><td>${p.items.length}</td><td style="text-align:left">${esc(kinds)}${bad?' <span class="lv warn">revisar</span>':""}${alt?' <span class="lv warn">alta: se integra con «Integrar»</span>':""}</td><td style="text-align:left">${esc(by)}</td><td style="white-space:nowrap"><button type="button" class="st-btn st-sm" data-pint="${esc(p.exp)}">Integrar</button> <button type="button" class="st-btn st-sm" data-pdelx="${esc(p.exp)}">Borrar</button></td></tr>`; }).join("")}</tbody></table></div>`:(d.unsupported?"":`<div class="st-msg">Ninguna nota pendiente en la carpeta PendientesJCF.</div>`)); }
 function renderPend(body){
-  body.innerHTML=`<div class="st-card"><h3>Pendientes (carpeta PendientesJCF)</h3><div class="st-msg" style="margin:0 0 8px">Notas, indicaciones y cambios de datos que esperan integrarse al expediente.</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button type="button" class="st-btn" id="stPendGo">Actualizar</button><button type="button" class="st-btn" id="stPendAll">Integrar todos</button><span class="st-msg" id="stPendMsg" style="margin:0"></span></div><div id="stPendOut">${pendHtml()}</div></div>`;
+  body.innerHTML=`<div class="st-card"><h3>Pendientes</h3><div class="st-msg" style="margin:0 0 8px">Notas, indicaciones y cambios de datos que esperan integrarse al expediente.</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button type="button" class="st-btn" id="stPendGo">Actualizar</button><button type="button" class="st-btn" id="stPendAll">Integrar todos</button><span class="st-msg" id="stPendMsg" style="margin:0"></span></div><div id="stPendOut">${pendHtml()}</div></div>`;
   const msg=()=>$s("stPendMsg");
   const bind=()=>{ const o=$s("stPendOut"); if(!o) return; o.innerHTML=pendHtml();
     o.querySelectorAll("[data-pint]").forEach(b=>b.onclick=async()=>{ if(!isAdmin()) return; b.disabled=true; b.textContent="…"; const r=await integrarExp(b.dataset.pint); msg().textContent=`Exp. ${b.dataset.pint}: ${r}`; bind(); });
@@ -10156,8 +10479,10 @@ function usrItem(u){
 }
 function usrDraw(){
   const l=$s("stUsrList"); if(!l) return;
-  const L=usrGroup(usrSub);
-  l.innerHTML=L.length?L.map(usrItem).join(""):'<div class="st-msg">Sin resultados.</div>';
+  if(usrSub==="actualizar"){ l.innerHTML=offUpdHTML(); offUpdWire(l); } else { const L=usrGroup(usrSub);
+  l.innerHTML=L.length?L.map(usrItem).join(""):'<div class="st-msg">Sin resultados.</div>'; }
+  { const q=document.getElementById("stUsrQ"), ad=document.getElementById("stUsrAdd"), u=usrSub==="actualizar"; if(q) q.hidden=u; if(ad) ad.hidden=u; }
+  { const tu=document.getElementById("stUsrTU"); if(tu){ const np=Object.keys(HJM_OPS).length; tu.innerHTML=`Actualizar${np?` <span class="usr-dot" title="${np} sin integrar al Index">${np}</span>`:""}`; tu.classList.toggle("on",usrSub==="actualizar"); tu.setAttribute("aria-selected",usrSub==="actualizar"?"true":"false"); } }
   [["residente","stUsrTR","Residentes"],["adscrito","stUsrTA","Adscritos"],["administrativo","stUsrTD","Administrativos"]].forEach(([t,id,nm])=>{
     const b=$s(id); if(!b) return; const all=HJM_USERS.filter(u=>u.tipo===t), np=all.filter(usrPend).length;
     b.innerHTML=`${nm} <span class="st-cnt">${all.length}</span>${np?` <span class="usr-dot" title="${np} sin integrar al Index">${np}</span>`:""}`;
@@ -10187,7 +10512,7 @@ function usrEditor(key,tipoNuevo){
     <label><span>Cédula profesional <small>(se imprime solo en Notas Médicas, Indicaciones y Nota de Alta)</small></span><input id="usrfP" value="${esc(cur&&cur.cp?cur.cp:"")}" inputmode="text" autocomplete="off" spellcheck="false" maxlength="16"></label>
     <label><span>Página de inicio <small>(la que ve al ingresar)</small></span>${homeSegHTML("usrfI",cur&&cur.inicio)}</label>
     <div class="cfg-hf" id="usrfHF" hidden></div>
-    <label class="usr-chk"><input type="checkbox" id="usrfA"${cur&&(cur.admin||admName(normalizeStaffName(cur.nombre)))?" checked":""}${cur&&admName(normalizeStaffName(cur.nombre))?" disabled":""}><span>Administrador <small>(puede entrar al panel y a estadísticas${cur&&admName(normalizeStaffName(cur.nombre))?" · permanente":""})</small></span></label>
+    <label class="usr-chk"><input type="checkbox" id="usrfA"${cur&&(cur.admin||admName(normalizeStaffName(cur.nombre)))?" checked":""}${(cur&&admName(normalizeStaffName(cur.nombre)))||!isSuperAdm()?" disabled":""}><span>Administrador <small>(puede entrar al panel y a estadísticas${cur&&admName(normalizeStaffName(cur.nombre))?" · permanente":(!isSuperAdm()?" · solo Jaime Caldera lo cambia":"")})</small></span></label>
     <p class="usr-err" id="usrfE" role="alert"></p>
     <div class="usr-btns">${cur&&usrPend(cur)==="edit"?'<button type="button" class="st-btn" id="usrfR" title="Vuelve a los datos que ya trae el Index. Después presiona Guardar para quitar el cambio pendiente de Drive.">Restablecer</button>':""}<button type="button" class="st-btn" id="usrfC">Cancelar</button><button type="submit" class="st-btn usr-ok">Guardar</button></div></form>`;
   const U=dlg.querySelector("#usrfU"),N=dlg.querySelector("#usrfN"),T=dlg.querySelector("#usrfT"),S=dlg.querySelector("#usrfS"),E=dlg.querySelector("#usrfE");
@@ -10220,7 +10545,7 @@ function usrEditor(key,tipoNuevo){
     if(!u||!k) return fail("Escribe el usuario.");
     if(HJM_USERS.some(x=>ukey(x.usuario)===k&&ukey(x.usuario)!==key)) return fail("Ya existe un usuario «"+u+"».");
     const ch=[]; if(key&&k!==key) ch.push({k:key,op:"del"}); ch.push({k,op:"set",u:Object.assign({usuario:u,nombre:n,tipo:t,servicio:sv},((dlg.querySelector("#usrfA").checked&&!dlg.querySelector("#usrfA").disabled)||(cur&&admName(normalizeStaffName(cur.nombre))&&!admName(normalizeStaffName(n))))?{admin:true}:{},{cp:dlg.querySelector("#usrfP").value},t==="residente"?{anio:dlg.querySelector("#usrfY").value,esp:SERV_ESP[sv]||""}:{},{inicio:dlg.querySelector("#usrfI").value},{fclin:UHF.clin,fads:UHF.ads})});
-    if(!usersChange(ch)) return fail("La lista debe conservar al usuario administrador.");
+    if(!usersChange(ch)) return fail(USERS_DENY||"La lista debe conservar al usuario administrador.");
     usrSub=t; dlg.close(); usrDraw();
   };
   dlg.showModal(); U.focus();
@@ -10230,7 +10555,7 @@ function renderUsr(host){
     <div class="st-msg" style="margin:0 0 10px"><b>Usuario</b> es lo que se escribe al ingresar; <b>Nombre completo</b> es el que se llena e imprime en los formatos.</div>
     <div class="usr-bar"><input class="st-in" id="stUsrQ" type="search" placeholder="Buscar por nombre, usuario o servicio…" value="${esc(usrQ)}" autocomplete="off" aria-label="Buscar usuario"><button type="button" class="st-btn" id="stUsrAdd">+ Agregar usuario</button><button type="button" class="st-btn" id="stUsrDiscard" hidden>Descartar cambios</button></div>
     <div class="usr-state" id="stUsrState" role="status"></div>
-    <div class="usr-tabs" role="tablist"><button type="button" role="tab" class="usr-tab" id="stUsrTR" data-sub="residente"></button><button type="button" role="tab" class="usr-tab" id="stUsrTA" data-sub="adscrito"></button><button type="button" role="tab" class="usr-tab" id="stUsrTD" data-sub="administrativo"></button></div>
+    <div class="usr-tabs" role="tablist"><button type="button" role="tab" class="usr-tab" id="stUsrTR" data-sub="residente"></button><button type="button" role="tab" class="usr-tab" id="stUsrTA" data-sub="adscrito"></button><button type="button" role="tab" class="usr-tab" id="stUsrTD" data-sub="administrativo"></button><button type="button" role="tab" class="usr-tab" id="stUsrTU" data-sub="actualizar">Actualizar</button></div>
     <div class="usr-list" id="stUsrList"></div></div>`;
   usrDraw();
   $s("stUsrQ").oninput=e=>{ usrQ=e.target.value; usrDraw(); };
@@ -10244,7 +10569,7 @@ function renderUsr(host){
     const ed=e.target.closest("[data-edit]"); if(ed){ usrEditor(ed.dataset.edit); return; }
     const b=e.target.closest("[data-del]"); if(!b) return;
     if(!b.dataset.ok){ b.dataset.ok="1"; b.textContent="¿Seguro?"; b.classList.add("st-danger"); setTimeout(()=>{ if(b.isConnected){ delete b.dataset.ok; b.textContent="Borrar"; b.classList.remove("st-danger"); } },4000); return; }
-    if(!usersChange([{k:b.dataset.del,op:"del"}])){ const m=$s("stUsrState"); if(m){ m.textContent="⚠ No se puede borrar al usuario administrador."; m.classList.add("warn"); } return; }
+    if(!usersChange([{k:b.dataset.del,op:"del"}])){ const m=$s("stUsrState"); if(m){ m.textContent="⚠ "+(USERS_DENY||"No se puede borrar al usuario administrador."); m.classList.add("warn"); } return; }
     usrDraw();
   });
 }
@@ -10270,29 +10595,87 @@ function idxSaveBin(name,data,type){
 function idxLocalHtml(t){
   return t.replace(/<title>[\s\S]*?<\/title>/,"<title>Oncología HJM SIN CONEXIÓN</title>").replace(/<link rel="manifest"[^>]*>\s*/,"").replace(/<script type="text\/plain" id="hjm-stub">[\s\S]*?<\/script>/,"");
 }
-function renderIdx(host){
-  const ver=(document.querySelector('meta[name="application-version"]')||{}).content||"", n=Object.keys(HJM_OPS).length;
-  host.innerHTML=`<div class="st-card"><h3>Descargas · archivos de la app</h3>
-    <div class="st-msg" style="margin:0 0 12px">Versión ${esc(ver)} · ${n?`<b>${n}</b> cambio(s) de usuarios aún sin integrar al HTML.`:"el HTML ya trae todos los usuarios."}</div>
-    <div class="idx-opt"><button type="button" class="st-btn idx-btn" id="stIdxWeb">Descargar Index con Usuarios Actualizados</button>
-      <p>Es el HTML normal de la app con la lista de usuarios actual.</p></div>
-    <div class="idx-opt"><button type="button" class="st-btn idx-btn" id="btnDbDownload">Descargar base de datos</button>
-      <p>Es un .zip con todos los archivos .json de la carpeta de pacientes.</p></div>
-    <div class="idx-opt"><button type="button" class="st-btn idx-btn" id="stIdxLocal">Descargar Oncologia HJM SIN CONEXION (.exe)</button>
-      <p>Es un solo archivo .exe con el cangrejo como icono (solo Windows).</p>
-      <button type="button" class="st-btn" id="stIdxHtml">Solo el HTML (sin icono, para Mac u otros)</button></div>
-    <div class="st-msg" id="stIdxMsg" style="margin-top:6px"></div></div>`;
-  const msg=(t,ok)=>{ const m=$s("stIdxMsg"); if(m){ m.textContent=t; m.style.color=ok?"#2E8B57":""; } };
-  const go=(btn,fn)=>{ btn.onclick=async()=>{ btn.disabled=true; msg("Preparando archivo…"); try{ await fn(); }catch(e){ msg("No se pudo preparar el archivo (ábrelo desde el enlace de GitHub Pages, no desde un archivo local)."); } btn.disabled=false; }; };
-  go($s("stIdxWeb"),async()=>{ idxSave("index.html",await idxSource()); msg("Descargado index.html. Súbelo a GitHub para publicarlo.",true); });
-  go($s("stIdxLocal"),async()=>{
+const OFF_LOGO_MAC="data:image/png;base64,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", OFF_LOGO_WIN="data:image/png;base64,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";
+/* v3.42 · «Descargar Oncología HJM sin conexión»: Windows (.exe) y Mac (HTML), centrado; en el Panel (Descargas) y en la Configuración de todos */
+function offDlHTML(){
+  return `<div class="off-dl"><h3>Descargar Oncología HJM sin conexión</h3>
+    <div class="off-dl-row">
+      <button type="button" class="off-dl-btn off-dl-win" aria-label="Descargar para Windows" title="Windows (.exe)"><img src="${OFF_LOGO_WIN}" alt="Windows"></button>
+      <button type="button" class="off-dl-btn off-dl-mac" aria-label="Descargar para Mac" title="Mac (HTML)"><img src="${OFF_LOGO_MAC}" alt="Mac"></button>
+    </div><div class="off-dl-msg" role="status"></div></div>`;
+}
+function offDlWire(root){
+  if(!root) return; const msg=root.querySelector(".off-dl-msg"), say=(t,ok)=>{ if(msg){ msg.textContent=t; msg.style.color=ok?"#2E8B57":""; } };
+  const go=(btn,fn)=>{ if(!btn) return; btn.onclick=async()=>{ btn.disabled=true; say("Preparando archivo…"); try{ await fn(); }catch(e){ say("No se pudo preparar el archivo (ábrelo desde el enlace de la app, no desde un archivo local)."); } btn.disabled=false; }; };
+  go(root.querySelector(".off-dl-win"),async()=>{
     const stub=idxStub(), html=new TextEncoder().encode(idxLocalHtml(await idxSource()));
     const foot=new Uint8Array(16); foot.set([72,74,77,72,84,77,76,49],0); new DataView(foot.buffer).setBigUint64(8,BigInt(html.length),true);
     idxSaveBin("Oncologia HJM SIN CONEXION.exe",new Blob([stub,html,foot]),"application/octet-stream");
-    msg("Descargado «Oncologia HJM SIN CONEXION.exe». Cópialo a las computadoras de confianza y ábrelo con doble clic.",true);
+    say("Descargado «Oncologia HJM SIN CONEXION.exe». Ábrelo con doble clic.",true);
   });
-  go($s("stIdxHtml"),async()=>{ idxSave("Oncologia HJM SIN CONEXION.html",idxLocalHtml(await idxSource())); msg("Descargado «Oncologia HJM SIN CONEXION.html».",true); });
+  go(root.querySelector(".off-dl-mac"),async()=>{ idxSave("Oncologia HJM SIN CONEXION.html",idxLocalHtml(await idxSource())); say("Descargado «Oncologia HJM SIN CONEXION.html». Ábrelo con Chrome.",true); });
 }
+
+/* v3.42 · Descargas: base de datos (pacientes, censos, estadísticas) con botones en mosaico; «Actualizar» en Usuarios */
+const OFF_IC={
+  pac:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c.6-3.2 3-4.8 6-4.8s5.4 1.6 6 4.8"/><circle cx="17.5" cy="9" r="2.4"/><path d="M16.5 14.4c2.6.1 4.1 1.4 4.5 3.8"/></svg>',
+  cen:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3.5" width="16" height="17" rx="2.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>',
+  est:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+  dl:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10m0 0-4-4m4 4 4-4M5 19h14"/></svg>',
+  upd:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9M20 4v5h-5"/></svg>'
+};
+function offTile(id,ic,title,sub){ return `<button type="button" class="db-tile" id="${id}"><span class="db-ic">${OFF_IC[ic]}</span><span class="db-t"><b>${title}</b><small class="dl-s">${sub}</small></span><span class="db-go">${OFF_IC.dl}</span></button>`; }
+function offDbHTML(){
+  return `<div class="st-card"><h3>Descargar base de datos</h3><div class="db-grid">`+
+    offTile("btnDbDownload","pac","Pacientes","Todos los expedientes · .zip")+
+    offTile("btnDbCensos","cen","Censos","Todos los censos · .zip")+
+    offTile("btnDbStats","est","Estadísticas","Archivo de uso · .json")+
+  `</div><div class="db-msg" id="dbMsg" role="status"></div></div>`;
+}
+function offSaveBlob(name,blob){ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },4000); }
+function offStamp(){ const d=new Date(),p=n=>String(n).padStart(2,"0"); return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate()); }
+async function offTileRun(btn,fn){
+  if(!btn||btn.disabled) return; const s=btn.querySelector(".dl-s"), orig=s?s.textContent:"", m=document.getElementById("dbMsg"); btn.disabled=true;
+  const say=(t,ok)=>{ if(m){ m.textContent=t; m.style.color=ok?"#2E8B57":""; } if(s&&!ok&&t) s.textContent=t; };
+  try{ await fn(say); }catch(e){ say("No se pudo descargar: "+((e&&e.message)||"sin conexión")); }
+  finally{ if(s) s.textContent=orig; btn.disabled=false; }
+}
+document.addEventListener("click",e=>{
+  const c=e.target.closest&&e.target.closest("#btnDbCensos"), t=e.target.closest&&e.target.closest("#btnDbStats");
+  if(c) offTileRun(c,async say=>{
+    say("Leyendo lista…"); await ensureFolder(); const l=await gcall("hjmCensoList"); const list=(Array.isArray(l)?l:[]).filter(x=>x&&/\.json$/i.test(x.name||""));
+    if(!list.length){ say("No hay censos guardados.",true); return; }
+    const out=new Array(list.length); let next=0,done=0;
+    const w=async()=>{ while(next<list.length){ const i=next++,f=list[i]; try{ const r=await gcall("hjmCensoRead",f.id); out[i]={name:String(f.name),text:r&&r.content}; }catch(_){} done++; say("Leyendo "+done+" de "+list.length+"…"); } };
+    await Promise.all([w(),w(),w(),w()]); const ok=out.filter(o=>o&&typeof o.text==="string");
+    if(!ok.length) throw new Error("no se pudo leer ningún censo");
+    offSaveBlob("Censos_HJM_"+offStamp()+".zip",window.__zipStore(ok)); say(ok.length+" censos descargados",true);
+  });
+  if(t) offTileRun(t,async say=>{
+    say("Leyendo…"); await ensureFolder(); const l=await gcall("hjmList",FOLDER.id); const f=(Array.isArray(l)?l:[]).find(x=>x&&String(x.name||"").trim()==="_ESTADISTICAS_USO.json");
+    if(!f) throw new Error("aún no hay archivo de estadísticas");
+    let txt; try{ const r=await gcall("hjmReadFull",f.id); txt=r&&r.content; }catch(_){ txt=await gcall("hjmRead",f.id); }
+    if(typeof txt!=="string") throw new Error("no se pudo leer");
+    offSaveBlob("Estadisticas_HJM_"+offStamp()+".json",new Blob([txt],{type:"application/json"})); say("Estadísticas descargadas",true);
+  });
+});
+function renderIdx(host){
+  host.innerHTML=offDbHTML()+`<div class="st-card">${offDlHTML()}</div>`;
+  offDlWire(host.querySelector(".off-dl"));
+}
+/* Pestaña «Actualizar» (dentro de Usuarios) */
+function offUpdHTML(){
+  const ver=(document.querySelector('meta[name="application-version"]')||{}).content||"", n=Object.keys(HJM_OPS).length;
+  return `<div class="upd-card"><span class="upd-ic">${OFF_IC.upd}</span>
+    <div class="upd-t"><b>Versión ${esc(ver)}</b><span>${n?`<b>${n}</b> cambio(s) de usuarios sin integrar al HTML.`:"El HTML ya trae todos los usuarios."}</span></div>
+    <button type="button" class="st-btn idx-btn upd-btn" id="stIdxWeb">${OFF_IC.dl}<span>Descargar Index con Usuarios Actualizados</span></button>
+    <p>Es el HTML normal de la app con la lista de usuarios actual. Súbelo a GitHub para publicarlo.</p><div class="st-msg" id="stIdxMsg"></div></div>`;
+}
+function offUpdWire(root){
+  const b=root.querySelector("#stIdxWeb"), m=root.querySelector("#stIdxMsg"); if(!b) return;
+  b.onclick=async()=>{ b.disabled=true; m.textContent="Preparando archivo…"; try{ idxSave("index.html",await idxSource()); m.textContent="Descargado index.html. Súbelo a GitHub para publicarlo."; m.style.color="#2E8B57"; }catch(e){ m.textContent="No se pudo preparar el archivo (ábrelo desde el enlace de la app, no desde un archivo local)."; m.style.color=""; } b.disabled=false; };
+}
+
 async function render(){
   if(CFG_ONLY) return;
   { const cf=document.getElementById("cfgForm"); if(tab==="cfg"&&cf&&cf.contains(document.activeElement)) return; const cw=document.getElementById("cmWrap"); if(tab==="cmt"&&cw&&cw.contains(document.activeElement)) return; }   /* no interrumpir mientras se escribe en Configuración */
@@ -10372,8 +10755,9 @@ $s("stClose").onclick=()=>$s("dlgStats").close();
     const e=new DataView(new ArrayBuffer(22));e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,cs,true);e.setUint32(16,off,true);
     return new Blob([...parts,...cen,e.buffer],{type:"application/zip"});
   }
+  window.__zipStore=zipStore;
   async function run(){
-    if(busy||!isAdmin()) return; busy=true; const b=btn(),lab=b,orig=b.textContent; b.disabled=true;
+    if(busy||!isAdmin()) return; busy=true; const b=btn(),lab=b.querySelector(".dl-s")||b,orig=lab.textContent; b.disabled=true;
     try{
       lab.textContent="Leyendo lista…"; await ensureFolder();
       const list=onlyJsonFiles(await gcall("hjmList",FOLDER.id)); if(!list.length){ toast("No hay archivos de pacientes para descargar"); return; }
@@ -10516,7 +10900,7 @@ function cfgCommit(hf){
 function cfgStatsDraw(){
   const h=document.getElementById("cfgStats"); if(!h) return;
   const A=agg(remoteCache,cfgPer), o=A.users[statUser(userName())]||{};
-  h.innerHTML=`<h3>Mis estadísticas</h3><div class="st-per">${[[1,"Hoy"],[7,"7 días"],[30,"30 días"],[0,"Todo"]].map(([d,l])=>`<button type="button" data-cper="${d}" aria-pressed="${cfgPer===d}">${l}</button>`).join("")}</div><div class="st-kpis" style="margin-top:12px">${CFG_COLS.map(([k,l])=>`<div class="st-kpi"><b>${o[k]||0}</b><span>${l}</span></div>`).join("")}</div>`;
+  h.innerHTML=`<h3>Mis estadísticas</h3><div class="st-per">${[[1,"Hoy"],[7,"7 días"],[30,"30 días"],[0,"Todo"]].map(([d,l])=>`<button type="button" data-cper="${d}" aria-pressed="${cfgPer===d}">${l}</button>`).join("")}</div><div class="st-kpis" style="margin-top:12px">${CFG_COLS.map(([k,l])=>`<div class="st-kpi"><b>${o[k]||0}</b><span>${l}</span>${k==="prt"?`<small class="st-sub">${o.pgs||0} páginas</small>`:""}</div>`).join("")}</div>`;
   h.querySelectorAll("[data-cper]").forEach(b=>b.onclick=()=>{ cfgPer=+b.dataset.cper; cfgStatsDraw(); });
 }
 async function cfgLoad(){ try{ if(dirty) await syncRemote(); else await loadRemote(); }catch(_){} cfgStatsDraw(); }
@@ -10532,8 +10916,9 @@ function renderCfg(host){
     </div>
     <div class="cfg-hf" id="cfgHF"${c&&c.inicio!=="nuevo"&&c.tipo!=="administrativo"?"":" hidden"}></div>
     <div class="usr-state" id="cfgState" role="status" style="margin-top:10px"></div></div>
-  <div class="st-card" id="cfgStats"></div>`;
-  cfgHFWire(host); cfgFill(); if(!c) host.querySelectorAll(".hm-seg button").forEach(b=>b.disabled=true);
+  <div class="st-card" id="cfgStats"></div>
+  <div class="st-card" id="cfgOff">${offDlHTML()}</div>`;
+  offDlWire(host.querySelector("#cfgOff .off-dl")); cfgHFWire(host); cfgFill(); if(!c) host.querySelectorAll(".hm-seg button").forEach(b=>b.disabled=true);
   ["cfgU","cfgN","cfgP","cfgI"].forEach(id=>{ const e=document.getElementById(id); if(e) e.addEventListener("change",cfgCommit); });
   cfgStatsDraw();
   if(Date.now()-cfgLoadAt>30000){ cfgLoadAt=Date.now(); cfgLoad(); }
@@ -10557,17 +10942,20 @@ function cmClean(h){
     if(!v||!Array.isArray(v.m)) return; const seen=new Set(), m=[];
     v.m.forEach(x=>{ if(!x||typeof x!=="object"||!x.i||seen.has(x.i)) return; const t=String(x.t||"").slice(0,2000); if(!t) return; seen.add(x.i);
       m.push({i:String(x.i).slice(0,40),ts:+x.ts||0,by:String(x.by||"").slice(0,120),r:x.r==="a"?"a":"u",t}); });
-    if(m.length){ m.sort((a,b)=>a.ts-b.ts); const vis=+v.vis||0; out[k]={u:String(v.u||k).slice(0,120),m,...(vis?{vis}:{})}; }   /* v3.13 · vis = hora del último mensaje que un administrador marcó como visto */
+    const xt={}; if(v.x&&typeof v.x==='object') Object.keys(v.x).slice(0,4000).forEach(i=>{ xt[i]=+v.x[i]||1; }); const mf=m.filter(z=>!xt[z.i]), hx=Object.keys(xt).length;
+    if(mf.length||hx){ mf.sort((a,b)=>a.ts-b.ts); const vis=+v.vis||0; out[k]={u:String(v.u||k).slice(0,120),m:mf,...(vis?{vis}:{}),...(hx?{x:xt}:{})}; }   /* v3.13 · vis = hora del último mensaje que un administrador marcó como visto */
   });
   return out;
 }
 function cmMerge(a,b){
   const out={}; new Set([...Object.keys(a||{}),...Object.keys(b||{})]).forEach(k=>{
-    const x=(a&&a[k])||{m:[]}, y=(b&&b[k])||{m:[]}, mm=new Map(); x.m.concat(y.m).forEach(z=>mm.set(z.i,z));
-    const vis=Math.max(+x.vis||0,+y.vis||0); out[k]={u:x.u||y.u||k,m:[...mm.values()].sort((p,q)=>p.ts-q.ts),...(vis?{vis}:{})};
+    const x=(a&&a[k])||{m:[]}, y=(b&&b[k])||{m:[]}, mm=new Map(), tb=Object.assign({},x.x||{},y.x||{}); x.m.concat(y.m).forEach(z=>{ if(!tb[z.i]) mm.set(z.i,z); });
+    const vis=Math.max(+x.vis||0,+y.vis||0); out[k]={u:x.u||y.u||k,m:[...mm.values()].sort((p,q)=>p.ts-q.ts),...(vis?{vis}:{}),...(Object.keys(tb).length?{x:tb}:{})};
   }); return out;
 }
-function cmSame(a,b){ const ka=Object.keys(a),kb=Object.keys(b); return ka.length===kb.length&&ka.every(k=>{ if(!b[k]||b[k].m.length!==a[k].m.length||(+a[k].vis||0)!==(+b[k].vis||0)) return false; const s=new Set(a[k].m.map(z=>z.i)); return b[k].m.every(z=>s.has(z.i)); }); }
+let CM_ARM=null;
+function cmDel(key,ids){ const h=CM.hilos[key]; if(!h||!isAdmin()) return; h.x=h.x||{}; const t=Date.now(); (ids||h.m.map(z=>z.i)).forEach(i=>{ h.x[i]=t; }); h.m=h.m.filter(z=>!h.x[z.i]); CM.dirty=true; CM.ver++; cmPersist(); cmRefreshUI(); cmSyncSoon(300); }
+function cmSame(a,b){ const ka=Object.keys(a),kb=Object.keys(b); return ka.length===kb.length&&ka.every(k=>{ if(!b[k]||b[k].m.length!==a[k].m.length||Object.keys(b[k].x||{}).length!==Object.keys(a[k].x||{}).length||(+a[k].vis||0)!==(+b[k].vis||0)) return false; const s=new Set(a[k].m.map(z=>z.i)); return b[k].m.every(z=>s.has(z.i)); }); }
 try{ const o=JSON.parse(LS.get(CM_LS)||"null"); if(o&&o.hilos){ CM.hilos=cmClean(o.hilos); CM.dirty=!!o.dirty; } }catch(_){}
 const cmPersist=()=>{ try{ LS.set(CM_LS,JSON.stringify({hilos:CM.hilos,dirty:CM.dirty})); }catch(_){} };
 const cmKey=()=>ukey(userName());
@@ -10583,7 +10971,7 @@ function cmTabDot(){ return isAdmin()&&cmPendingCount()?' <i class="cm-dot cm-do
 const cmTime=ts=>{ const d=new Date(ts); return (dayKey(ts)===dayKey(Date.now())?"":d.toLocaleDateString("es-MX",{day:"2-digit",month:"short"})+" ")+d.toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit"}); };
 function cmBubbles(h,view){   /* view «u»: quien escribió el hilo · «a»: administrador */
   return h.m.map(x=>{ const mine=x.r===view, who=x.r==="a"?x.by:(view==="a"?h.u:"");
-    return `<div class="cm-row ${mine?"me":"ot"}"><div class="cm-b">${who?`<b class="cm-who">${esc(who)}</b>`:""}<span class="cm-t">${esc(x.t)}</span><small>${esc(cmTime(x.ts))}</small></div></div>`; }).join("");
+    return `<div class="cm-row ${mine?"me":"ot"}"><div class="cm-b">${who?`<b class="cm-who">${esc(who)}</b>`:""}<span class="cm-t">${esc(x.t)}</span><small>${esc(cmTime(x.ts))}</small>${view==="a"?`<button type="button" class="cm-del${CM_ARM===x.i?" st-danger":""}" data-cmdel="${esc(x.i)}" aria-label="Borrar mensaje" title="Borrar mensaje">${CM_ARM===x.i?"¿Borrar?":"✕"}</button>`:""}</div></div>`; }).join("");
 }
 function cmStatText(){ if(CM_ERR) return "⚠ "+CM_ERR; if(CM.dirty) return navigator.onLine===false?"Sin conexión: se enviará solo al volver el internet.":"Enviando…"; return ""; }
 function cmAdd(key,uName,r,t){
@@ -10686,7 +11074,7 @@ function cmAdmDraw(){
   const th=cmThreads(); if(!cmSel||!CM.hilos[cmSel]) cmSel=th.length?th[0][0]:"";
   L.innerHTML=th.length?th.map(([k,h])=>{ const l=cmLast(h), pd=cmPend(h); return `<button type="button" class="cm-item${k===cmSel?" on":""}" data-cmk="${esc(k)}"><span class="cm-nm">${pd?'<i class="cm-dot cm-dot-inl" title="Sin responder"></i>':""}<b>${esc(h.u)}</b><small>${esc(cmTime(l.ts))}</small></span><span class="cm-sn">${l.r==="a"?"Tú: ":""}${esc(l.t.slice(0,90))}</span></button>`; }).join(""):'<div class="st-msg">Aún no hay comentarios.</div>';
   const h=CM.hilos[cmSel], H=document.getElementById("cmPaneH"), M=document.getElementById("cmAdmMsgs"), F=document.getElementById("cmAdmForm");
-  F.hidden=!h; H.textContent=h?h.u:"Selecciona un comentario"; const VB=document.getElementById("cmSeenBtn"); if(VB) VB.hidden=!(h&&cmPend(h));
+  F.hidden=!h; H.textContent=h?h.u:"Selecciona un comentario"; const VB=document.getElementById("cmSeenBtn"); if(VB) VB.hidden=!(h&&cmPend(h)); const DA=document.getElementById("cmDelAll"); if(DA) DA.hidden=!h;
   if(h&&cmPend(h)&&document.getElementById("cmAdmMsgs")&&document.getElementById("cmAdmMsgs").offsetParent){ setTimeout(()=>{ try{ cmMarkViewed(cmSel); }catch(_){} },900); }   /* v3.15 · al abrir el hilo se marca como visto */
   if(h){ const near=M.scrollHeight-M.scrollTop-M.clientHeight<80, first=M.dataset.k!==cmSel; M.dataset.k=cmSel; M.innerHTML=cmBubbles(h,"a"); if(first||near) M.scrollTop=M.scrollHeight; }
   else M.innerHTML="";
@@ -10695,9 +11083,12 @@ function cmAdmDraw(){
 function renderCmt(host){
   host.innerHTML=`<div class="st-card" id="cmWrap"><h3>Comentarios y sugerencias <small style="font-weight:500;color:#7B7E81">· responde como ${esc(userName())}</small></h3>
     <div class="cm-adm"><div class="cm-list" id="cmList"></div>
-    <div class="cm-pane"><div class="cm-pane-h cm-pane-hh"><span id="cmPaneH"></span><button type="button" class="st-btn st-sm" id="cmSeenBtn" hidden>Marcar como visto</button></div><div class="cm-msgs cm-msgs-adm" id="cmAdmMsgs"></div><div class="cm-stat" id="cmAdmStat"></div>
+    <div class="cm-pane"><div class="cm-pane-h cm-pane-hh"><span id="cmPaneH"></span><button type="button" class="st-btn st-sm" id="cmSeenBtn" hidden>Marcar como visto</button><button type="button" class="st-btn st-sm cm-delall" id="cmDelAll" hidden>Borrar conversación</button></div><div class="cm-msgs cm-msgs-adm" id="cmAdmMsgs"></div><div class="cm-stat" id="cmAdmStat"></div>
     <form class="cm-comp" id="cmAdmForm" hidden><textarea id="cmAdmIn" rows="2" maxlength="2000" placeholder="Escribe tu respuesta…" aria-label="Respuesta"></textarea><button type="submit" aria-label="Enviar respuesta"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 3 10.5 13.5M21 3l-6.5 18-4-7.5L3 9.5z"/></svg></button></form></div></div></div>`;
   document.getElementById("cmSeenBtn").onclick=()=>{ if(cmSel) cmMarkViewed(cmSel); };
+  { const arm=(b,txt,fn)=>{ if(!b.dataset.ok){ b.dataset.ok="1"; b.dataset.t=b.textContent; b.textContent="¿Seguro?"; b.classList.add("st-danger"); setTimeout(()=>{ if(b.isConnected&&b.dataset.ok){ delete b.dataset.ok; b.textContent=b.dataset.t||txt; b.classList.remove("st-danger"); } },4000); return; } fn(); };
+    document.getElementById("cmDelAll").onclick=e=>{ const b=e.currentTarget; arm(b,"Borrar conversación",()=>{ cmDel(cmSel); delete b.dataset.ok; b.textContent="Borrar conversación"; b.classList.remove("st-danger"); }); };
+    document.getElementById("cmAdmMsgs").onclick=e=>{ const b=e.target.closest("[data-cmdel]"); if(!b) return; const id=b.dataset.cmdel; if(CM_ARM===id){ CM_ARM=null; cmDel(cmSel,[id]); return; } CM_ARM=id; cmAdmDraw(); setTimeout(()=>{ if(CM_ARM===id){ CM_ARM=null; cmAdmDraw(); } },4000); }; }
   document.getElementById("cmList").onclick=e=>{ const b=e.target.closest("[data-cmk]"); if(!b) return; cmSel=b.dataset.cmk; cmAdmDraw(); };
   const inp=document.getElementById("cmAdmIn");
   document.getElementById("cmAdmForm").onsubmit=e=>{ e.preventDefault(); const h=CM.hilos[cmSel]; if(h&&cmAdd(cmSel,h.u,"a",inp.value)) inp.value=""; };
