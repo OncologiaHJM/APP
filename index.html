@@ -6812,6 +6812,9 @@ function ppMarkCurrent(){
 }
 /* v2.158 · Filtros Adscrito / Clínica de la lista de pacientes: viven en memoria (se pierden al recargar, al salir o a los 10 min sin uso) */
 let PP_FILT={ads:[],clin:[]};
+/* v3.45 · el filtro es por apartado (Censo / Hospitalizados / Todos…): el de la página de inicio solo vale en esa página */
+let PP_FILTS={}, PP_FILT_VIEW="";
+function ppFiltSync(){ if(PP_FILT_VIEW===PP_VIEW) return; if(PP_FILT_VIEW) PP_FILTS[PP_FILT_VIEW]=PP_FILT; PP_FILT=PP_FILTS[PP_VIEW]||{ads:[],clin:[]}; PP_FILT_VIEW=PP_VIEW; try{ ppMsClose(); }catch(_){} try{ ppFiltDraw(); }catch(_){} }
 const ppU=v=>String(v||"").toLocaleUpperCase("es-MX").trim();
 function ppAdsInfo(raw){ const rec=userRecord(raw), k=normalizeStaffName(raw), ok=!!(rec&&rec.tipo==="adscrito"&&rec.servicio); return {key:k,ok,nombre:rec?rec.nombre:String(raw).trim(),clin:ok?rec.servicio:""}; }
 /* Orden de las clínicas en los filtros */
@@ -6874,7 +6877,7 @@ function ppFiltDraw(){
   ppMsDraw(C,"Todas","clin",[{label:"",items:clins.map(c=>({v:c,t:c}))}]);
   const b=$("ppFClr"); if(b) b.hidden=!(PP_FILT.ads.length||PP_FILT.clin.length);
 }
-function ppFiltClear(){ ppMsClose(); PP_FILT={ads:[],clin:[]}; try{ ppFiltDraw(); renderPP(); }catch(_){} }
+function ppFiltClear(){ ppMsClose(); PP_FILT={ads:[],clin:[]}; PP_FILTS={}; try{ ppFiltDraw(); renderPP(); }catch(_){} }
 (function(){
   const A=$("ppFAds"),C=$("ppFClin"),B=$("ppFClr"); if(!A||!C||!B) return;
   A.onclick=e=>{ e.preventDefault(); ppMsToggle("ads"); };
@@ -7036,6 +7039,7 @@ function ppMetaHTML(p,short){
   return `<span class="pmeta">${first?`<span class="pm-ads"${short?` title="${esc(first)}"`:""}>${esc(short?(ppCensusAds(first)||first).toLowerCase():first.toLowerCase())}</span>`:""}${cl?`<span class="pm-cl"><i style="background:${ppClinColor(cl)}"></i><span>${esc(cl.toLowerCase())}</span></span>`:""}</span>`;
 }
 function renderPP(){
+  try{ ppFiltSync(); }catch(_){}
   try{ ppOverlay(); }catch(_){}
   if(document.body.classList.contains("pp-browse")&&(PP_VIEW==="censoActual"||PP_VIEW==="censos")){ try{ ppFiltDraw(); }catch(_){} try{ cenRender(); }catch(e){ try{ console.error(e); }catch(_){} } return; }
   try{ cenShow(false); }catch(_){}
@@ -10951,7 +10955,8 @@ function applyHomeFilters(force){
     const r=cfgRec(); if(!r||homePref()==="nuevo") return;
     const clin=Array.isArray(r.fclin)?r.fclin.slice():[], ads=Array.isArray(r.fads)?r.fads.slice():[];
     if(!force&&!clin.length&&!ads.length) return;
-    PP_FILT={ads,clin}; try{ ppMsClose(); }catch(_){}
+    const hv=homePref()==="todos"?"recientes":homePref()==="censo"?"censoActual":"cama";
+    PP_FILTS[hv]={ads,clin}; if(PP_FILT_VIEW===hv) PP_FILT=PP_FILTS[hv]; try{ ppMsClose(); }catch(_){}
     renderPP();
   }catch(_){}
 }
