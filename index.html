@@ -3074,6 +3074,12 @@ body.is-admv #bandPac,body.is-admv #cfgStats{display:none!important}
 #arV2 .av2-b:hover{background:var(--hover,#F1F2F3)}
 #arV2 .av2-b svg{width:15px;height:15px}
 #arV2 .av2-del{color:#8A1C1C}
+#arV2 .av2-cxtag{align-self:center;margin-left:auto;padding:0 10px;color:#C62828;font-weight:800;font-size:12px;letter-spacing:.04em;white-space:nowrap}
+#arV2 .av2-cancelled .av2-main{opacity:.72}
+#arV2 .av2-row.av2-cancelled{grid-template-columns:32px minmax(0,1fr) auto auto}
+@media (max-width:720px){#arV2 .av2-row.av2-cancelled{grid-template-columns:30px minmax(0,1fr)}#arV2 .av2-cxtag{grid-column:2;margin:0;padding:0}}
+#arV2 .av2-rs{color:#1B6B3A}
+#view-archive.ar-win .av2-cx{display:none}
 #arV2 .av2-dim{opacity:.75}
 #arV2 .av2-more{display:block;width:100%;border:0;border-top:1px solid var(--line,#E3E5E6);background:transparent;padding:9px;font:700 12px var(--ui,inherit);color:var(--navy,#303132);cursor:pointer}
 #arV2 .av2-more span{color:var(--muted,#6A6E71);font-weight:500;margin-left:6px}
@@ -3466,7 +3472,7 @@ function extraLastRequestsFrom(value){const out=emptyExtraLastRequests();if(valu
 const DEFAULTS = ()=>({fecha:todayStr(),indicacion:"PROTOCOLO PREOPERATORIO",servicio:"ONCOLOGIA",alergias:"NEGADAS",riesgos:RIESGOS_DEF,folioUltimaSolicitud:"",folioUltimaResidente:"",labsUrgUltimaSolicitud:"",labsUrgUltimaResidente:"",ultimasSolicitudes:emptyExtraLastRequests()});
 
 /* v47 · Botones homogéneos de los historiales: Ver (ojo), Imprimir (impresora) y Borrar (basura) */
-const RB_IC={edit:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11-4-4L4 16v4z"/><path d="m13.5 6.5 4 4"/></svg>',view:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+const RB_IC={cancel:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m5.6 5.6 12.8 12.8"/></svg>',restore:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.5-5.8"/><path d="M4 4v5h5"/></svg>',edit:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11-4-4L4 16v4z"/><path d="m13.5 6.5 4 4"/></svg>',view:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
   print:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/></svg>',
   del:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>'};
 function rbBtn(kind,label,attrs){if(kind==="view")label=/^Ver [12]$/.test(label)?label:"Ver";else if(kind==="edit")label="Editar";else if(kind==="print")label="Imprimir";const cls={view:"rb rb-view",edit:"rb rb-view rb-edit",print:"rb rb-print",del:"rb rb-del del"}[kind];return `<button type="button" class="${cls}" ${attrs}>${RB_IC[kind]}<span class="rb-l">${label}</span></button>`;}
@@ -6436,7 +6442,9 @@ function mergeHist(lh,rh,del){
     const m=new Map();
     /* v2.57 · un ts en el futuro (registro guardado con la fecha clínica de mañana) no puede ganarle a una edición hecha hoy */
     const lim=Date.now()+300000, tsOf=x=>{ const v=Number(x&&x.ts)||0; return v>lim?1:v; };   // ts en el futuro = registro externo viejo: pierde ante cualquier edición
-    for(const r of [...(rh[t]||[]),...(lh[t]||[])]){ if(!r||!r.id||del[r.id])continue; const o=m.get(r.id); if(!o||tsOf(r)>=tsOf(o))m.set(r.id,r); }
+    const cxs=new Map();   // v3.45 · cancelación: gana la marca más reciente (cx.ts) entre ambos lados
+    for(const r of [...(rh[t]||[]),...(lh[t]||[])]){ if(!r||!r.id||del[r.id])continue; const o=m.get(r.id); if(r.cx&&(!cxs.get(r.id)||(Number(r.cx.ts)||0)>=(Number(cxs.get(r.id).ts)||0)))cxs.set(r.id,r.cx); if(!o||tsOf(r)>=tsOf(o))m.set(r.id,r); }
+    for(const [id,r0] of m){ const c=cxs.get(id); if(c&&(Number(c.ts)||0)>=tsOf(r0)){ if(!r0.cx||r0.cx.ts!==c.ts)m.set(id,Object.assign({},r0,{cx:c})); } else if(r0.cx&&c!==r0.cx){ const q=Object.assign({},r0); delete q.cx; m.set(id,q); } }
     const arr=[...m.values()].sort((a,b)=>(b.ts||0)-(a.ts||0)).slice(0,histCap(t)); if(arr.length)out[t]=arr;
   }
   return out;
@@ -7373,7 +7381,7 @@ function clinicalDefaults(tp,dayOffset=0){
   /* Ambas páginas abren con fecha actual: notas a la hora más cercana e indicaciones a las 07:00.
      El texto es el del último registro guardado del paciente (si lo hay);
      en indicaciones, si no hay ninguno, el texto predeterminado. Nada se guarda hasta presionar Guardar o Imprimir. */
-  const last=arCollect([tp])[0],lp=last&&last.r&&last.r.p;
+  const last=arCollectLive([tp])[0],lp=last&&last.r&&last.r.p;
   if(tp==="notas")return {fecha:todayStr(),hora:roundedNoteTime(),tipo:"Nota de Evolución",contenido:"",...linked};
   const txt={};for(const k of ["dieta","soluciones","medicamentos","cuidados"])txt[k]=(lp&&typeof lp[k]==="string")?lp[k]:INDICATION_DEFAULTS[k];
   return {fecha:addClinicalDays(todayStr(),dayOffset),hora:"07:00",...txt,pendientes:(lp&&typeof lp.pendientes==="string"&&clinicalRichHasText(lp.pendientes))?lp.pendientes:"",...linked,adscrito:(lp&&typeof lp.adscrito==="string"&&lp.adscrito.trim())?lp.adscrito:linked.adscrito};
@@ -7554,7 +7562,7 @@ function renderClinicalForm(tp,v=clinicalDefaults(tp),v2=null){
     if(tp==="notas"&&baseBtn){ if(!baseBtn.dataset.baseConfirm){ resetClearConfirmation(); baseBtn.dataset.baseConfirm="1"; baseBtn.textContent="Confirmar reinicio"; baseBtn.title="Presiona de nuevo para reemplazar el contenido por el texto base"; return; } resetClearConfirmation(); const t=clinicalNoteTemplate($("cl-tipo").value); if(!t) return; const editor=$("cl-contenido"); editor.innerHTML=clinicalRichHTML(t); editor.dispatchEvent(new Event("input",{bubbles:true})); editor.focus(); return; }
     const copyLast=e.target.closest("[data-copy-last-note]");
     if(tp==="notas"&&copyLast){
-      resetClearConfirmation(); const last=arCollect(["notas"])[0], c=last&&last.r&&last.r.p&&last.r.p.contenido;
+      resetClearConfirmation(); const last=arCollectLive(["notas"])[0], c=last&&last.r&&last.r.p&&last.r.p.contenido;
       if(!c||!String(c).replace(/<[^>]*>/g,"").trim()){ notify("Este paciente no tiene una nota previa para copiar.","warn"); return; }
       const lp=last.r.p; ["adscrito","otros"].forEach(k=>{const el=$("cl-"+k); if(el&&lp[k]!=null) el.value=lp[k];}); const editor=$("cl-contenido"); editor.innerHTML=clinicalRichHTML(c); editor.dispatchEvent(new Event("input",{bubbles:true})); editor.focus(); return;
     }
@@ -7605,7 +7613,7 @@ function clinicalMissing(tp,p){
 function upsertClinicalRecord(tp,p){
   const text=p.fecha+" · "+p.tipo,sameIndex=HIST[tp].findIndex(x=>x&&x.p&&x.p.fecha===p.fecha&&x.p.hora===p.hora);
   if(sameIndex<0)return histAdd(tp,text,p);
-  const saved=HIST[tp].splice(sameIndex,1)[0];saved.t=text;saved.p=p;saved.by=currentResidentName();saved.byRole=currentAuthorRole();saved.ts=Math.max(Date.now(),HIST[tp].reduce((m,x)=>Math.max(m,x.ts||0),0)+1);HIST[tp].unshift(saved);return saved;
+  const saved=HIST[tp].splice(sameIndex,1)[0];saved.t=text;saved.p=p;delete saved.cx;saved.by=currentResidentName();saved.byRole=currentAuthorRole();saved.ts=Math.max(Date.now(),HIST[tp].reduce((m,x)=>Math.max(m,x.ts||0),0)+1);HIST[tp].unshift(saved);return saved;
 }
 function saveClinicalRecord(tp,printAfter=false,force=false,mode="save"){
   const d=data();if(warnMissing(d))return;
@@ -7644,7 +7652,7 @@ function saveClinicalRecord(tp,printAfter=false,force=false,mode="save"){
 }
 function renderClinicalRecents(tp){
   $("clinicalRecentTitle").textContent=tp==="notas"?"Últimas notas":"Últimas indicaciones";
-  const list=arCollect([tp]); // Fecha y hora del documento, de más nueva a más antigua.
+  const list=arCollectLive([tp]); // Fecha y hora del documento, de más nueva a más antigua.
   $("clinicalRecentList").innerHTML=list.length?`<table class="clinical-table"><thead><tr><th>Fecha</th><th>Tipo</th><th>Acciones</th></tr></thead><tbody>${list.map(e=>{const r=e.r,own=e.tp===tp;
     const acts=own?`${rbBtn("edit","Editar",`data-cl-edit="${esc(r.id)}"`)}${rbBtn("view","Ver",`data-ar-ver="${tp}|${esc(r.id)}"`)}${rbBtn("print","Imprimir",`data-cl-print="${esc(r.id)}"`)}`:arActions(e);
     return `<tr data-src="${esc(e.tp)}"><td><strong>${esc(e.fecha||"")}</strong><small>${esc(e.hora||"")}</small></td><td>${esc(own?((r.p&&r.p.tipo)||(tp==="notas"?"Nota":"Indicaciones")):e.tipo)}${!own&&e.detail?`<small class="clinical-detail">${esc(e.detail)}</small>`:""}<small class="clinical-saved-by">${savedChangeLabel(r)}: ${esc(savedBy(r))}</small></td><td>${acts}</td></tr>`;}).join("")}</tbody></table>`:`<div class="clinical-empty">Todavía no hay registros para este paciente.</div>`;
@@ -7767,6 +7775,11 @@ function arEntry(tp,r){
     else{tipo=detail;detail="";}}
   return {tp,r,fecha,hora,tipo,detail,ms:arDateMs(fecha,hora,r.ts)};
 }
+/* v3.45 · Cancelar / Restaurar (solo notas e indicaciones). r.cx={on,ts,by,rol}; no cambia r.ts */
+const CX_TP=new Set(["notas","indicaciones"]);
+function isCx(r){ return !!(r&&r.cx&&r.cx.on); }
+function arCollectLive(src){ return arCollect(src).filter(e=>!isCx(e.r)); }
+function cxWord(tp){ return tp==="indicaciones"?"INDICACIÓN CANCELADA":"NOTA CANCELADA"; }
 function arCollect(src){return src.flatMap(tp=>(HIST[tp]||[]).map(r=>arEntry(tp,r))).sort((a,b)=>(b.ms-a.ms)||((b.r.ts||0)-(a.r.ts||0)));}
 const AR_EDIT=new Set(["notas","indicaciones","prequx","altas","solCx","repCx"]);   // v2.58 · Editar en notas, indicaciones, procedimientos y altas
 function arActions(e,allowDelete=false){const a=`data-ar-tp="${esc(e.tp)}" data-ar-id="${esc(e.r.id)}"`;return rbBtn("edit","Editar",a+' data-ar="view"')+rbBtn("view","Ver",a+' data-ar="ver"')+rbBtn("print","Imprimir",a+' data-ar="print"')+(allowDelete?rbBtn("del","Borrar",a+' data-ar="del"'):"");}
@@ -7827,7 +7840,17 @@ function arPrintFormat(){setTimeout(()=>{document.activeElement&&document.active
 function arAct(tp,id,act,btn){
   const kind=AR_KIND[tp];
   if(act==="ver"){ arViewPop(tp,id); return; }
+  if(act==="cancel"||act==="restore"){
+    if(!btn||!btn.closest("#view-archive")||!CX_TP.has(tp)||isAdmv())return;
+    const r=(HIST[tp]||[]).find(x=>x.id===id);if(!r)return;
+    if(act==="restore"){ if(!isAdmin()||!isCx(r))return; }
+    else{ if(isCx(r))return; if(!confirm("¿Cancelar "+(tp==="indicaciones"?"esta indicación":"esta nota")+"? Dejará de aparecer en los registros previos y no se podrá copiar; seguirá en el archivo clínico marcada como cancelada."))return; }
+    r.cx={on:act==="cancel",ts:Math.max(Date.now(),Number(r.ts)||0),by:currentResidentName(),rol:currentAuthorRole()};
+    if(clinicalEditing[tp]===id)clinicalEditing[tp]=null;if(clinicalEditingSecond[tp]===id)clinicalEditingSecond[tp]=null;
+    renderArchive();saveAfterDelete();return;
+  }
   if(act==="del"){
+    if(CX_TP.has(tp)&&!isAdmin())return;
     if(!document.body.classList.contains("showing-archive")||!btn||!btn.closest("#view-archive"))return;
     if(!(HIST[tp]||[]).some(r=>r.id===id))return;
     if(!confirm("¿Seguro que quieres eliminar este registro del archivo clínico? No será posible recuperarlo."))return;
@@ -7836,7 +7859,7 @@ function arAct(tp,id,act,btn){
     if(ALTA_OWN===id)ALTA_OWN=null;
     renderArchive();saveAfterDelete();return;
   }
-  if(kind==="cl"){ if(act==="print"){printClinical(tp,id);return;} openClinical(tp);editClinical(tp,id);return; }
+  if(kind==="cl"){ if(act==="print"){printClinical(tp,id);return;} const rr=(HIST[tp]||[]).find(x=>x.id===id); if(isCx(rr)){ try{ notify("Registro cancelado: solo un administrador puede restaurarlo.","warn"); }catch(_){} return; } openClinical(tp);editClinical(tp,id);return; }
   if(kind==="alta"){ openFormat("alta");loadAltaRecent(id,act==="print");return; }
   openFormat(tp);useRecent(tp,id,0);if(act==="print")arPrintFormat();
 }
@@ -9494,7 +9517,7 @@ function admvSync(){ try{ const on=isAdmv(); document.body.classList.toggle("is-
   w("openFormat",(o,t,a)=>{ if(isAdmv()&&!window.__arPass){ try{ notify("Tu perfil es de consulta: solo puedes ver el Archivo Clínico.","warn"); }catch(_){} return; } return o.apply(t,a); });
   w("openClinical",(o,t,a)=>{ if(isAdmv()){ try{ notify("Tu perfil es de consulta: solo puedes ver el Archivo Clínico.","warn"); }catch(_){} return; } return o.apply(t,a); });
   w("back",(o,t,a)=>{ const r=o.apply(t,a); if(isAdmv()){ try{ goHome(); PP_VIEW="censoActual"; ppSyncViewBtns(); renderPP(); }catch(_){} } return r; });
-  document.addEventListener("click",e=>{ if(!isAdmv()) return; const b=e.target.closest&&e.target.closest("[data-ar-open],[data-ar='view'],[data-ar='del']"); if(b&&b.closest("#view-archive")){ e.stopImmediatePropagation(); e.preventDefault(); } },true);
+  document.addEventListener("click",e=>{ if(!isAdmv()) return; const b=e.target.closest&&e.target.closest("[data-ar-open],[data-ar='view'],[data-ar='del'],[data-ar='cancel'],[data-ar='restore']"); if(b&&b.closest("#view-archive")){ e.stopImmediatePropagation(); e.preventDefault(); } },true);
   setTimeout(admvSync,1500); setInterval(admvSync,4000);
 })();
 
@@ -9514,7 +9537,7 @@ function arViewPop(tp,id){
   try{ html=kind==="cl"?clinicalPrintHTML(tp,r.p,data()):arGenericHTML(tp,r); }catch(_){ html=arGenericHTML(tp,r); }
   let d=$("dlgArView"); if(!d){ d=document.createElement("dialog"); d.id="dlgArView"; d.className="ar-view"; document.body.appendChild(d); }
   const ttl=(kind==="cl"&&r.p.tipo)?String(r.p.tipo):((CAT[tp]&&CAT[tp].tt)||(FORMATS[tp]&&FORMATS[tp].title)||"Documento");
-  d.innerHTML=`<div class="av-head"><div class="av-t"><b>${esc(ttl)}</b><small>${esc(r.t||"")} · Elaboró: ${esc(savedBy(r))}</small></div><div class="av-b">${isAdmv()?"":rbBtn("edit","Editar","data-ave")}${rbBtn("print","Imprimir","data-avp")}<button type="button" class="av-x" data-avx aria-label="Cerrar">×</button></div></div><iframe class="av-frame" title="Vista previa de ${esc(ttl)}"></iframe>`;
+  d.innerHTML=`<div class="av-head"><div class="av-t"><b>${esc(ttl)}</b><small>${esc(r.t||"")} · Elaboró: ${esc(savedBy(r))}</small></div><div class="av-b">${isAdmv()||isCx(r)?"":rbBtn("edit","Editar","data-ave")}${rbBtn("print","Imprimir","data-avp")}<button type="button" class="av-x" data-avx aria-label="Cerrar">×</button></div></div><iframe class="av-frame" title="Vista previa de ${esc(ttl)}"></iframe>`;
   const fr=d.querySelector("iframe");
   const doc=`<!doctype html><html><head><meta charset="utf-8"><style>${arViewCss()}</style><style id="arViewCss">html,body{margin:0!important;padding:0!important;background:#e6e7e9!important;height:auto!important;overflow:auto!important;-webkit-user-select:text!important;user-select:text!important}body>*:not(#clinicalPrint){display:none!important}html body,html body #clinicalPrint,html body #clinicalPrint *{visibility:visible!important}#clinicalPrint{display:block!important;position:static!important;width:auto!important;height:auto!important;padding:14px 0 24px}.cp-page{margin:0 auto 16px!important;box-shadow:0 2px 14px rgba(0,0,0,.28);zoom:var(--z,1);-webkit-user-select:text;user-select:text}.cp-page *{-webkit-user-select:text;user-select:text}</style></head><body class="printing-clinical"><div id="clinicalPrint">${html}</div></body></html>`;
   fr.srcdoc=doc;
@@ -9595,7 +9618,7 @@ function arFmtFit(fr){ try{ const doc=fr.contentDocument, pa=doc.getElementById(
 async function arFmtView(tp,id,r){
   const key=tp==="altas"?"alta":tp, ttl=(CAT[key]&&CAT[key].tt)||(FORMATS[key]&&FORMATS[key].title)||"Documento";
   let d=$("dlgArView"); if(!d){ d=document.createElement("dialog"); d.id="dlgArView"; d.className="ar-view"; document.body.appendChild(d); }
-  d.innerHTML=`<div class="av-head"><div class="av-t"><b>${esc(ttl)}</b><small>${esc(r.t||"")} · Elaboró: ${esc(savedBy(r))}</small></div><div class="av-b">${isAdmv()?"":rbBtn("edit","Editar","data-ave")}${rbBtn("print","Imprimir","data-avp")}<button type="button" class="av-x" data-avx aria-label="Cerrar">×</button></div></div><iframe class="av-frame" title="Vista previa de ${esc(ttl)}"></iframe>`;
+  d.innerHTML=`<div class="av-head"><div class="av-t"><b>${esc(ttl)}</b><small>${esc(r.t||"")} · Elaboró: ${esc(savedBy(r))}</small></div><div class="av-b">${isAdmv()||isCx(r)?"":rbBtn("edit","Editar","data-ave")}${rbBtn("print","Imprimir","data-avp")}<button type="button" class="av-x" data-avx aria-label="Cerrar">×</button></div></div><iframe class="av-frame" title="Vista previa de ${esc(ttl)}"></iframe>`;
   const fr=d.querySelector("iframe"); let ready=false;
   d.onclick=e=>{ if(e.target.closest("[data-avx]")||e.target===d){ d.close(); return; } if(e.target.closest("[data-avp]")){ if(ready){ try{ fr.contentWindow.focus(); fr.contentWindow.print(); }catch(_){} } return; } if(e.target.closest("[data-ave]")){ d.close(); arAct(tp,id,"view",null); } };
   d.oncancel=()=>{}; if(!d.open) d.showModal();
@@ -9659,8 +9682,13 @@ function ar2Row(e){
   const title=e.tp==="notas"?(e.tipo||m.n):(e.dateOnly?e.tipo:(["rx","interconsulta","receta","consInf"].includes(e.tp)?(e.tipo||m.n):m.n));
   let pv=e.dateOnly?"Solicitud registrada · sin copia guardada":arPreview(e); if(pv.length>240) pv=pv.slice(0,240);
   const a=`data-ar-tp="${esc(e.tp)}" data-ar-id="${esc(e.r.id)}"`, B=(k,t,ar,x)=>`<button type="button" class="av2-b${x||""}" ${a} data-ar="${ar}" title="${t}" aria-label="${t}">${RB_IC[k]}<span>${t}</span></button>`;
-  const acts=e.dateOnly?"":(adm?"":B("edit","Editar","view"))+B("view","Ver","ver")+B("print","Imprimir","print")+(adm?"":B("del","Borrar","del"," av2-del"));
-  return `<article class="av2-row${e.dateOnly?" av2-dim":""}" style="--c:${m.c}" data-src="${esc(e.tp)}"><span class="av2-ic">${arIcon(m.i)}</span><div class="av2-main"><div class="av2-t"><b>${esc(title)}</b>${m.n!==title?`<span class="av2-kind">${esc(m.n)}</span>`:""}</div><div class="av2-meta">${e.hora?`<span>${esc(e.hora)} h</span>`:""}${e.fecha?`<span class="av2-d">${esc(e.fecha)}</span>`:""}<span>${esc(savedBy(e.r))}</span></div>${pv?`<p class="av2-pv">${esc(pv)}</p>`:""}</div><div class="av2-act">${acts}</div></article>`;
+  const cxable=CX_TP.has(e.tp), cx=cxable&&isCx(e.r), adn=isAdmin();
+  let acts;
+  if(e.dateOnly)acts="";
+  else if(!cxable)acts=(adm?"":B("edit","Editar","view"))+B("view","Ver","ver")+B("print","Imprimir","print")+(adm?"":B("del","Borrar","del"," av2-del"));
+  else acts=(adm||cx?"":B("edit","Editar","view"))+B("view","Ver","ver")+B("print","Imprimir","print")+(adm?"":(cx?(adn?B("restore","Restaurar","restore"," av2-cx av2-rs"):""):B("cancel","Cancelar","cancel"," av2-del av2-cx")))+(!adm&&adn?B("del","Borrar","del"," av2-del"):"");
+  const tag=cx?`<span class="av2-cxtag">${cxWord(e.tp)}</span>`:"";
+  return `<article class="av2-row${e.dateOnly?" av2-dim":""}${cx?" av2-cancelled":""}" style="--c:${m.c}" data-src="${esc(e.tp)}"><span class="av2-ic">${arIcon(m.i)}</span><div class="av2-main"><div class="av2-t"><b>${esc(title)}</b>${m.n!==title?`<span class="av2-kind">${esc(m.n)}</span>`:""}</div><div class="av2-meta">${e.hora?`<span>${esc(e.hora)} h</span>`:""}${e.fecha?`<span class="av2-d">${esc(e.fecha)}</span>`:""}<span>${esc(savedBy(e.r))}</span></div>${pv?`<p class="av2-pv">${esc(pv)}</p>`:""}</div>${tag}<div class="av2-act">${acts}</div></article>`;
 }
 function ar2DayLabel(e){ if(!e.ms) return "Sin fecha"; const d=new Date(e.ms); return `${AR2_DAYS[d.getDay()]} ${d.getDate()} ${AR2_MON[d.getMonth()]} ${d.getFullYear()}`; }
 function ar2Counts(list){ const c={}; list.forEach(e=>{ const k=ar2Groups(e.tp); c[k]=(c[k]||0)+1; }); const nm={notas:["nota","notas"],indicaciones:["indicación","indicaciones"],cx:["cirugía","cirugía"],otras:["otra","otras"]}; return AR2_GROUPS.filter(g=>c[g.key]).map(g=>`<i style="--c:${(AR2_META[g.tps[0]]||{}).c||"#5F6B76"}">${c[g.key]} ${nm[g.key][c[g.key]===1?0:1]}</i>`).join(""); }
@@ -10200,6 +10228,7 @@ async function renderStats(body){
    <div class="st-msg" style="margin:12px 0 6px"><b>Con cama y sin editar entre 36 y ${INACT_H} h</b> (${med.length}) · aún no pasan solos a CE</div>
    ${med.length?`<div style="display:flex;gap:10px;align-items:center;margin:0 0 6px;flex-wrap:wrap"><label style="font-size:12px;font-weight:700;color:#353B40;display:flex;gap:6px;align-items:center"><input type="checkbox" id="stMedAll"> Seleccionar todos</label><button type="button" class="st-btn st-sm" id="stMedSel" disabled>Borrar seleccionados (0)</button></div><div class="cam-list">${med.map((f,i)=>`<div class="cam-row" style="grid-template-columns:22px 52px 1fr auto auto"><input type="checkbox" data-msel="${i}" aria-label="Seleccionar"><span class="bd">${esc(String(f.meta.cama).trim())}</span><span>${esc((f.meta.nombre||"").slice(0,48))} · Exp. ${esc(String(f.meta.exp||""))}</span><small>${Math.floor((Date.now()-fileTime(f))/3600e3)} h</small><button type="button" class="st-btn st-sm" data-bcam="${i}">Borrar cama</button></div>`).join("")}</div>`:'<div class="st-msg">Ninguno.</div>'}<div class="st-msg" id="stMedMsg" style="margin-top:6px">${esc(MEDMSG)}</div>
    ${camasLog.length?`<div class="st-msg" style="margin-top:10px"><b>Últimas liberaciones</b>\n${camasLog.map(c=>`${new Date(c.ts).toLocaleString("es-MX",{dateStyle:"short",timeStyle:"short"})} · cama ${esc(c.cama)} → CE · Exp. ${esc(c.exp)}`).join("\n")}</div>`:""}</div></div>`;
+  if(isAdmv()&&!isAdmin()){ body.querySelectorAll(".st-card").forEach(c=>{ const h=c.querySelector("h3"); if(h&&/^Liberación automática/i.test(h.textContent)) c.remove(); }); }
   body.querySelectorAll("[data-bcam]").forEach(b=>b.onclick=async()=>{ if(!isAdmin()) return; const f=med[+b.dataset.bcam]; b.disabled=true; b.textContent="…"; const m=$s("stMedMsg");
     const r=await liberar([f],{textContent:""},36); await render(); MEDMSG=r.done.length?`Cama cambiada a CE (Exp. ${r.done[0]}).`:"No se pudo liberar: "+(r.skip[0]||"error"); const m2=$s("stMedMsg"); if(m2) m2.textContent=MEDMSG; });
   const msel=()=>[...body.querySelectorAll("[data-msel]")].filter(c=>c.checked);
@@ -10328,6 +10357,7 @@ function renderPac(body){
   body.innerHTML=`<div class="st-card" id="stPacStats"></div><div class="st-card"><h3>Archivos de pacientes en Drive</h3><input class="st-in" id="stPacQ" placeholder="Buscar por expediente o nombre…" value="${esc(pacQ)}"><div style="display:flex;gap:8px;align-items:center;margin:8px 0"><small id="stPacCount" style="color:#7B7E81"></small><span class="st-msg" id="stPacMsg" style="margin:0"></span></div><div class="st-tw" id="stPacTbl"></div>
   <div class="st-msg" style="margin-top:8px">Eliminar manda el archivo a la papelera de Drive (se puede restaurar desde ahí). «Modificó» se registra desde esta versión en cada guardado; los archivos antiguos lo mostrarán vacío («—») hasta que se vuelvan a guardar.</div>
   ${bor.length?`<div class="st-msg" style="margin-top:8px"><b>Últimas eliminaciones</b>\n${bor.map(c=>`${new Date(c.ts).toLocaleString("es-MX",{dateStyle:"short",timeStyle:"short"})} · Exp. ${esc(c.exp)} · ${esc(c.nombre||"")} · ${esc(c.by)}`).join("\n")}</div>`:""}</div>`;
+  if(isAdmv()&&!isAdmin()){ body.querySelectorAll(".st-card:not(#stPacStats)").forEach(c=>c.remove()); drawPacStats(); analyzeAll((d,t)=>{ drawPacStats(`· analizando ${d} de ${t}…`); }).then(()=>drawPacStats()); return; }
   $s("stPacQ").oninput=e=>{ pacQ=e.target.value; pacRows(); };
   pacRows(); drawPacStats(); analyzeAll((d,t)=>{ drawPacStats(`· analizando ${d} de ${t}…`); if($s("stPacTbl")) pacRows(); }).then(()=>{ drawPacStats(); if($s("stPacTbl")) pacRows(); });
 }
@@ -10794,7 +10824,8 @@ async function render(){
   if(CFG_ONLY) return;
   { const cf=document.getElementById("cfgForm"); if(tab==="cfg"&&cf&&cf.contains(document.activeElement)) return; const cw=document.getElementById("cmWrap"); if(tab==="cmt"&&cw&&cw.contains(document.activeElement)) return; }   /* no interrumpir mientras se escribe en Configuración */
   const body=$s("stBody");
-  const npac=uniqueFiles(DRIVE_FILES).length, nerr=errCount(), tabs=[["stats","Estadísticas"],["pac",`Pacientes <span class="st-cnt">${npac}</span>`],["pend","Pendientes"+pendBadge()],["err","Errores"+(nerr?` <span class="st-cnt st-bad" title="Hay elementos con error">${nerr}</span>`:"")],["usr",`Usuarios <span class="st-cnt">${HJM_USERS.length}</span>`],["idx","Descargas"],["cmt","Comentarios"+cmTabDot()],["cfg","Configuración"]];
+  const RO=isAdmv()&&!isAdmin(); if(RO&&tab!=="stats"&&tab!=="pac") tab="stats";
+  const npac=uniqueFiles(DRIVE_FILES).length, nerr=RO?0:errCount(), tabs=RO?[["stats","Estadísticas"],["pac",`Pacientes <span class="st-cnt">${npac}</span>`]]:[["stats","Estadísticas"],["pac",`Pacientes <span class="st-cnt">${npac}</span>`],["pend","Pendientes"+pendBadge()],["err","Errores"+(nerr?` <span class="st-cnt st-bad" title="Hay elementos con error">${nerr}</span>`:"")],["usr",`Usuarios <span class="st-cnt">${HJM_USERS.length}</span>`],["idx","Descargas"],["cmt","Comentarios"+cmTabDot()],["cfg","Configuración"]];
   let bar=body.querySelector(".st-tabs"); 
   body.innerHTML='<div class="st-tabs">'+tabs.map(([k,l])=>`<button type="button" role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join("")+'</div><div id="stTab"></div>';
   body.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{ tab=b.dataset.tab; render(); });
@@ -10835,12 +10866,15 @@ async function autoIntegrarPend(){
   finally{ autoPendBusy=false; }
 }
 async function openStats(){
-  if(!isAdmin()){ openCfg(); return; }
+  const RO=isAdmv()&&!isAdmin();   /* v3.45 · Administrativo: Panel de solo consulta (Estadísticas y Pacientes) */
+  if(!isAdmin()&&!RO){ openCfg(); return; }
   usrQ="";
-  const dlg=$s("dlgStats"); CFG_ONLY=false; dlg.classList.remove("cfg-only"); $s("stTitle").textContent="Panel de Control"; $s("stSub").textContent="Solo visible para "+userName();
+  const dlg=$s("dlgStats"); CFG_ONLY=false; dlg.classList.remove("cfg-only"); $s("stTitle").textContent=RO?"Estadísticas":"Panel de Control"; $s("stSub").textContent=RO?"Solo consulta":"Solo visible para "+userName();
+  if(RO){ tab="stats"; period=0; }
   if(!PEND_RUN) pendData=null; if(!BAD_RUN) badFiles=null; TASK={stats:false,pac:false,pend:false,err:false}; PROG={}; updStatus();
   $s("stBody").innerHTML='<div class="st-msg">Cargando…</div>'; if(!dlg.open) dlg.showModal();
   /* v2.154 · Primero los pendientes (rápido); cuando terminan, en segundo plano, el resto de pacientes y los errores */
+  if(RO){ TASK.pend=true; TASK.err=true; updStatus(); analyzeAll((d,t)=>{ PROG.f={d,t}; updStatus(); }).then(()=>taskDone("pac")); await loadRemote(); taskDone("stats"); render(); return; }
   startPend();
   (async()=>{ for(let i=0;PEND_RUN&&i<240;i++) await new Promise(r=>setTimeout(r,250));
     startBad(); try{ if(bakData===null&&!bakBusy) loadBak(); }catch(_){}
