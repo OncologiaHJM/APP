@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oncología · Hospital Juárez de México</title>
-<meta name="application-version" content="3.47">
+<meta name="application-version" content="3.50">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -1884,6 +1884,9 @@ body :is(#view-format,#view-clinical,#view-archive) .rb-print.rb-print:hover{bac
 [data-alta-print-role="date"], [data-alta-print-role="date"]>span{font-weight:700!important;line-height:1.1!important}
 [data-alta-print-role="date"],[data-alta-print-role="signature"]{padding-top:0!important;padding-bottom:0!important}
 [data-alta-print-role="signature"], [data-alta-print-role="signature"]>span{text-align:right!important;justify-content:flex-end!important}
+[data-alta-print-role="signature"][data-alta-fit],[data-alta-print-role="signature"][data-alta-fit]>span{font-size:calc(var(--alta-body-font)*1.3)!important;font-weight:700!important;white-space:nowrap!important}
+[data-alta-print-role="signature"] .cpn{display:inline!important;text-align:right}
+[data-alta-print-role="signature"] .cpm{display:inline!important;margin-left:.6em;font-size:.7em!important;font-weight:400}
 @media print{
 .cp-page.cp-note .cp-content,.prequx-note-sheet .cp-content{font-family:Arial,sans-serif;font-size:10pt;line-height:1.12;text-align:justify}
 .cp-page.cp-note .cp-note-meta-row{font-family:Arial,sans-serif;font-size:10pt}
@@ -2482,7 +2485,7 @@ body.pp-browse #pPanel.pp-xl .pp-list .cama-badge{flex:none;justify-content:cent
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 3.47 · Fecha de publicación: 27.10.26</div>
+  <div class="app-footer-version">Versión 3.50 · Fecha de publicación: 27.10.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p>Los datos viajan por conexión segura (HTTPS) y se almacenan en la cuenta de Google del Servicio de Oncología del Hospital Juárez de México; protegidos mediante clave de acceso.</p>
     <p id="hjmOffInfo" role="status" hidden></p>
@@ -3592,6 +3595,7 @@ const usersAdminOk=list=>list.some(admRec);
 /* Aplica cambios hechos en el editor: quedan en este equipo al instante y se suben solos a Drive en segundo plano */
 function usersChange(changes){
   USERS_DENY="";
+  if(isAdmv()&&isAdminUser()){ const own=ownUserKey(); for(const c of changes){ if(c.k===own) continue; if(c.op==='del'||HJM_USERS.some(u=>ukey(u.usuario)===c.k)){ USERS_DENY="Tu perfil solo puede agregar usuarios nuevos; no puede editar ni borrar los existentes."; return false; } } }
   if(!isSuperAdm()){ const own=ownUserKey(); for(const c of changes){ const ex=HJM_USERS.find(u=>ukey(u.usuario)===c.k), wasA=admRec(ex), isA=c.op==="set"?admRec(c.u):false;
       if((wasA&&c.k!==own)||(wasA!==isA&&(wasA||isA))){ USERS_DENY="Solo Jaime Caldera puede administrar a los demás administradores."; return false; } } }
   const prev=usersFrom(opsApply(HJM_OPS,changes,Date.now()));
@@ -7148,10 +7152,14 @@ async function ppDischarge(id){ const f=DRIVE_FILES.find(x=>x.id===id); if(!f) r
   const ok=await ppAsk({title:"Dar de alta",text:"¿Dar de alta a "+(p.nombre||"este paciente")+" (Exp. "+(p.exp||ppExp(f))+")? Su cama pasa a CE (consulta externa) y sale de la lista de Hospitalizados.",ok:"Dar de alta",danger:true});
   if(!ok) return;
   ppApply(f,{cama:"CE",altaEn:new Date().toISOString(),camaPrevia:String(p.cama||"").trim().toUpperCase(),defEn:""}); }
+/* v3.50 · Defunción: se pregunta fecha y hora (hora de la Ciudad de México); se guardan en el paciente y salen en la columna Estatus del censo */
+const ppMxStamp=ms=>{ const d=new Date(ms-6*36e5), p2=n=>String(n).padStart(2,"0"); return p2(d.getUTCDate())+"."+p2(d.getUTCMonth()+1)+"."+p2(d.getUTCFullYear()%100)+" "+p2(d.getUTCHours())+":"+p2(d.getUTCMinutes()); };
+function ppParseMxStamp(v){ const m=/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2}|\d{4})\s+(\d{1,2}):(\d{2})$/.exec(String(v||"").trim()); if(!m) return NaN; let y=+m[3]; if(y<100) y+=2000; const d=+m[1], mo=+m[2], h=+m[4], mi=+m[5]; if(mo<1||mo>12||d<1||d>31||h>23||mi>59) return NaN; const t=Date.UTC(y,mo-1,d,h+6,mi); const chk=new Date(t-6*36e5); return (chk.getUTCDate()===d&&chk.getUTCMonth()===mo-1)?t:NaN; }
 async function ppDefuncion(id){ const f=DRIVE_FILES.find(x=>x.id===id); if(!f) return; const p=f.meta||{};
-  const ok=await ppAsk({title:"Defunción",text:"¿Registrar la defunción de "+(p.nombre||"este paciente")+" (Exp. "+(p.exp||ppExp(f))+")? Su cama pasa a CE y sale de Hospitalizados; en el censo queda en Defunciones (y cuenta como egreso).",ok:"Registrar defunción",danger:true});
-  if(!ok) return;
-  ppApply(f,{cama:"CE",defEn:new Date().toISOString(),camaPrevia:String(p.cama||"").trim().toUpperCase(),altaEn:""}); }
+  const v=await ppAsk({title:"Defunción",text:(p.nombre||"Paciente")+" (Exp. "+(p.exp||ppExp(f))+"). Fecha y hora de la defunción, formato DD.MM.AA HH:MM. Su cama pasa a CE y sale de Hospitalizados; en el censo queda en Defunciones (y cuenta como egreso) con esta fecha y hora en Estatus.",input:true,value:ppMxStamp(Date.now()),ph:"DD.MM.AA HH:MM",ok:"Registrar defunción",danger:true,
+    validate:x=>{ const t=ppParseMxStamp(x); if(isNaN(t)) return "Usa el formato DD.MM.AA HH:MM (ej. 27.10.26 08:15)."; if(t>Date.now()+5*60000) return "La fecha y hora no pueden ser futuras."; return ""; }});
+  if(v==null) return; const t=ppParseMxStamp(v); if(isNaN(t)) return;
+  ppApply(f,{cama:"CE",defEn:new Date(t).toISOString(),camaPrevia:String(p.cama||"").trim().toUpperCase(),altaEn:""}); }
 async function loadPatients(opt){
   if(!ppOn()||PP_LOADING) return;
   PP_LOADING=true; $("pPanel").classList.add("busy");
@@ -8447,7 +8455,7 @@ function cenBuild(Td,now,opt){
      Se omite si el paciente ya estaba en el censo previo o si su estatus ya dice INGRESO. La fecha se lee en cualquier formato (DD.MM.AA, DD/MM/AAAA…). */
   const lo=Date.UTC(prevDay.y,prevDay.m,prevDay.d);
   rows.forEach(r=>{ const id=cenIngDay(r.ing), visto=pv instanceof Set&&pv.has(String(r.exp).trim()), stI=/^\s*INGRESO\s*$/i.test(String(r.est||""));
-    r.nu=(id>=lo&&!visto&&!stI&&(id>lo||pv==="none"||pv instanceof Set))?1:0; if(r.sec==="H"&&r.nu&&!r.est) r.est="INGRESO"; if(r.sec==="E") r.est=r.est||"ALTA"; if(r.sec==="D") r.est=r.est||"DEFUNCIÓN"; });
+    r.nu=(id>=lo&&!visto&&!stI&&(id>lo||pv==="none"||pv instanceof Set))?1:0; if(r.sec==="H"&&r.nu&&!r.est) r.est="INGRESO"; if(r.sec==="E") r.est=r.est||"ALTA"; if(r.sec==="D") r.est=r.est||("DEFUNCIÓN"+(r.ts?" "+ppMxStamp(r.ts)+" HRS":"")); });
   const actO=CEN.act&&CEN.act.obj, exc=(actO&&actO.fecha===hoy&&Array.isArray(actO.exc))?actO.exc:[];
   let shown=rows; if(exc.length){ rows.forEach(r=>{ if(exc.includes(cenExKey(r))) r.exc=1; }); shown=CEN.showEx?rows:rows.filter(r=>!r.exc); }
   return { app:"censo-hjm", v:1, fecha:hoy, corte:new Date(Td.ts).toISOString(), pac:shown, nexc:rows.filter(r=>r.exc).length, res:"", rev:{f:{}}, _files:{H:fs.H,E:fs.E,D:fs.D} };
@@ -8893,8 +8901,10 @@ async function cenHistAct(k,act){
   if(act==="volver"){ cenActOp({t:"ex",k:cenExKey(row),on:false}); return; }
   if(act==="quitar"){ const ok=await ppAsk({title:"Quitar del censo",text:"¿Quitar a "+(row.nombre||"este paciente")+" de ESTE censo? Solo cambia la copia del censo, no al paciente.",ok:"Quitar",danger:true}); if(!ok) return; if(CEN.mode!=="hist"){ cenActOp({t:"ex",k:cenExKey(row),on:true}); try{ toast("Quitado del censo"); }catch(_){} return; } CEN.hist.queue({t:"del",k}); cenRecalcHist(); return; }
   const name=act==="alta"?"Dar de alta":"Defunción", sec=act==="alta"?"E":"D", est=act==="alta"?"ALTA":"DEFUNCIÓN";
-  const ok=await ppAsk({title:name,text:(act==="alta"?"¿Pasar a ":"¿Registrar como ")+(row.nombre||"este paciente")+(act==="alta"?" a Egresos":" en Defunciones")+" de ESTE censo? Solo cambia la copia del censo, no al paciente.",ok:name,danger:act==="alta"}); if(!ok) return;
-  CEN.hist.queue({t:"mv",k,sec,est:row.est&&!/^(ALTA|DEFUNCIÓN)$/i.test(row.est)?row.est:est});
+  let estTxt=est;
+  if(act==="alta"){ const ok=await ppAsk({title:name,text:"¿Pasar a "+(row.nombre||"este paciente")+" a Egresos de ESTE censo? Solo cambia la copia del censo, no al paciente.",ok:name,danger:true}); if(!ok) return; }
+  else { const v=await ppAsk({title:name,text:(row.nombre||"Paciente")+": fecha y hora de la defunción (DD.MM.AA HH:MM). Se registra en Defunciones de ESTE censo y en su Estatus; solo cambia la copia del censo, no al paciente.",input:true,value:ppMxStamp(Date.now()),ph:"DD.MM.AA HH:MM",ok:name,validate:x=>isNaN(ppParseMxStamp(x))?"Usa el formato DD.MM.AA HH:MM (ej. 27.10.26 08:15).":""}); if(v==null) return; const t=ppParseMxStamp(v); if(isNaN(t)) return; estTxt="DEFUNCIÓN "+ppMxStamp(t)+" HRS"; }
+  CEN.hist.queue({t:"mv",k,sec,est:row.est&&!/^(ALTA|DEFUNCIÓN)(\s.*)?$/i.test(row.est)?row.est:estTxt});
   const o=CEN.hist.obj; o.pac.sort((a,b)=>({H:0,E:1,D:2}[a.sec]-{H:0,E:1,D:2}[b.sec])||0); cenRecalcHist();
 }
 /* ---------- Eventos ---------- */
@@ -9535,7 +9545,10 @@ setInterval(()=>{ try{ if(document.querySelector("[data-cl-allergy-in]")) clinAl
 /* ===================== v3.40 · Rol Administrativo + botón «Ver» del Archivo Clínico ===================== */
 function isAdminUser(){ try{ const n=normalizeStaffName(sessionUserName()); if(!n) return false; const r=HJM_USERS.find(u=>normalizeStaffName(printName(u))===n)||HJM_USERS.find(u=>normalizeStaffName(u.nombre)===n); return admRec(r); }catch(_){ return false; } }
 function isAdmv(){ try{ const r=userRecord(sessionUserName()); return !!(r&&r.tipo==="administrativo"); }catch(_){ return false; } }
-function admvSync(){ try{ const on=isAdmv(); document.body.classList.toggle("is-admv",on);
+/* v3.48 · Administrativo con permisos de administrador: mismas páginas que el administrativo, pero con acceso completo a la hoja de datos y a los formatos; en el Archivo Clínico solo ve e imprime */
+function isAdmvAdm(){ return isAdmv()&&isAdminUser(); }
+function isAdmvRO(){ return isAdmv()&&!isAdminUser(); }
+function admvSync(){ try{ const on=isAdmv(); document.body.classList.toggle("is-admv",on); document.body.classList.toggle("is-admv-adm",on&&isAdminUser());
   document.querySelectorAll('[data-pp-view="recientes"]').forEach(b=>{ const t=[...b.childNodes].reverse().find(n=>n.nodeType===3&&n.textContent.trim()); const want=on?"Expedientes":"Todos"; if(t&&t.textContent.trim()!==want) t.textContent=t.textContent.replace(/Todos|Expedientes/,want); else if(!t){ const sp=[...b.querySelectorAll("span")].reverse().find(x=>/Todos|Expedientes/.test(x.textContent)); if(sp&&sp.textContent.trim()!==want) sp.textContent=want; } b.title=on?"Buscar entre todos los expedientes":b.title; }); }catch(_){} }
 (function(){
   const w=(n,f)=>{ const o=window[n]; if(typeof o!=="function") return; window[n]=function(...a){ const r=f(o,this,a); return r; }; };
@@ -9544,12 +9557,12 @@ function admvSync(){ try{ const on=isAdmv(); document.body.classList.toggle("is-
   /* Administrativo: toda vista de pacientes es Censo */
   w("renderPP",(o,t,a)=>{ if(isAdmv()&&PP_VIEW!=="censoActual"&&PP_VIEW!=="censos"&&PP_VIEW!=="recientes"){ PP_VIEW="censoActual"; try{ ppSyncViewBtns(); }catch(_){} } return o.apply(t,a); });
   /* Abrir un paciente → directo a su Archivo Clínico (solo lectura) */
-  w("openDriveFile",(o,t,a)=>{ const skip=window.__arWin||document.body.classList.contains("cen-add-on")||!!(typeof CENADD!=="undefined"&&CENADD.open); const r=o.apply(t,a); if(isAdmv()&&!skip&&r&&r.then) r.then(()=>{ try{ if(hasSelectedPatient()&&!document.body.classList.contains("showing-archive")) openArchive(); }catch(_){} }); return r; });
+  w("openDriveFile",(o,t,a)=>{ const skip=window.__arWin||document.body.classList.contains("cen-add-on")||!!(typeof CENADD!=="undefined"&&CENADD.open); const r=o.apply(t,a); if(isAdmvRO()&&!skip&&r&&r.then) r.then(()=>{ try{ if(hasSelectedPatient()&&!document.body.classList.contains("showing-archive")) openArchive(); }catch(_){} }); return r; });
   /* Sin acceso a hoja de datos, formatos ni edición */
-  w("openFormat",(o,t,a)=>{ if(isAdmv()&&!window.__arPass){ try{ notify("Tu perfil es de consulta: solo puedes ver el Archivo Clínico.","warn"); }catch(_){} return; } return o.apply(t,a); });
-  w("openClinical",(o,t,a)=>{ if(isAdmv()){ try{ notify("Tu perfil es de consulta: solo puedes ver el Archivo Clínico.","warn"); }catch(_){} return; } return o.apply(t,a); });
-  w("back",(o,t,a)=>{ const r=o.apply(t,a); if(isAdmv()){ try{ goHome(); PP_VIEW="censoActual"; ppSyncViewBtns(); renderPP(); }catch(_){} } return r; });
-  document.addEventListener("click",e=>{ if(!isAdmv()) return; const b=e.target.closest&&e.target.closest("[data-ar-open],[data-ar='view'],[data-ar='del'],[data-ar='cancel'],[data-ar='restore']"); if(b&&b.closest("#view-archive")){ e.stopImmediatePropagation(); e.preventDefault(); } },true);
+  w("openFormat",(o,t,a)=>{ if(isAdmvRO()&&!window.__arPass){ try{ notify("Tu perfil es de consulta: solo puedes ver el Archivo Clínico.","warn"); }catch(_){} return; } return o.apply(t,a); });
+  w("openClinical",(o,t,a)=>{ if(isAdmvRO()){ try{ notify("Tu perfil es de consulta: solo puedes ver el Archivo Clínico.","warn"); }catch(_){} return; } return o.apply(t,a); });
+  w("back",(o,t,a)=>{ const r=o.apply(t,a); if(isAdmvRO()){ try{ goHome(); PP_VIEW="censoActual"; ppSyncViewBtns(); renderPP(); }catch(_){} } return r; });
+  document.addEventListener("click",e=>{ if(!isAdmv()) return; const b=e.target.closest&&e.target.closest(isAdmvAdm()?"[data-ar='view'],[data-ar='del'],[data-ar='cancel'],[data-ar='restore']":"[data-ar-open],[data-ar='view'],[data-ar='del'],[data-ar='cancel'],[data-ar='restore']"); if(b&&b.closest("#view-archive")){ e.stopImmediatePropagation(); e.preventDefault(); } },true);
   setTimeout(admvSync,1500); setInterval(admvSync,4000);
 })();
 
@@ -9607,7 +9620,7 @@ setTimeout(()=>{ try{ secNavTop(); }catch(_){} },1200);
 (function(){ try{ const ci=document.querySelector("#formatos .clinical-index"); if(!ci||$("archiveOpen2")) return; const b=document.createElement("button"); b.type="button"; b.id="archiveOpen2"; b.title="Ver todo el archivo clínico del paciente"; b.innerHTML='<span>Archivo Clínico</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>'; b.addEventListener("click",()=>openArchive()); ci.appendChild(b); }catch(_){} })();
 
 /* v3.41 · Administrativo viendo un expediente: el botón superior pasa a «Censo» para regresar al censo */
-function admvBand(){ try{ const bb=$("bandBack"); if(!bb) return; const on=isAdmv()&&document.body.classList.contains("showing-archive");
+function admvBand(){ try{ const bb=$("bandBack"); if(!bb) return; const on=isAdmvRO()&&document.body.classList.contains("showing-archive");
   if(on&&!bb.dataset.orig){ bb.dataset.orig=bb.innerHTML; bb.dataset.ot=bb.title; bb.innerHTML=CEN_ICO_LST+'<span class="bb-cen">Censo</span>'; bb.title="Volver al censo"; bb.setAttribute("aria-label","Volver al censo"); }
   else if(!on&&bb.dataset.orig){ bb.innerHTML=bb.dataset.orig; bb.title=bb.dataset.ot||"Pacientes"; bb.removeAttribute("aria-label"); delete bb.dataset.orig; delete bb.dataset.ot; } }catch(_){} }
 try{ new MutationObserver(admvBand).observe(document.body,{attributes:true,attributeFilter:["class"]}); }catch(_){}
@@ -9771,7 +9784,7 @@ function renderArchive(){
 (function(){
   const o=window.renderPP; if(typeof o==="function") window.renderPP=function(...a){ try{ const l=$("ppList"); if(l) l.dataset.view=PP_VIEW; }catch(_){} return o.apply(this,a); };
   const l=$("ppList"); if(l){ try{ l.dataset.view=PP_VIEW; }catch(_){}
-    l.addEventListener("click",e=>{ try{ if(!(isAdmv()&&PP_VIEW==="recientes")) return; if(e.target.closest("[data-pendbox],[data-ppmenu],.cpy,[data-pp-new]")) return; const b=e.target.closest("[data-id]"); if(!b) return; e.preventDefault(); e.stopImmediatePropagation(); arWinOpen(b.dataset.id); }catch(_){} },true); }
+    l.addEventListener("click",e=>{ try{ if(!(isAdmvRO()&&PP_VIEW==="recientes")) return; if(e.target.closest("[data-pendbox],[data-ppmenu],.cpy,[data-pp-new]")) return; const b=e.target.closest("[data-id]"); if(!b) return; e.preventDefault(); e.stopImmediatePropagation(); arWinOpen(b.dataset.id); }catch(_){} },true); }
 })();
 /* v3.42 · Al cerrar el archivo en ventana se regresa a la misma vista (Expedientes / Todos / Censo) */
 (function(){
@@ -10260,7 +10273,7 @@ async function renderStats(body){
    <div class="st-msg" style="margin:12px 0 6px"><b>Con cama y sin editar entre 36 y ${INACT_H} h</b> (${med.length}) · aún no pasan solos a CE</div>
    ${med.length?`<div style="display:flex;gap:10px;align-items:center;margin:0 0 6px;flex-wrap:wrap"><label style="font-size:12px;font-weight:700;color:#353B40;display:flex;gap:6px;align-items:center"><input type="checkbox" id="stMedAll"> Seleccionar todos</label><button type="button" class="st-btn st-sm" id="stMedSel" disabled>Borrar seleccionados (0)</button></div><div class="cam-list">${med.map((f,i)=>`<div class="cam-row" style="grid-template-columns:22px 52px 1fr auto auto"><input type="checkbox" data-msel="${i}" aria-label="Seleccionar"><span class="bd">${esc(String(f.meta.cama).trim())}</span><span>${esc((f.meta.nombre||"").slice(0,48))} · Exp. ${esc(String(f.meta.exp||""))}</span><small>${Math.floor((Date.now()-fileTime(f))/3600e3)} h</small><button type="button" class="st-btn st-sm" data-bcam="${i}">Borrar cama</button></div>`).join("")}</div>`:'<div class="st-msg">Ninguno.</div>'}<div class="st-msg" id="stMedMsg" style="margin-top:6px">${esc(MEDMSG)}</div>
    ${camasLog.length?`<div class="st-msg" style="margin-top:10px"><b>Últimas liberaciones</b>\n${camasLog.map(c=>`${new Date(c.ts).toLocaleString("es-MX",{dateStyle:"short",timeStyle:"short"})} · cama ${esc(c.cama)} → CE · Exp. ${esc(c.exp)}`).join("\n")}</div>`:""}</div></div>`;
-  if(isAdmv()&&!isAdmin()){ body.querySelectorAll(".st-card").forEach(c=>{ const h=c.querySelector("h3"); if(h&&/^Liberación automática/i.test(h.textContent)) c.remove(); }); }
+  if(isAdmv()){ body.querySelectorAll(".st-card").forEach(c=>{ const h=c.querySelector("h3"); if(h&&/^Liberación automática/i.test(h.textContent)) c.remove(); }); }
   body.querySelectorAll("[data-bcam]").forEach(b=>b.onclick=async()=>{ if(!isAdmin()) return; const f=med[+b.dataset.bcam]; b.disabled=true; b.textContent="…"; const m=$s("stMedMsg");
     const r=await liberar([f],{textContent:""},36); await render(); MEDMSG=r.done.length?`Cama cambiada a CE (Exp. ${r.done[0]}).`:"No se pudo liberar: "+(r.skip[0]||"error"); const m2=$s("stMedMsg"); if(m2) m2.textContent=MEDMSG; });
   const msel=()=>[...body.querySelectorAll("[data-msel]")].filter(c=>c.checked);
@@ -10389,7 +10402,7 @@ function renderPac(body){
   body.innerHTML=`<div class="st-card" id="stPacStats"></div><div class="st-card"><h3>Archivos de pacientes en Drive</h3><input class="st-in" id="stPacQ" placeholder="Buscar por expediente o nombre…" value="${esc(pacQ)}"><div style="display:flex;gap:8px;align-items:center;margin:8px 0"><small id="stPacCount" style="color:#7B7E81"></small><span class="st-msg" id="stPacMsg" style="margin:0"></span></div><div class="st-tw" id="stPacTbl"></div>
   <div class="st-msg" style="margin-top:8px">Eliminar manda el archivo a la papelera de Drive (se puede restaurar desde ahí). «Modificó» se registra desde esta versión en cada guardado; los archivos antiguos lo mostrarán vacío («—») hasta que se vuelvan a guardar.</div>
   ${bor.length?`<div class="st-msg" style="margin-top:8px"><b>Últimas eliminaciones</b>\n${bor.map(c=>`${new Date(c.ts).toLocaleString("es-MX",{dateStyle:"short",timeStyle:"short"})} · Exp. ${esc(c.exp)} · ${esc(c.nombre||"")} · ${esc(c.by)}`).join("\n")}</div>`:""}</div>`;
-  if(isAdmv()&&!isAdmin()){ body.querySelectorAll(".st-card:not(#stPacStats)").forEach(c=>c.remove()); drawPacStats(); analyzeAll((d,t)=>{ drawPacStats(`· analizando ${d} de ${t}…`); }).then(()=>drawPacStats()); return; }
+  if(isAdmv()){ body.querySelectorAll(".st-card:not(#stPacStats)").forEach(c=>c.remove()); drawPacStats(); analyzeAll((d,t)=>{ drawPacStats(`· analizando ${d} de ${t}…`); }).then(()=>drawPacStats()); return; }
   $s("stPacQ").oninput=e=>{ pacQ=e.target.value; pacRows(); };
   pacRows(); drawPacStats(); analyzeAll((d,t)=>{ drawPacStats(`· analizando ${d} de ${t}…`); if($s("stPacTbl")) pacRows(); }).then(()=>{ drawPacStats(); if($s("stPacTbl")) pacRows(); });
 }
@@ -10856,8 +10869,8 @@ async function render(){
   if(CFG_ONLY) return;
   { const cf=document.getElementById("cfgForm"); if(tab==="cfg"&&cf&&cf.contains(document.activeElement)) return; const cw=document.getElementById("cmWrap"); if(tab==="cmt"&&cw&&cw.contains(document.activeElement)) return; }   /* no interrumpir mientras se escribe en Configuración */
   const body=$s("stBody");
-  const RO=isAdmv()&&!isAdmin(); if(RO&&tab!=="stats"&&tab!=="pac"&&tab!=="cfg") tab="stats";
-  const npac=uniqueFiles(DRIVE_FILES).length, nerr=RO?0:errCount(), tabs=RO?[["stats","Estadísticas"],["pac",`Pacientes <span class="st-cnt">${npac}</span>`],["cfg","Configuración"]]:[["stats","Estadísticas"],["pac",`Pacientes <span class="st-cnt">${npac}</span>`],["pend","Pendientes"+pendBadge()],["err","Errores"+(nerr?` <span class="st-cnt st-bad" title="Hay elementos con error">${nerr}</span>`:"")],["usr",`Usuarios <span class="st-cnt">${HJM_USERS.length}</span>`],["idx","Descargas"],["cmt","Comentarios"+cmTabDot()],["cfg","Configuración"]];
+  const RO=isAdmv()&&!isAdmin(), ADM=isAdmv()&&isAdmin(); if(RO&&tab!=="stats"&&tab!=="pac"&&tab!=="cfg") tab="stats"; if(ADM&&!["stats","pac","err","usr","idx","cfg"].includes(tab)) tab="stats";
+  const npac=uniqueFiles(DRIVE_FILES).length, nerr=RO?0:errCount(), tabs=RO?[["stats","Estadísticas"],["pac",`Pacientes <span class="st-cnt">${npac}</span>`],["cfg","Configuración"]]:ADM?[["stats","Estadísticas"],["pac",`Pacientes <span class="st-cnt">${npac}</span>`],["err","Errores"+(nerr?` <span class="st-cnt st-bad" title="Hay elementos con error">${nerr}</span>`:"")],["usr",`Usuarios <span class="st-cnt">${HJM_USERS.length}</span>`],["idx","Descargas"],["cfg","Configuración"]]:[["stats","Estadísticas"],["pac",`Pacientes <span class="st-cnt">${npac}</span>`],["pend","Pendientes"+pendBadge()],["err","Errores"+(nerr?` <span class="st-cnt st-bad" title="Hay elementos con error">${nerr}</span>`:"")],["usr",`Usuarios <span class="st-cnt">${HJM_USERS.length}</span>`],["idx","Descargas"],["cmt","Comentarios"+cmTabDot()],["cfg","Configuración"]];
   let bar=body.querySelector(".st-tabs"); 
   body.innerHTML='<div class="st-tabs">'+tabs.map(([k,l])=>`<button type="button" role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join("")+'</div><div id="stTab"></div>';
   body.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{ tab=b.dataset.tab; render(); });
@@ -10902,10 +10915,11 @@ async function openStats(){
   if(!isAdmin()&&!RO){ openCfg(); return; }
   usrQ="";
   const dlg=$s("dlgStats"); CFG_ONLY=false; dlg.classList.remove("cfg-only"); $s("stTitle").textContent=RO?"Configuración":"Panel de Control"; $s("stSub").textContent=RO?"Estadísticas en solo consulta":"Solo visible para "+userName();
-  if(RO){ tab="stats"; period=0; }
+  if(RO||isAdmv()){ tab="stats"; period=0; }
   if(!PEND_RUN) pendData=null; if(!BAD_RUN) badFiles=null; TASK={stats:false,pac:false,pend:false,err:false}; PROG={}; updStatus();
   $s("stBody").innerHTML='<div class="st-msg">Cargando…</div>'; if(!dlg.open) dlg.showModal();
   /* v2.154 · Primero los pendientes (rápido); cuando terminan, en segundo plano, el resto de pacientes y los errores */
+  if(isAdmv()&&isAdmin()){ TASK.pend=true; (async()=>{ startBad(); analyzeAll((d,t)=>{ PROG.f={d,t}; updStatus(); }).then(()=>taskDone("pac")); })(); if(dirty) await syncRemote(); else await loadRemote(); taskDone("stats"); render(); return; }
   if(RO){ TASK.pend=true; TASK.err=true; updStatus(); analyzeAll((d,t)=>{ PROG.f={d,t}; updStatus(); }).then(()=>taskDone("pac")); await loadRemote(); taskDone("stats"); render(); return; }
   startPend();
   (async()=>{ for(let i=0;PEND_RUN&&i<240;i++) await new Promise(r=>setTimeout(r,250));
@@ -11099,6 +11113,7 @@ function renderCfg(host){
     <div class="usr-state" id="cfgState" role="status" style="margin-top:10px"></div></div>
   <div class="st-card" id="cfgStats"></div>
   <div class="st-card" id="cfgOff">${offDlHTML()}</div>`;
+  if(isAdmv()&&isAdmin()){ const o=host.querySelector("#cfgOff"); if(o) o.remove(); }
   offDlWire(host.querySelector("#cfgOff .off-dl")); cfgHFWire(host); cfgFill(); if(!c) host.querySelectorAll(".hm-seg button").forEach(b=>b.disabled=true);
   ["cfgU","cfgN","cfgP","cfgI"].forEach(id=>{ const e=document.getElementById(id); if(e) e.addEventListener("change",cfgCommit); });
   cfgStatsDraw();
@@ -12367,6 +12382,11 @@ html body.pp-browse #pPanel .pp-actions>.pp-view-btns,html body.pp-browse #pPane
 html body.pp-browse #pPanel .pp-head{align-items:flex-start!important}
 html body.pp-browse #pPanel .pp-head>.pp-ttl,html body.pp-browse #pPanel .pp-head>h2{align-self:flex-start!important}
 #ppList .tag.fn:empty,#ppList .tag.edad:empty{display:none}
+/* v3.48 · Administrativo con permisos de administrador: no edita, cancela ni borra lo previo (solo ve e imprime); crea registros nuevos */
+body.is-admv-adm #clinicalRecentList .rb-edit,body.is-admv-adm .rc-list .rb-edit,body.is-admv-adm .report-recents-table .rb-edit,body.is-admv-adm #clinicalEditTop,body.is-admv-adm #view-archive .av2-cx,body.is-admv-adm #view-archive .av2-del{display:none!important}
+body.is-admv-adm #stUsrList [data-edit],body.is-admv-adm #stUsrList [data-del],body.is-admv-adm #stUsrDiscard{display:none!important}
+/* v3.50 · Impresión: el ancho de la hoja (8.5 in) activa los estilos de pantalla angosta y empujaba el formato 8 px, generando una segunda página en blanco */
+@media print{html body #view-format{padding:0!important;margin:0!important}}
 </style>
 <script id="hjm-offline-js">
 /* v2.130 · Modo sin conexión: copia local de TODOS los expedientes (IndexedDB del navegador, sin permisos) que se actualiza en cada conexión
