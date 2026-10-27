@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oncología · Hospital Juárez de México</title>
-<meta name="application-version" content="3.46">
+<meta name="application-version" content="3.47">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2482,7 +2482,7 @@ body.pp-browse #pPanel.pp-xl .pp-list .cama-badge{flex:none;justify-content:cent
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 3.46 · Fecha de publicación: 27.10.26</div>
+  <div class="app-footer-version">Versión 3.47 · Fecha de publicación: 27.10.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p>Los datos viajan por conexión segura (HTTPS) y se almacenan en la cuenta de Google del Servicio de Oncología del Hospital Juárez de México; protegidos mediante clave de acceso.</p>
     <p id="hjmOffInfo" role="status" hidden></p>
@@ -7055,12 +7055,13 @@ function renderPP(){
   if(window.PP_KEY!==ppKey){ window.PP_KEY=ppKey; window.PP_PAGES=0; }
   const ppCap=(s||camaMode)?200:60, ppShown=ppHome?(camaMode?ppCap:Math.min(ppCap,ppPer()*(1+(window.PP_PAGES||0)))):ppCap;
   try{ $("ppList").classList.toggle("by-cama",!!camaMode); const mb=$("ppMore"); if(mb) mb.hidden=!(ppHome&&Math.min(items.length,ppCap)>ppShown); }catch(_){}
+  const feMode=!camaMode&&ppHome&&PP_VIEW==="recientes";   /* v3.46 · «Todos» (adscritos/residentes) y «Expedientes» (administrativos): también Edad y Fecha de nacimiento */
   $("ppList").innerHTML=items.length?items.slice(0,ppShown).map(f=>{ const p=f.meta||{}, exp=p.exp||patientExpFromFileName(f.name), nm=p.nombre||exp;
     const bed=camaMode&&p.cama?`<span class="cama-badge${String(p.cama).trim().length>3?" long":""}" title="Cama ${esc(p.cama)}">${esc(String(p.cama).trim().replace(/^UCI\s*/i,"UCI "))}</span>`:"";
-    const tg=camaMode?"div":"button"; return `<${tg}${camaMode?' role="button" tabindex="0"':' type="button"'} class="dlg-item${bed?" has-bed":""}" data-id="${f.id}" data-exp="${esc(exp)}"><span class="pp-kebab" role="button" tabindex="0" data-ppmenu aria-haspopup="menu" aria-expanded="false" title="Acciones" aria-label="Acciones del paciente"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></span>${bed}<span class="pinfo"><span class="nmw"><b data-sel>${esc(String(nm).toLocaleUpperCase("es-MX"))}</b>${camaMode?ppCpyHTML():""}</span><span class="tags"><span class="tgw"><span class="tag" data-sel>Exp. ${esc(exp)}</span>${camaMode?ppCpyHTML():""}</span>${camaMode?`<span class="tgw">${ppFnHTML(f)}${ppCpyHTML()}</span>`+ppEdadHTML(f):""}${p.cama&&!bed?`<span class="tag cama">Cama ${esc(p.cama)}</span>`:""}</span>${p.dx?`<small class="dx">${esc(p.dx)}</small>`:""}${ppMetaMod(p,camaMode)}${camaMode?ppIngHTML(f):""}</span>${camaMode?ppPendHTML(f):""}</${tg}>`; }).join("")
+    const tg=camaMode?"div":"button"; return `<${tg}${camaMode?' role="button" tabindex="0"':' type="button"'} class="dlg-item${bed?" has-bed":""}" data-id="${f.id}" data-exp="${esc(exp)}"><span class="pp-kebab" role="button" tabindex="0" data-ppmenu aria-haspopup="menu" aria-expanded="false" title="Acciones" aria-label="Acciones del paciente"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></span>${bed}<span class="pinfo"><span class="nmw"><b data-sel>${esc(String(nm).toLocaleUpperCase("es-MX"))}</b>${camaMode?ppCpyHTML():""}</span><span class="tags"><span class="tgw"><span class="tag" data-sel>Exp. ${esc(exp)}</span>${camaMode?ppCpyHTML():""}</span>${camaMode?`<span class="tgw">${ppFnHTML(f)}${ppCpyHTML()}</span>`+ppEdadHTML(f):(feMode?ppFnHTML(f)+ppEdadHTML(f):"")}${p.cama&&!bed?`<span class="tag cama">Cama ${esc(p.cama)}</span>`:""}</span>${p.dx?`<small class="dx">${esc(p.dx)}</small>`:""}${ppMetaMod(p,camaMode)}${camaMode?ppIngHTML(f):""}</span>${camaMode?ppPendHTML(f):""}</${tg}>`; }).join("")
     :filtOn?'<div class="dlg-empty">Ningún paciente con ese filtro en esta vista. Puedes borrar el filtro o cambiar a «Todos». Los pacientes se asocian al adscrito la próxima vez que se guardan.</div>':camaMode?'<div class="dlg-empty">Sin pacientes hospitalizados modificados en las últimas 36 horas. Usa «Todos» o el buscador.</div>':`<button type="button" class="dlg-item pp-new" data-pp-new><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H5v18h14V8l-5-5zM14 3v5h5M8 14h8M12 10v8"/></svg><b>Nuevo Paciente</b></button>`;
   try{ ppCensusSync(!!camaMode); }catch(_){}
-  try{ ppRowFill(!!camaMode,items.slice(0,ppShown)); }catch(_){}
+  try{ ppRowFill(!!(camaMode||feMode),items.slice(0,ppShown)); }catch(_){}
   try{ ppPendFitAll($("ppList")); }catch(_){}
   ppMarkCurrent();
   if(_keep){ try{ const c=document.querySelector('#ppList [data-pend="'+_keep.id+'"]'); if(c){ ppPendSet(c,_keep.rows); const t=c.children[_keep.i]&&c.children[_keep.i].querySelector(".pp-pt"); if(t){ t.focus({preventScroll:true}); t.setSelectionRange(_keep.s,_keep.e); } } }catch(_){} }
@@ -12365,6 +12366,7 @@ html body .ar-hero h1{margin:0!important;font:400 clamp(32px,3.6vw,42px)/1.05 va
 html body.pp-browse #pPanel .pp-actions>.pp-view-btns,html body.pp-browse #pPanel.cen-on .pp-actions>*{align-self:flex-start!important;margin-top:4px!important}
 html body.pp-browse #pPanel .pp-head{align-items:flex-start!important}
 html body.pp-browse #pPanel .pp-head>.pp-ttl,html body.pp-browse #pPanel .pp-head>h2{align-self:flex-start!important}
+#ppList .tag.fn:empty,#ppList .tag.edad:empty{display:none}
 </style>
 <script id="hjm-offline-js">
 /* v2.130 · Modo sin conexión: copia local de TODOS los expedientes (IndexedDB del navegador, sin permisos) que se actualiza en cada conexión
