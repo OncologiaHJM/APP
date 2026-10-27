@@ -2821,7 +2821,7 @@ table.cen tbody td.ro{background-color:color-mix(in srgb,var(--cen-tint) 55%,var
 #ppCensus,#cenPrint{min-width:153px;justify-content:center}
 table.cen tbody tr.sec td,table.cen tbody tr.res td{background-color:var(--cen-head)}
 html body.pp-browse #pPanel.cen-on .pp-head{align-items:flex-start!important}
-html body.pp-browse #pPanel.cen-on .pp-head .pp-actions>*{align-self:flex-start!important;margin-top:24px!important}
+html body.pp-browse #pPanel.cen-on .pp-head .pp-actions>*{align-self:flex-start!important;margin-top:4px!important}
 html body.pp-browse #pPanel.cen-on .pp-head .pp-actions>.pp-census{margin-top:28px!important}
 
 /* Sexo como interruptor */
@@ -4955,7 +4955,7 @@ function altaHalfHTML(fmt){return `<span class="lbl">Hoja completa</span><div cl
 function altaToggleHTML(fmt,label,help,extra=""){const on=!!ALTA_COMPOSE[fmt];return `<button type="button" class="alta-check ${extra}" role="checkbox" aria-checked="${on}" data-alta-toggle="${fmt}"><span class="alta-box">${on?"✓":""}</span><span>${esc(label)}<small>${esc(help)}</small></span></button>`;}
 function altaSuppToggleHTML(key,label,ready=true){const on=!!ALTA_COMPOSE[key];return `<button type="button" class="alta-check" role="checkbox" aria-checked="${on}" data-alta-supp="${key}" ${ready?"":"disabled"}><span class="alta-box">${on?"✓":""}</span><span>${esc(label)}${ready?"":'<small class="soon">Formato pendiente</small>'}</span></button>`;}
 function altaDatesHTML(){return `<div class="alta-dates"><label class="alta-date-field">Fecha de Ingreso<input data-alta-date="ingreso" data-date inputmode="numeric" placeholder="DD.MM.AA" value="${esc(ALTA_DATES.ingreso||"")}"></label><label class="alta-date-field">Fecha de Egreso<input data-alta-date="egreso" data-date inputmode="numeric" placeholder="DD.MM.AA" value="${esc(ALTA_DATES.egreso||"")}"></label></div>`;}
-function altaRecentsHTML(){const a=HIST.altas||[];return '<div class="alta-prev"><h3>Altas previas</h3><small>Se conserva la captura completa; aquí se muestra únicamente la fecha.</small>'+(a.length?'<table><thead><tr><th>Fecha del alta</th><th>Acciones</th></tr></thead><tbody>'+a.map(r=>'<tr><td>'+esc((r.p&&r.p.fecha)||r.t||'')+'<small class="alta-saved-by">'+savedChangeLabel(r)+': '+esc(savedBy(r))+'</small></td><td>'+rbBtn("edit","Editar",'data-alta-load="'+esc(r.id)+'"')+rbBtn("view","Ver",'data-ar-ver="altas|'+esc(r.id)+'"')+rbBtn("print","Imprimir",'data-alta-print="'+esc(r.id)+'"')+'</td></tr>').join('')+'</tbody></table>':'<div class="alta-prev-empty">Todavía no hay altas guardadas para este paciente.</div>')+'</div>';}
+function altaRecentsHTML(){const a=(HIST.altas||[]).filter(x=>!isCx(x));return '<div class="alta-prev"><h3>Altas previas</h3><small>Se conserva la captura completa; aquí se muestra únicamente la fecha.</small>'+(a.length?'<table><thead><tr><th>Fecha del alta</th><th>Acciones</th></tr></thead><tbody>'+a.map(r=>'<tr><td>'+esc((r.p&&r.p.fecha)||r.t||'')+'<small class="alta-saved-by">'+savedChangeLabel(r)+': '+esc(savedBy(r))+'</small></td><td>'+rbBtn("edit","Editar",'data-alta-load="'+esc(r.id)+'"')+rbBtn("view","Ver",'data-ar-ver="altas|'+esc(r.id)+'"')+rbBtn("print","Imprimir",'data-alta-print="'+esc(r.id)+'"')+'</td></tr>').join('')+'</tbody></table>':'<div class="alta-prev-empty">Todavía no hay altas guardadas para este paciente.</div>')+'</div>';}
 function applyAltaDates(){const root=BUILT.alta;if(!root)return;[['D11','ingreso'],['G11','egreso']].forEach(([ref,key])=>{const cell=root.querySelector(':scope > .paper:not(.alta-attach) [data-x="'+ref+'"]'),sp=cell&&cell.firstElementChild;if(!sp)return;const v=ALTA_DATES[key]||'';sp.textContent=v;cell.toggleAttribute('data-ov',!!v);});}
 function syncAltaDateControls(){document.querySelectorAll('[data-alta-date]').forEach(i=>{const v=ALTA_DATES[i.dataset.altaDate]||'';if(i.value!==v)i.value=v;});}
 /* v2.11 · Captura del alta; la plantilla y sus copias impresas se conservan. */
@@ -6028,8 +6028,14 @@ $("bandExit").onclick=async()=>{ try{ppFiltClear();}catch(_){}
   if(EXITING)return;EXITING=true;
   try{
     if(current){try{captureCurrentRecent();}catch(_){}}
-    if(current||currentClinical)back();
+    /* v3.45 · Salir: se cierra de inmediato todo lo del paciente (archivo clínico, formatos, ventanas) y la sesión; el guardado sigue después */
+    current=null;currentClinical=null;document.body.classList.remove("showing-archive","showing-format","showing-clinical","rec-side","transfusion-side");
+    try{$("recPanel").hidden=true;$("bandBack").hidden=false;$("bandIdx").hidden=false;}catch(_){}
+    try{ if(typeof ARW!=="undefined"&&ARW.open&&typeof arWinClose==="function")arWinClose(true); }catch(_){}
+    ["dlgArView","dlgStats"].forEach(id=>{ try{ const d=document.getElementById(id); if(d&&d.open)d.close(); }catch(_){} });
+    window.scrollTo(0,0);
     SESSION_ADSCRITO="";SESSION_RESIDENT="";
+    try{ admvSync(); }catch(_){}
     openResidentGate();
     let ok=true;
     if(hasSelectedPatient()){
@@ -7776,10 +7782,11 @@ function arEntry(tp,r){
   return {tp,r,fecha,hora,tipo,detail,ms:arDateMs(fecha,hora,r.ts)};
 }
 /* v3.45 · Cancelar / Restaurar (solo notas e indicaciones). r.cx={on,ts,by,rol}; no cambia r.ts */
-const CX_TP=new Set(["notas","indicaciones"]);
+const CX_TP=new Set(Object.keys(AR_KIND));   /* Cancelar aplica a todo documento del archivo */
 function isCx(r){ return !!(r&&r.cx&&r.cx.on); }
 function arCollectLive(src){ return arCollect(src).filter(e=>!isCx(e.r)); }
-function cxWord(tp){ return tp==="indicaciones"?"INDICACIÓN CANCELADA":"NOTA CANCELADA"; }
+const CX_WORD={notas:"NOTA CANCELADA",prequx:"NOTA CANCELADA",indicaciones:"INDICACIÓN CANCELADA",altas:"ALTA CANCELADA",solCx:"SOLICITUD CANCELADA",rx:"SOLICITUD CANCELADA",repCx:"REPORTE CANCELADO",interconsulta:"INTERCONSULTA CANCELADA",receta:"RECETA CANCELADA",consInf:"DOCUMENTO CANCELADO"};
+function cxWord(tp){ return CX_WORD[tp]||"CANCELADO"; }
 function arCollect(src){return src.flatMap(tp=>(HIST[tp]||[]).map(r=>arEntry(tp,r))).sort((a,b)=>(b.ms-a.ms)||((b.r.ts||0)-(a.r.ts||0)));}
 const AR_EDIT=new Set(["notas","indicaciones","prequx","altas","solCx","repCx"]);   // v2.58 · Editar en notas, indicaciones, procedimientos y altas
 function arActions(e,allowDelete=false){const a=`data-ar-tp="${esc(e.tp)}" data-ar-id="${esc(e.r.id)}"`;return rbBtn("edit","Editar",a+' data-ar="view"')+rbBtn("view","Ver",a+' data-ar="ver"')+rbBtn("print","Imprimir",a+' data-ar="print"')+(allowDelete?rbBtn("del","Borrar",a+' data-ar="del"'):"");}
@@ -7843,14 +7850,14 @@ function arAct(tp,id,act,btn){
   if(act==="cancel"||act==="restore"){
     if(!btn||!btn.closest("#view-archive")||!CX_TP.has(tp)||isAdmv())return;
     const r=(HIST[tp]||[]).find(x=>x.id===id);if(!r)return;
-    if(act==="restore"){ if(!isAdmin()||!isCx(r))return; }
-    else{ if(isCx(r))return; if(!confirm("¿Cancelar "+(tp==="indicaciones"?"esta indicación":"esta nota")+"? Dejará de aparecer en los registros previos y no se podrá copiar; seguirá en el archivo clínico marcada como cancelada."))return; }
+    if(act==="restore"){ if(!isAdminUser()||!isCx(r))return; }
+    else{ if(isCx(r))return; if(!confirm("¿Cancelar este registro? Dejará de aparecer en los registros previos y no se podrá copiar; seguirá en el archivo clínico marcado como cancelado."))return; }
     r.cx={on:act==="cancel",ts:Math.max(Date.now(),Number(r.ts)||0),by:currentResidentName(),rol:currentAuthorRole()};
     if(clinicalEditing[tp]===id)clinicalEditing[tp]=null;if(clinicalEditingSecond[tp]===id)clinicalEditingSecond[tp]=null;
     renderArchive();saveAfterDelete();return;
   }
   if(act==="del"){
-    if(CX_TP.has(tp)&&!isAdmin())return;
+    if(CX_TP.has(tp)&&!isAdminUser())return;
     if(!document.body.classList.contains("showing-archive")||!btn||!btn.closest("#view-archive"))return;
     if(!(HIST[tp]||[]).some(r=>r.id===id))return;
     if(!confirm("¿Seguro que quieres eliminar este registro del archivo clínico? No será posible recuperarlo."))return;
@@ -7859,7 +7866,8 @@ function arAct(tp,id,act,btn){
     if(ALTA_OWN===id)ALTA_OWN=null;
     renderArchive();saveAfterDelete();return;
   }
-  if(kind==="cl"){ if(act==="print"){printClinical(tp,id);return;} const rr=(HIST[tp]||[]).find(x=>x.id===id); if(isCx(rr)){ try{ notify("Registro cancelado: solo un administrador puede restaurarlo.","warn"); }catch(_){} return; } openClinical(tp);editClinical(tp,id);return; }
+  if(act!=="print"&&isCx((HIST[tp]||[]).find(x=>x.id===id))){ try{ notify("Registro cancelado: solo un administrador puede restaurarlo.","warn"); }catch(_){} return; }
+  if(kind==="cl"){ if(act==="print"){printClinical(tp,id);return;} openClinical(tp);editClinical(tp,id);return; }
   if(kind==="alta"){ openFormat("alta");loadAltaRecent(id,act==="print");return; }
   openFormat(tp);useRecent(tp,id,0);if(act==="print")arPrintFormat();
 }
@@ -8010,10 +8018,10 @@ function savedRoleLabel(r){
   const name=savedBy(r);return name==="Sin identificar"?"Usuario":authorRoleForName(name)==="adscrito"?"Adscrito":"Residente";
 }
 function savedChangeLabel(r){return "Elaboró";}
-function reportRecentsTableHTML(newId){return '<div class="rc-head"><h2>Reportes Previos</h2></div>'+((HIST.repCx||[]).length?'<table class="report-recents-table"><thead><tr><th>Cirugía</th><th>Elaboró</th><th>Último cambio</th><th>Acciones</th></tr></thead><tbody>'+HIST.repCx.map(r=>'<tr class="rc-item'+(r.id===newId?' new':'')+'" data-id="'+esc(r.id)+'"><td>'+esc(r.t)+'</td><td>'+esc(savedBy(r))+'</td><td>'+esc(relTime(r.ts))+'</td><td><div class="rc-act">'+rbBtn('edit','Editar','data-ra="use" data-n="0"')+rbBtn('view','Ver','data-ar-ver="repCx|'+esc(r.id)+'"')+rbBtn('print','Imprimir','data-ra="print" data-n="0"')+'</div></td></tr>').join('')+'</tbody></table>':'<div class="rc-empty">Todavía no hay reportes guardados para este paciente.</div>');}
+function reportRecentsTableHTML(newId){const RL=(HIST.repCx||[]).filter(x=>!isCx(x));return '<div class="rc-head"><h2>Reportes Previos</h2></div>'+(RL.length?'<table class="report-recents-table"><thead><tr><th>Cirugía</th><th>Elaboró</th><th>Último cambio</th><th>Acciones</th></tr></thead><tbody>'+RL.map(r=>'<tr class="rc-item'+(r.id===newId?' new':'')+'" data-id="'+esc(r.id)+'"><td>'+esc(r.t)+'</td><td>'+esc(savedBy(r))+'</td><td>'+esc(relTime(r.ts))+'</td><td><div class="rc-act">'+rbBtn('edit','Editar','data-ra="use" data-n="0"')+rbBtn('view','Ver','data-ar-ver="repCx|'+esc(r.id)+'"')+rbBtn('print','Imprimir','data-ra="print" data-n="0"')+'</div></td></tr>').join('')+'</tbody></table>':'<div class="rc-empty">Todavía no hay reportes guardados para este paciente.</div>');}
 function recentsHTML(tp,newId,owner=current){
   if(tp==='repCx')return reportRecentsTableHTML(newId);
-  const C=RECENT_CFG[tp], R={list:HIST[tp]}, two=tp==="receta"&&recFields(owner).length>1;
+  const C=RECENT_CFG[tp], R={list:(HIST[tp]||[]).filter(x=>!isCx(x))}, two=tp==="receta"&&recFields(owner).length>1;
   const trash='<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>';
   return `<div class="rc-head"><h2>${C.title}</h2><small>Historial del paciente</small></div><div class="rc-list">`
    +(R.list.length?R.list.map(r=>{ const s=C.show(r.t); return `<div class="rc-item${r.id===newId?" new":""}" data-id="${esc(r.id)}">${s.head?`<div class="rc-hd">${esc(s.head)}</div>`:""}<div class="rc-txt">${esc(s.body)}</div><div class="rc-meta">${relTime(r.ts)}<span class="recent-resident">${savedChangeLabel(r)}: ${esc(savedBy(r))}</span></div><div class="rc-act">${two?rbBtn("view","Ver 1",'data-ra="use" data-n="0"')+rbBtn("view","Ver 2",'data-ra="use" data-n="1"'):rbBtn("edit","Editar",'data-ra="use" data-n="0"')+rbBtn("view","Ver",'data-ar-ver="'+tp+'|'+esc(r.id)+'"')}${rbBtn("print","Imprimir",'data-ra="print" data-n="0"')}</div></div>`; }).join(""):`<div class="rc-empty">${C.empty}${tp==="rx"?"":"<br>Se guardan al presionar <b>Guardar</b> o <b>Imprimir</b>."}</div>`)
@@ -9502,6 +9510,7 @@ document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closes
 setInterval(()=>{ try{ if(document.querySelector("[data-cl-allergy-in]")) clinAllergySync(); }catch(_){} },1500);
 
 /* ===================== v3.40 · Rol Administrativo + botón «Ver» del Archivo Clínico ===================== */
+function isAdminUser(){ try{ const n=normalizeStaffName(sessionUserName()); if(!n) return false; const r=HJM_USERS.find(u=>normalizeStaffName(printName(u))===n)||HJM_USERS.find(u=>normalizeStaffName(u.nombre)===n); return admRec(r); }catch(_){ return false; } }
 function isAdmv(){ try{ const r=userRecord(sessionUserName()); return !!(r&&r.tipo==="administrativo"); }catch(_){ return false; } }
 function admvSync(){ try{ const on=isAdmv(); document.body.classList.toggle("is-admv",on);
   document.querySelectorAll('[data-pp-view="recientes"]').forEach(b=>{ const t=[...b.childNodes].reverse().find(n=>n.nodeType===3&&n.textContent.trim()); const want=on?"Expedientes":"Todos"; if(t&&t.textContent.trim()!==want) t.textContent=t.textContent.replace(/Todos|Expedientes/,want); else if(!t){ const sp=[...b.querySelectorAll("span")].reverse().find(x=>/Todos|Expedientes/.test(x.textContent)); if(sp&&sp.textContent.trim()!==want) sp.textContent=want; } b.title=on?"Buscar entre todos los expedientes":b.title; }); }catch(_){} }
@@ -9682,7 +9691,7 @@ function ar2Row(e){
   const title=e.tp==="notas"?(e.tipo||m.n):(e.dateOnly?e.tipo:(["rx","interconsulta","receta","consInf"].includes(e.tp)?(e.tipo||m.n):m.n));
   let pv=e.dateOnly?"Solicitud registrada · sin copia guardada":arPreview(e); if(pv.length>240) pv=pv.slice(0,240);
   const a=`data-ar-tp="${esc(e.tp)}" data-ar-id="${esc(e.r.id)}"`, B=(k,t,ar,x)=>`<button type="button" class="av2-b${x||""}" ${a} data-ar="${ar}" title="${t}" aria-label="${t}">${RB_IC[k]}<span>${t}</span></button>`;
-  const cxable=CX_TP.has(e.tp), cx=cxable&&isCx(e.r), adn=isAdmin();
+  const cxable=CX_TP.has(e.tp), cx=cxable&&isCx(e.r), adn=isAdminUser();
   let acts;
   if(e.dateOnly)acts="";
   else if(!cxable)acts=(adm?"":B("edit","Editar","view"))+B("view","Ver","ver")+B("print","Imprimir","print")+(adm?"":B("del","Borrar","del"," av2-del"));
@@ -10824,8 +10833,8 @@ async function render(){
   if(CFG_ONLY) return;
   { const cf=document.getElementById("cfgForm"); if(tab==="cfg"&&cf&&cf.contains(document.activeElement)) return; const cw=document.getElementById("cmWrap"); if(tab==="cmt"&&cw&&cw.contains(document.activeElement)) return; }   /* no interrumpir mientras se escribe en Configuración */
   const body=$s("stBody");
-  const RO=isAdmv()&&!isAdmin(); if(RO&&tab!=="stats"&&tab!=="pac") tab="stats";
-  const npac=uniqueFiles(DRIVE_FILES).length, nerr=RO?0:errCount(), tabs=RO?[["stats","Estadísticas"],["pac",`Pacientes <span class="st-cnt">${npac}</span>`]]:[["stats","Estadísticas"],["pac",`Pacientes <span class="st-cnt">${npac}</span>`],["pend","Pendientes"+pendBadge()],["err","Errores"+(nerr?` <span class="st-cnt st-bad" title="Hay elementos con error">${nerr}</span>`:"")],["usr",`Usuarios <span class="st-cnt">${HJM_USERS.length}</span>`],["idx","Descargas"],["cmt","Comentarios"+cmTabDot()],["cfg","Configuración"]];
+  const RO=isAdmv()&&!isAdmin(); if(RO&&tab!=="stats"&&tab!=="pac"&&tab!=="cfg") tab="stats";
+  const npac=uniqueFiles(DRIVE_FILES).length, nerr=RO?0:errCount(), tabs=RO?[["stats","Estadísticas"],["pac",`Pacientes <span class="st-cnt">${npac}</span>`],["cfg","Configuración"]]:[["stats","Estadísticas"],["pac",`Pacientes <span class="st-cnt">${npac}</span>`],["pend","Pendientes"+pendBadge()],["err","Errores"+(nerr?` <span class="st-cnt st-bad" title="Hay elementos con error">${nerr}</span>`:"")],["usr",`Usuarios <span class="st-cnt">${HJM_USERS.length}</span>`],["idx","Descargas"],["cmt","Comentarios"+cmTabDot()],["cfg","Configuración"]];
   let bar=body.querySelector(".st-tabs"); 
   body.innerHTML='<div class="st-tabs">'+tabs.map(([k,l])=>`<button type="button" role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join("")+'</div><div id="stTab"></div>';
   body.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{ tab=b.dataset.tab; render(); });
@@ -10869,7 +10878,7 @@ async function openStats(){
   const RO=isAdmv()&&!isAdmin();   /* v3.45 · Administrativo: Panel de solo consulta (Estadísticas y Pacientes) */
   if(!isAdmin()&&!RO){ openCfg(); return; }
   usrQ="";
-  const dlg=$s("dlgStats"); CFG_ONLY=false; dlg.classList.remove("cfg-only"); $s("stTitle").textContent=RO?"Estadísticas":"Panel de Control"; $s("stSub").textContent=RO?"Solo consulta":"Solo visible para "+userName();
+  const dlg=$s("dlgStats"); CFG_ONLY=false; dlg.classList.remove("cfg-only"); $s("stTitle").textContent=RO?"Configuración":"Panel de Control"; $s("stSub").textContent=RO?"Estadísticas en solo consulta":"Solo visible para "+userName();
   if(RO){ tab="stats"; period=0; }
   if(!PEND_RUN) pendData=null; if(!BAD_RUN) badFiles=null; TASK={stats:false,pac:false,pend:false,err:false}; PROG={}; updStatus();
   $s("stBody").innerHTML='<div class="st-msg">Cargando…</div>'; if(!dlg.open) dlg.showModal();
@@ -12329,6 +12338,10 @@ html body .ar-hero-title{gap:0!important}
 html body .ar-hero-title>:first-child:not(:last-child){display:none!important}
 html body .ar-hero .ar-eyebrow{display:block;margin:0 0 4px;padding-left:26px;background:linear-gradient(#9DB7DB,#9DB7DB) 0 50%/18px 3px no-repeat;font:500 13px/1.2 var(--rd-sans);letter-spacing:0;text-transform:none;color:var(--rd-mute)}
 html body .ar-hero h1{margin:0!important;font:400 clamp(32px,3.6vw,42px)/1.05 var(--rd-serif)!important;letter-spacing:-.01em!important;color:var(--rd-ink)!important}
+/* v3.45 · el selector (Censo · Hospitalizados · Todos) queda en la misma posición en todas las vistas */
+html body.pp-browse #pPanel .pp-actions>.pp-view-btns,html body.pp-browse #pPanel.cen-on .pp-actions>*{align-self:flex-start!important;margin-top:4px!important}
+html body.pp-browse #pPanel .pp-head{align-items:flex-start!important}
+html body.pp-browse #pPanel .pp-head>.pp-ttl,html body.pp-browse #pPanel .pp-head>h2{align-self:flex-start!important}
 </style>
 <script id="hjm-offline-js">
 /* v2.130 · Modo sin conexión: copia local de TODOS los expedientes (IndexedDB del navegador, sin permisos) que se actualiza en cada conexión
