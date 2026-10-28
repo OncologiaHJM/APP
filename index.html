@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oncología · Hospital Juárez de México</title>
-<meta name="application-version" content="3.61">
+<meta name="application-version" content="3.62">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2301,7 +2301,26 @@ body.pp-browse #pPanel.pp-xl .pp-list .cama-badge{flex:none;justify-content:cent
 
 
 
-<style id="hjm-fouc">html:not(.hjm-rdy) body{visibility:hidden!important}html:not(.hjm-rdy) dialog::backdrop{opacity:0!important}</style><script>setTimeout(function(){document.documentElement.classList.add("hjm-rdy")},3500)</script></head>
+<style id="hjm-fouc">html:not(.hjm-rdy) body{visibility:hidden!important}html:not(.hjm-rdy) dialog::backdrop{opacity:0!important}</style><script>setTimeout(function(){document.documentElement.classList.add("hjm-rdy")},3500)</script><style id="hjm-v362">
+/* v3.62 · Aviso de versión de prueba bajo «Ingresar» (gris, pequeño, máx. 3 renglones) */
+html body #dlgResidentGate .resident-gate-legal{margin:8px 0 0;padding:0;font:400 10px/1.35 var(--rd-sans,inherit);color:#8c8f91;text-align:center;text-wrap:balance;max-height:4.1em;overflow:hidden}
+@media (prefers-color-scheme:dark){html body #dlgResidentGate .resident-gate-legal{color:#8f9396}}
+@media print{#dlgResidentGate .resident-gate-legal{display:none!important}}
+/* v3.62 · Buscar por diagnóstico (Panel › Descargas › Base de datos) */
+.db-dx{margin-top:14px;padding-top:12px;border-top:1px solid var(--line,#d9e0ea)}
+.db-dx>label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
+.db-dx input[type=search]{width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--line,#c9d2de);border-radius:10px;font:inherit;font-size:14px;background:transparent;color:inherit}
+.db-dx-res{margin-top:10px;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.db-dx-res[hidden]{display:none}
+.db-dx-n{font-size:13px;flex:1 1 220px}
+.db-dx-n b{font-size:15px}
+.db-dx-btns{display:flex;flex-wrap:wrap;gap:8px}
+.db-dx-btns button{font:inherit;font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:10px;border:1px solid #1F6FB5;background:#fff;color:#1F6FB5;cursor:pointer}
+.db-dx-btns button:hover:not(:disabled){background:#1F6FB5;color:#fff}
+.db-dx-btns button:disabled{opacity:.55;cursor:wait}
+@media (prefers-color-scheme:dark){.db-dx-btns button{background:transparent;color:#7fb4e6;border-color:#7fb4e6}.db-dx-btns button:hover:not(:disabled){background:#7fb4e6;color:#10161c}}
+</style>
+</head>
 <body>
 
 <header class="top">
@@ -2336,6 +2355,7 @@ body.pp-browse #pPanel.pp-xl .pp-list .cama-badge{flex:none;justify-content:cent
     <a class="resident-gate-request" id="residentGateRequest" href="https://drive.google.com/file/d/1y5_ckuGclZjEJkRRp7EvbbO8VDFYigHA/view?usp=drive_link" target="_blank" rel="noopener noreferrer" hidden><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="m10.8 12.2 8.7-8.7M16 6l3 3M14 8l2 2"/></svg>Solicitar Clave</a>
     <p class="resident-gate-msg" id="residentGateMsg" role="alert"></p>
     <div class="resident-gate-buttons"><button class="resident-gate-submit" id="residentGateSubmit" type="submit">Ingresar</button></div>
+    <p class="resident-gate-legal" id="residentGateLegal">Versión de prueba en revisión por la Jefatura de Oncología. Guarda la información en la plataforma que ya usa el servicio; su uso es responsabilidad de cada usuario. No usa formatos ajenos a los autorizados por el HJM ni servicios nuevos.</p>
   </form>
 </dialog>
 
@@ -3724,7 +3744,10 @@ function syncAltaClinicFromAdscrito(){
 $("medico").addEventListener("change",syncAltaClinicFromAdscrito);
 /* ---------- v2.165 · Clínica(s) del paciente: se llena según el adscrito, se puede editar, solo clínicas registradas, varias con "/" ---------- */
 function clinCatalog(){ const m=new Map(); PP_CLIN_NAMES.concat(HJM_USERS.filter(u=>u.servicio&&u.tipo==="adscrito").map(u=>u.servicio)).forEach(c=>{ const k=normalizeStaffName(c); if(k&&!m.has(k)) m.set(k,String(c).toLocaleUpperCase("es-MX")); }); return [...m.entries()].map(([k,n])=>({k,n})).sort((a,b)=>ppClinCmp(a.n,b.n)); }
-function clinMatch(part){ const k=normalizeStaffName(part); if(!k) return null; const cat=clinCatalog(); const ex=cat.find(c=>c.k===k); if(ex) return ex.n; const w=k.split(" ").filter(Boolean); const h=cat.filter(c=>w.every(t=>c.k.includes(t))); return h.length===1?h[0].n:null; }
+/* v3.62 · Abreviaturas / nombres inexactos de clínica (los que escribe el censo o la skill) -> nombre registrado */
+const CLIN_ALIAS={"TM":"TUMORES MIXTOS","MIXTOS":"TUMORES MIXTOS","TUMORES MIXTOS":"TUMORES MIXTOS","GINE":"TUMORES GINECOLÓGICOS","GO":"TUMORES GINECOLÓGICOS","GINECOLOGIA":"TUMORES GINECOLÓGICOS","GINECOLOGICOS":"TUMORES GINECOLÓGICOS","GINECOLOGIA ONCOLOGICA":"TUMORES GINECOLÓGICOS","MAMAS":"MAMA","CYC":"CABEZA Y CUELLO","CC":"CABEZA Y CUELLO","OM":"ONCOLOGÍA MÉDICA","ONCO MEDICA":"ONCOLOGÍA MÉDICA","RT":"RADIO ONCOLOGÍA","RO":"RADIO ONCOLOGÍA","RADIOTERAPIA":"RADIO ONCOLOGÍA","INTERV":"INTERVENCIONISMO","INTERVENCION":"INTERVENCIONISMO"};
+function clinMatch(part){ const k=normalizeStaffName(part); if(!k) return null; const cat=clinCatalog(); const ex=cat.find(c=>c.k===k); if(ex) return ex.n;
+  const al=CLIN_ALIAS[k]; if(al){ const kk=normalizeStaffName(al), hit=cat.find(c=>c.k===kk); if(hit) return hit.n; } const w=k.split(" ").filter(Boolean); const h=cat.filter(c=>w.every(t=>c.k.includes(t))); return h.length===1?h[0].n:null; }
 function clinClean(v){ const seen=new Set(), out=[]; String(v||"").split("/").forEach(p=>{ const n=clinMatch(p); if(n&&!seen.has(n)){ seen.add(n); out.push(n); } }); return out.join("/"); }
 function clinAuto(medico){ const seen=new Set(), out=[]; String(medico||"").split("/").slice(0,1).forEach(p=>{ const a=staffAdscrito(p)||staffAdscritoLoose(String(p).trim().toLocaleUpperCase("es-MX")); const c=a&&a.clinica?String(a.clinica).toLocaleUpperCase("es-MX"):""; if(c&&!seen.has(c)){ seen.add(c); out.push(c); } }); return out.join("/"); }
 function clinSync(force){
@@ -3732,7 +3755,12 @@ function clinSync(force){
   if((force&&a)||c.value.trim()===""||c.value===(last||"")){ if(c.value!==a){ c.value=a; c.dispatchEvent(new Event("input",{bubbles:true})); } }
   c.dataset.auto=a; c.dataset.lastMed=m.value;
 }
-function clinAfterLoad(obj){ const c=$("clinica"),m=$("medico"); if(!c||!m) return; if(obj&&obj.clinica===undefined){ c.value=""; c.dataset.auto=""; clinSync(true); } else { c.dataset.auto=clinAuto(m.value); c.dataset.lastMed=m.value; } }
+function clinAfterLoad(obj){ const c=$("clinica"),m=$("medico"); if(!c||!m) return; if(obj&&obj.clinica===undefined){ c.value=""; c.dataset.auto=""; clinSync(true); } else { c.dataset.auto=clinAuto(m.value); c.dataset.lastMed=m.value; }
+  /* v3.62 · regla de nombres: adscrito y clínica inexactos o abreviados se completan al nombre registrado */
+  try{ if(HJM_STAFF.adscritos.length){ const mv=m.value.trim(); if(mv){ const nv=adsNormalize(mv); if(nv&&nv!==mv){ m.value=nv; m.dispatchEvent(new Event("input",{bubbles:true})); } }
+      const cv=c.value.trim(), au=clinAuto(m.value); if(cv){ const cl=clinClean(cv); if(cl&&cl!==cv){ c.value=cl; c.dispatchEvent(new Event("input",{bubbles:true})); } else if(!cl&&au){ c.value=au; c.dispatchEvent(new Event("input",{bubbles:true})); } } else if(au){ c.value=au; c.dispatchEvent(new Event("input",{bubbles:true})); }
+      c.dataset.auto=au; c.dataset.lastMed=m.value; } }catch(_){}
+}
 $("medico").addEventListener("input",()=>clinSync(true));
 $("medico").addEventListener("change",()=>clinSync(true));
 (function(){
@@ -6830,11 +6858,11 @@ const PP_CLIN_ORDER=["TUMORES MIXTOS","TUMORES GINECOLOGICOS","MAMA","CABEZA Y C
 const ppClinRank=c=>{ const k=normalizeStaffName(c), i=PP_CLIN_ORDER.indexOf(k); return i<0?99:i; };
 const ppClinCmp=(a,b)=>ppClinRank(a)-ppClinRank(b)||String(a).localeCompare(String(b),"es");
 /* v2.165 · Clínica(s) del paciente = el campo Clínica de la hoja de datos; los guardados antes de existir el campo usan la del adscrito */
-function ppFileClins(f){ const m=f.meta||{}; if(m.clinica!==undefined) return String(m.clinica).split("/").map(normalizeStaffName).filter(Boolean);
+function ppFileClins(f){ const m=f.meta||{}; if(m.clinica!==undefined){ const own=String(m.clinica).split("/").map(x=>normalizeStaffName(clinMatch(x)||x)).filter(Boolean); if(own.length) return own; const au=clinAuto(m.adscrito); return au?au.split("/").map(normalizeStaffName).filter(Boolean):own; }
   const out=[]; String(m.adscrito||"").split("/").forEach(p=>{ const i=ppAdsInfo(p.trim()); if(i.ok) out.push(normalizeStaffName(i.clin)); }); return out; }
 function ppFiltMatch(f){
   const A=PP_FILT.ads,C=PP_FILT.clin; if(!A.length&&!C.length) return true;
-  if(A.length){ const a=String((f.meta&&f.meta.adscrito)||"").split("/")[0].trim(); if(!a) return false; const i=ppAdsInfo(a); return i.ok&&A.includes(i.key); }
+  if(A.length){ const a=String((f.meta&&f.meta.adscrito)||"").split("/")[0].trim(); if(!a) return false; let i=ppAdsInfo(a); if(!i.ok){ const c=adsComplete(a); if(c) i=ppAdsInfo(c.nombre); } return i.ok&&A.includes(i.key); }
   const fc=ppFileClins(f); return C.some(c=>fc.includes(normalizeStaffName(c)));
 }
 /* v3.01 · Adscrito y Clínica: selección múltiple (casillas en un desplegable) */
@@ -7046,6 +7074,7 @@ function ppMetaHTML(p,short){
   return `<span class="pmeta">${first?`<span class="pm-ads"${short?` title="${esc(first)}"`:""}>${esc(short?(ppCensusAds(first)||first).toLowerCase():first.toLowerCase())}</span>`:""}${cl?`<span class="pm-cl"><i style="background:${ppClinColor(cl)}"></i><span>${esc(cl.toLowerCase())}</span></span>`:""}</span>`;
 }
 function renderPP(){
+  try{ nnSweepSoon(); }catch(_){}
   try{ ppFiltSync(); }catch(_){}
   try{ ppOverlay(); }catch(_){}
   if(document.body.classList.contains("pp-browse")&&(PP_VIEW==="censoActual"||PP_VIEW==="censos")){ try{ ppFiltDraw(); }catch(_){} try{ cenRender(); }catch(e){ try{ console.error(e); }catch(_){} } return; }
@@ -7100,6 +7129,37 @@ function ppAsk(o){ return new Promise(res=>{
   d.querySelector("form").onsubmit=e=>{ e.preventDefault(); if(inp){ const v=inp.value.trim().toUpperCase(); const bad=o.validate&&o.validate(v); if(bad){ err.textContent=bad; return; } fin(v); } else fin(true); };
   d.showModal(); if(inp){ inp.focus(); inp.select(); } }); }
 /* v2.177 · Cambios desde el menú: se ven al instante en pantalla y se suben a Drive en segundo plano, uno tras otro (cola) */
+/* ---------- v3.62 · Regla de nombres: adscrito y clínica de TODOS los pacientes se completan al nombre registrado, en segundo plano ----------
+   Detecta abreviaturas o nombres inexactos (p. ej. «DR. ZIAD», «TM», «Gine») que dejan al paciente fuera de los filtros, los completa con el adscrito/clínica
+   registrados y guarda la corrección en el JSON (sin cambiar «modificado por»). Máx. 10 por pasada; reintenta cuando el archivo cambie. */
+const NN_TRIED=new Map(); let NN_T=0, NN_LAST=0, NN_RUN=false;
+function nnChanges(f){
+  const m=f&&f.meta; if(!m||(m.adscrito===undefined&&m.clinica===undefined)) return null;
+  const ch={}, rawA=String(m.adscrito||"").trim();
+  let ads=rawA; if(rawA){ const nv=adsNormalize(rawA); if(nv&&nv!==rawA){ ch.medico=nv; ads=nv; } }
+  const auto=clinAuto(ads);
+  if(m.clinica!==undefined){ const rawC=String(m.clinica).trim();
+    if(rawC){ const cl=clinClean(rawC); if(cl&&cl!==rawC) ch.clinica=cl; else if(!cl&&auto) ch.clinica=auto; }
+    else if(auto) ch.clinica=auto; }
+  return Object.keys(ch).length?ch:null;
+}
+function nnSweep(){
+  if(NN_RUN) return; NN_RUN=true;
+  try{
+    if(!HJM_STAFF.adscritos.length||!Array.isArray(DRIVE_FILES)||!DRIVE_FILES.length) return;
+    if(!navigator.onLine||$("dlgResidentGate").open||!apiKey()) return;
+    const open=(hasSelectedPatient()?String($("expediente").value||"").trim():""); let n=0;
+    for(const f of DRIVE_FILES.slice()){
+      if(n>=10) break; if(!f||!f.id||NN_TRIED.get(f.id)===f.modified) continue;
+      if(open&&ppExp(f)===open) continue;                               /* el paciente abierto se corrige solo con su propio guardado */
+      const ch=nnChanges(f); if(!ch){ NN_TRIED.set(f.id,f.modified); continue; }
+      NN_TRIED.set(f.id,f.modified); n++;
+      ppApply(f,ch,{quiet:true,auto:true,done:err=>{ if(err) setTimeout(()=>NN_TRIED.delete(f.id),300000); }});
+    }
+    if(n) setTimeout(()=>{ try{ renderPP(); }catch(_){} },1500);
+  }catch(_){} finally{ NN_RUN=false; }
+}
+function nnSweepSoon(){ if(Date.now()-NN_LAST<45000) return; clearTimeout(NN_T); NN_T=setTimeout(()=>{ NN_LAST=Date.now(); nnSweep(); },4000); }
 const PPQ={chain:Promise.resolve(),over:new Map()};
 const PP_META_KEY={cama:"cama",medico:"adscrito",clinica:"clinica",diagnostico:"dx",fIngreso:"ingreso",pendientes:"pendientes",altaEn:"egr",defEn:"def"};
 function ppOverlay(){ PPQ.over.forEach((o,id)=>{ const f=DRIVE_FILES.find(x=>x&&x.id===id); if(f) f.meta=Object.assign({},f.meta,o.meta); }); }
@@ -7110,7 +7170,7 @@ function ppApply(f,changes,opt){ const quiet=!!(opt&&opt.quiet);
   const id=f.id, metaNew={}, metaOld={}; const stampBy=(typeof cenUser==="function"?cenUser():""), stampIso=new Date().toISOString();
   Object.entries(changes).forEach(([k,v])=>{ const mk=PP_META_KEY[k]; if(!mk) return; metaOld[mk]=f.meta?f.meta[mk]:undefined; metaNew[mk]=String(v).slice(0,k==="cama"?20:k==="diagnostico"?300:k==="pendientes"?400:80); });
   if(opt&&opt.meta) Object.entries(opt.meta).forEach(([mk,v])=>{ metaOld[mk]=f.meta?f.meta[mk]:undefined; metaNew[mk]=String(v).slice(0,100); });
-  metaOld.mod=f.meta?f.meta.mod:undefined; metaOld.modEn=f.meta?f.meta.modEn:undefined; metaNew.mod=stampBy.slice(0,60); metaNew.modEn=stampIso;
+  metaOld.mod=f.meta?f.meta.mod:undefined; metaOld.modEn=f.meta?f.meta.modEn:undefined; if(!(opt&&opt.auto)){ metaNew.mod=stampBy.slice(0,60); metaNew.modEn=stampIso; }
   const o=PPQ.over.get(id)||{meta:{},n:0}; o.meta=Object.assign({},o.meta,metaNew); o.n++; PPQ.over.set(id,o);
   f.meta=Object.assign({},f.meta,metaNew); if(!quiet) renderPP();
   PPQ_N++; renderSync();
@@ -7122,7 +7182,7 @@ function ppApply(f,changes,opt){ const quiet=!!(opt&&opt.quiet);
       for(let i=0;i<4;i++){   /* si alguien guardó entre la lectura y la subida, se vuelve a leer y aplicar */
         const r=await gcall("hjmReadFull",id), mod=(r&&r.modified)||""; let d=null; try{ d=JSON.parse(r&&r.content); }catch(_){}
         if(!d||d.app!=="solicitudes-hjm"||!d.datos) throw new Error("Archivo no reconocido");
-        Object.entries(changes).forEach(([k,v])=>{ d.datos[k]=v; }); d.datos.modPor=stampBy; d.datos.modEn=stampIso;
+        Object.entries(changes).forEach(([k,v])=>{ d.datos[k]=v; }); if(!(opt&&opt.auto)){ d.datos.modPor=stampBy; d.datos.modEn=stampIso; }
         res=await gcall("hjmSave",FOLDER.id,cur.name,JSON.stringify(d),JSON.stringify(meta),JSON.stringify({forzar:true,base:mod}));
         if(!(res&&res.conflicto)) break; await new Promise(z=>setTimeout(z,400*(i+1)));
       }
@@ -11051,7 +11111,7 @@ const OFF_IC={
 };
 function offTile(id,ic,title,sub,bk){ return `<button type="button" class="db-tile" id="${id}"><span class="db-ic">${OFF_IC[ic]}</span><span class="db-t"><b>${title}</b><small class="dl-s">${sub}</small>${bk?`<small class="dl-b" data-bak="${bk}">Consultando copia en línea…</small>`:""}</span><span class="db-go">${OFF_IC.dl}</span></button>`; }
 function offDbHTML(){
-  return `<div class="st-card"><h3>Descargar base de datos</h3><div class="db-grid">`+
+  return `<div class="st-card"><h3>Descargar base de datos</h3><div class="db-dx"><label for="dbDxQ">Buscar por diagnóstico</label><input id="dbDxQ" type="search" placeholder="Ej. mama, colon, tiroides…" autocomplete="off" spellcheck="false"><div class="db-dx-res" id="dbDxRes" hidden><div class="db-dx-n" id="dbDxN"></div><div class="db-dx-btns"><button type="button" id="dbDxPrint">Imprimir lista</button><button type="button" id="dbDxZip">Descargar base de datos</button></div></div></div><div class="db-grid" style="margin-top:14px">`+
     offTile("btnDbDownload","pac","Pacientes","Todos los expedientes · .zip","PACIENTES")+
     offTile("btnDbCensos","cen","Censos","Todos los censos · .zip","CENSOS")+
     offTile("btnDbStats","est","Estadísticas","Archivo de uso · .json","ESTADISTICAS")+
@@ -11208,6 +11268,77 @@ $s("stClose").onclick=()=>$s("dlgStats").close();
     finally{ lab.textContent=orig; b.disabled=false; busy=false; }
   }
   document.addEventListener("click",e=>{ if(e.target.closest&&e.target.closest("#btnDbDownload")) run(); });
+})();
+
+/* v3.62 · Buscar por diagnóstico: total de pacientes, imprimir lista (Expediente, Nombre, Edad, FN, Diagnóstico) o descargar sus JSON en .zip */
+(function(){
+  const DXC=new Map();   /* id|modified -> {text, d} */
+  const nz=v=>String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\s+/g," ").trim();
+  const terms=q=>nz(q).split(" ").filter(t=>t.length>=2);
+  function dxText(f){ const m=f.meta||{}, c=(typeof ppRowS==="function"?ppRowS(f):null)||{}; return nz((m.dx||"")+" "+(c.diagnostico||"")); }
+  function matches(q){ const t=terms(q); if(!t.length) return []; return onlyJsonFiles(DRIVE_FILES).filter(f=>{ const x=dxText(f); return t.every(w=>x.includes(w)); }); }
+  const $q=()=>document.getElementById("dbDxQ"), $res=()=>document.getElementById("dbDxRes"), $n=()=>document.getElementById("dbDxN");
+  let tmr=0, busy=false;
+  async function ensureList(){ if(!Array.isArray(DRIVE_FILES)||!DRIVE_FILES.length){ await ensureFolder(); DRIVE_FILES=onlyJsonFiles(await gcall("hjmList",FOLDER.id)); } }
+  async function refresh(){
+    const q=$q(); if(!q) return; const val=q.value.trim(), box=$res();
+    if(terms(val).length===0){ box.hidden=true; return; }
+    try{ await ensureList(); }catch(_){}
+    const hit=matches(val); box.hidden=false;
+    $n().innerHTML=hit.length?`<b>${hit.length}</b> paciente${hit.length===1?"":"s"} con diagnóstico «${esc(val)}»`:`Ningún paciente con diagnóstico «${esc(val)}»`;
+    document.getElementById("dbDxPrint").disabled=document.getElementById("dbDxZip").disabled=!hit.length||busy;
+  }
+  document.addEventListener("input",e=>{ if(e.target&&e.target.id==="dbDxQ"){ clearTimeout(tmr); tmr=setTimeout(refresh,160); } });
+  async function readAll(list,say){
+    const out=new Array(list.length); let next=0,done=0;
+    const w=async()=>{ while(next<list.length){ const i=next++,f=list[i],k=f.id+"|"+(f.modified||""); let o=DXC.get(k);
+      if(!o){ try{ let t; try{ const r=await gcall("hjmReadFull",f.id); t=r&&r.content; }catch(_){ t=await gcall("hjmRead",f.id); } if(typeof t==="string"){ let d=null; try{ d=JSON.parse(t); }catch(_){} o={text:t,d}; DXC.set(k,o); } }catch(_){} }
+      out[i]=o?{f,text:o.text,d:o.d}:null; done++; say("Leyendo "+done+" de "+list.length+"…"); } };
+    await Promise.all([w(),w(),w(),w()]); return out.filter(Boolean);
+  }
+  function row(o){ const D=(o.d&&o.d.datos)||{}, m=o.f.meta||{};
+    const nombre=[D.apPaterno,D.apMaterno,D.nombres].filter(Boolean).join(" ")||m.nombre||"";
+    let ed=""; try{ ed=D.fnac?edad(D.fnac,todayStr()):""; }catch(_){}
+    return {exp:D.expediente||m.exp||"",nombre,edad:ed,fn:D.fnac||"",dx:D.diagnostico||m.dx||""}; }
+  async function run(kind){
+    if(busy) return; const val=$q().value.trim(), hit=matches(val); if(!hit.length) return;
+    if(kind==="zip"&&!isAdmin()) { toast("Solo el administrador puede descargar la base de datos"); return; }
+    busy=true; const bp=document.getElementById("dbDxPrint"), bz=document.getElementById("dbDxZip"); bp.disabled=bz.disabled=true;
+    const msg=document.getElementById("dbMsg"), say=t=>{ if(msg){ msg.textContent=t; msg.style.color=""; } };
+    try{
+      const rd=await readAll(hit,say);
+      if(!rd.length){ say("No se pudo leer ningún expediente; intenta de nuevo."); return; }
+      if(kind==="zip"){
+        const seen={}, files=rd.map(o=>({name:String(o.f.name||o.f.id).trim().replace(/[\\\/:*?"<>|]+/g,"_"),text:o.text}));
+        files.forEach(o=>{ const k=o.name.toLowerCase(); if(seen[k]){ const mm=/^(.*?)(\.json)?$/i.exec(o.name); o.name=mm[1]+" ("+(++seen[k])+")"+(mm[2]||""); } else seen[k]=1; });
+        const slug=nz(val).replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"").slice(0,30)||"dx";
+        offSaveBlob("BaseDatos_HJM_"+slug+"_"+offStamp()+".zip",window.__zipStore(files));
+        say(files.length+" expedientes descargados (diagnóstico «"+val+"»).");
+        if(msg) msg.style.color="#2E8B57";
+      } else {
+        const rows=rd.map(row).sort((a,b)=>String(a.nombre).localeCompare(String(b.nombre),"es"));
+        printList(val,rows); say("Lista lista para imprimir ("+rows.length+").");
+      }
+    }catch(e){ say("No se pudo completar: "+((e&&e.message)||"sin conexión")); }
+    finally{ busy=false; refresh(); }
+  }
+  function printList(q,rows){
+    const d=new Date(),p=n=>String(n).padStart(2,"0"), fecha=p(d.getDate())+"."+p(d.getMonth()+1)+"."+d.getFullYear();
+    const body=rows.map((r,i)=>`<tr><td class="n">${i+1}</td><td>${esc(r.exp)}</td><td>${esc(r.nombre)}</td><td class="c">${esc(r.edad)}</td><td class="c">${esc(r.fn)}</td><td>${esc(r.dx)}</td></tr>`).join("");
+    const html=`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Pacientes · ${esc(q)}</title><style>
+      @page{size:letter landscape;margin:12mm}*{box-sizing:border-box}body{font:11px/1.35 Arial,Helvetica,sans-serif;color:#000;margin:0}
+      h1{font-size:15px;margin:0 0 2px}p{margin:0 0 8px;color:#333}table{width:100%;border-collapse:collapse}
+      th,td{border:1px solid #777;padding:3px 5px;vertical-align:top}th{background:#e6e9ee;text-align:left}thead{display:table-header-group}tr{page-break-inside:avoid}
+      td.n{width:26px;text-align:right}td.c{white-space:nowrap;text-align:center}
+    </style></head><body><h1>Oncología · Hospital Juárez de México — Pacientes con diagnóstico «${esc(q)}»</h1>
+    <p>${rows.length} paciente${rows.length===1?"":"s"} · ${fecha}</p>
+    <table><thead><tr><th>#</th><th>Expediente</th><th>Nombre</th><th>Edad</th><th>FN</th><th>Diagnóstico</th></tr></thead><tbody>${body}</tbody></table></body></html>`;
+    const old=document.getElementById("dbDxFrame"); if(old) old.remove();
+    const fr=document.createElement("iframe"); fr.id="dbDxFrame"; fr.setAttribute("aria-hidden","true"); fr.style.cssText="position:fixed;right:0;bottom:0;width:0;height:0;border:0";
+    document.body.appendChild(fr); const w=fr.contentWindow; w.document.open(); w.document.write(html); w.document.close();
+    setTimeout(()=>{ try{ w.focus(); w.print(); }catch(_){ toast("No se pudo abrir la impresión"); } },250);
+  }
+  document.addEventListener("click",e=>{ const t=e.target; if(!t||!t.closest) return; if(t.closest("#dbDxPrint")) run("print"); else if(t.closest("#dbDxZip")) run("zip"); });
 })();
 document.addEventListener("click",e=>{ if(e.target.closest&&e.target.closest("#bandPanel")) openStats(); });
 /* v3.00 · La hoja de datos siempre abre en Identificación al cargar o crear un paciente. */
