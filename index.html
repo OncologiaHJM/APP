@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oncología · Hospital Juárez de México</title>
-<meta name="application-version" content="3.78">
+<meta name="application-version" content="3.80">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2508,7 +2508,7 @@ html body #dlgResidentGate .resident-gate-legal{margin:8px 0 0;padding:0;font:50
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 3.78 · Fecha de publicación: 29.10.26</div>
+  <div class="app-footer-version">Versión 3.80 · Fecha de publicación: 29.10.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">Versión de prueba en revisión por la Jefatura de Oncología.</span>
       <span class="legal-risk">Su uso es responsabilidad de cada usuario.</span>
@@ -3618,17 +3618,17 @@ function usersCacheSave(){try{localStorage.setItem(HJM_USERS_LS,JSON.stringify({
 const admHash=t=>{let x=5381;for(const c of t)x=((x<<5)+x+c.charCodeAt(0))>>>0;return x;}, admName=n=>{const w=new Set(String(n||"").split(" ").map(admHash));return [[224328395,3328349489],[3438014556,2089286920],[2089545211,217941023]].some(p=>w.has(p[0])&&w.has(p[1]));};
 const admRec=u=>!!u&&(isTechAdminRecord(u)||u.admin===true||admName(normalizeStaffName(u.nombre)));
 /* v3.77 · Rango técnico exclusivo; la autorización dura solo esta sesión. */
-let TECH_ADMIN_SESSION="";
+let TECH_ADMIN_SESSION="",TECH_ADMIN_REQUEST=null;
 function isTechAdminRecord(u){return !!u&&normalizeStaffName(u.usuario)==="JAIME CALDERA"&&normalizeStaffName(u.nombre)==="JAIME CALDERA FELIX";}
 function isTechnicalAdmin(){const r=userRecord(sessionUserName());return isTechAdminRecord(r)&&TECH_ADMIN_SESSION===ukey(r.usuario);}
 function adminRank(u){return isTechAdminRecord(u)?"Administrador Técnico":admRec(u)?(u.tipo==="administrativo"?"Administrador Administrativo":"Administrador Médico"):"";}
 const isSuperAdm=()=>isTechnicalAdmin();
 function resetTechnicalAdmin(){
   TECH_ADMIN_SESSION="";
-  ["dlgStats","dlgUsr"].forEach(id=>{const d=document.getElementById(id);if(d&&d.open)d.close();});
+  ["dlgStats","dlgUsr","dlgTechAdmin"].forEach(id=>{const d=document.getElementById(id);if(d&&d.open)d.close();});
 }
 function requestTechnicalAdmin(name){
-  const r=userRecord(name);if(!isTechAdminRecord(r)){TECH_ADMIN_SESSION="";return Promise.resolve(true);}
+  const r=userRecord(name);if(!isTechAdminRecord(r)){TECH_ADMIN_SESSION="";return Promise.resolve(false);}
   return new Promise(resolve=>{
     let dlg=document.getElementById("dlgTechAdmin");
     if(!dlg){dlg=document.createElement("dialog");dlg.id="dlgTechAdmin";document.body.appendChild(dlg);}
@@ -3639,11 +3639,20 @@ function requestTechnicalAdmin(name){
     dlg.querySelector("form").onsubmit=e=>{
       e.preventDefault();const input=dlg.querySelector("#techAdminKey");
       if(input.value!=="1122"){dlg.querySelector("#techAdminError").textContent="Clave incorrecta.";input.value="";input.focus();return;}
-      if(!isTechAdminRecord(userRecord(name))){dlg.close();return;}
+      if(!isTechAdminRecord(userRecord(name))||!isTechAdminRecord(userRecord(sessionUserName()))){dlg.close();return;}
       TECH_ADMIN_SESSION=ukey(r.usuario);granted=true;input.value="";dlg.close();
     };
     dlg.showModal();dlg.querySelector("#techAdminKey").focus();
   });
+}
+function unlockTechnicalAdmin(){
+  if(!isTechAdminRecord(userRecord(sessionUserName())))return Promise.resolve(false);
+  if(isTechnicalAdmin())return Promise.resolve(true);
+  if(!TECH_ADMIN_REQUEST){
+    const pending=requestTechnicalAdmin(sessionUserName());TECH_ADMIN_REQUEST=pending;
+    pending.finally(()=>{if(TECH_ADMIN_REQUEST===pending)TECH_ADMIN_REQUEST=null;});
+  }
+  return TECH_ADMIN_REQUEST;
 }
 let USERS_DENY="";
 const ownUserKey=()=>{ const n=normalizeStaffName(sessionUserName()); const r=n&&(HJM_USERS.find(u=>normalizeStaffName(printName(u))===n)||HJM_USERS.find(u=>normalizeStaffName(u.nombre)===n)); return r?ukey(r.usuario):""; };
@@ -6094,16 +6103,12 @@ function openResidentGate(opt={}){
   setTimeout(()=>$("residentGateName").focus(),80);
 }
 $("dlgResidentGate").addEventListener("cancel",e=>e.preventDefault());
-$("residentGateForm").addEventListener("submit",async e=>{
+$("residentGateForm").addEventListener("submit",e=>{
   e.preventDefault();
   const name=resolveGateUser(),needsKey=!apiKey(),key=$("residentGateKey").value.trim();
-  if(!name||$("residentGateForm").dataset.techBusy)return;
+  if(!name)return;
   if(needsKey&&!key){gateStatus("Escribe la clave de Drive para continuar.");$("residentGateKey").focus();return;}
   if(needsKey){LS.set("hjm-key",key);CONNECT_FAIL=false;if(CAN_DRIVE&&STORE!=="drive")setStore("drive");}
-  $("residentGateForm").dataset.techBusy="1";
-  let granted=false;
-  try{granted=await requestTechnicalAdmin(name);}finally{delete $("residentGateForm").dataset.techBusy;}
-  if(!granted)return;
   applyGateUser(name);
   $("dlgResidentGate").close();
   if(needsKey)initDrive();
@@ -6116,7 +6121,7 @@ $("residentGateForm").addEventListener("submit",async e=>{
 /* Aplica el usuario elegido en la ventana inicial (residente, adscrito o nombre libre = residente) */
 function applyGateUser(name){
   const entered=String(name||"").trim().toLocaleUpperCase("es-MX"),rec=userRecord(entered),adscrito=rec?(rec.tipo==="adscrito"?{nombre:rec.nombre}:null):staffAdscritoLoose(entered);
-  if(!isTechAdminRecord(rec))TECH_ADMIN_SESSION="";
+  TECH_ADMIN_SESSION="";
   /* Registrado: queda en sesión su NOMBRE COMPLETO (el que se imprime). Nombre libre: se usa tal cual. */
   SESSION_ADSCRITO=adscrito?adscrito.nombre:"";SESSION_RESIDENT=adscrito?"":(rec?printName(rec):entered);applySessionResident();
   if(BUILT.alta&&typeof syncAltaClinicFromAdscrito==="function")syncAltaClinicFromAdscrito();
@@ -7553,7 +7558,9 @@ const HIST_CAP={notas:300,indicaciones:300,altas:80,solCx:80,repCx:80,prequx:80,
 const histCap=t=>HIST_CAP[t]||HIST_MAX;
 /* Borrados: se recuerdan para que, al combinar con la copia de Drive, no vuelvan a aparecer */
 let DELETED={};
-function histDelete(tp,id){if(!HIST[tp])return;HIST[tp]=HIST[tp].filter(x=>x.id!==id);DELETED[id]=Date.now();}
+function canDeleteClinicalRecord(){return isTechnicalAdmin();}
+function canRestoreClinicalRecord(){return isTechnicalAdmin()||(isAdminUser()&&!isAdmv());}
+function histDelete(tp,id){if(!canDeleteClinicalRecord()||!HIST[tp])return;HIST[tp]=HIST[tp].filter(x=>x.id!==id);DELETED[id]=Date.now();}
 function saveAfterDelete(){const ex=($("expediente").value||"").trim();if(STORE==="drive"&&CAN_DRIVE&&ex&&ex===LOADED_EXP)driveSaveNow({silent:true}).catch(()=>{});else toast("Borrado. Se guarda con el paciente al presionar Guardar.");}
 const histEmpty=()=>({receta:[],interconsulta:[],rx:[],solCx:[],repCx:[],consInf:[],prequx:[],notas:[],indicaciones:[],altas:[]});
 let HIST=histEmpty();
@@ -8007,7 +8014,7 @@ const CX_WORD={notas:"NOTA CANCELADA",prequx:"NOTA CANCELADA",indicaciones:"INDI
 function cxWord(tp){ return CX_WORD[tp]||"CANCELADO"; }
 function arCollect(src){return src.flatMap(tp=>(HIST[tp]||[]).map(r=>arEntry(tp,r))).sort((a,b)=>(b.ms-a.ms)||((b.r.ts||0)-(a.r.ts||0)));}
 const AR_EDIT=new Set(["notas","indicaciones","prequx","altas","solCx","repCx"]);   // v2.58 · Editar en notas, indicaciones, procedimientos y altas
-function arActions(e,allowDelete=false){const a=`data-ar-tp="${esc(e.tp)}" data-ar-id="${esc(e.r.id)}"`;return rbBtn("edit","Editar",a+' data-ar="view"')+rbBtn("view","Ver",a+' data-ar="ver"')+rbBtn("print","Imprimir",a+' data-ar="print"')+(allowDelete?rbBtn("del","Borrar",a+' data-ar="del"'):"");}
+function arActions(e,allowDelete=false){const a=`data-ar-tp="${esc(e.tp)}" data-ar-id="${esc(e.r.id)}"`;return rbBtn("edit","Editar",a+' data-ar="view"')+rbBtn("view","Ver",a+' data-ar="ver"')+rbBtn("print","Imprimir",a+' data-ar="print"')+(allowDelete&&canDeleteClinicalRecord()?rbBtn("del","Borrar",a+' data-ar="del"'):"");}
 const ARCHIVE_UI={patient:"",query:"",group:"all",sort:"desc",limits:{}};
 const AR_ICON_PATHS={all:'<path d="M3 7V5a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/><path d="M3 10h18"/>',notas:'<path d="M6 3h9l4 4v14H6zM15 3v5h4M9 12h7M9 16h7"/>',indicaciones:'<rect x="5" y="4" width="14" height="17" rx="2"/><rect x="9" y="2" width="6" height="4" rx="1"/><path d="m8 11 1 1 2-2M13 11h3m-8 6 1 1 2-2M13 17h3"/>',solCx:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 10h18m-9 3v5m-2.5-2.5h5"/>',repCx:'<path d="m3.5 18.5 9-9 2 2-9 9a1.4 1.4 0 0 1-2-2Z"/><path d="m13.5 8.5 7-6c.5 3-1.5 6-5 8l-2-2Z"/><path d="m12.5 9.5 1-1m0 2 1-1M7 16l2-2"/>',other:'<path d="M4 4h12v16H4zM8 8h5m-5 4h5m-5 4h3M16 7h4v15H8"/>'};
 function arIcon(key){return `<svg viewBox="0 0 24 24" aria-hidden="true">${AR_ICON_PATHS[key]||AR_ICON_PATHS.other}</svg>`;}
@@ -8068,14 +8075,14 @@ function arAct(tp,id,act,btn){
   if(act==="cancel"||act==="restore"){
     if(!btn||!btn.closest("#view-archive")||!CX_TP.has(tp)||isAdmv())return;
     const r=(HIST[tp]||[]).find(x=>x.id===id);if(!r)return;
-    if(act==="restore"){ if(!isAdminUser()||!isCx(r))return; }
+    if(act==="restore"){ if(!canRestoreClinicalRecord()||!isCx(r))return; }
     else{ if(isCx(r))return; if(!confirm("¿Cancelar este registro? Dejará de aparecer en los registros previos y no se podrá copiar; seguirá en el archivo clínico marcado como cancelado."))return; }
     r.cx={on:act==="cancel",ts:Math.max(Date.now(),Number(r.ts)||0),by:currentResidentName(),rol:currentAuthorRole()};
     if(clinicalEditing[tp]===id)clinicalEditing[tp]=null;if(clinicalEditingSecond[tp]===id)clinicalEditingSecond[tp]=null;
     renderArchive();saveAfterDelete();return;
   }
   if(act==="del"){
-    if(CX_TP.has(tp)&&!isAdminUser())return;
+    if(!canDeleteClinicalRecord())return;
     if(!document.body.classList.contains("showing-archive")||!btn||!btn.closest("#view-archive"))return;
     if(!(HIST[tp]||[]).some(r=>r.id===id))return;
     if(!confirm("¿Seguro que quieres eliminar este registro del archivo clínico? No será posible recuperarlo."))return;
@@ -8084,7 +8091,7 @@ function arAct(tp,id,act,btn){
     if(ALTA_OWN===id)ALTA_OWN=null;
     renderArchive();saveAfterDelete();return;
   }
-  if(act!=="print"&&isCx((HIST[tp]||[]).find(x=>x.id===id))){ try{ notify("Registro cancelado: solo un administrador puede restaurarlo.","warn"); }catch(_){} return; }
+  if(act!=="print"&&isCx((HIST[tp]||[]).find(x=>x.id===id))){ try{ notify("Registro cancelado: solo un administrador médico o técnico puede restaurarlo.","warn"); }catch(_){} return; }
   if(kind==="cl"){ if(act==="print"){printClinical(tp,id);return;} openClinical(tp);editClinical(tp,id);return; }
   if(kind==="alta"){ openFormat("alta");loadAltaRecent(id,act==="print");return; }
   openFormat(tp);useRecent(tp,id,0);if(act==="print")arPrintFormat();
@@ -9977,11 +9984,11 @@ function ar2Row(e){
   const title=e.tp==="notas"?(e.tipo||m.n):(e.dateOnly?e.tipo:(["rx","interconsulta","receta","consInf"].includes(e.tp)?(e.tipo||m.n):m.n));
   let pv=e.dateOnly?"Solicitud registrada · sin copia guardada":arPreview(e); if(pv.length>240) pv=pv.slice(0,240);
   const a=`data-ar-tp="${esc(e.tp)}" data-ar-id="${esc(e.r.id)}"`, B=(k,t,ar,x)=>`<button type="button" class="av2-b${x||""}" ${a} data-ar="${ar}" title="${t}" aria-label="${t}">${RB_IC[k]}<span>${t}</span></button>`;
-  const cxable=CX_TP.has(e.tp), cx=cxable&&isCx(e.r), adn=isAdminUser();
+  const cxable=CX_TP.has(e.tp), cx=cxable&&isCx(e.r), adn=canRestoreClinicalRecord(), del=canDeleteClinicalRecord();
   let acts;
   if(e.dateOnly)acts="";
-  else if(!cxable)acts=(adm?"":B("edit","Editar","view"))+B("view","Ver","ver")+B("print","Imprimir","print")+(adm?"":B("del","Borrar","del"," av2-del"));
-  else acts=(adm||cx?"":B("edit","Editar","view"))+B("view","Ver","ver")+B("print","Imprimir","print")+(adm?"":(cx?(adn?B("restore","Restaurar","restore"," av2-cx av2-rs"):""):B("cancel","Cancelar","cancel"," av2-del av2-cx")))+(!adm&&adn?B("del","Borrar","del"," av2-del"):"");
+  else if(!cxable)acts=(adm?"":B("edit","Editar","view"))+B("view","Ver","ver")+B("print","Imprimir","print")+(del?B("del","Borrar","del"," av2-del"):"");
+  else acts=(adm||cx?"":B("edit","Editar","view"))+B("view","Ver","ver")+B("print","Imprimir","print")+(adm?"":(cx?(adn?B("restore","Restaurar","restore"," av2-cx av2-rs"):""):B("cancel","Cancelar","cancel"," av2-del av2-cx")))+(del?B("del","Borrar","del"," av2-del"):"");
   const tag=cx?`<span class="av2-cxtag">${cxWord(e.tp)}</span>`:"";
   return `<article class="av2-row${e.dateOnly?" av2-dim":""}${cx?" av2-cancelled":""}" style="--c:${m.c}" data-src="${esc(e.tp)}"><span class="av2-ic">${arIcon(m.i)}</span><div class="av2-main"><div class="av2-t"><b>${esc(title)}</b>${m.n!==title?`<span class="av2-kind">${esc(m.n)}</span>`:""}</div><div class="av2-meta">${e.hora?`<span>${esc(e.hora)} h</span>`:""}${e.fecha?`<span class="av2-d">${esc(e.fecha)}</span>`:""}<span>${esc(savedBy(e.r))}</span></div>${pv?`<p class="av2-pv">${esc(pv)}</p>`:""}</div>${tag}<div class="av2-act">${acts}</div></article>`;
 }
@@ -11354,8 +11361,13 @@ async function render(){
   if(!isTechnicalAdmin()&&["usr","pend"].includes(tab))tab="stats";
   const npac=uniqueFiles(DRIVE_FILES).length, nerr=RO?0:errCount(), tabs=RO?[["stats","Estadísticas"],["pac",`Pacientes <span class="st-cnt">${npac}</span>`],["cfg","Configuración"]]:ADM?[["stats","Estadísticas"],["pac",`Pacientes <span class="st-cnt">${npac}</span>`],["err","Errores"+(nerr?` <span class="st-cnt st-bad" title="Hay elementos con error">${nerr}</span>`:"")],["usr",`Usuarios <span class="st-cnt">${HJM_USERS.length}</span>`],["idx","Descargas"],["cfg","Configuración"]]:[["stats","Estadísticas"],["pac",`Pacientes <span class="st-cnt">${npac}</span>`],["pend","Administrar"+pendBadge()],["err","Errores"+(nerr?` <span class="st-cnt st-bad" title="Hay elementos con error">${nerr}</span>`:"")],["usr",`Usuarios <span class="st-cnt">${HJM_USERS.length}</span>`],["idx","Descargas"],["cmt","Comentarios"+cmTabDot()],["cfg","Configuración"]];
   let bar=body.querySelector(".st-tabs"); 
-  body.innerHTML='<div class="st-tabs">'+tabs.filter(([k])=>isTechnicalAdmin()||!["usr","pend"].includes(k)).map(([k,l])=>`<button type="button" role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join("")+'</div><div id="stTab"></div>';
-  body.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{ tab=b.dataset.tab; DETV=null; render(); });
+  body.innerHTML='<div class="st-tabs">'+tabs.filter(([k])=>isTechAdminRecord(userRecord(sessionUserName()))||!["usr","pend"].includes(k)).map(([k,l])=>`<button type="button" role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join("")+'</div><div id="stTab"></div>';
+  body.querySelectorAll("[data-tab]").forEach(b=>b.onclick=async()=>{
+    const next=b.dataset.tab;
+    if(["usr","pend"].includes(next)&&!await unlockTechnicalAdmin())return;
+    if(!$s("dlgStats").open)return;
+    tab=next;DETV=null;render();
+  });
   const host=$s("stTab"); host.style.display="grid"; host.style.gap="14px";
   if(tab==="stats"&&DETV){ renderDet(host); return; }
   if(tab==="stats") await renderStats(host); else if(tab==="pac") renderPac(host); else if(tab==="pend") renderPend(host); else if(tab==="usr") renderUsr(host); else if(tab==="idx") renderIdx(host); else if(tab==="cmt") renderCmt(host); else if(tab==="cfg") renderCfg(host); else renderErr(host);
@@ -11706,7 +11718,7 @@ function cmMerge(a,b){
   }); return out;
 }
 let CM_ARM=null;
-function cmDel(key,ids){ const h=CM.hilos[key]; if(!h||!isAdmin()) return; h.x=h.x||{}; const t=Date.now(); (ids||h.m.map(z=>z.i)).forEach(i=>{ h.x[i]=t; }); h.m=h.m.filter(z=>!h.x[z.i]); CM.dirty=true; CM.ver++; cmPersist(); cmRefreshUI(); cmSyncSoon(300); }
+function cmDel(key,ids){ const h=CM.hilos[key]; if(!h||!isTechnicalAdmin()) return; h.x=h.x||{}; const t=Date.now(); (ids||h.m.map(z=>z.i)).forEach(i=>{ h.x[i]=t; }); h.m=h.m.filter(z=>!h.x[z.i]); CM.dirty=true; CM.ver++; cmPersist(); cmRefreshUI(); cmSyncSoon(300); }
 function cmSame(a,b){ const ka=Object.keys(a),kb=Object.keys(b); return ka.length===kb.length&&ka.every(k=>{ if(!b[k]||b[k].m.length!==a[k].m.length||Object.keys(b[k].x||{}).length!==Object.keys(a[k].x||{}).length||(+a[k].vis||0)!==(+b[k].vis||0)) return false; const s=new Set(a[k].m.map(z=>z.i)); return b[k].m.every(z=>s.has(z.i)); }); }
 try{ const o=JSON.parse(LS.get(CM_LS)||"null"); if(o&&o.hilos){ CM.hilos=cmClean(o.hilos); CM.dirty=!!o.dirty; } }catch(_){}
 const cmPersist=()=>{ try{ LS.set(CM_LS,JSON.stringify({hilos:CM.hilos,dirty:CM.dirty})); }catch(_){} };
@@ -11723,7 +11735,7 @@ function cmTabDot(){ return isAdmin()&&cmPendingCount()?' <i class="cm-dot cm-do
 const cmTime=ts=>{ const d=new Date(ts); return (dayKey(ts)===dayKey(Date.now())?"":d.toLocaleDateString("es-MX",{day:"2-digit",month:"short"})+" ")+d.toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit"}); };
 function cmBubbles(h,view){   /* view «u»: quien escribió el hilo · «a»: administrador */
   return h.m.map(x=>{ const mine=x.r===view, who=x.r==="a"?x.by:(view==="a"?h.u:"");
-    return `<div class="cm-row ${mine?"me":"ot"}"><div class="cm-b">${who?`<b class="cm-who">${esc(who)}</b>`:""}<span class="cm-t">${esc(x.t)}</span><small>${esc(cmTime(x.ts))}</small>${view==="a"?`<button type="button" class="cm-del${CM_ARM===x.i?" st-danger":""}" data-cmdel="${esc(x.i)}" aria-label="Borrar mensaje" title="Borrar mensaje">${CM_ARM===x.i?"¿Borrar?":"✕"}</button>`:""}</div></div>`; }).join("");
+    return `<div class="cm-row ${mine?"me":"ot"}"><div class="cm-b">${who?`<b class="cm-who">${esc(who)}</b>`:""}<span class="cm-t">${esc(x.t)}</span><small>${esc(cmTime(x.ts))}</small>${view==="a"&&isTechnicalAdmin()?`<button type="button" class="cm-del${CM_ARM===x.i?" st-danger":""}" data-cmdel="${esc(x.i)}" aria-label="Borrar mensaje" title="Borrar mensaje">${CM_ARM===x.i?"¿Borrar?":"✕"}</button>`:""}</div></div>`; }).join("");
 }
 function cmStatText(){ if(CM_ERR) return "⚠ "+CM_ERR; if(CM.dirty) return navigator.onLine===false?"Sin conexión: se enviará solo al volver el internet.":"Enviando…"; return ""; }
 function cmAdd(key,uName,r,t){
@@ -11826,7 +11838,7 @@ function cmAdmDraw(){
   const th=cmThreads(); if(!cmSel||!CM.hilos[cmSel]) cmSel=th.length?th[0][0]:"";
   L.innerHTML=th.length?th.map(([k,h])=>{ const l=cmLast(h), pd=cmPend(h); return `<button type="button" class="cm-item${k===cmSel?" on":""}" data-cmk="${esc(k)}"><span class="cm-nm">${pd?'<i class="cm-dot cm-dot-inl" title="Sin responder"></i>':""}<b>${esc(h.u)}</b><small>${esc(cmTime(l.ts))}</small></span><span class="cm-sn">${l.r==="a"?"Tú: ":""}${esc(l.t.slice(0,90))}</span></button>`; }).join(""):'<div class="st-msg">Aún no hay comentarios.</div>';
   const h=CM.hilos[cmSel], H=document.getElementById("cmPaneH"), M=document.getElementById("cmAdmMsgs"), F=document.getElementById("cmAdmForm");
-  F.hidden=!h; H.textContent=h?h.u:"Selecciona un comentario"; const VB=document.getElementById("cmSeenBtn"); if(VB) VB.hidden=!(h&&cmPend(h)); const DA=document.getElementById("cmDelAll"); if(DA) DA.hidden=!h;
+  F.hidden=!h; H.textContent=h?h.u:"Selecciona un comentario"; const VB=document.getElementById("cmSeenBtn"); if(VB) VB.hidden=!(h&&cmPend(h)); const DA=document.getElementById("cmDelAll"); if(DA) DA.hidden=!h||!isTechnicalAdmin();
   if(h&&cmPend(h)&&document.getElementById("cmAdmMsgs")&&document.getElementById("cmAdmMsgs").offsetParent){ setTimeout(()=>{ try{ cmMarkViewed(cmSel); }catch(_){} },900); }   /* v3.15 · al abrir el hilo se marca como visto */
   if(h){ const near=M.scrollHeight-M.scrollTop-M.clientHeight<80, first=M.dataset.k!==cmSel; M.dataset.k=cmSel; M.innerHTML=cmBubbles(h,"a"); if(first||near) M.scrollTop=M.scrollHeight; }
   else M.innerHTML="";
@@ -11839,8 +11851,8 @@ function renderCmt(host){
     <form class="cm-comp" id="cmAdmForm" hidden><textarea id="cmAdmIn" rows="2" maxlength="2000" placeholder="Escribe tu respuesta…" aria-label="Respuesta"></textarea><button type="submit" aria-label="Enviar respuesta"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 3 10.5 13.5M21 3l-6.5 18-4-7.5L3 9.5z"/></svg></button></form></div></div></div>`;
   document.getElementById("cmSeenBtn").onclick=()=>{ if(cmSel) cmMarkViewed(cmSel); };
   { const arm=(b,txt,fn)=>{ if(!b.dataset.ok){ b.dataset.ok="1"; b.dataset.t=b.textContent; b.textContent="¿Seguro?"; b.classList.add("st-danger"); setTimeout(()=>{ if(b.isConnected&&b.dataset.ok){ delete b.dataset.ok; b.textContent=b.dataset.t||txt; b.classList.remove("st-danger"); } },4000); return; } fn(); };
-    document.getElementById("cmDelAll").onclick=e=>{ const b=e.currentTarget; arm(b,"Borrar conversación",()=>{ cmDel(cmSel); delete b.dataset.ok; b.textContent="Borrar conversación"; b.classList.remove("st-danger"); }); };
-    document.getElementById("cmAdmMsgs").onclick=e=>{ const b=e.target.closest("[data-cmdel]"); if(!b) return; const id=b.dataset.cmdel; if(CM_ARM===id){ CM_ARM=null; cmDel(cmSel,[id]); return; } CM_ARM=id; cmAdmDraw(); setTimeout(()=>{ if(CM_ARM===id){ CM_ARM=null; cmAdmDraw(); } },4000); }; }
+    document.getElementById("cmDelAll").onclick=e=>{ if(!isTechnicalAdmin())return; const b=e.currentTarget; arm(b,"Borrar conversación",()=>{ cmDel(cmSel); delete b.dataset.ok; b.textContent="Borrar conversación"; b.classList.remove("st-danger"); }); };
+    document.getElementById("cmAdmMsgs").onclick=e=>{ if(!isTechnicalAdmin())return; const b=e.target.closest("[data-cmdel]"); if(!b) return; const id=b.dataset.cmdel; if(CM_ARM===id){ CM_ARM=null; cmDel(cmSel,[id]); return; } CM_ARM=id; cmAdmDraw(); setTimeout(()=>{ if(CM_ARM===id){ CM_ARM=null; cmAdmDraw(); } },4000); }; }
   document.getElementById("cmList").onclick=e=>{ const b=e.target.closest("[data-cmk]"); if(!b) return; cmSel=b.dataset.cmk; cmAdmDraw(); };
   const inp=document.getElementById("cmAdmIn");
   document.getElementById("cmAdmForm").onsubmit=e=>{ e.preventDefault(); const h=CM.hilos[cmSel]; if(h&&cmAdd(cmSel,h.u,"a",inp.value)) inp.value=""; };
