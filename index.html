@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oncología · Hospital Juárez de México</title>
-<meta name="application-version" content="3.72">
+<meta name="application-version" content="3.75">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2355,7 +2355,10 @@ html body #dlgResidentGate .resident-gate-legal{margin:8px 0 0;padding:0;font:50
     <a class="resident-gate-request" id="residentGateRequest" href="https://drive.google.com/file/d/1y5_ckuGclZjEJkRRp7EvbbO8VDFYigHA/view?usp=drive_link" target="_blank" rel="noopener noreferrer" hidden><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="m10.8 12.2 8.7-8.7M16 6l3 3M14 8l2 2"/></svg>Solicitar Clave</a>
     <p class="resident-gate-msg" id="residentGateMsg" role="alert"></p>
     <div class="resident-gate-buttons"><button class="resident-gate-submit" id="residentGateSubmit" type="submit">Ingresar</button></div>
-    <p class="resident-gate-legal" id="residentGateLegal">Versión de prueba en revisión por la Jefatura de Oncología. Guarda la información en la plataforma que ya usa el servicio; su uso es responsabilidad de cada usuario. No usa formatos ajenos a los autorizados por el HJM ni servicios nuevos.</p>
+    <p class="resident-gate-legal" id="residentGateLegal"><span class="legal-risk">Versión de prueba en revisión por la Jefatura de Oncología.</span>
+      <span class="legal-risk">Su uso es responsabilidad de cada usuario.</span>
+      <span class="legal-platform">La información se guarda en la plataforma que ya usa el servicio actualmente.</span>
+      <span class="legal-platform">No se utilizan formatos ajenos a los autorizados por el HJM ni servicios nuevos.</span></p>
   </form>
 </dialog>
 
@@ -2505,9 +2508,12 @@ html body #dlgResidentGate .resident-gate-legal{margin:8px 0 0;padding:0;font:50
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 3.72 · Fecha de publicación: 29.10.26</div>
+  <div class="app-footer-version">Versión 3.75 · Fecha de publicación: 29.10.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
-    <p class="app-footer-legal">Versión de prueba en revisión por la Jefatura de Oncología. Guarda la información en la plataforma que ya usa el servicio; su uso es responsabilidad de cada usuario. No usa formatos ajenos a los autorizados por el HJM ni servicios nuevos.</p>
+    <p class="app-footer-legal"><span class="legal-risk">Versión de prueba en revisión por la Jefatura de Oncología.</span>
+      <span class="legal-risk">Su uso es responsabilidad de cada usuario.</span>
+      <span class="legal-platform">La información se guarda en la plataforma que ya usa el servicio actualmente.</span>
+      <span class="legal-platform">No se utilizan formatos ajenos a los autorizados por el HJM ni servicios nuevos.</span></p>
     <p>Los datos viajan por conexión segura (HTTPS) y se almacenan en la cuenta de Google del Servicio de Oncología del Hospital Juárez de México; protegidos mediante clave de acceso.</p>
     <p id="hjmOffInfo" role="status" hidden></p>
   </footer>
@@ -7595,7 +7601,7 @@ const NOTE_VITAL_FIELDS=[
   {key:"so2",label:"SO2 (%)",print:"SO2",placeholder:"97",mode:"numeric",unit:"%"},
   {key:"uresis",label:"Uresis",print:"Uresis",placeholder:"",mode:"text"}
 ];
-function clinicalNoteUsesTable(tipo){return !["Nota de Ingreso","Nota de Defunción","Nota Preoperatoria","Nota Prequirúrgica","Nota Postoperatoria","Nota Postquirúrgica"].includes(normalizedNoteType(tipo));}
+function clinicalNoteUsesTable(tipo){return !["Nota de Ingreso","Sesión Multidisciplinaria","Nota de Defunción","Nota Preoperatoria","Nota Prequirúrgica","Nota Postoperatoria","Nota Postquirúrgica"].includes(normalizedNoteType(tipo));}
 function syncClinicalNoteVitals(){const vitals=$("clinicalForm").querySelector(".clinical-note-vitals");if(vitals)vitals.hidden=!clinicalNoteUsesTable($("cl-tipo").value);const bb=$("clinicalForm").querySelector("[data-base-note]");if(bb&&$("cl-tipo"))bb.hidden=!clinicalNoteTemplate($("cl-tipo").value)||!/^Nota (Pre|Post)operatoria$/.test(normalizedNoteType($("cl-tipo").value));}
 function clinicalNoteVitals(v){
   const signs=v.signos||{};
@@ -7651,7 +7657,7 @@ function clinicalFields(tp,v,opt={}){
   const slot=opt.slot===2?2:1,prefix=slot===2?"cl2":"cl",noteType=normalizedNoteType(v.tipo);
   if(tp==="notas") return `<div class="clinical-grid" data-kind="notas">
     ${clinicalDateTimeFields("cl",v)}
-    <label class="note-type"><span class="clinical-type-label">Tipo de nota</span><select id="cl-tipo">${["Consulta Externa","Nota de Evolución","Nota Agregada","Nota de Gravedad","Nota Preoperatoria","Nota Postoperatoria","Nota de Ingreso","Reingreso a piso","Nota de Diferimiento","Nota de Defunción"].map(x=>`<option${x===noteType?" selected":""}>${x}</option>`).join("")}</select></label>
+    <label class="note-type"><span class="clinical-type-label">Tipo de nota</span><select id="cl-tipo">${["Consulta Externa","Nota de Evolución","Nota Agregada","Nota de Gravedad","Nota Preoperatoria","Nota Postoperatoria","Nota de Ingreso","Sesión Multidisciplinaria","Reingreso a piso","Nota de Diferimiento","Nota de Defunción"].map(x=>`<option${x===noteType?" selected":""}>${x}</option>`).join("")}</select></label>
     ${clinicalNoteVitals(v)}
     ${clinicalRichField("cl-contenido","Contenido",v.contenido||clinicalNoteTemplate(v.tipo),{content:true})}
     ${clinicalResponsibleFields("cl",v)}
@@ -7844,7 +7850,7 @@ function clinicalNoteVitalRows(p){
 }
 function clinicalPrintHTML(tp,p,d){
   if(p&&p.enc)d=Object.assign({},d,p.enc);
-  if(tp==="notas"&&!clinicalNoteUsesTable(p.tipo))return `<div class="cp-page cp-note cp-note-free${normalizedNoteType(p.tipo)==="Nota de Ingreso"?" cp-note-admission":""}">${patientPrintHeader(d)}<h1 class="cp-title">${esc(notePrintTitle(p.tipo))}</h1><div class="cp-free-date"><div>${esc(p.fecha)}</div><div>${esc(p.hora)}</div></div><div class="cp-content">${clinicalRichHTML(p.contenido)}</div>${clinicalSignatures(p)}</div>`;
+  if(tp==="notas"&&!clinicalNoteUsesTable(p.tipo))return `<div class="cp-page cp-note cp-note-free${["Nota de Ingreso","Sesión Multidisciplinaria"].includes(normalizedNoteType(p.tipo))?" cp-note-admission":""}">${patientPrintHeader(d)}<h1 class="cp-title">${esc(notePrintTitle(p.tipo))}</h1><div class="cp-free-date"><div>${esc(p.fecha)}</div><div>${esc(p.hora)}</div></div><div class="cp-content">${clinicalRichHTML(p.contenido)}</div>${clinicalSignatures(p)}</div>`;
   if(tp==="notas")return `<div class="cp-page cp-note${normalizedNoteType(p.tipo)==="Nota de Evolución"?" cp-evolution":""}">${patientPrintHeader(d)}<table class="cp-note-table"><colgroup><col class="cp-note-meta-col"><col></colgroup><thead><tr><th scope="col">FECHA, HORA Y<br>SIGNOS VITALES</th><th scope="col"><h1 class="cp-title">${esc(notePrintTitle(p.tipo))}</h1></th></tr></thead><tbody><tr><td class="cp-note-meta"><div class="cp-note-meta-row cp-note-date-time">${esc(p.fecha)}</div><div class="cp-note-meta-row cp-note-date-time">${esc(p.hora)}</div>${clinicalNoteVitalRows(p)}</td><td class="cp-note-text"><div class="cp-content">${clinicalRichHTML(p.contenido)}</div>${clinicalSignatures(p)}</td></tr></tbody></table></div>`;
   return `<div class="cp-page cp-indications">${patientPrintHeader(d)}<h1 class="cp-title">INDICACIONES MÉDICAS</h1><div class="cp-body"><div class="cp-date"><b>FECHA</b><br>${esc(p.fecha)}<br>${esc(p.hora)} HRS</div><ul class="cp-sections">${clinicalIndicationSections(p)}</ul></div>${clinicalSignatures(p)}</div>`;
 }
@@ -13247,5 +13253,17 @@ html body.pp-browse #pPanel .pp-head #cenSendBtn,html body.pp-browse #pPanel .pp
 <script>
 (function(){let frame=0;addEventListener("resize",()=>{if(frame)return;frame=requestAnimationFrame(()=>{frame=0;try{const w=document.getElementById("cenWrap");if(w&&!w.hidden)cenFitAll(w);const d=document.querySelector("dialog.cen-vw[open]");if(d)cenFitAll(d);}catch(_){}});});})();
 </script>
+
+<style id="hjm-v373-legal">
+html body #dlgResidentGate .resident-gate-legal>span,
+html body .app-footer p.app-footer-legal>span{display:block}
+html body #dlgResidentGate .resident-gate-legal .legal-platform,
+html body .app-footer p.app-footer-legal .legal-platform{color:#666767;font-weight:400}
+</style>
+
+<style id="hjm-v374-legal-line">
+html body #dlgResidentGate .resident-gate-legal .legal-platform:last-child{font-size:10.5px;letter-spacing:-.08px;white-space:nowrap;text-wrap:nowrap}
+@media(max-width:480px){html body #dlgResidentGate .resident-gate-legal .legal-platform:last-child{font-size:10px;white-space:normal;text-wrap:balance}}
+</style>
 </body>
 </html>
