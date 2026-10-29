@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oncología · Hospital Juárez de México</title>
-<meta name="application-version" content="3.68">
+<meta name="application-version" content="3.71">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2505,7 +2505,7 @@ html body #dlgResidentGate .resident-gate-legal{margin:8px 0 0;padding:0;font:50
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 3.68 · Fecha de publicación: 29.10.26</div>
+  <div class="app-footer-version">Versión 3.71 · Fecha de publicación: 29.10.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal">Versión de prueba en revisión por la Jefatura de Oncología. Guarda la información en la plataforma que ya usa el servicio; su uso es responsabilidad de cada usuario. No usa formatos ajenos a los autorizados por el HJM ni servicios nuevos.</p>
     <p>Los datos viajan por conexión segura (HTTPS) y se almacenan en la cuenta de Google del Servicio de Oncología del Hospital Juárez de México; protegidos mediante clave de acceso.</p>
@@ -3738,7 +3738,7 @@ function staffAdscritoLoose(value){
 function adsExact(part){ const strip=v=>normalizeStaffName(v).replace(/^DRA?\s+/,""), t=strip(part); if(!t) return null; return staffAdscrito(part)||HJM_STAFF.adscritos.find(x=>strip(x.nombre)===t)||null; }
 function adsComplete(txt){ let a=staffAdscrito(txt); if(a) return a; try{ a=staffAdscritoLoose(String(txt).toLocaleUpperCase("es-MX")); }catch(_){} if(a) return a;
   const w=normalizeStaffName(txt).replace(/^DRA?\s+/,"").split(" ").filter(Boolean); if(!w.length) return null;
-  const hits=HJM_STAFF.adscritos.filter(x=>{const n=normalizeStaffName(x.nombre);return w.every(t=>n.includes(t));}); return hits.length===1?hits[0]:null; }
+  const hits=HJM_STAFF.adscritos.filter(x=>{const n=normalizeStaffName(x.nombre).split(" ");return w.every(t=>n.includes(t));}); return hits.length===1?hits[0]:null; }
 function adscritoMismatch(value){ if(!HJM_STAFF.adscritos.length) return []; const f=String(value||"").split("/")[0].trim(); return f&&!adsExact(f)?[f]:[]; }
 function syncAltaClinicFromAdscrito(){
   const root=BUILT.alta,sp=root&&root.querySelector('.c.pick[data-auto-clinic="1"] > span');if(!sp||document.activeElement===sp)return;
@@ -3748,21 +3748,24 @@ $("medico").addEventListener("change",syncAltaClinicFromAdscrito);
 /* ---------- v2.165 · Clínica(s) del paciente: se llena según el adscrito, se puede editar, solo clínicas registradas, varias con "/" ---------- */
 function clinCatalog(){ const m=new Map(); PP_CLIN_NAMES.concat(HJM_USERS.filter(u=>u.servicio&&u.tipo==="adscrito").map(u=>u.servicio)).forEach(c=>{ const k=normalizeStaffName(c); if(k&&!m.has(k)) m.set(k,String(c).toLocaleUpperCase("es-MX")); }); return [...m.entries()].map(([k,n])=>({k,n})).sort((a,b)=>ppClinCmp(a.n,b.n)); }
 /* v3.62 · Abreviaturas / nombres inexactos de clínica (los que escribe el censo o la skill) -> nombre registrado */
-const CLIN_ALIAS={"TM":"TUMORES MIXTOS","MIXTOS":"TUMORES MIXTOS","TUMORES MIXTOS":"TUMORES MIXTOS","GINE":"TUMORES GINECOLÓGICOS","GO":"TUMORES GINECOLÓGICOS","GINECOLOGIA":"TUMORES GINECOLÓGICOS","GINECOLOGICOS":"TUMORES GINECOLÓGICOS","GINECOLOGIA ONCOLOGICA":"TUMORES GINECOLÓGICOS","MAMAS":"MAMA","CYC":"CABEZA Y CUELLO","CC":"CABEZA Y CUELLO","OM":"ONCOLOGÍA MÉDICA","ONCO MEDICA":"ONCOLOGÍA MÉDICA","RT":"RADIO ONCOLOGÍA","RO":"RADIO ONCOLOGÍA","RADIOTERAPIA":"RADIO ONCOLOGÍA","INTERV":"INTERVENCIONISMO","INTERVENCION":"INTERVENCIONISMO"};
+const CLIN_ALIAS={"TM":"TUMORES MIXTOS","MIXTOS":"TUMORES MIXTOS","TUMORES MIXTOS":"TUMORES MIXTOS","GINE":"TUMORES GINECOLÓGICOS","GO":"TUMORES GINECOLÓGICOS","GINECOLOGIA":"TUMORES GINECOLÓGICOS","GINECOLOGICOS":"TUMORES GINECOLÓGICOS","GINECOLOGIA ONCOLOGICA":"TUMORES GINECOLÓGICOS","ONCOLOGIA GINECOLOGICA":"TUMORES GINECOLÓGICOS","ONCOLOGIA DE CABEZA Y CUELLO":"CABEZA Y CUELLO","RADIACION ONCOLOGICA":"RADIO ONCOLOGÍA","MAMAS":"MAMA","CYC":"CABEZA Y CUELLO","CC":"CABEZA Y CUELLO","OM":"ONCOLOGÍA MÉDICA","ONCO MEDICA":"ONCOLOGÍA MÉDICA","RT":"RADIO ONCOLOGÍA","RO":"RADIO ONCOLOGÍA","RADIOTERAPIA":"RADIO ONCOLOGÍA","INTERV":"INTERVENCIONISMO","INTERVENCION":"INTERVENCIONISMO"};
 function clinMatch(part){ const k=normalizeStaffName(part); if(!k) return null; const cat=clinCatalog(); const ex=cat.find(c=>c.k===k); if(ex) return ex.n;
   const al=CLIN_ALIAS[k]; if(al){ const kk=normalizeStaffName(al), hit=cat.find(c=>c.k===kk); if(hit) return hit.n; } const w=k.split(" ").filter(Boolean); const h=cat.filter(c=>w.every(t=>c.k.includes(t))); return h.length===1?h[0].n:null; }
 function clinClean(v){ const seen=new Set(), out=[]; String(v||"").split("/").forEach(p=>{ const n=clinMatch(p); if(n&&!seen.has(n)){ seen.add(n); out.push(n); } }); return out.join("/"); }
-function clinAuto(medico){ const seen=new Set(), out=[]; String(medico||"").split("/").slice(0,1).forEach(p=>{ const a=staffAdscrito(p)||staffAdscritoLoose(String(p).trim().toLocaleUpperCase("es-MX")); const c=a&&a.clinica?String(a.clinica).toLocaleUpperCase("es-MX"):""; if(c&&!seen.has(c)){ seen.add(c); out.push(c); } }); return out.join("/"); }
+function clinAuto(medico){ const seen=new Set(), out=[]; String(medico||"").split("/").slice(0,1).forEach(p=>{ const a=adsComplete(String(p).trim()); const c=a&&a.clinica?String(a.clinica).toLocaleUpperCase("es-MX"):""; if(c&&!seen.has(c)){ seen.add(c); out.push(c); } }); return out.join("/"); }
 function clinSync(force){
   const c=$("clinica"),m=$("medico"); if(!c||!m) return; const a=clinAuto(m.value), last=c.dataset.auto;
   if((force&&a)||c.value.trim()===""||c.value===(last||"")){ if(c.value!==a){ c.value=a; c.dispatchEvent(new Event("input",{bubbles:true})); } }
   c.dataset.auto=a; c.dataset.lastMed=m.value;
 }
-function clinAfterLoad(obj){ const c=$("clinica"),m=$("medico"); if(!c||!m) return; if(obj&&obj.clinica===undefined){ c.value=""; c.dataset.auto=""; clinSync(true); } else { c.dataset.auto=clinAuto(m.value); c.dataset.lastMed=m.value; }
-  /* v3.62 · regla de nombres: adscrito y clínica inexactos o abreviados se completan al nombre registrado */
-  try{ if(HJM_STAFF.adscritos.length){ const mv=m.value.trim(); if(mv){ const nv=adsNormalize(mv); if(nv&&nv!==mv){ m.value=nv; m.dispatchEvent(new Event("input",{bubbles:true})); } }
-      const cv=c.value.trim(), au=clinAuto(m.value); if(cv){ const cl=clinClean(cv); if(cl&&cl!==cv){ c.value=cl; c.dispatchEvent(new Event("input",{bubbles:true})); } else if(!cl&&au){ c.value=au; c.dispatchEvent(new Event("input",{bubbles:true})); } } else if(au){ c.value=au; c.dispatchEvent(new Event("input",{bubbles:true})); }
-      c.dataset.auto=au; c.dataset.lastMed=m.value; } }catch(_){}
+function clinAfterLoad(obj){
+  const c=$("clinica"),m=$("medico"); if(!c||!m) return;
+  try{ if(HJM_STAFF.adscritos.length){
+    const previousClinic=c.value, ch=nnChanges({meta:{adscrito:m.value,clinica:previousClinic}})||{}, finalClinic=ch.clinica!==undefined?ch.clinica:previousClinic;
+    if(ch.medico!==undefined){m.value=ch.medico;m.dispatchEvent(new Event("input",{bubbles:true}));}
+    if(c.value!==finalClinic){c.value=finalClinic;c.dispatchEvent(new Event("input",{bubbles:true}));}
+  } }catch(_){}
+  c.dataset.auto=clinAuto(m.value);c.dataset.lastMed=m.value;
 }
 $("medico").addEventListener("input",()=>clinSync(true));
 $("medico").addEventListener("change",()=>clinSync(true));
@@ -6889,8 +6892,11 @@ const PP_CLIN_ORDER=["TUMORES MIXTOS","TUMORES GINECOLOGICOS","MAMA","CABEZA Y C
 const ppClinRank=c=>{ const k=normalizeStaffName(c), i=PP_CLIN_ORDER.indexOf(k); return i<0?99:i; };
 const ppClinCmp=(a,b)=>ppClinRank(a)-ppClinRank(b)||String(a).localeCompare(String(b),"es");
 /* v2.165 · Clínica(s) del paciente = el campo Clínica de la hoja de datos; los guardados antes de existir el campo usan la del adscrito */
-function ppFileClins(f){ const m=f.meta||{}; if(m.clinica!==undefined){ const own=String(m.clinica).split("/").map(x=>normalizeStaffName(clinMatch(x)||x)).filter(Boolean); if(own.length) return own; const au=clinAuto(m.adscrito); return au?au.split("/").map(normalizeStaffName).filter(Boolean):own; }
-  const out=[]; String(m.adscrito||"").split("/").forEach(p=>{ const i=ppAdsInfo(p.trim()); if(i.ok) out.push(normalizeStaffName(i.clin)); }); return out; }
+function ppFileClins(f){
+  const m=f.meta||{}, out=String(m.clinica||"").split("/").map(clinMatch).filter(Boolean).map(normalizeStaffName);
+  if(!out.length) out.push(...clinAuto(m.adscrito).split("/").map(normalizeStaffName).filter(Boolean));
+  return [...new Set(out)];
+}
 function ppFiltMatch(f){
   const A=PP_FILT.ads,C=PP_FILT.clin; if(!A.length&&!C.length) return true;
   if(A.length){ const a=String((f.meta&&f.meta.adscrito)||"").split("/")[0].trim(); if(!a) return false; let i=ppAdsInfo(a); if(!i.ok){ const c=adsComplete(a); if(c) i=ppAdsInfo(c.nombre); } return i.ok&&A.includes(i.key); }
@@ -7042,17 +7048,9 @@ td.pend{text-align:left;white-space:pre-wrap;font-size:9pt}
 *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .t1 th,.t2 th,.sec td{background:#d9d9d9!important}
 </style></head><body><table><colgroup>${cols.map(c=>`<col style="width:${c[1]}%">`).join("")}</colgroup><thead><tr class="t1"><th colspan="11">${esc(todayStr())}</th></tr><tr class="t2">${cols.map(c=>`<th>${esc(c[0])}</th>`).join("")}</tr></thead><tbody>${body}</tbody></table>
-<style id="hjm-v367-legal">
-@media screen{
-html body .app-footer p.app-footer-legal{margin:10px auto 8px;font-size:12.5px;font-weight:500;line-height:1.5;color:#8d3f42;text-wrap:balance}
-}
-@media screen and (prefers-color-scheme:dark){html body .app-footer p.app-footer-legal{color:#d89c9f}}
-</style>
 
-<style id="hjm-v368-datetime">
-.pp-datetime{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:12px}
-.pp-datetime label{display:grid;gap:5px;font-size:13px;font-weight:600;color:inherit}
-</style>
+
+
 </body></html>`.replace("","");
     const fr=document.createElement("iframe"); fr.setAttribute("aria-hidden","true"); fr.style.cssText="position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden";
     document.body.appendChild(fr); const doc=fr.contentDocument; doc.open(); doc.write(html); doc.close();
@@ -7078,9 +7076,9 @@ function ppRowPend(f){ if(PP_PQ[f.id]) return PP_PQ[f.id].v; const loc=ppPendLoc
    Se guarda en el mismo campo de texto de siempre: «• texto» = pendiente, «✔ texto» = terminado (los guardados antes con «• » siguen igual). */
 const PP_BUL="• ", PP_DONE="✔ ";
 function ppPendParse(v){ const out=[]; String(v==null?"":v).split(/\r?\n/).forEach(l=>{ let t=l.trim(); const d=/^[✔✓☑]/.test(t); t=t.replace(/^[•✔✓☑☐▪◦]+\s*/,"").trim(); if(t) out.push({d,t}); }); return out; }
-function ppPendSer(rows){ return rows.filter(r=>String(r.t).trim()).map(r=>(r.d?PP_DONE:PP_BUL)+String(r.t).trim().replace(/\s+/g," ")).join("\n"); }
+function ppPendSer(rows){ return rows.filter(r=>String(r.t).trim()).map(r=>(r.d?PP_DONE:PP_BUL)+String(r.t).trim().replace(/\s+/g," ").toLocaleUpperCase("es-MX")).join("\n"); }
 const ppPendNorm=v=>ppPendSer(ppPendParse(v));
-function ppPendPrint(v){ return ppPendParse(v).filter(r=>!r.d).map(r=>PP_BUL+r.t).join("\n"); }   /* el censo impreso solo lleva los pendientes sin terminar */
+function ppPendPrint(v){ return ppPendParse(v).filter(r=>!r.d).map(r=>PP_BUL+r.t.toLocaleUpperCase("es-MX")).join("\n"); }   /* el censo impreso solo lleva los pendientes sin terminar */
 function ppPendRow(d,t,ph){ return `<div class="pp-pi${d?" done":""}${String(t).trim()?"":" ghost"}"><input type="checkbox" class="pp-pc"${d?" checked":""} aria-label="Marcar como terminado"><textarea class="pp-pt" rows="1" maxlength="120" spellcheck="false" autocomplete="off" enterkeyhint="next"${ph?` placeholder="${ph}"`:""} aria-label="Pendiente">${esc(t)}</textarea><button type="button" class="pp-px" tabindex="-1" aria-label="Borrar este pendiente" title="Borrar este pendiente"${String(t).trim()?"":" hidden"}>×</button></div>`; }   /* renglón multilínea: se ajusta a su texto; × borra el renglón; sin texto, la casilla es fantasma */
 function ppPendFit(t){ try{ if(!t.offsetParent) return; t.style.height="auto"; if(t.scrollHeight) t.style.height=t.scrollHeight+"px"; }catch(_){} }
 function ppPendFitAll(root){ try{ root.querySelectorAll(".pp-pt").forEach(ppPendFit); }catch(_){} }
@@ -7184,12 +7182,10 @@ function ppAsk(o){ return new Promise(res=>{
 const NN_TRIED=new Map(); let NN_T=0, NN_LAST=0, NN_RUN=false;
 function nnChanges(f){
   const m=f&&f.meta; if(!m||(m.adscrito===undefined&&m.clinica===undefined)) return null;
-  const ch={}, rawA=String(m.adscrito||"").trim();
-  let ads=rawA; if(rawA){ const nv=adsNormalize(rawA); if(nv&&nv!==rawA){ ch.medico=nv; ads=nv; } }
-  const auto=clinAuto(ads);
-  if(m.clinica!==undefined){ const rawC=String(m.clinica).trim();
-    if(rawC){ const cl=clinClean(rawC); if(cl&&cl!==rawC) ch.clinica=cl; else if(!cl&&auto) ch.clinica=auto; }
-    else if(auto) ch.clinica=auto; }
+  const ch={}, rawA=String(m.adscrito||"").trim(), ads=adsNormalize(rawA), rawC=String(m.clinica||"").trim();
+  if(ads&&ads!==rawA) ch.medico=ads;
+  const cl=clinNormalizeRecord(rawC,ads);
+  if(cl&&cl!==rawC) ch.clinica=cl;   // También completa clínica ausente en JSON antiguos.
   return Object.keys(ch).length?ch:null;
 }
 function nnSweep(){
@@ -7208,11 +7204,24 @@ function nnSweep(){
     if(n) setTimeout(()=>{ try{ renderPP(); }catch(_){} },1500);
   }catch(_){} finally{ NN_RUN=false; }
 }
-function nnSweepSoon(){ if(Date.now()-NN_LAST<45000) return; clearTimeout(NN_T); NN_T=setTimeout(()=>{ NN_LAST=Date.now(); nnSweep(); },4000); }
+function nnSweepSoon(){ if(NN_T||Date.now()-NN_LAST<45000) return; NN_T=setTimeout(()=>{ NN_T=0; NN_LAST=Date.now(); nnSweep(); },4000); }
 const PPQ={chain:Promise.resolve(),over:new Map()};
 const PP_META_KEY={cama:"cama",medico:"adscrito",clinica:"clinica",diagnostico:"dx",fIngreso:"ingreso",pendientes:"pendientes",altaEn:"egr",defEn:"def"};
 function ppOverlay(){ PPQ.over.forEach((o,id)=>{ const f=DRIVE_FILES.find(x=>x&&x.id===id); if(f) f.meta=Object.assign({},f.meta,o.meta); }); }
-function adsNormalize(v){ const t=String(v||""), sl=t.indexOf("/"), first=(sl<0?t:t.slice(0,sl)).trim(), extras=sl<0?[]:t.slice(sl).split("/").map(x=>x.trim()).filter(Boolean); const a=first?adsComplete(first):null; const nm=a?a.nombre:first; return nm+(extras.length?"/"+extras.join("/"):""); }
+function adsNormalize(v){
+  const out=[],seen=new Set();
+  String(v||"").split("/").map(x=>x.trim()).filter(Boolean).forEach(part=>{ const a=adsComplete(part), n=a?a.nombre:part, key=normalizeStaffName(n); if(!seen.has(key)){seen.add(key);out.push(n);} });
+  return out.join("/");
+}
+/* v3.71 · Resolver solo contra el catálogo; conservar los componentes no identificados. */
+function clinNormalizeRecord(v,medico){
+  const parts=String(v||"").split("/").map(x=>x.trim()).filter(Boolean), auto=clinAuto(medico);
+  if(!parts.length) return auto;
+  const mapped=parts.map(x=>clinMatch(x)), known=mapped.filter(Boolean);
+  if(!known.length) return String(v||"").trim();
+  return [...new Set(parts.map((x,i)=>mapped[i]||x))].join("/");
+}
+
 function ppApply(f,changes,opt){ const quiet=!!(opt&&opt.quiet);
   const exp=ppExp(f);
   if(hasSelectedPatient()&&exp&&String($("expediente").value||"").trim()===exp){ Object.entries(changes).forEach(([k,v])=>{ const c=$(k); if(c){ c.value=v; c.dispatchEvent(new Event("input",{bubbles:true})); c.dispatchEvent(new Event("change",{bubbles:true})); } }); try{ cenStampMod(); }catch(_){} if(!quiet) toast("Actualizado en el paciente abierto"); if(opt&&opt.save){ try{ driveSaveNow({silent:true}); }catch(_){} } if(opt&&opt.done) try{ opt.done(null); }catch(_){} return; }
@@ -7289,6 +7298,8 @@ const ppScroll=d=>{ const l=$("ppList"); l.scrollBy({left:d*Math.max(200,l.clien
 $("ppPrev").onclick=()=>ppScroll(-1); $("ppNext").onclick=()=>ppScroll(1);
 const ppPCont=t=>t&&t.closest?t.closest("[data-pend]"):null, ppIsPT=t=>!!(t&&t.classList&&t.classList.contains("pp-pt"));
 $("ppList").addEventListener("input",e=>{ const t=e.target; if(!ppIsPT(t)) return; const c=ppPCont(t); if(!c) return;
+  /* v3.69 · Mayúsculas en el valor real, no solo en el aspecto visual. */
+  if(!e.isComposing){ const start=t.selectionStart, end=t.selectionEnd, value=t.value.toLocaleUpperCase("es-MX"); if(value!==t.value){ t.value=value; try{ t.setSelectionRange(start,end); }catch(_){} } }
   const row0=t.closest(".pp-pi"), has=!!t.value.trim(); if(row0){ row0.classList.toggle("ghost",!has); const xb=row0.querySelector(".pp-px"); if(xb) xb.hidden=!has; } ppPendFit(t);
   const last=c.lastElementChild; if(last&&last.contains(t)&&has) last.insertAdjacentHTML("afterend",ppPendRow(false,""));   /* siempre queda un renglón vacío al final para seguir agregando */
   clearTimeout(c._pt); c._pt=setTimeout(()=>ppPendSave(c),900); });
@@ -8557,17 +8568,22 @@ function cenFiles(Td,now){
   return {H,E,D};
 }
 /* Censo (objeto) construido con lo que hay en memoria; los pacientes sin datos cargados salen en blanco hasta que llegan */
-const cenIngDay=s=>{ const m=/^\s*(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2,4})\s*$/.exec(String(s||"")); if(!m) return NaN; let y=+m[3]; if(y<100) y+=2000; return Date.UTC(y,+m[2]-1,+m[1]); };
+const cenIngDay=s=>{ const m=/^\s*(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2}|\d{4})\s*$/.exec(String(s||"")); if(!m) return NaN; let y=+m[3]; if(y<100) y+=2000; const t=Date.UTC(y,+m[2]-1,+m[1]), d=new Date(t); return d.getUTCFullYear()===y&&d.getUTCMonth()===+m[2]-1&&d.getUTCDate()===+m[1]?t:NaN; };
+/* v3.70 · Fecha del ingreso respecto de la fecha del censo, nunca respecto del reloj del equipo. */
+function cenIngresoEnPeriodo(r,fecha){ const day=cenIngDay(fecha), ing=cenIngDay(r.ing); return Number.isFinite(day)&&Number.isFinite(ing)&&ing>=day-864e5&&ing<=day; }
+function cenIngresoMarcado(r){ return /^\s*(?:RE[ -]?)?INGRESO\s*$/i.test(String(r.est||"")); }
+function cenIngresoNegrita(r,fecha){ return !!r.nu||(cenIngresoMarcado(r)&&cenIngresoEnPeriodo(r,fecha)); }
+
 function cenBuild(Td,now,opt){
   opt=opt||{}; const fs=cenFiles(Td,now), prevDay=cenDay(Td.y,Td.m,Td.d,-1), pv=opt.prevSet;
   const mk=(list,sec)=>list.map(f=>cenRowOf(f,cenDat(f),Td,sec));
   const rows=cenSortRows(mk(fs.H,"H")).concat(mk(fs.E,"E").sort((a,b)=>a.ts-b.ts),mk(fs.D,"D").sort((a,b)=>a.ts-b.ts));
   const hoy=cenDot(Td), ayer=cenDot(prevDay);
-  /* v3.45 · Ingreso en negritas: toda fecha de ingreso posterior al último corte efectivo (el del censo previo; mientras el censo final no se guarda, sigue contando el previo).
-     Se omite si el paciente ya estaba en el censo previo o si su estatus ya dice INGRESO. La fecha se lee en cualquier formato (DD.MM.AA, DD/MM/AAAA…). */
-  const lo=Date.UTC(prevDay.y,prevDay.m,prevDay.d);
-  rows.forEach(r=>{ const id=cenIngDay(r.ing), visto=pv instanceof Set&&pv.has(String(r.exp).trim()), stI=/^\s*INGRESO\s*$/i.test(String(r.est||""));
-    r.nu=(id>=lo&&!visto&&!stI&&(id>lo||pv==="none"||pv instanceof Set))?1:0; if(r.sec==="H"&&r.nu&&!r.est) r.est="INGRESO"; if(r.sec==="E") r.est=r.est||"ALTA"; if(r.sec==="D") r.est=r.est||("DEFUNCIÓN"+(r.ts?" "+ppMxStamp(r.ts)+" HRS":"")); });
+  /* v3.70 · INGRESO/REINGRESO es evidencia positiva, no una exclusión.
+     Si aún no se leyó el censo previo, la fecha del periodo permite marcarlo provisionalmente.
+     Un expediente ya censado no se repite salvo estatus explícito; nunca se marcan fechas futuras. */
+  rows.forEach(r=>{ const visto=pv instanceof Set&&pv.has(String(r.exp).trim());
+    r.nu=cenIngresoEnPeriodo(r,hoy)&&(cenIngresoMarcado(r)||!visto)?1:0; if(r.sec==="H"&&r.nu&&!r.est) r.est="INGRESO"; if(r.sec==="E") r.est=r.est||"ALTA"; if(r.sec==="D") r.est=r.est||("DEFUNCIÓN"+(r.ts?" "+ppMxStamp(r.ts)+" HRS":"")); });
   const actO=CEN.act&&CEN.act.obj, exc=(actO&&actO.fecha===hoy&&Array.isArray(actO.exc))?actO.exc:[];
   let shown=rows; if(exc.length){ rows.forEach(r=>{ if(exc.includes(cenExKey(r))) r.exc=1; }); shown=CEN.showEx?rows:rows.filter(r=>!r.exc); }
   return { app:"censo-hjm", v:1, fecha:hoy, corte:new Date(Td.ts).toISOString(), pac:shown, nexc:rows.filter(r=>r.exc).length, res:"", rev:{f:{}}, _files:{H:fs.H,E:fs.E,D:fs.D} };
@@ -8675,14 +8691,12 @@ function cenInRange(c){ const m=/^\s*(\d{3})/.exec(String(c||"")); if(!m||/^UCI/
 const cenSecKey=r=>r.sec==="H"&&!cenInRange(r.cama)?"P":r.sec;
 function cenOrdered(rows){ const o={H:0,P:1,E:2,D:3}; return rows.map((r,i)=>[r,i]).sort((a,b)=>(o[cenSecKey(a[0])]-o[cenSecKey(b[0])])||(a[1]-b[1])).map(x=>x[0]); }
 function cenRowMatch(r){
-  const A=PP_FILT.ads, C=PP_FILT.clin;
-  if(A.length){ const a=String(r.adsRaw||"").split("/")[0].trim(); if(!a) return false; const i=ppAdsInfo(a); if(!(i.ok&&A.includes(i.key))) return false; }
-  else if(C.length){ const cf=r.cf||[]; if(!C.some(c=>cf.includes(normalizeStaffName(c)))) return false; }
+  if(!ppFiltMatch({meta:{adscrito:r.adsRaw||r.ads,clinica:r.clin}})) return false;
   const s=($("ppSearch").value||"").trim().toUpperCase(); if(s&&!(String(r.nombre).includes(s)||String(r.exp).toUpperCase().includes(s)||String(r.cama).includes(s))) return false;
   return true;
 }
 const cenVisible=cen=>cenOrdered((cen.pac||[]).filter(r=>(!r.exc||CEN.showEx)&&cenRowMatch(r)));
-function cenRowHTML(r){
+function cenRowHTML(r,fecha){
   const tds=CEN_COLS.map(([f],i)=>{ const v=r[f]==null?"":String(r[f]); let inner;
     if(CEN_BTN.has(f)) return `<td class="bt lk" data-cf="${f}" title="Doble clic para cambiar"><span>${esc(v)}</span></td>`;
     else if(f==="est"&&r.sec==="H") return `<td class="bt estc" tabindex="0" role="button" data-estpop title="Elegir estatus"><span>${esc(v)}</span></td>`;
@@ -8691,11 +8705,11 @@ function cenRowHTML(r){
     const kb=(i===0&&r.sec==="H")?`<button type="button" class="kb pp-kebab" data-cenkb aria-haspopup="menu" aria-label="Acciones del paciente" title="Acciones">${CEN_ICO_KB}</button>`:"";
     return `<td>${kb}${inner}</td>`; }).join("");
   const kbc=`<td class="kbc"><span class="kbw"><button type="button" class="kb pp-kebab" data-cenkb aria-haspopup="menu" aria-label="Acciones del paciente" title="Acciones">${CEN_ICO_KB}</button><button type="button" class="kb cp fl" data-cenfile aria-label="Abrir el archivo clínico del paciente" title="Archivo clínico">${CEN_ICO_FLD}</button></span></td>`;
-  return `<tr data-k="${esc(r.k)}" data-id="${esc(r.k)}"${r.exc?' class="excl"':(r.nu?' class="nuevo"':"")}>${kbc}${tds}</tr>`;
+  return `<tr data-k="${esc(r.k)}" data-id="${esc(r.k)}"${r.exc?' class="excl"':(cenIngresoNegrita(r,fecha)?' class="nuevo"':"")}>${kbc}${tds}</tr>`;
 }
 function cenTableHTML(cen){
   const rows=cenVisible(cen); let body="", last="H";
-  rows.forEach(r=>{ const sk=cenSecKey(r); if(sk!==last){ last=sk; body+=`<tr class="sec"><td class="kbc"></td><td colspan="16">${cenSecName[sk]||""}</td></tr>`; } body+=cenRowHTML(r); });
+  rows.forEach(r=>{ const sk=cenSecKey(r); if(sk!==last){ last=sk; body+=`<tr class="sec"><td class="kbc"></td><td colspan="16">${cenSecName[sk]||""}</td></tr>`; } body+=cenRowHTML(r,cen.fecha); });
   if(!rows.length) body=`<tr><td colspan="17" class="ro" style="padding:22px;color:var(--cen-mute)">${(PP_FILT.ads.length||PP_FILT.clin.length||($("ppSearch").value||"").trim())?"Ningún paciente con ese filtro.":"Sin pacientes hospitalizados."}</td></tr>`;
   return `<table class="cen"><colgroup><col style="width:30px">${CEN_COLS.map((c,i)=>`<col style="width:${(CEN_PW2[i]).toFixed(2)}%">`).join("")}</colgroup><thead><tr class="t1"><th class="kbc"></th><th colspan="16">CENSO ${esc(cenFecha4(cen.fecha))}</th></tr><tr class="t2"><th class="kbc"></th>${CEN_COLS.map(c=>`<th>${c[1]}</th>`).join("")}</tr></thead><tbody>${body}</tbody></table>`;
 }
@@ -9064,7 +9078,7 @@ const CEN_PW=[4.6,8.4,3.8,5.8,6.0,6.2,14,5.0,3.2,6.2,14,6.4,4.8,13,8.6,5.8];
 function cenPrintTable(cen,rows){ rows=rows.filter(r=>!r.exc);
   const tot=CEN_PW.reduce((s,c)=>s+c,0); let body="", last="H";
   cenOrdered(rows).forEach(r=>{ const sk=cenSecKey(r); if(sk!==last){ last=sk; body+=`<tr class="sec"><td colspan="16">${cenSecName[sk]||""}</td></tr>`; }
-    body+=`<tr${r.nu?' class="nu"':""}>${CEN_COLS.map(([f])=>`<td>${esc(r[f]==null?"":String(r[f]))}</td>`).join("")}</tr>`; });
+    body+=`<tr${cenIngresoNegrita(r,cen.fecha)?' class="nu"':""}>${CEN_COLS.map(([f])=>`<td>${esc(r[f]==null?"":String(r[f]))}</td>`).join("")}</tr>`; });
   body+=`<tr class="res"><td colspan="16">${esc(cen.res||"")}</td></tr>`;
   return `<table class="cenp"><thead><tr><th colspan="16">CENSO ${esc(cenFecha4(cen.fecha))}</th></tr><tr>${CEN_COLS.map(c=>`<th>${c[1]}</th>`).join("")}</tr></thead><tbody>${body}</tbody></table>`;
 }
@@ -13133,5 +13147,16 @@ updInfo();
 var f=0,pr=0;function chk(){if(f&&pr)go();}window.__hjmBootProbe=function(){pr=1;chk();};setTimeout(function(){pr=1;chk();},1500);
 try{(document.fonts&&document.fonts.ready?Promise.race([document.fonts.ready,new Promise(function(r){setTimeout(r,1500);})]):Promise.resolve()).then(function(){f=1;chk();});}catch(e){go();}
 setTimeout(go,2500);})();</script>
+
+<style id="hjm-v367-legal">
+@media screen{
+html body .app-footer p.app-footer-legal{margin:10px auto 8px;font-size:12.5px;font-weight:500;line-height:1.5;color:#8d3f42;text-wrap:balance}
+}
+@media screen and (prefers-color-scheme:dark){html body .app-footer p.app-footer-legal{color:#d89c9f}}
+</style>
+<style id="hjm-v368-datetime">
+.pp-datetime{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:12px}
+.pp-datetime label{display:grid;gap:5px;font-size:13px;font-weight:600;color:inherit}
+</style>
 </body>
 </html>
