@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oncología · Hospital Juárez de México</title>
-<meta name="application-version" content="3.76">
+<meta name="application-version" content="3.78">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2508,7 +2508,7 @@ html body #dlgResidentGate .resident-gate-legal{margin:8px 0 0;padding:0;font:50
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 3.76 · Fecha de publicación: 29.10.26</div>
+  <div class="app-footer-version">Versión 3.78 · Fecha de publicación: 29.10.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">Versión de prueba en revisión por la Jefatura de Oncología.</span>
       <span class="legal-risk">Su uso es responsabilidad de cada usuario.</span>
@@ -3522,9 +3522,10 @@ const $ = id => document.getElementById(id);
 const HJM_USERS_FILE="_USUARIOS_HJM.json",HJM_USERS_LS="hjm-usuarios-v2";
 const HJM_STAFF={adscritos:[],residentes:[]};
 let HJM_USERS=[],HJM_OPS={},HJM_OPS_DIRTY=false,HJM_OPS_MOD="",HJM_OPS_LMOD="",USERS_ERR="";
+let HJM_USER_PENDING={},HJM_USER_RESET=0,HJM_USERS_SEEN=false,USERS_DISCARDING=false;
 /* LISTA DE USUARIOS INCRUSTADA EN EL HTML (única lista de origen): es la que usa un equipo nuevo o sin internet.
    La pestaña «Index» del panel tiene el botón «Descargar Index con Usuarios Actualizados» que reescribe SOLO esta línea.
-   En Drive (_USUARIOS_HJM.json) solo viven los CAMBIOS que aún no están aquí; al abrir la app con un HTML que ya los trae, se borran solos de Drive. */
+   Drive conserva cambios y borrados compartidos hasta un descarte explícito. Un HTML nuevo puede integrarlos sin contarlos como pendientes; nunca los elimina automáticamente para otros equipos con un HTML anterior. */
 const HJM_USERS_BASE=/*USUARIOS_BASE_INI*/{"ts":1793269594518,"usuarios":[{"usuario":"DR. REYNALDO SANCHEZ","nombre":"DR. REYNALDO SANCHEZ","tipo":"administrativo","servicio":"","admin":true},{"usuario":"DR. PAUL ERNESTO CHARIS TRUJILLO","nombre":"DR. PAUL ERNESTO CHARIS TRUJILLO","tipo":"adscrito","servicio":"TUMORES MIXTOS","cp":"14887451"},{"usuario":"DR. ZIAD ABO HARP HASAN","nombre":"DR. ZIAD ABO HARP HASAN","tipo":"adscrito","servicio":"TUMORES MIXTOS","cp":"0020562"},{"usuario":"DR. ERIK EFRAIN SOSA DURAN","nombre":"DR. ERIK EFRAIN SOSA DURAN","tipo":"adscrito","servicio":"TUMORES MIXTOS","cp":"6982509"},{"usuario":"DR. EDUARDO ROVELO LIMA","nombre":"DR. EDUARDO ROVELO LIMA","tipo":"adscrito","servicio":"TUMORES MIXTOS","cp":"6323548"},{"usuario":"DR. OSCAR ZENON ROSAS GUERRA","nombre":"DR. OSCAR ZENON ROSAS GUERRA","tipo":"adscrito","servicio":"TUMORES MIXTOS","cp":"10554858"},{"usuario":"DRA. STEPHANY DE LUNA JIMENEZ","nombre":"DRA. STEPHANY DE LUNA JIMENEZ","tipo":"adscrito","servicio":"TUMORES MIXTOS","cp":"12868221"},{"usuario":"DRA. CRISTINA ALVARADO SILVA","nombre":"DRA. CRISTINA ALVARADO SILVA","tipo":"adscrito","servicio":"ONCOLOGÍA MÉDICA","cp":"3412446"},{"usuario":"DR. EDUARDO REYES SANCHEZ","nombre":"DR. EDUARDO REYES SANCHEZ","tipo":"adscrito","servicio":"ONCOLOGÍA MÉDICA","cp":"11994458"},{"usuario":"DR. OTONIEL LOPEZ RIVEROL","nombre":"DR. OTONIEL LOPEZ RIVEROL","tipo":"adscrito","servicio":"ONCOLOGÍA MÉDICA","cp":"8536588"},{"usuario":"DRA. ALEJANDRA VILLEGAS","nombre":"DRA. DIANA ALEJANDRA VILLEGAS OSORNO","tipo":"adscrito","servicio":"ONCOLOGÍA MÉDICA","cp":"12779426"},{"usuario":"DRA. LETICIA OLIVEROS HERRERA","nombre":"DRA. LETICIA OLIVEROS HERRERA","tipo":"adscrito","servicio":"ONCOLOGÍA MÉDICA","cp":"3412449"},{"usuario":"DRA. ANA MARIA CALDERON ESCUTIA","nombre":"DRA. ANA MARIA CALDERON ESCUTIA","tipo":"adscrito","servicio":"ONCOLOGÍA MÉDICA","cp":"11301472"},{"usuario":"DR. XICOTENCATL JIMENEZ","nombre":"DR. XICOTENCATL JIMENEZ VILLANUEVA","tipo":"adscrito","servicio":"TUMORES GINECOLÓGICOS","cp":"0023916"},{"usuario":"DR. JOSE FRANCISCO VARELAS ROJANO","nombre":"DR. JOSE FRANCISCO VARELAS ROJANO","tipo":"adscrito","servicio":"TUMORES GINECOLÓGICOS","cp":"3279509"},{"usuario":"DRA. ANGELA HERNANDEZ RUBIO","nombre":"DRA. ANGELA HERNANDEZ RUBIO","tipo":"adscrito","servicio":"MAMA","cp":"0023907"},{"usuario":"DR. ARMANDO RAMIREZ RAMIREZ","nombre":"DR. ARMANDO RAMIREZ RAMIREZ","tipo":"adscrito","servicio":"MAMA","cp":"4768048"},{"usuario":"DR. ALFREDO MALDONADO","nombre":"DR. JOSÉ ALFREDO MALDONADO CABRERA","tipo":"adscrito","servicio":"RADIO ONCOLOGÍA","cp":"13563944"},{"usuario":"DR. GABRIEL SANCHEZ MARIN","nombre":"DR. GABRIEL SANCHEZ MARIN","tipo":"adscrito","servicio":"RADIO ONCOLOGÍA","cp":"5088370"},{"usuario":"DRA. REBECA GIL","nombre":"DRA. REBECA GIL GARCÍA","tipo":"adscrito","servicio":"RADIO ONCOLOGÍA","cp":"0024427"},{"usuario":"DR. OMAR SOTO BECERRIL","nombre":"DR. OMAR ANTONIO SOTO BECERRIL","tipo":"adscrito","servicio":"CABEZA Y CUELLO","cp":"09940985"},{"usuario":"DR. JORGE DEL BOSQUE MENDEZ","nombre":"DR. JORGE DEL BOSQUE MENDEZ","tipo":"adscrito","servicio":"CABEZA Y CUELLO","cp":"3277627"},{"usuario":"DR. EDUARDO MARTINEZ ANTA","nombre":"DR. EDUARDO MARTINEZ ANTA","tipo":"adscrito","servicio":"INTERVENCIONISMO"},{"usuario":"JAIME CALDERA","nombre":"JAIME CALDERA FELIX","tipo":"residente","servicio":"Cirugía Oncológica","anio":"5","esp":"CO","fclin":["TUMORES GINECOLÓGICOS"]},{"usuario":"MALENY RUIZ","nombre":"MALENY RUIZ MOYA","tipo":"residente","servicio":"Cirugía Oncológica","anio":"5","esp":"CO"},{"usuario":"ARIEL JOB DIAZ","nombre":"ARIEL JOB DIAZ","tipo":"residente","servicio":"Cirugía Oncológica","anio":"5","esp":"CO","fclin":["TUMORES MIXTOS"]},{"usuario":"NATHALIA GRISALES","nombre":"NATHALIA GRISALES","tipo":"residente","servicio":"Cirugía Oncológica","anio":"5","esp":"CO"},{"usuario":"VALERIA RAMIREZ","nombre":"VALERIA RAMIREZ","tipo":"residente","servicio":"Cirugía Oncológica","anio":"5","esp":"CO"},{"usuario":"XIMENA VARGAS","nombre":"XIMENA VARGAS","tipo":"residente","servicio":"Ginecología Oncológica","anio":"5","esp":"GO","fclin":["TUMORES GINECOLÓGICOS","MAMA","RADIO ONCOLOGÍA"]},{"usuario":"GABRIELA ORTIZ","nombre":"GABRIELA ORTIZ","tipo":"residente","servicio":"Ginecología Oncológica","anio":"5","esp":"GO"},{"usuario":"DAVID ROMERO","nombre":"DAVID ROMERO","tipo":"residente","servicio":"Ginecología Oncológica","anio":"5","esp":"GO","fclin":["TUMORES GINECOLÓGICOS","MAMA","RADIO ONCOLOGÍA"]},{"usuario":"CARLOS QUINTERO","nombre":"CARLOS QUINTERO","tipo":"residente","servicio":"Ginecología Oncológica","anio":"5","esp":"GO","fclin":["TUMORES GINECOLÓGICOS","MAMA","RADIO ONCOLOGÍA"]},{"usuario":"TANIA ACEVEDO","nombre":"TANIA ACEVEDO","tipo":"residente","servicio":"Ginecología Oncológica","anio":"5","esp":"GO","fclin":["MAMA","TUMORES GINECOLÓGICOS","RADIO ONCOLOGÍA"]},{"usuario":"ROSA NELLY HERRERA","nombre":"ROSA NELLY HERRERA","tipo":"residente","servicio":"Ginecología Oncológica","anio":"6","esp":"GO"},{"usuario":"BLANCA MACIAS","nombre":"BLANCA MACIAS","tipo":"residente","servicio":"Ginecología Oncológica","anio":"6","esp":"GO"},{"usuario":"ESTEFANIA TASCON","nombre":"ESTEFANIA TASCON","tipo":"residente","servicio":"Ginecología Oncológica","anio":"6","esp":"GO"},{"usuario":"EDGAR PADILLA","nombre":"EDGAR PADILLA","tipo":"residente","servicio":"Ginecología Oncológica","anio":"7","esp":"GO"},{"usuario":"ELIZABETH ESCALANTE","nombre":"ELIZABETH ESCALANTE","tipo":"residente","servicio":"Ginecología Oncológica","anio":"7","esp":"GO"},{"usuario":"ZABDIEL SANCHEZ","nombre":"ZABDIEL SANCHEZ","tipo":"residente","servicio":"Ginecología Oncológica","anio":"6","esp":"GO"},{"usuario":"JONATHAN MORENO","nombre":"JONATHAN ALBERTO MORENO GUDIÑO","tipo":"residente","servicio":"Oncología Médica","anio":"5","esp":"OM","fclin":["ONCOLOGÍA MÉDICA"]},{"usuario":"CLAUDIA ALMENDAREZ","nombre":"CLAUDIA ALMENDAREZ","tipo":"residente","servicio":"Cirugía Oncológica","anio":"6","esp":"CO"},{"usuario":"DIEGO CARVAJAL","nombre":"DIEGO CARVAJAL","tipo":"residente","servicio":"Cirugía Oncológica","anio":"6","esp":"CO"},{"usuario":"JUAN MANUEL NARVAEZ","nombre":"JUAN MANUEL NARVAEZ","tipo":"residente","servicio":"Cirugía Oncológica","anio":"6","esp":"CO"},{"usuario":"JHON ERIK SANABRIA","nombre":"JHON ERIK SANABRIA","tipo":"residente","servicio":"Oncología Cabeza y Cuello","anio":"6","esp":"OCyC"},{"usuario":"CARLOS PEREZ","nombre":"CARLOS PEREZ","tipo":"residente","servicio":"Cirugía Oncológica","anio":"6","esp":"CO"},{"usuario":"JENNIFFER PLAZA","nombre":"JENNIFFER PLAZA","tipo":"residente","servicio":"Cirugía Oncológica","anio":"6","esp":"CO"},{"usuario":"URIEL REYES","nombre":"URIEL REYES","tipo":"residente","servicio":"Cirugía Oncológica","anio":"7","esp":"CO"},{"usuario":"LUCERO SOLARES","nombre":"LUCERO SOLARES","tipo":"residente","servicio":"Cirugía Oncológica","anio":"7","esp":"CO"},{"usuario":"DANIELA HERNANDEZ","nombre":"DANIELA HERNANDEZ","tipo":"residente","servicio":"Oncología Médica","anio":"5","esp":"OM"},{"usuario":"MARIA JOSE BARRUETA","nombre":"MARIA JOSE BARRUETA","tipo":"residente","servicio":"Oncología Cabeza y Cuello","cp":"12618728","anio":"5","esp":"OCyC","inicio":"todos","fclin":["CABEZA Y CUELLO"]},{"usuario":"CAROLINA RAMIREZ","nombre":"CAROLINA RAMIREZ","tipo":"residente","servicio":"Oncología Médica","anio":"5","esp":"OM"},{"usuario":"DR. BYRON SIMMONS","nombre":"DR. BYRON SIMMONS","tipo":"residente","servicio":"Fellow de Laparoscopia Avanzada"},{"usuario":"DRA. ALEJANDRA ZARATE","nombre":"DRA. ALEJANDRA PAOLA ZÁRATE GÓMEZ","tipo":"adscrito","servicio":"RADIO ONCOLOGÍA","cp":"14020474"},{"usuario":"DRA. MARIA CRISTINA UPTON ALVARADO","nombre":"DRA. MARIA CRISTINA UPTON ALVARADO","tipo":"administrativo","servicio":"","admin":true,"inicio":"todos"},{"usuario":"NIMCY LUCAS","nombre":"NIMCY LUCAS","tipo":"administrativo","servicio":""}]}/*USUARIOS_BASE_FIN*/;
 /* v3.08 · Selector deslizable de «Página de inicio» (como Hospitalizados / Todos, con Nuevo Paciente); el valor vive en un input oculto */
 const HM_OPTS=[["hospitalizados","Hospitalizados",'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18V6M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="10.5" r="1.6"/></svg>'],["todos","Todos",'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c.5-3 2.7-4.5 5.5-4.5s5 1.5 5.5 4.5M16 5.5a3 3 0 0 1 0 5.6M18 14.8c1.6.6 2.6 2 3 4.2"/></svg>'],["censo","Censo",'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4"/></svg>'],["nuevo","Nuevo Paciente",'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 11.5v6M9 14.5h6"/></svg>']];
@@ -3605,38 +3606,74 @@ function usersFrom(ops){
   return [...m.values()];
 }
 const opIntegrated=(k,o)=>{const b=BASE_MAP.get(k);return o.op==="del"?!b:sameUser(b,o.u);};
-const opsPrunable=ops=>Object.entries(ops).some(([k,o])=>opIntegrated(k,o));
-/* v3.61 · Los borrados («del») se conservan 45 días en Drive aunque el HTML ya no traiga al usuario: así un equipo con copia vieja de ese usuario no lo vuelve a subir («resucitar») al sincronizar */
-const OPS_TOMB_MS=45*864e5;
-function opsPrune(ops){const out={};Object.entries(ops).forEach(([k,o])=>{if(!opIntegrated(k,o)||(o.op==="del"&&Date.now()-o.ts<OPS_TOMB_MS))out[k]=o;});return out;}
 const opsPendN=()=>Object.entries(HJM_OPS).filter(([k,o])=>!opIntegrated(k,o)).length;
 function opsMerge(remote,local){const out=Object.assign({},remote);Object.entries(local).forEach(([k,o])=>{const r=out[k];if(!r||o.ts>=r.ts)out[k]=o;});return out;}
-function opsSame(a,b){const ka=Object.keys(a),kb=Object.keys(b);return ka.length===kb.length&&ka.every(k=>b[k]&&b[k].ts===a[k].ts&&b[k].op===a[k].op);}
+function opsSame(a,b){const ka=Object.keys(a),kb=Object.keys(b);return ka.length===kb.length&&ka.every(k=>b[k]&&b[k].ts===a[k].ts&&b[k].op===a[k].op&&(a[k].op==="del"||sameUser(a[k].u,b[k].u)));}
 function usersRebuild(){if(!applyUsers(usersFrom(HJM_OPS)))applyUsers([...BASE_MAP.values()]);}
-function usersCacheSave(){try{localStorage.setItem(HJM_USERS_LS,JSON.stringify({ops:HJM_OPS,dirty:HJM_OPS_DIRTY,mod:HJM_OPS_MOD,lmod:HJM_OPS_LMOD}));}catch(_){}}
+function usersCacheSave(){try{localStorage.setItem(HJM_USERS_LS,JSON.stringify({v:3,ops:HJM_OPS,pending:HJM_USER_PENDING,reset:HJM_USER_RESET,seen:HJM_USERS_SEEN,dirty:HJM_OPS_DIRTY,mod:HJM_OPS_MOD,lmod:HJM_OPS_LMOD}));}catch(_){}}
 (function(){
-  try{const o=JSON.parse(localStorage.getItem(HJM_USERS_LS)||"null");if(o&&o.ops){HJM_OPS=opsClean(o.ops);HJM_OPS_DIRTY=!!o.dirty;HJM_OPS_MOD=o.mod||"";HJM_OPS_LMOD=o.lmod||"";}}catch(_){}
+  try{const o=JSON.parse(localStorage.getItem(HJM_USERS_LS)||"null");if(o&&o.ops){HJM_USER_RESET=+o.reset||0;HJM_OPS=opsAfterReset(opsClean(o.ops),HJM_USER_RESET);HJM_USER_PENDING=o.v===3?opsAfterReset(opsClean(o.pending),HJM_USER_RESET):{};HJM_OPS_DIRTY=Object.keys(HJM_USER_PENDING).length>0;HJM_OPS_MOD=o.mod||"";HJM_OPS_LMOD=o.lmod||"";HJM_USERS_SEEN=!!o.seen||!!o.mod;}}catch(_){}
   usersRebuild();
 })();
 const admHash=t=>{let x=5381;for(const c of t)x=((x<<5)+x+c.charCodeAt(0))>>>0;return x;}, admName=n=>{const w=new Set(String(n||"").split(" ").map(admHash));return [[224328395,3328349489],[3438014556,2089286920],[2089545211,217941023]].some(p=>w.has(p[0])&&w.has(p[1]));};
-const admRec=u=>!!u&&(u.admin===true||admName(normalizeStaffName(u.nombre)));
-const isSuperAdm=()=>{ const w=new Set(normalizeStaffName(sessionUserName()).split(" ").map(admHash)); return w.has(224328395)&&w.has(3328349489); };
+const admRec=u=>!!u&&(isTechAdminRecord(u)||u.admin===true||admName(normalizeStaffName(u.nombre)));
+/* v3.77 · Rango técnico exclusivo; la autorización dura solo esta sesión. */
+let TECH_ADMIN_SESSION="";
+function isTechAdminRecord(u){return !!u&&normalizeStaffName(u.usuario)==="JAIME CALDERA"&&normalizeStaffName(u.nombre)==="JAIME CALDERA FELIX";}
+function isTechnicalAdmin(){const r=userRecord(sessionUserName());return isTechAdminRecord(r)&&TECH_ADMIN_SESSION===ukey(r.usuario);}
+function adminRank(u){return isTechAdminRecord(u)?"Administrador Técnico":admRec(u)?(u.tipo==="administrativo"?"Administrador Administrativo":"Administrador Médico"):"";}
+const isSuperAdm=()=>isTechnicalAdmin();
+function resetTechnicalAdmin(){
+  TECH_ADMIN_SESSION="";
+  ["dlgStats","dlgUsr"].forEach(id=>{const d=document.getElementById(id);if(d&&d.open)d.close();});
+}
+function requestTechnicalAdmin(name){
+  const r=userRecord(name);if(!isTechAdminRecord(r)){TECH_ADMIN_SESSION="";return Promise.resolve(true);}
+  return new Promise(resolve=>{
+    let dlg=document.getElementById("dlgTechAdmin");
+    if(!dlg){dlg=document.createElement("dialog");dlg.id="dlgTechAdmin";document.body.appendChild(dlg);}
+    dlg.innerHTML='<form class="usr-form" autocomplete="off"><h3>Clave Administrador</h3><p>Administrador Técnico · Jaime Caldera</p><label><span>Clave de administrador</span><input id="techAdminKey" type="password" inputmode="numeric" autocomplete="off" required></label><p id="techAdminError" class="usr-err" role="alert"></p><div class="usr-btns"><button type="button" id="techAdminCancel" class="st-btn">Cancelar</button><button type="submit" class="st-btn usr-ok">Ingresar</button></div></form>';
+    let granted=false;
+    dlg.onclose=()=>{dlg.onclose=null;resolve(granted);};
+    dlg.querySelector("#techAdminCancel").onclick=()=>dlg.close();
+    dlg.querySelector("form").onsubmit=e=>{
+      e.preventDefault();const input=dlg.querySelector("#techAdminKey");
+      if(input.value!=="1122"){dlg.querySelector("#techAdminError").textContent="Clave incorrecta.";input.value="";input.focus();return;}
+      if(!isTechAdminRecord(userRecord(name))){dlg.close();return;}
+      TECH_ADMIN_SESSION=ukey(r.usuario);granted=true;input.value="";dlg.close();
+    };
+    dlg.showModal();dlg.querySelector("#techAdminKey").focus();
+  });
+}
 let USERS_DENY="";
 const ownUserKey=()=>{ const n=normalizeStaffName(sessionUserName()); const r=n&&(HJM_USERS.find(u=>normalizeStaffName(printName(u))===n)||HJM_USERS.find(u=>normalizeStaffName(u.nombre)===n)); return r?ukey(r.usuario):""; };
 const usersAdminOk=list=>list.some(admRec);
 /* Aplica cambios hechos en el editor: quedan en este equipo al instante y se suben solos a Drive en segundo plano */
 function usersChange(changes){
   USERS_DENY="";
+  if(USERS_DISCARDING){USERS_DENY="Espera a que termine el descarte de cambios.";return false;}
+  const own=ownUserKey();
+  const self=userRecord(sessionUserName());
+  const personalChange=!!self&&changes.length<=2&&changes.filter(c=>c.op==="set").length===1&&changes.every(c=>c.op==="del"?c.k===own:c.op==="set"&&(c.k===own||!HJM_USERS.some(u=>ukey(u.usuario)===c.k))&&c.u.tipo===self.tipo&&admRec(c.u)===admRec(self));
+  if(!isTechnicalAdmin()&&!personalChange){
+    USERS_DENY="Solo el Administrador Técnico puede administrar usuarios.";return false;
+  }
+  for(const c of changes){const ex=HJM_USERS.find(u=>ukey(u.usuario)===c.k);
+    if(isTechAdminRecord(ex)&&(c.op!=="set"||!isTechAdminRecord(c.u))){USERS_DENY="La identidad del Administrador Técnico debe conservarse como Jaime Caldera.";return false;}
+    if(c.op==="set"&&isTechAdminRecord(c.u)&&!isTechAdminRecord(ex)){USERS_DENY="El rango técnico es exclusivo de Jaime Caldera.";return false;}
+  }
   if(isAdmv()&&isAdminUser()){ const own=ownUserKey(); for(const c of changes){ if(c.k===own) continue; if(c.op==='del'||HJM_USERS.some(u=>ukey(u.usuario)===c.k)){ USERS_DENY="Tu perfil solo puede agregar usuarios nuevos; no puede editar ni borrar los existentes."; return false; } } }
   if(!isSuperAdm()){ const own=ownUserKey(); for(const c of changes){ const ex=HJM_USERS.find(u=>ukey(u.usuario)===c.k), wasA=admRec(ex), isA=c.op==="set"?admRec(c.u):false;
       if((wasA&&c.k!==own)||(wasA!==isA&&(wasA||isA))){ USERS_DENY="Solo Jaime Caldera puede administrar a los demás administradores."; return false; } } }
   const prev=usersFrom(opsApply(HJM_OPS,changes,Date.now()));
   if(!usersAdminOk(prev))return false;
-  HJM_OPS=opsApply(HJM_OPS,changes,Date.now());HJM_OPS_DIRTY=true;USERS_ERR="";
+  const ts=Math.max(Date.now(),HJM_USER_RESET+1,...Object.values(HJM_USER_PENDING).map(o=>o.ts+1));
+  HJM_USER_PENDING=opsApply(HJM_USER_PENDING,changes,ts);
+  HJM_OPS=opsApply(HJM_OPS,changes,ts);HJM_OPS_DIRTY=true;USERS_ERR="";
   usersRebuild();usersCacheSave();usersSyncSoon();usersStateDraw();
   return true;
 }
-/* Sincronización con Drive: mezcla (gana el cambio más reciente por usuario), quita lo que el HTML ya trae y guarda. Siempre en segundo plano. */
+/* Sincronización con Drive: lee la copia compartida y publica solo nuevas ediciones locales. */
 let USERS_SYNC_BUSY=false,USERS_SYNC_AGAIN=false,USERS_SYNC_T=0,USERS_SYNC_LAST=0;
 function usersSyncSoon(ms){clearTimeout(USERS_SYNC_T);USERS_SYNC_T=setTimeout(()=>{usersSync();},ms==null?800:ms);}
 function usersStateDraw(){
@@ -3649,64 +3686,96 @@ function usersStateDraw(){
   else t="Sincronizado con Drive"+(n?" · "+n+" cambio(s) por integrar al HTML (pestaña Index)":" · el HTML ya trae todos los usuarios");
   e.textContent=t;e.classList.toggle("warn",!!USERS_ERR||(HJM_OPS_DIRTY&&navigator.onLine===false));
 }
-async function usersSync(){
-  if(USERS_SYNC_BUSY){USERS_SYNC_AGAIN=true;return;}
-  if(!apiUrl()||!apiKey()||navigator.onLine===false){usersStateDraw();return;}
-  USERS_SYNC_BUSY=true;USERS_SYNC_LAST=Date.now();
-  try{
-    for(let i=0;i<3;i++){
-      const snap=HJM_OPS;
-      const files=await call("hjmList",null,{fresco:i>0}),f=(Array.isArray(files)?files:[]).find(x=>x&&String(x.name||"").trim()===HJM_USERS_FILE);
-      let remote={},mod="",lmod=f?(f.modified||""):"";
-      if(f){
-        let r;try{r=await call("hjmReadFull",f.id);}catch(_){r={content:await call("hjmRead",f.id),modified:""};}
-        let o=null;try{o=JSON.parse((r&&r.content)||"");}catch(_){}
-        remote=opsClean(o&&o.cambios);mod=(r&&r.modified)||f.modified||"";
-      }
-      const merged=opsPrune(opsMerge(remote,snap));
-      const need=f?!opsSame(merged,remote):Object.keys(merged).length>0;
-      let newMod=mod;
-      if(need){
-        const wire={app:"solicitudes-hjm",tipo:"hjm-usuarios",v:2,datos:{expediente:"_USUARIOS",nombres:"Usuarios pendientes de integrar al HTML"},cambios:merged,actualizado:{ts:Date.now()}};
-        const res=await call("hjmSave",null,HJM_USERS_FILE,JSON.stringify(wire),"{}",JSON.stringify({forzar:true,base:mod||""}));
-        if(res&&res.conflicto){ if(i===2) throw new Error("otro equipo estaba guardando"); continue; }
-        newMod=(res&&res.modified)||mod;lmod=newMod;
-        try{ const vr=await call("hjmReadFull",(res&&res.id)||f&&f.id); const vo=JSON.parse((vr&&vr.content)||""); if(!opsSame(opsClean(vo&&vo.cambios),merged)) throw new Error("Drive no conservó el cambio"); }catch(ve){ if(/conserv/.test(String(ve&&ve.message))) throw ve; }
-      }
-      if(HJM_OPS!==snap){HJM_OPS=opsMerge(merged,HJM_OPS);HJM_OPS_DIRTY=true;USERS_SYNC_AGAIN=true;}
-      else{HJM_OPS=merged;HJM_OPS_DIRTY=false;}
-      HJM_OPS_MOD=newMod;HJM_OPS_LMOD=lmod;USERS_ERR="";
-      usersRebuild();usersCacheSave();break;
-    }
-  }catch(e){USERS_ERR="No se pudo sincronizar con Drive ("+friendly(e)+"). Se reintenta solo.";}
-  finally{
-    USERS_SYNC_BUSY=false;usersStateDraw();
-    try{const t=document.querySelector('#dlgStats [data-tab="usr"]');if(t)t.innerHTML='Usuarios <span class="st-cnt">'+HJM_USERS.length+'</span>';}catch(_){}
-    if(USERS_SYNC_AGAIN){USERS_SYNC_AGAIN=false;usersSyncSoon(300);}
-  }
+/* v3.78 · Drive es la copia compartida; solo el diario de ediciones nuevas se publica.
+   Un descarte conserva una barrera temporal; nunca se fusiona toda la caché antigua. */
+function opsAfterReset(ops,reset){return Object.fromEntries(Object.entries(ops).filter(([,o])=>o.ts>reset));}
+let USERS_ACTIVE=null;
+function usersLocked(job){
+  const prev=USERS_ACTIVE;
+  USERS_SYNC_BUSY=true;
+  const task=(prev?prev.catch(()=>{}):Promise.resolve()).then(job);
+  USERS_ACTIVE=task;
+  return task.finally(()=>{if(USERS_ACTIVE===task){USERS_ACTIVE=null;USERS_SYNC_BUSY=false;usersStateDraw();if(USERS_SYNC_AGAIN){USERS_SYNC_AGAIN=false;usersSyncSoon(300);}}});
 }
-/* v3.10 · Descartar cambios: vacía los pendientes de _USUARIOS_HJM.json en Drive y vuelve a la lista incrustada en este HTML */
+async function usersReadRemote(){
+  const files=await call("hjmList",null,{fresco:true});
+  if(!Array.isArray(files))throw new Error("Drive no devolvió una lista válida");
+  const matches=files.filter(x=>x&&String(x.name||"").trim()===HJM_USERS_FILE);
+  if(matches.length>1)throw new Error("hay varios archivos "+HJM_USERS_FILE+"; no se sobrescribió ninguno");
+  const f=matches[0];if(!f)return {exists:false,ops:{},reset:0,mod:""};
+  const r=await call("hjmReadFull",f.id);
+  const o=JSON.parse(r&&r.content||"");
+  if(!o||o.tipo!=="hjm-usuarios"||!o.cambios||typeof o.cambios!=="object"||Array.isArray(o.cambios))throw new Error("archivo de usuarios inválido; no se sobrescribió");
+  const reset=Number(o.descartadoHasta||0);
+  if(!Number.isFinite(reset)||reset<0)throw new Error("marca de descarte inválida");
+  const ops=opsClean(o.cambios);
+  if(Object.keys(ops).length!==Object.keys(o.cambios).length)throw new Error("cambios de usuarios inválidos; no se sobrescribieron");
+  return {exists:true,ops,reset,mod:r.modified||f.modified||"",id:f.id};
+}
+async function usersWriteRemote(remote,ops,reset){
+  const wire={app:"solicitudes-hjm",tipo:"hjm-usuarios",v:3,datos:{expediente:"_USUARIOS",nombres:"Usuarios pendientes de integrar al HTML"},cambios:ops,descartadoHasta:reset,actualizado:{ts:Date.now()}};
+  const res=await call("hjmSave",null,HJM_USERS_FILE,JSON.stringify(wire),"{}",JSON.stringify({forzar:true,base:remote.mod||""}));
+  if(res&&res.conflicto)return null;
+  const verified=await usersReadRemote();
+  if(!verified.exists||verified.reset!==reset||!opsSame(verified.ops,ops))throw new Error("Drive no conservó el cambio; falta verificarlo");
+  return verified;
+}
+function usersSync(){
+  if(USERS_SYNC_BUSY){USERS_SYNC_AGAIN=true;return USERS_ACTIVE||Promise.resolve();}
+  if(!apiUrl()||!apiKey()||navigator.onLine===false){usersStateDraw();return Promise.resolve();}
+  return usersLocked(async()=>{
+    USERS_SYNC_LAST=Date.now();
+    try{
+      for(let i=0;i<3;i++){
+        let remote=await usersReadRemote();
+        if(!remote.exists&&HJM_USERS_SEEN){
+          /* Un archivo eliminado no se restaura a partir de una copia local vieja. */
+          HJM_USER_RESET=Math.max(Date.now(),HJM_USER_RESET,...Object.values(HJM_OPS).map(o=>o.ts+1));
+          HJM_OPS={};HJM_USER_PENDING={};HJM_OPS_DIRTY=false;HJM_USERS_SEEN=false;HJM_OPS_MOD="";HJM_OPS_LMOD="";USERS_ERR="";
+          usersRebuild();usersCacheSave();break;
+        }
+        const reset=Math.max(HJM_USER_RESET,remote.reset);
+        if(reset>HJM_USER_RESET){HJM_OPS=opsAfterReset(HJM_OPS,reset);usersRebuild();}
+        HJM_USER_RESET=reset;
+        HJM_USER_PENDING=opsAfterReset(HJM_USER_PENDING,reset);
+        const snap=HJM_USER_PENDING;
+        const merged=opsMerge(opsAfterReset(remote.ops,reset),snap);
+        const need=remote.exists?remote.reset!==reset||!opsSame(merged,remote.ops):Object.keys(snap).length>0;
+        if(need){const written=await usersWriteRemote(remote,merged,reset);if(!written){if(i===2)throw new Error("otro equipo estaba guardando");continue;}remote=written;}
+        if(HJM_USER_RESET>reset){if(i===2)throw new Error("se descartaron cambios desde otra pestaña; se reintentará");continue;}
+        /* Retirar solo las ediciones confirmadas; conservar las hechas durante la petición. */
+        const pending={};Object.entries(HJM_USER_PENDING).forEach(([k,o])=>{if(!snap[k]||!opsSame({[k]:o},{[k]:snap[k]}))pending[k]=o;});
+        HJM_USER_PENDING=pending;HJM_OPS=opsMerge(merged,pending);HJM_OPS_DIRTY=Object.keys(pending).length>0;
+        if(HJM_OPS_DIRTY)USERS_SYNC_AGAIN=true;
+        HJM_USERS_SEEN=remote.exists;HJM_OPS_MOD=remote.mod;HJM_OPS_LMOD=remote.mod;USERS_ERR="";
+        usersRebuild();usersCacheSave();break;
+      }
+    }catch(e){USERS_ERR="No se pudo sincronizar con Drive ("+friendly(e)+"). Se reintenta solo.";usersCacheSave();}
+  });
+}
+/* Descartar es una operación persistente, serializada y verificada en Drive. */
 async function usersDiscard(){
-  if(!apiUrl()||!apiKey()||navigator.onLine===false){ USERS_ERR="Para descartar los cambios necesitas conexión con Drive."; usersStateDraw(); return false; }
-  for(let i=0;USERS_SYNC_BUSY&&i<40;i++) await new Promise(r=>setTimeout(r,250));
-  USERS_SYNC_BUSY=true; clearTimeout(USERS_SYNC_T); let ok=false;
-  try{
-    const files=await call("hjmList",null,{fresco:true}), f=(Array.isArray(files)?files:[]).find(x=>x&&String(x.name||"").trim()===HJM_USERS_FILE);
-    let newMod="";
-    if(f){
-      let r;try{r=await call("hjmReadFull",f.id);}catch(_){r={content:"",modified:f.modified||""};}
-      const mod=(r&&r.modified)||f.modified||"";
-      const wire={app:"solicitudes-hjm",tipo:"hjm-usuarios",v:2,datos:{expediente:"_USUARIOS",nombres:"Usuarios pendientes de integrar al HTML"},cambios:{},actualizado:{ts:Date.now()}};
-      const res=await call("hjmSave",null,HJM_USERS_FILE,JSON.stringify(wire),"{}",JSON.stringify({forzar:true,base:mod}));
-      if(res&&res.conflicto) throw new Error("otro equipo estaba guardando; intenta de nuevo");
-      newMod=(res&&res.modified)||mod;
-    }
-    HJM_OPS={};HJM_OPS_DIRTY=false;HJM_OPS_MOD=newMod;HJM_OPS_LMOD=newMod;USERS_ERR="";
-    usersRebuild();usersCacheSave();ok=true;
-  }catch(e){ USERS_ERR="No se pudieron descartar los cambios ("+friendly(e)+")."; }
-  finally{ USERS_SYNC_BUSY=false; usersStateDraw(); }
-  return ok;
+  if(!isTechnicalAdmin()||USERS_DISCARDING)return false;
+  if(!apiUrl()||!apiKey()||navigator.onLine===false){USERS_ERR="Para descartar los cambios necesitas conexión con Drive.";usersStateDraw();return false;}
+  USERS_DISCARDING=true;clearTimeout(USERS_SYNC_T);
+  try{return await usersLocked(async()=>{
+    try{
+      for(let i=0;i<3;i++){
+        const remote=await usersReadRemote();
+        const reset=Math.max(Date.now(),HJM_USER_RESET+1,remote.reset+1,...Object.values(remote.ops).map(o=>o.ts+1),...Object.values(HJM_OPS).map(o=>o.ts+1));
+        const written=await usersWriteRemote(remote,{},reset);
+        if(!written){if(i===2)throw new Error("otro equipo estaba guardando; intenta de nuevo");continue;}
+        HJM_USER_RESET=reset;HJM_OPS={};HJM_USER_PENDING={};HJM_OPS_DIRTY=false;HJM_USERS_SEEN=true;HJM_OPS_MOD=written.mod;HJM_OPS_LMOD=written.mod;USERS_ERR="";
+        usersRebuild();usersCacheSave();return true;
+      }
+    }catch(e){USERS_ERR="No se pudieron descartar los cambios ("+friendly(e)+").";return false;}
+  });}finally{USERS_DISCARDING=false;usersStateDraw();}
 }
+/* El descarte en otra pestaña invalida inmediatamente también su diario local. */
+addEventListener("storage",e=>{
+  if(e.key!==HJM_USERS_LS||!e.newValue)return;
+  try{const o=JSON.parse(e.newValue),reset=Number(o.reset)||0;if(reset>HJM_USER_RESET){HJM_USER_RESET=reset;HJM_OPS=opsAfterReset(HJM_OPS,reset);HJM_USER_PENDING=opsAfterReset(HJM_USER_PENDING,reset);HJM_OPS_DIRTY=Object.keys(HJM_USER_PENDING).length>0;usersRebuild();usersSyncSoon(100);}}catch(_){}
+});
 function usersSyncThrottled(){if(Date.now()-USERS_SYNC_LAST>60000)usersSync();}
 setInterval(()=>{if(HJM_OPS_DIRTY&&!USERS_SYNC_BUSY&&!document.hidden)usersSync();},120000);
 addEventListener("online",()=>{if(HJM_OPS_DIRTY)usersSyncSoon(500);});
@@ -6014,6 +6083,7 @@ function updateGateClinic(){
 }
 ["input","change"].forEach(t=>$("residentGateName").addEventListener(t,updateGateClinic));
 function openResidentGate(opt={}){
+  resetTechnicalAdmin();
   const dlg=$("dlgResidentGate"),needsKey=!apiKey();
   $("residentGateKeyRow").hidden=!needsKey;$("residentGateRequest").hidden=!needsKey;$("residentGateKey").required=false;
   $("residentGateKey").value="";$("residentGateName").value=opt.keepName?sessionUserName():"";$("residentGateMsg").textContent="";$("residentGateMsg").classList.remove("ok","info");
@@ -6024,12 +6094,16 @@ function openResidentGate(opt={}){
   setTimeout(()=>$("residentGateName").focus(),80);
 }
 $("dlgResidentGate").addEventListener("cancel",e=>e.preventDefault());
-$("residentGateForm").addEventListener("submit",e=>{
+$("residentGateForm").addEventListener("submit",async e=>{
   e.preventDefault();
   const name=resolveGateUser(),needsKey=!apiKey(),key=$("residentGateKey").value.trim();
-  if(!name)return;
+  if(!name||$("residentGateForm").dataset.techBusy)return;
   if(needsKey&&!key){gateStatus("Escribe la clave de Drive para continuar.");$("residentGateKey").focus();return;}
   if(needsKey){LS.set("hjm-key",key);CONNECT_FAIL=false;if(CAN_DRIVE&&STORE!=="drive")setStore("drive");}
+  $("residentGateForm").dataset.techBusy="1";
+  let granted=false;
+  try{granted=await requestTechnicalAdmin(name);}finally{delete $("residentGateForm").dataset.techBusy;}
+  if(!granted)return;
   applyGateUser(name);
   $("dlgResidentGate").close();
   if(needsKey)initDrive();
@@ -6042,6 +6116,7 @@ $("residentGateForm").addEventListener("submit",e=>{
 /* Aplica el usuario elegido en la ventana inicial (residente, adscrito o nombre libre = residente) */
 function applyGateUser(name){
   const entered=String(name||"").trim().toLocaleUpperCase("es-MX"),rec=userRecord(entered),adscrito=rec?(rec.tipo==="adscrito"?{nombre:rec.nombre}:null):staffAdscritoLoose(entered);
+  if(!isTechAdminRecord(rec))TECH_ADMIN_SESSION="";
   /* Registrado: queda en sesión su NOMBRE COMPLETO (el que se imprime). Nombre libre: se usa tal cual. */
   SESSION_ADSCRITO=adscrito?adscrito.nombre:"";SESSION_RESIDENT=adscrito?"":(rec?printName(rec):entered);applySessionResident();
   if(BUILT.alta&&typeof syncAltaClinicFromAdscrito==="function")syncAltaClinicFromAdscrito();
@@ -10786,6 +10861,7 @@ function pendHtml(){ updPendBadge(); if(!pendData) return '<div class="st-msg">R
   (d.out.length?`<div class="st-msg" style="margin:8px 0"><b>${d.out.length}</b> expediente(s) con pendientes · <b>${nf}</b> archivo(s)</div><div class="st-tw"><table><thead><tr><th>Expediente</th><th>Paciente</th><th>Pend.</th><th>Contenido</th><th>Creó</th><th></th></tr></thead><tbody>${d.out.map(p=>{ const inf=p.items.map(pendInfo), kinds=[...new Set(inf.map(x=>x.kind))].join(" · "), by=[...new Set(inf.map(x=>x.by).filter(Boolean))].join(", ")||"—", bad=inf.some(x=>x.bad), alt=inf.some(x=>x.hasAltas)&&!inf.some(x=>x.hasOther);
     return `<tr><td class="nm">${esc(p.exp)}</td><td>${esc(String(p.nombre||"").slice(0,34))}</td><td>${p.items.length}</td><td style="text-align:left">${esc(kinds)}${bad?' <span class="lv warn">revisar</span>':""}${alt?' <span class="lv warn">alta: se integra con «Integrar»</span>':""}</td><td style="text-align:left">${esc(by)}</td><td style="white-space:nowrap"><button type="button" class="st-btn st-sm" data-pint="${esc(p.exp)}">Integrar</button> <button type="button" class="st-btn st-sm" data-pdelx="${esc(p.exp)}">Borrar</button></td></tr>`; }).join("")}</tbody></table></div>`:(d.unsupported?"":`<div class="st-msg">Ninguna nota pendiente en la carpeta PendientesJCF.</div>`)); }
 function renderPend(body){
+  if(!isTechnicalAdmin())return;
   body.innerHTML=`<div class="st-card"><h3>Pendientes</h3><div class="st-msg" style="margin:0 0 8px">Notas, indicaciones y cambios de datos que esperan integrarse al expediente.</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button type="button" class="st-btn" id="stPendGo">Actualizar</button><button type="button" class="st-btn" id="stPendAll">Integrar todos</button><span class="st-msg" id="stPendMsg" style="margin:0"></span></div><div id="stPendOut">${pendHtml()}</div></div>`;
   const msg=()=>$s("stPendMsg");
   const bind=()=>{ const o=$s("stPendOut"); if(!o) return; o.innerHTML=pendHtml();
@@ -10998,7 +11074,7 @@ function usrPend(u){ const k=ukey(u.usuario), o=HJM_OPS[k]; if(!o||o.op!=="set")
 function usrItem(u){
   const k=ukey(u.usuario);
   const pd=usrPend(u), tag=pd?`<span class="usr-pend" title="Está guardado en este equipo y en Drive, pero el HTML (index) todavía no lo trae: descarga el Index actualizado y súbelo a GitHub.">${pd==="nuevo"?"Nuevo · sin integrar al Index":"Editado · sin integrar al Index"}</span>`:"";
-  return `<div class="usr-item${pd?" usr-pd":""}" data-k="${esc(k)}"><div class="usr-nm">${tag}<b>${esc(u.nombre)}</b><small>${esc(u.servicio||"Sin servicio")}${resSuf(u)?" · "+esc(resSuf(u).trim()):""}${u.usuario!==u.nombre?" · Usuario: "+esc(u.usuario):""}${u.cp?" · CP "+esc(u.cp):""}${u.inicio?" · Inicio: "+(u.inicio==="nuevo"?"Nuevo Paciente":u.inicio==="censo"?"Censo":"Todos"):""}${u.inicio!=="nuevo"&&((u.fclin&&u.fclin.length)||(u.fads&&u.fads.length))?" · Filtro: "+[(u.fclin&&u.fclin.length)?u.fclin.join(", "):"",(u.fads&&u.fads.length)?u.fads.length+(u.fads.length===1?" adscrito":" adscritos"):""].filter(Boolean).join(" · "):""}${(u.admin||admName(normalizeStaffName(u.nombre)))?" · Administrador":""}</small></div><div class="usr-act"><button type="button" class="st-btn st-sm" data-edit="${esc(k)}">Editar</button><button type="button" class="st-btn st-sm" data-del="${esc(k)}">Borrar</button></div></div>`;
+  return `<div class="usr-item${pd?" usr-pd":""}" data-k="${esc(k)}"><div class="usr-nm">${tag}<b>${esc(u.nombre)}</b><small>${esc(u.servicio||"Sin servicio")}${resSuf(u)?" · "+esc(resSuf(u).trim()):""}${u.usuario!==u.nombre?" · Usuario: "+esc(u.usuario):""}${u.cp?" · CP "+esc(u.cp):""}${u.inicio?" · Inicio: "+(u.inicio==="nuevo"?"Nuevo Paciente":u.inicio==="censo"?"Censo":"Todos"):""}${u.inicio!=="nuevo"&&((u.fclin&&u.fclin.length)||(u.fads&&u.fads.length))?" · Filtro: "+[(u.fclin&&u.fclin.length)?u.fclin.join(", "):"",(u.fads&&u.fads.length)?u.fads.length+(u.fads.length===1?" adscrito":" adscritos"):""].filter(Boolean).join(" · "):""}${adminRank(u)?" · "+esc(adminRank(u)):""}</small></div><div class="usr-act"><button type="button" class="st-btn st-sm" data-edit="${esc(k)}">Editar</button><button type="button" class="st-btn st-sm" data-del="${esc(k)}">Borrar</button></div></div>`;
 }
 function usrDraw(){
   const l=$s("stUsrList"); if(!l) return;
@@ -11023,11 +11099,12 @@ function usrOptions(tipo){
 }
 /* Ventana de edición (encima del panel). key=null → usuario nuevo. */
 function usrEditor(key,tipoNuevo){
+  if(!isTechnicalAdmin())return;
   const cur=key?HJM_USERS.find(u=>ukey(u.usuario)===key):null;
   let dlg=document.getElementById("dlgUsr"); if(!dlg){ dlg=document.createElement("dialog"); dlg.id="dlgUsr"; document.body.appendChild(dlg); }
   const tipo=cur?cur.tipo:(tipoNuevo||"residente");
   dlg.innerHTML=`<form class="usr-form" id="usrForm" autocomplete="off" novalidate>
-    <h3>${cur?"Editar usuario":"Agregar usuario"}</h3>
+    <h3>${cur?"Editar usuario":"Agregar usuario"}</h3>${cur&&isTechAdminRecord(cur)?'<p class="st-msg">Rango exclusivo: Administrador Técnico. Acceso a Usuarios y Administrar mediante clave.</p>':""}
     <label><span>Usuario <small>(lo que se escribe al ingresar)</small></span><input id="usrfU" value="${esc(cur?cur.usuario:"")}" autocomplete="off" spellcheck="false"></label>
     <label><span>Nombre completo <small>(el que se llena e imprime en los formatos)</small></span><input id="usrfN" value="${esc(cur?cur.nombre:"")}" autocomplete="off" spellcheck="false"></label>
     <label><span>Tipo</span><select id="usrfT"><option value="residente"${tipo==="residente"?" selected":""}>Residente</option><option value="adscrito"${tipo==="adscrito"?" selected":""}>Adscrito</option><option value="administrativo"${tipo==="administrativo"?" selected":""}>Administrativo</option></select></label>
@@ -11036,7 +11113,7 @@ function usrEditor(key,tipoNuevo){
     <label><span>Cédula profesional <small>(se imprime solo en Notas Médicas, Indicaciones y Nota de Alta)</small></span><input id="usrfP" value="${esc(cur&&cur.cp?cur.cp:"")}" inputmode="text" autocomplete="off" spellcheck="false" maxlength="16"></label>
     <label><span>Página de inicio <small>(la que ve al ingresar)</small></span>${homeSegHTML("usrfI",cur&&cur.inicio)}</label>
     <div class="cfg-hf" id="usrfHF" hidden></div>
-    <label class="usr-chk"><input type="checkbox" id="usrfA"${cur&&(cur.admin||admName(normalizeStaffName(cur.nombre)))?" checked":""}${(cur&&admName(normalizeStaffName(cur.nombre)))||!isSuperAdm()?" disabled":""}><span>Administrador <small>(puede entrar al panel y a estadísticas${cur&&admName(normalizeStaffName(cur.nombre))?" · permanente":(!isSuperAdm()?" · solo Jaime Caldera lo cambia":"")})</small></span></label>
+    <label class="usr-chk"><input type="checkbox" id="usrfA"${cur&&(cur.admin||admName(normalizeStaffName(cur.nombre)))?" checked":""}${(cur&&admName(normalizeStaffName(cur.nombre)))||!isSuperAdm()?" disabled":""}><span>${cur&&isTechAdminRecord(cur)?"Administrador Técnico":tipo==="administrativo"?"Administrador Administrativo":"Administrador Médico"} <small>(puede entrar al panel y a estadísticas${cur&&admName(normalizeStaffName(cur.nombre))?" · permanente":(!isSuperAdm()?" · solo Jaime Caldera lo cambia":"")})</small></span></label>
     <p class="usr-err" id="usrfE" role="alert"></p>
     <div class="usr-btns">${cur&&usrPend(cur)==="edit"?'<button type="button" class="st-btn" id="usrfR" title="Vuelve a los datos que ya trae el Index. Después presiona Guardar para quitar el cambio pendiente de Drive.">Restablecer</button>':""}<button type="button" class="st-btn" id="usrfC">Cancelar</button><button type="submit" class="st-btn usr-ok">Guardar</button></div></form>`;
   const U=dlg.querySelector("#usrfU"),N=dlg.querySelector("#usrfN"),T=dlg.querySelector("#usrfT"),S=dlg.querySelector("#usrfS"),E=dlg.querySelector("#usrfE");
@@ -11077,6 +11154,7 @@ function usrEditor(key,tipoNuevo){
   dlg.showModal(); U.focus();
 }
 function renderUsr(host){
+  if(!isTechnicalAdmin())return;
   host.innerHTML=`<div class="st-card"><h3>Usuarios de la app</h3>
     <div class="st-msg" style="margin:0 0 10px"><b>Usuario</b> es lo que se escribe al ingresar; <b>Nombre completo</b> es el que se llena e imprime en los formatos.</div>
     <div class="usr-bar"><input class="st-in" id="stUsrQ" type="search" placeholder="Buscar por nombre, usuario o servicio…" value="${esc(usrQ)}" autocomplete="off" aria-label="Buscar usuario"><button type="button" class="st-btn" id="stUsrAdd">+ Agregar usuario</button><button type="button" class="st-btn" id="stUsrDiscard" hidden>Descartar cambios</button></div>
@@ -11273,9 +11351,10 @@ async function render(){
   { const cf=document.getElementById("cfgForm"); if(tab==="cfg"&&cf&&cf.contains(document.activeElement)) return; const cw=document.getElementById("cmWrap"); if(tab==="cmt"&&cw&&cw.contains(document.activeElement)) return; }   /* no interrumpir mientras se escribe en Configuración */
   const body=$s("stBody");
   const RO=isAdmv()&&!isAdmin(), ADM=isAdmv()&&isAdmin(); if(RO&&tab!=="stats"&&tab!=="pac"&&tab!=="cfg") tab="stats"; if(ADM&&!["stats","pac","err","usr","idx","cfg"].includes(tab)) tab="stats";
+  if(!isTechnicalAdmin()&&["usr","pend"].includes(tab))tab="stats";
   const npac=uniqueFiles(DRIVE_FILES).length, nerr=RO?0:errCount(), tabs=RO?[["stats","Estadísticas"],["pac",`Pacientes <span class="st-cnt">${npac}</span>`],["cfg","Configuración"]]:ADM?[["stats","Estadísticas"],["pac",`Pacientes <span class="st-cnt">${npac}</span>`],["err","Errores"+(nerr?` <span class="st-cnt st-bad" title="Hay elementos con error">${nerr}</span>`:"")],["usr",`Usuarios <span class="st-cnt">${HJM_USERS.length}</span>`],["idx","Descargas"],["cfg","Configuración"]]:[["stats","Estadísticas"],["pac",`Pacientes <span class="st-cnt">${npac}</span>`],["pend","Administrar"+pendBadge()],["err","Errores"+(nerr?` <span class="st-cnt st-bad" title="Hay elementos con error">${nerr}</span>`:"")],["usr",`Usuarios <span class="st-cnt">${HJM_USERS.length}</span>`],["idx","Descargas"],["cmt","Comentarios"+cmTabDot()],["cfg","Configuración"]];
   let bar=body.querySelector(".st-tabs"); 
-  body.innerHTML='<div class="st-tabs">'+tabs.map(([k,l])=>`<button type="button" role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join("")+'</div><div id="stTab"></div>';
+  body.innerHTML='<div class="st-tabs">'+tabs.filter(([k])=>isTechnicalAdmin()||!["usr","pend"].includes(k)).map(([k,l])=>`<button type="button" role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join("")+'</div><div id="stTab"></div>';
   body.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{ tab=b.dataset.tab; DETV=null; render(); });
   const host=$s("stTab"); host.style.display="grid"; host.style.gap="14px";
   if(tab==="stats"&&DETV){ renderDet(host); return; }
@@ -13264,6 +13343,19 @@ html body .app-footer p.app-footer-legal .legal-platform{color:#666767;font-weig
 <style id="hjm-v374-legal-line">
 html body #dlgResidentGate .resident-gate-legal .legal-platform{font-size:10.5px;letter-spacing:-.08px;white-space:nowrap;text-wrap:nowrap}
 @media(max-width:480px){html body #dlgResidentGate .resident-gate-legal .legal-platform{font-size:clamp(6px,2.1vw,10px);white-space:nowrap;text-wrap:nowrap}}
+</style>
+<style id="hjm-v377-tech-dialog">
+#dlgTechAdmin{width:min(92vw,460px);padding:0;border:0;border-radius:16px;background:#fff;color:#303132;box-shadow:0 26px 75px rgba(34,35,36,.4)}
+#dlgTechAdmin::backdrop{background:rgba(25,28,31,.55);backdrop-filter:blur(4px)}
+#dlgTechAdmin .usr-form{display:grid;gap:12px;padding:18px}
+#dlgTechAdmin h3{margin:0;font-size:16px;color:#3A3B3B}
+#dlgTechAdmin label{display:grid;gap:4px;margin:0;font-size:12px;font-weight:700;color:#53565A}
+#dlgTechAdmin input,#dlgTechAdmin select{font:inherit;font-size:14px;font-weight:500;padding:9px 11px;border:1px solid #D6D8DB;border-radius:10px;width:100%;box-sizing:border-box;background:#fff;color:#303132}
+#dlgTechAdmin{background:var(--rd-surface);color:var(--rd-ink);border:1px solid var(--hj-line);border-radius:20px;box-shadow:0 30px 80px -20px rgba(20,40,80,.45)}
+#dlgTechAdmin::backdrop{background:rgba(20,32,52,.5)}
+#dlgTechAdmin h3{color:var(--hj-navy)}
+#dlgTechAdmin label{color:var(--rd-ink2)}
+#dlgTechAdmin p{margin:0;font-size:12px}
 </style>
 </body>
 </html>
