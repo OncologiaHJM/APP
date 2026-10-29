@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oncología · Hospital Juárez de México</title>
-<meta name="application-version" content="3.66">
+<meta name="application-version" content="3.68">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2302,9 +2302,9 @@ body.pp-browse #pPanel.pp-xl .pp-list .cama-badge{flex:none;justify-content:cent
 
 
 <style id="hjm-fouc">html:not(.hjm-rdy) body{visibility:hidden!important}html:not(.hjm-rdy) dialog::backdrop{opacity:0!important}</style><script>setTimeout(function(){document.documentElement.classList.add("hjm-rdy")},3500)</script><style id="hjm-v362">
-/* v3.62 · Aviso de versión de prueba bajo «Ingresar» (gris, pequeño, máx. 3 renglones) */
-html body #dlgResidentGate .resident-gate-legal{margin:8px 0 0;padding:0;font:400 10px/1.35 var(--rd-sans,inherit);color:#8c8f91;text-align:center;text-wrap:balance;max-height:4.1em;overflow:hidden}
-@media (prefers-color-scheme:dark){html body #dlgResidentGate .resident-gate-legal{color:#8f9396}}
+/* v3.67 · Aviso de prueba legible, con énfasis discreto. */
+html body #dlgResidentGate .resident-gate-legal{margin:8px 0 0;padding:0;font:500 11.5px/1.45 var(--rd-sans,inherit);color:#8d3f42;text-align:center;text-wrap:balance;max-height:none;overflow:visible}
+@media (prefers-color-scheme:dark){html body #dlgResidentGate .resident-gate-legal{color:#d89c9f}}
 @media print{#dlgResidentGate .resident-gate-legal{display:none!important}}
 /* v3.62 · Buscar por diagnóstico (Panel › Descargas › Base de datos) */
 .db-dx{margin-top:14px;padding-top:12px;border-top:1px solid var(--line,#d9e0ea)}
@@ -2505,8 +2505,9 @@ html body #dlgResidentGate .resident-gate-legal{margin:8px 0 0;padding:0;font:40
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 3.66 · Fecha de publicación: 29.10.26</div>
+  <div class="app-footer-version">Versión 3.68 · Fecha de publicación: 29.10.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
+    <p class="app-footer-legal">Versión de prueba en revisión por la Jefatura de Oncología. Guarda la información en la plataforma que ya usa el servicio; su uso es responsabilidad de cada usuario. No usa formatos ajenos a los autorizados por el HJM ni servicios nuevos.</p>
     <p>Los datos viajan por conexión segura (HTTPS) y se almacenan en la cuenta de Google del Servicio de Oncología del Hospital Juárez de México; protegidos mediante clave de acceso.</p>
     <p id="hjmOffInfo" role="status" hidden></p>
   </footer>
@@ -7040,7 +7041,19 @@ tr{page-break-inside:avoid;break-inside:avoid}
 td.pend{text-align:left;white-space:pre-wrap;font-size:9pt}
 *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .t1 th,.t2 th,.sec td{background:#d9d9d9!important}
-</style></head><body><table><colgroup>${cols.map(c=>`<col style="width:${c[1]}%">`).join("")}</colgroup><thead><tr class="t1"><th colspan="11">${esc(todayStr())}</th></tr><tr class="t2">${cols.map(c=>`<th>${esc(c[0])}</th>`).join("")}</tr></thead><tbody>${body}</tbody></table></body></html>`.replace("","");
+</style></head><body><table><colgroup>${cols.map(c=>`<col style="width:${c[1]}%">`).join("")}</colgroup><thead><tr class="t1"><th colspan="11">${esc(todayStr())}</th></tr><tr class="t2">${cols.map(c=>`<th>${esc(c[0])}</th>`).join("")}</tr></thead><tbody>${body}</tbody></table>
+<style id="hjm-v367-legal">
+@media screen{
+html body .app-footer p.app-footer-legal{margin:10px auto 8px;font-size:12.5px;font-weight:500;line-height:1.5;color:#8d3f42;text-wrap:balance}
+}
+@media screen and (prefers-color-scheme:dark){html body .app-footer p.app-footer-legal{color:#d89c9f}}
+</style>
+
+<style id="hjm-v368-datetime">
+.pp-datetime{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:12px}
+.pp-datetime label{display:grid;gap:5px;font-size:13px;font-weight:600;color:inherit}
+</style>
+</body></html>`.replace("","");
     const fr=document.createElement("iframe"); fr.setAttribute("aria-hidden","true"); fr.style.cssText="position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden";
     document.body.appendChild(fr); const doc=fr.contentDocument; doc.open(); doc.write(html); doc.close();
     const go=()=>{ try{ fr.contentWindow.focus(); fr.contentWindow.print(); }catch(_){ } setTimeout(()=>{ try{ fr.remove(); }catch(_){} },120000); };
@@ -7153,10 +7166,16 @@ const PP_MENU=(()=>{ let el=null,btn=null;
   return {toggle,close}; })();
 function ppAsk(o){ return new Promise(res=>{
   let d=document.getElementById("dlgPpAct"); if(!d){ d=document.createElement("dialog"); d.id="dlgPpAct"; d.className="pp-dlg"; document.body.appendChild(d); }
-  d.innerHTML=`<form method="dialog" class="pp-dlg-f"><h3>${esc(o.title)}</h3><p>${esc(o.text||"")}</p>${o.input?`<input id="ppAskIn" class="up"${o.list?' list="ppAskList"':""} autocomplete="off" spellcheck="false" placeholder="${esc(o.ph||"")}" value="${esc(o.value||"")}"><small id="ppAskErr" class="pp-dlg-err" role="alert"></small>${o.list?`<datalist id="ppAskList">${o.list.map(x=>`<option value="${esc(x)}"></option>`).join("")}</datalist>`:""}`:""}<div class="pp-dlg-b"><button type="button" data-no>Cancelar</button><button type="submit" class="${o.danger?"danger":"ok"}">${esc(o.ok||"Aceptar")}</button></div></form>`;
+  d.innerHTML=`<form method="dialog" class="pp-dlg-f"><h3>${esc(o.title)}</h3><p>${esc(o.text||"")}</p>${o.dateTime?`<div class="pp-datetime"><label for="ppAskIn">Fecha<input id="ppAskIn" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="DD.MM.AA" value="${esc(String(o.value||"").split(" ")[0]||"")}"></label><label for="ppAskTime">Hora<input id="ppAskTime" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="HH:MM" value="${esc(String(o.value||"").split(" ")[1]||"")}"></label></div><small id="ppAskErr" class="pp-dlg-err" role="alert"></small>`:o.input?`<input id="ppAskIn" class="up"${o.list?' list="ppAskList"':""} autocomplete="off" spellcheck="false" placeholder="${esc(o.ph||"")}" value="${esc(o.value||"")}"><small id="ppAskErr" class="pp-dlg-err" role="alert"></small>${o.list?`<datalist id="ppAskList">${o.list.map(x=>`<option value="${esc(x)}"></option>`).join("")}</datalist>`:""}`:""}<div class="pp-dlg-b"><button type="button" data-no>Cancelar</button><button type="submit" class="${o.danger?"danger":"ok"}">${esc(o.ok||"Aceptar")}</button></div></form>`;
   if(o.multi){ const i0=d.querySelector("#ppAskIn"); if(i0){ const t=document.createElement("textarea"); t.id="ppAskIn"; t.className="up"; t.rows=5; t.spellcheck=false; t.placeholder=i0.placeholder; t.value=i0.value; i0.replaceWith(t); const c=document.createElement("small"); c.className="pp-cnt"; c.id="ppAskCnt"; t.after(c); const upd=()=>{ const n=t.value.length; c.textContent=n?n+"/"+o.max:"máx. "+o.max; c.classList.toggle("over",n>o.max); }; t.addEventListener("input",()=>{ if(/[\r\n]/.test(t.value)) t.value=t.value.replace(/\s*[\r\n]+\s*/g," "); upd(); }); t.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); d.querySelector("form").requestSubmit(); } }); upd(); } } const inp=d.querySelector("#ppAskIn"), err=d.querySelector("#ppAskErr"); let done=false; const fin=v=>{ if(done) return; done=true; try{ d.close(); }catch(_){} res(v); };
-  if(o.date&&inp){ inp.setAttribute("inputmode","numeric"); inp.setAttribute("maxlength","8"); inp.addEventListener("input",()=>{ const dg=inp.value.replace(/\D/g,"").slice(0,6); inp.value=dg.replace(/^(\d{2})(\d)/,"$1.$2").replace(/^(\d{2}\.\d{2})(\d)/,"$1.$2"); }); } d.querySelector("[data-no]").onclick=()=>fin(null); d.oncancel=e=>{ e.preventDefault(); fin(null); };
-  d.querySelector("form").onsubmit=e=>{ e.preventDefault(); if(inp){ const v=inp.value.trim().toUpperCase(); const bad=o.validate&&o.validate(v); if(bad){ err.textContent=bad; return; } fin(v); } else fin(true); };
+  const timeInp=o.dateTime?d.querySelector("#ppAskTime"):null;
+  if(timeInp){
+    timeInp.addEventListener("input",()=>{ timeInp.value=normalizeClinicalTime(timeInp.value,true); });
+    timeInp.addEventListener("blur",()=>{ const v=normalizeClinicalTime(timeInp.value); if(v) timeInp.value=v; });
+    inp.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); timeInp.focus(); timeInp.select(); } });
+  }
+  if((o.date||o.dateTime)&&inp){ inp.setAttribute("inputmode","numeric"); inp.setAttribute("maxlength","8"); inp.addEventListener("input",()=>{ const dg=inp.value.replace(/\D/g,"").slice(0,6); inp.value=dg.replace(/^(\d{2})(\d)/,"$1.$2").replace(/^(\d{2}\.\d{2})(\d)/,"$1.$2"); }); } d.querySelector("[data-no]").onclick=()=>fin(null); d.oncancel=e=>{ e.preventDefault(); fin(null); };
+  d.querySelector("form").onsubmit=e=>{ e.preventDefault(); if(inp){ const dateVal=inp.value.trim().toUpperCase(), hour=timeInp?(normalizeClinicalTime(timeInp.value)||timeInp.value.trim()):"", v=timeInp?dateVal+" "+hour:dateVal; if(timeInp) timeInp.value=hour; const bad=o.validate&&o.validate(v); if(bad){ err.textContent=bad; return; } fin(v); } else fin(true); };
   d.showModal(); if(inp){ inp.focus(); inp.select(); } }); }
 /* v2.177 · Cambios desde el menú: se ven al instante en pantalla y se suben a Drive en segundo plano, uno tras otro (cola) */
 /* ---------- v3.62 · Regla de nombres: adscrito y clínica de TODOS los pacientes se completan al nombre registrado, en segundo plano ----------
@@ -7249,8 +7268,8 @@ async function ppDischarge(id){ const f=DRIVE_FILES.find(x=>x.id===id); if(!f) r
 const ppMxStamp=ms=>{ const d=new Date(ms-6*36e5), p2=n=>String(n).padStart(2,"0"); return p2(d.getUTCDate())+"."+p2(d.getUTCMonth()+1)+"."+p2(d.getUTCFullYear()%100)+" "+p2(d.getUTCHours())+":"+p2(d.getUTCMinutes()); };
 function ppParseMxStamp(v){ const m=/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2}|\d{4})\s+(\d{1,2}):(\d{2})$/.exec(String(v||"").trim()); if(!m) return NaN; let y=+m[3]; if(y<100) y+=2000; const d=+m[1], mo=+m[2], h=+m[4], mi=+m[5]; if(mo<1||mo>12||d<1||d>31||h>23||mi>59) return NaN; const t=Date.UTC(y,mo-1,d,h+6,mi); const chk=new Date(t-6*36e5); return (chk.getUTCDate()===d&&chk.getUTCMonth()===mo-1)?t:NaN; }
 async function ppDefuncion(id){ const f=DRIVE_FILES.find(x=>x.id===id); if(!f) return; const p=f.meta||{};
-  const v=await ppAsk({title:"Defunción",text:(p.nombre||"Paciente")+" (Exp. "+(p.exp||ppExp(f))+"). Fecha y hora de la defunción, formato DD.MM.AA HH:MM. Su cama pasa a CE y sale de Hospitalizados; en el censo queda en Defunciones (y cuenta como egreso) con esta fecha y hora en Estatus.",input:true,value:ppMxStamp(Date.now()),ph:"DD.MM.AA HH:MM",ok:"Registrar defunción",danger:true,
-    validate:x=>{ const t=ppParseMxStamp(x); if(isNaN(t)) return "Usa el formato DD.MM.AA HH:MM (ej. 27.10.26 08:15)."; if(t>Date.now()+5*60000) return "La fecha y hora no pueden ser futuras."; return ""; }});
+  const v=await ppAsk({title:"Defunción",text:(p.nombre||"Paciente")+" (Exp. "+(p.exp||ppExp(f))+"). Fecha y hora de la defunción (hora de la Ciudad de México). Su cama pasa a CE y sale de Hospitalizados; en el censo queda en Defunciones (y cuenta como egreso) con esta fecha y hora en Estatus.",input:true,dateTime:true,value:ppMxStamp(Date.now()),ok:"Registrar defunción",danger:true,
+    validate:x=>{ const t=ppParseMxStamp(x); if(isNaN(t)) return "Revisa la fecha (DD.MM.AA) y la hora (HH:MM), por ejemplo 29.10.26 y 08:15."; if(t>Date.now()+5*60000) return "La fecha y hora no pueden ser futuras."; return ""; }});
   if(v==null) return; const t=ppParseMxStamp(v); if(isNaN(t)) return;
   ppApply(f,{cama:"CE",defEn:new Date(t).toISOString(),camaPrevia:String(p.cama||"").trim().toUpperCase(),altaEn:""}); }
 async function loadPatients(opt){
@@ -7273,7 +7292,7 @@ $("ppList").addEventListener("input",e=>{ const t=e.target; if(!ppIsPT(t)) retur
   const row0=t.closest(".pp-pi"), has=!!t.value.trim(); if(row0){ row0.classList.toggle("ghost",!has); const xb=row0.querySelector(".pp-px"); if(xb) xb.hidden=!has; } ppPendFit(t);
   const last=c.lastElementChild; if(last&&last.contains(t)&&has) last.insertAdjacentHTML("afterend",ppPendRow(false,""));   /* siempre queda un renglón vacío al final para seguir agregando */
   clearTimeout(c._pt); c._pt=setTimeout(()=>ppPendSave(c),900); });
-$("ppList").addEventListener("change",e=>{ const t=e.target; if(!(t&&t.classList&&t.classList.contains("pp-pc"))) return; const c=ppPCont(t); if(!c) return; t.closest(".pp-pi").classList.toggle("done",t.checked); try{ ppPendDoneSync(c); }catch(_){} ppPendSave(c); });
+$("ppList").addEventListener("change",e=>{ const t=e.target; if(!(t&&t.classList&&t.classList.contains("pp-pc"))) return; const c=ppPCont(t); if(!c) return; t.closest(".pp-pi").classList.toggle("done",t.checked); ppPendSave(c); try{ ppPendDoneSync(c); }catch(_){} });
 $("ppList").addEventListener("keydown",e=>{ const t=e.target; if(!ppIsPT(t)||e.isComposing) return; const row=t.closest(".pp-pi"), c=ppPCont(t); if(!row||!c) return;
   const foc=r=>{ const x=r&&r.querySelector(".pp-pt"); if(x){ x.focus(); const n=x.value.length; try{ x.setSelectionRange(n,n); }catch(_){} } };
   if(e.key==="Enter"){ e.preventDefault(); if(!t.value.trim()) return; let nx=row.nextElementSibling; if(!nx||nx.querySelector(".pp-pt").value.trim()){ row.insertAdjacentHTML("afterend",ppPendRow(false,"")); nx=row.nextElementSibling; } foc(nx); }
@@ -9252,8 +9271,12 @@ function cenStampMod(){ const p=$("modPor"), e=$("modEn"); if(p) p.value=cenUser
 form.addEventListener("input",e=>{ if(e.isTrusted&&e.target&&e.target.id!=="modPor"&&e.target.id!=="modEn") cenStampMod(); },true);
 /* ---------- Hospitalizados · borrar completados ---------- */
 function ppPendDoneSync(c){ try{ ppClrSync(); }catch(_){} }
-/* un solo botón: borra los pendientes tachados de TODOS los pacientes */
-function ppDoneFiles(){ return (DRIVE_FILES||[]).filter(f=>f&&f.id&&ppPendParse(ppRowPend(f)).some(r=>r.d)); }
+/* v3.67 · La misma población de Hospitalizados y sus filtros limita tanto el botón como el borrado. */
+function ppDoneFiles(){
+  if(!ppCanClearDone()) return [];
+  const now=Date.now();
+  return uniqueFiles(DRIVE_FILES||[]).filter(f=>f&&f.id&&camaValida(f.meta&&f.meta.cama)&&now-fileTime(f)<=PP_RECENT_MS&&ppFiltMatch(f)&&ppPendParse(ppRowPend(f)).some(r=>r.d));
+}
 /* v3.65 · Disponible únicamente en Hospitalizados, sin búsqueda y con completados. */
 function ppCanClearDone(){ return document.body.classList.contains("pp-browse")&&PP_VIEW==="cama"&&!String($("ppSearch").value||"").trim(); }
 function ppClrSync(){
@@ -9268,7 +9291,8 @@ function ppClrSync(){
   const ref=$("ppCensus"); if(!ref||$("ppClearDone")) return;
   const b=document.createElement("button"); b.type="button"; b.id="ppClearDone"; b.className="pp-clrall"; b.textContent="Borrar completados"; b.style.visibility="hidden";
   const row=document.createElement("div"); row.id="ppClrRow"; row.appendChild(b); const head=document.querySelector("#pPanel .pp-head"); if(head) head.after(row); else ref.after(row);
-  b.onclick=async()=>{ if(!ppCanClearDone()) return; const fs=ppDoneFiles(); if(!fs.length) return; const ok=await ppAsk({title:"Borrar pendientes completados",text:"Se borrarán los pendientes tachados de "+fs.length+" paciente"+(fs.length===1?"":"s")+". Los pendientes sin completar se conservan.",ok:"Borrar",danger:true}); if(!ok||!ppCanClearDone()) return;
+  b.onclick=async()=>{ if(!ppCanClearDone()) return; let fs=ppDoneFiles(); if(!fs.length) return; const ok=await ppAsk({title:"Borrar pendientes completados",text:"Se borrarán los pendientes tachados de "+fs.length+" paciente"+(fs.length===1?"":"s")+" de Hospitalizados con el filtro actual. Los demás pacientes y los pendientes sin completar se conservan.",ok:"Borrar",danger:true}); if(!ok||!ppCanClearDone()) return;
+    const actuales=new Set(ppDoneFiles().map(f=>f.id)); fs=fs.filter(f=>actuales.has(f.id)); if(!fs.length){ ppClrSync(); return; }
     fs.forEach(f=>{ const rows=ppPendParse(ppRowPend(f)).filter(r=>!r.d); const nv=ppPendSer(rows).slice(0,400); ppPendCacheSet(f.id,nv); PP_PQ[f.id]={v:nv,ts:Date.now()}; });
     try{ ppPqStore(); }catch(_){} fs.forEach(f=>{ try{ ppPqRun(f.id); }catch(_){} }); try{ renderPP(); }catch(_){} ppClrSync(); };
   const _r=renderPP; renderPP=function(){ const r=_r.apply(this,arguments); try{ ppClrSync(); }catch(_){} return r; };
