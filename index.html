@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oncología · Hospital Juárez de México</title>
-<meta name="application-version" content="3.71">
+<meta name="application-version" content="3.72">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2505,7 +2505,7 @@ html body #dlgResidentGate .resident-gate-legal{margin:8px 0 0;padding:0;font:50
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 3.71 · Fecha de publicación: 29.10.26</div>
+  <div class="app-footer-version">Versión 3.72 · Fecha de publicación: 29.10.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal">Versión de prueba en revisión por la Jefatura de Oncología. Guarda la información en la plataforma que ya usa el servicio; su uso es responsabilidad de cada usuario. No usa formatos ajenos a los autorizados por el HJM ni servicios nuevos.</p>
     <p>Los datos viajan por conexión segura (HTTPS) y se almacenan en la cuenta de Google del Servicio de Oncología del Hospital Juárez de México; protegidos mediante clave de acceso.</p>
@@ -6912,6 +6912,7 @@ function ppMsDraw(btn,allLabel,key,groups){
   const sel=PP_FILT[key], flat=[]; groups.forEach(g=>g.items.forEach(i=>flat.push(i)));
   const name=v=>{ const i=flat.find(x=>x.v===v); return i?i.t:v; };
   btn.textContent=!sel.length?allLabel:sel.length===1?name(sel[0]):sel.length+" seleccionados";
+  btn.title=sel.length?sel.map(name).join(" / "):allLabel;
   btn.classList.toggle("on",sel.length>0);
   PP_MS[key]={btn,groups,allLabel};
   if(PP_MS_OPEN===key) ppMsRender(key);
@@ -8696,7 +8697,7 @@ function cenRowMatch(r){
   return true;
 }
 const cenVisible=cen=>cenOrdered((cen.pac||[]).filter(r=>(!r.exc||CEN.showEx)&&cenRowMatch(r)));
-function cenRowHTML(r,fecha){
+function cenRowHTML(r,fecha,actions=true){
   const tds=CEN_COLS.map(([f],i)=>{ const v=r[f]==null?"":String(r[f]); let inner;
     if(CEN_BTN.has(f)) return `<td class="bt lk" data-cf="${f}" title="Doble clic para cambiar"><span>${esc(v)}</span></td>`;
     else if(f==="est"&&r.sec==="H") return `<td class="bt estc" tabindex="0" role="button" data-estpop title="Elegir estatus"><span>${esc(v)}</span></td>`;
@@ -8704,14 +8705,15 @@ function cenRowHTML(r,fecha){
     else return `<td class="ro">${esc(v)}</td>`;
     const kb=(i===0&&r.sec==="H")?`<button type="button" class="kb pp-kebab" data-cenkb aria-haspopup="menu" aria-label="Acciones del paciente" title="Acciones">${CEN_ICO_KB}</button>`:"";
     return `<td>${kb}${inner}</td>`; }).join("");
-  const kbc=`<td class="kbc"><span class="kbw"><button type="button" class="kb pp-kebab" data-cenkb aria-haspopup="menu" aria-label="Acciones del paciente" title="Acciones">${CEN_ICO_KB}</button><button type="button" class="kb cp fl" data-cenfile aria-label="Abrir el archivo clínico del paciente" title="Archivo clínico">${CEN_ICO_FLD}</button></span></td>`;
+  const kbc=actions?`<td class="kbc"><span class="kbw"><button type="button" class="kb pp-kebab" data-cenkb aria-haspopup="menu" aria-label="Acciones del paciente" title="Acciones">${CEN_ICO_KB}</button><button type="button" class="kb cp fl" data-cenfile aria-label="Abrir el archivo clínico del paciente" title="Archivo clínico">${CEN_ICO_FLD}</button></span></td>`:"";
   return `<tr data-k="${esc(r.k)}" data-id="${esc(r.k)}"${r.exc?' class="excl"':(cenIngresoNegrita(r,fecha)?' class="nuevo"':"")}>${kbc}${tds}</tr>`;
 }
-function cenTableHTML(cen){
+function cenTableHTML(cen,opt){
+  const actions=opt&&opt.actions!==undefined?!!opt.actions:CEN.mode!=="hist", extra=actions?'<td class="kbc"></td>':"", head=actions?'<th class="kbc"></th>':"";
   const rows=cenVisible(cen); let body="", last="H";
-  rows.forEach(r=>{ const sk=cenSecKey(r); if(sk!==last){ last=sk; body+=`<tr class="sec"><td class="kbc"></td><td colspan="16">${cenSecName[sk]||""}</td></tr>`; } body+=cenRowHTML(r,cen.fecha); });
-  if(!rows.length) body=`<tr><td colspan="17" class="ro" style="padding:22px;color:var(--cen-mute)">${(PP_FILT.ads.length||PP_FILT.clin.length||($("ppSearch").value||"").trim())?"Ningún paciente con ese filtro.":"Sin pacientes hospitalizados."}</td></tr>`;
-  return `<table class="cen"><colgroup><col style="width:30px">${CEN_COLS.map((c,i)=>`<col style="width:${(CEN_PW2[i]).toFixed(2)}%">`).join("")}</colgroup><thead><tr class="t1"><th class="kbc"></th><th colspan="16">CENSO ${esc(cenFecha4(cen.fecha))}</th></tr><tr class="t2"><th class="kbc"></th>${CEN_COLS.map(c=>`<th>${c[1]}</th>`).join("")}</tr></thead><tbody>${body}</tbody></table>`;
+  rows.forEach(r=>{ const sk=cenSecKey(r); if(sk!==last){ last=sk; body+=`<tr class="sec">${extra}<td colspan="16">${cenSecName[sk]||""}</td></tr>`; } body+=cenRowHTML(r,cen.fecha,actions); });
+  if(!rows.length) body=`<tr><td colspan="${actions?17:16}" class="ro" style="padding:22px;color:var(--cen-mute)">Ningún paciente en esta vista.</td></tr>`;
+  return `<table class="cen" data-actions="${actions?1:0}"><colgroup>${actions?'<col style="width:30px">':""}${CEN_COLS.map((c,i)=>`<col style="width:${(CEN_PW2[i]).toFixed(2)}%">`).join("")}</colgroup><thead><tr class="t1">${head}<th colspan="16">CENSO ${esc(cenFecha4(cen.fecha))}</th></tr><tr class="t2">${head}${CEN_COLS.map(c=>`<th>${c[1]}</th>`).join("")}</tr></thead><tbody>${body}</tbody></table>`;
 }
 /* Reverso (misma estructura de la hoja de ejemplo: columnas A–F, alturas de fila) */
 const CEN_RH=[36,21,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,22,20,20,20,20,21,21,21,22,22,22,22,22,22,22,21,21,21,21,21,19,18,18,18,18,52,24,21,21];
@@ -8743,7 +8745,7 @@ function cenRevHTML(cen,ed){
 function cenBarHTML(){ if(arguments.length) return ""; const n=(CEN.cur&&CEN.cur.nexc)||0, ro=(CEN.mode==="hist"&&!CEN.edit)||isAdmvRO();
   const ex=n&&CEN.mode!=="hist"?`<button type="button" data-cenact="exshow">${CEN.showEx?"Ocultar":"Mostrar"} ${n} paciente${n>1?"s":""} quitado${n>1?"s":""} del censo</button>`:"";
   const nu=cenUndoCount(), un=ro?"":`<button type="button" class="cen-undo" data-cenundo ${nu?"":"disabled"} title="Deshace el último cambio de texto hecho en una celda (también Ctrl+Z fuera de la celda)">↶ Deshacer${nu?" ("+nu+")":""}</button>`;
-  return ex||un?`<div class="cen-exbar">${un}${ex}</div>`:""; }
+  return ex||un?`<div class="cen-exbar">${ex}${un}</div>`:""; }
 /* v3.44 · Deshacer cambios de texto de las celdas del censo */
 function cenUndoScope(){ return CEN.mode+":"+((CEN.cur&&CEN.cur.fecha)||""); }
 function cenUndoList(){ CEN.undo=CEN.undo||[]; const sc=cenUndoScope(); return CEN.undo.filter(u=>u.sc===sc); }
@@ -8800,13 +8802,32 @@ function cenKeep(w,paint){
 function cenFit(t){ try{ if(!t.offsetParent) return; t.style.height="auto"; if(t.scrollHeight) t.style.height=t.scrollHeight+"px"; }catch(_){} }
 /* v3.44 · Ajuste en pantalla: columnas con más texto reciben más ancho (las vacías se minimizan) y las celdas muy largas bajan un poco la letra (mínimo 10 px) para recorrer menos hacia abajo */
 const CEN_TXT_IDX=[6,10,11,12,13,14];
-function cenScrFit(w){ try{ const t=w.querySelector("table.cen"); if(!t||!t.offsetParent) return; const cols=[...t.querySelectorAll("colgroup col")].slice(1); if(cols.length!==CEN_COLS.length) return;
+function cenScrFit(w){ try{ const t=w.querySelector("table.cen"); if(!t||!t.offsetParent) return; const cols=[...t.querySelectorAll("colgroup col")].slice(t.dataset.actions==="0"?0:1); if(cols.length!==CEN_COLS.length) return;
   const bf=parseFloat(getComputedStyle(t).fontSize)||11; const rows=[...t.querySelectorAll("tbody tr[data-k]")], tot=CEN_TXT_IDX.map(()=>0);
-  rows.forEach(tr=>{ CEN_TXT_IDX.forEach((ci,j)=>{ const ta=tr.querySelector('[data-f="'+CEN_COLS[ci][0]+'"]'); const n=ta?String(ta.value||"").length:0; tot[j]+=n; if(ta){ const L=n, f=L>320?.86:(L>200?.91:(L>110?.96:0)); ta.style.fontSize=f?Math.max(7,bf*f).toFixed(2)+"px":""; }   /* v3.61 · relativo a la letra de la tabla: antes fijaba 10–11 px y las celdas largas quedaban MÁS grandes que el resto (el censo guardado se veía enorme) */ }); });
+  rows.forEach(tr=>{ CEN_TXT_IDX.forEach((ci,j)=>{ const ta=tr.querySelector('[data-f="'+CEN_COLS[ci][0]+'"]')||tr.children[ci+(t.dataset.actions==="0"?0:1)].querySelector(".vt"); const n=ta?String(ta.value!==undefined?ta.value:ta.textContent||"").length:0; tot[j]+=n; if(ta){ const L=n, f=L>320?.86:(L>200?.91:(L>110?.96:0)); ta.style.fontSize=f?Math.max(7,bf*f).toFixed(2)+"px":""; }   /* v3.61 · relativo a la letra de la tabla: antes fijaba 10–11 px y las celdas largas quedaban MÁS grandes que el resto (el censo guardado se veía enorme) */ }); });
   const pool=CEN_TXT_IDX.reduce((a,ci)=>a+CEN_PW2[ci],0), MIN=3.4, wt=tot.map(n=>n>0?Math.sqrt(n)+4:0), sw=wt.reduce((a,c)=>a+c,0);
   const free=pool-MIN*CEN_TXT_IDX.length; CEN_TXT_IDX.forEach((ci,j)=>{ const pc=sw>0?MIN+free*wt[j]/sw:CEN_PW2[ci]; cols[ci].style.width=pc.toFixed(2)+"%"; });
   }catch(_){} }
-function cenFitAll(w){ try{ cenScrFit(w); w.querySelectorAll("table.cen textarea,table.rev textarea").forEach(cenFit); }catch(_){} }
+function cenFitAll(w){ try{ cenScrFit(w); cenKeepWords(w); w.querySelectorAll("table.cen textarea,table.rev textarea").forEach(cenFit); }catch(_){} }
+/* v3.72 · Reducir ligeramente la letra antes de ampliar la tabla; nunca partir palabras. */
+function cenKeepWords(w){
+  const doc=w.ownerDocument||document, win=doc.defaultView||window, canvas=doc.createElement("canvas"), ctx=canvas.getContext("2d"); if(!ctx)return;
+  w.querySelectorAll("table.cen").forEach(t=>{
+    t.style.minWidth=""; const base=parseFloat(win.getComputedStyle(t).fontSize)||12;
+    let grow=1;
+    t.querySelectorAll("tbody tr[data-k] td").forEach(td=>{
+      if(td.classList.contains("kbc"))return;
+      const el=td.querySelector("textarea,.vt,span")||td, text=String(el.value!==undefined?el.value:el.textContent||""), style=win.getComputedStyle(el);
+      const initial=parseFloat(el.style.fontSize)||base, min=Math.min(initial,Math.max(10,base*.88)), pad=10, avail=Math.max(1,td.clientWidth-pad);
+      ctx.font=style.fontWeight+" "+initial+"px "+style.fontFamily;
+      const longest=Math.max(0,...text.split(/\s+/).map(x=>ctx.measureText(x).width));
+      const fs=longest>avail?Math.max(min,initial*avail/longest):initial;
+      el.style.fontSize=fs.toFixed(2)+"px";
+      grow=Math.max(grow,longest*(fs/initial)/avail);
+    });
+    if(grow>1.02)t.style.setProperty("min-width",Math.ceil(t.getBoundingClientRect().width*grow)+"px","important");
+  });
+}
 function cenDirtyFocus(w){ const ae=document.activeElement; return !!(ae&&w.contains(ae)&&ae.matches("textarea,input")); }   /* v3.20 · con el cursor dentro de una celda nunca se redibuja la tabla (el guardado es mientras se escribe) */
 
 function cenHeaderSync(on,printOn){ const b=$("cenPrint"); if(b) b.hidden=!on; const pc=$("ppCount"); if(pc&&!on) {} }
@@ -9088,13 +9109,13 @@ html,body{margin:0;padding:0;background:#fff;color:#000}
 body{font-family:"HJM Calibri",Calibri,Carlito,"Segoe UI",Arial,sans-serif}
 .pg{break-after:page;page-break-after:always}.pg.tb{height:752px;overflow:visible}.pg:last-child{break-after:auto;page-break-after:auto}
 table.cenp.cm td,table.cenp.cm th{white-space:var(--cmws)!important;overflow-wrap:var(--cmow)!important}table.cenp{width:100%;border-collapse:collapse;table-layout:auto;font-family:"HJM Calibri",Calibri,Carlito,Arial,sans-serif;font-size:8pt;line-height:1.1}
-.cenp th,.cenp td{border:1px solid #000;padding:1px 2px;text-align:center;vertical-align:middle;overflow-wrap:break-word;white-space:pre-wrap}
+.cenp th,.cenp td{border:1px solid #000;padding:1px 2px;text-align:center;vertical-align:middle;overflow-wrap:normal;word-break:normal;hyphens:none;white-space:pre-wrap}
 .cenp thead{display:table-header-group}.cenp tr{break-inside:avoid;page-break-inside:avoid}
 .cenp th{background:#b7b7b7;font-weight:700;text-transform:uppercase;white-space:nowrap}
 .cenp tr.sec td{background:#b7b7b7;font-weight:700}.cenp tr.nu td{font-weight:700}.cenp tr.res td{font-weight:700;height:14px;background:#b7b7b7}
 .revw{display:flex;justify-content:center;overflow:visible}
 table.rev{border-collapse:collapse;table-layout:fixed;width:561px;font:700 9pt/1.15 "HJM Calibri",Calibri,Carlito,Arial,sans-serif;transform-origin:top center}
-table.rev td{border:1px solid #000;padding:0 3px;vertical-align:middle;overflow-wrap:anywhere}
+table.rev td{border:1px solid #000;padding:0 3px;vertical-align:middle;overflow-wrap:normal;word-break:normal;hyphens:none}
 table.rev td.c{text-align:center}table.rev td.g{background:#ccc}table.rev td.o{background:#ffc000}table.rev td.al{text-align:left}`;
 async function cenPrintDocs(items){
   const fr=document.createElement("iframe"); fr.setAttribute("aria-hidden","true"); fr.style.cssText="position:fixed;left:-3000px;top:0;width:1003px;height:760px;border:0;visibility:hidden";
@@ -9104,7 +9125,7 @@ async function cenPrintDocs(items){
   await cenWait(150);
   const LIM=748;   // alto útil de una hoja carta horizontal (px a 96 dpi) con márgenes de 7 mm
   /* v3.25 · Calibri 8 fijo; el ancho de cada columna sale del contenido (tabla automática). Debe caber en máximo 2 hojas horizontales; solo si no cabe se baja la letra de a medio punto. */
-  doc.querySelectorAll("table.cenp").forEach(t=>{ let ok=false; for(let fs=10;fs>=6.5&&!ok;fs-=0.25){ t.style.fontSize=fs+"pt"; cenFitCols(t,true); if(cenPagesNeeded(t)<=1) ok=true; } for(let fs=10;fs>=3.5&&!ok;fs-=0.25){ t.style.fontSize=fs+"pt"; cenFitCols(t,true); if(cenPagesNeeded(t)<=2) ok=true; } cenSplitPages(t); });
+  doc.querySelectorAll("table.cenp").forEach(t=>{ let ok=false; for(let fs=8.5;fs>=7.5&&!ok;fs-=0.25){ t.style.fontSize=fs+"pt"; cenFitCols(t,true); if(t.dataset.wordsFit==="1"&&cenPagesNeeded(t)<=1) ok=true; } for(let fs=8.5;fs>=6.5&&!ok;fs-=0.25){ t.style.fontSize=fs+"pt"; cenFitCols(t,true); if(t.dataset.wordsFit==="1"&&cenPagesNeeded(t)<=2) ok=true; } cenSplitPages(t); });
   /* v3.15 · el reverso va en hoja VERTICAL; si el navegador no admite páginas con nombre, se gira el contenido dentro de la hoja horizontal */
   const named=(()=>{ try{ return !!(fr.contentWindow.CSS&&fr.contentWindow.CSS.supports("page","a")); }catch(_){ return false; } })();
   doc.querySelectorAll(".revw").forEach(wr=>{ const t=wr.querySelector("table.rev"); if(!t) return; const h=t.getBoundingClientRect().height, W1=561;
@@ -9171,10 +9192,10 @@ function cenFitCols(t,opt){
   const nat=measure("pre","normal"), min=(t.style.width="1px",measure("normal","normal"));
   const mn=nat.map((n,i)=>Math.min(n,min[i])), sn=nat.reduce((a,c)=>a+c,0), sm=mn.reduce((a,c)=>a+c,0); let w;
   if(sn<=W) w=nat.map(n=>n*W/sn);
-  else if(sm>=W) w=mn.map(n=>n*W/sm);
+  else if(sm>=W) w=mn.slice();
   else { const k=(W-sm)/(sn-sm); w=mn.map((m,i)=>m+(nat[i]-m)*k); }
-  const cg=document.createElement("colgroup"); cg.innerHTML=w.map(x=>`<col style="width:${(x/W*100).toFixed(2)}%">`).join(""); t.prepend(cg); t.style.tableLayout="fixed"; t.style.width="100%";
-  if(opt) cenOptCols(t,w,W,mn);
+  const cg=document.createElement("colgroup"); const target=Math.max(W,sm); cg.innerHTML=w.map(x=>`<col style="width:${(x/target*100).toFixed(2)}%">`).join(""); t.prepend(cg); t.style.tableLayout="fixed"; t.style.width=target>W?target+"px":"100%"; t.dataset.wordsFit=sm<=W+1?"1":"0";
+  if(opt&&sm<=W) cenOptCols(t,w,W,mn);
 }
 /* v3.30 · reparte el ancho para MINIMIZAR el alto: en cada fila se detecta la columna que más líneas ocupa (la que "manda" el alto) y se le pasa ancho tomado de las columnas con más holgura */
 function cenOptCols(t,w,W,mn){
@@ -9988,11 +10009,12 @@ async function cenViewPop(name){
     const who=String(o.editado||o.por||"").trim(), ttl="Censo "+o.fecha;
     /* la tabla se arma sin los filtros del buscador, Adscrito y Clínica */
     const sf=PP_FILT, ss=$("ppSearch")?$("ppSearch").value:""; let tb="", rv="";
-    try{ PP_FILT={ads:[],clin:[]}; if($("ppSearch")) $("ppSearch").value=""; tb=cenTableHTML(o).replace(/<textarea[^>]*>([\s\S]*?)<\/textarea>/g,'<div class="vt">$1</div>'); }finally{ PP_FILT=sf; if($("ppSearch")) $("ppSearch").value=ss; }
+    try{ PP_FILT={ads:[],clin:[]}; if($("ppSearch")) $("ppSearch").value=""; tb=cenTableHTML(o,{actions:false}).replace(/<textarea[^>]*>([\s\S]*?)<\/textarea>/g,'<div class="vt">$1</div>'); }finally{ PP_FILT=sf; if($("ppSearch")) $("ppSearch").value=ss; }
     rv=cenRevHTML(o,false);
     d.innerHTML=`<div class="av-head"><div class="av-t"><b>${esc(ttl)}</b><small>${o.guardia?"Guardia "+esc(o.guardia)+" · ":""}${who?(o.editado?"Última edición: ":"Envió: ")+esc(who):""}</small></div><div class="av-b">${rbBtn("edit","Editar","data-ave")}${rbBtn("print","Imprimir","data-avp")}<button type="button" class="av-x" data-avx aria-label="Cerrar">×</button></div></div><div class="av-body"><div class="av-res">${o.res?"<b>Residentes de guardia:</b> "+esc(o.res):""}</div><div class="av-tab">${tb}</div><div class="av-rev">${rv}</div></div>`;
     d.onclick=e=>{ if(e.target.closest("[data-avx]")||e.target===d){ d.close(); return; } if(e.target.closest("[data-ave]")){ d.close(); try{ const l=$("dlgCenList"); if(l&&l.open) l.close(); }catch(_){} cenOpenHist(name); return; } if(e.target.closest("[data-avp]")){ d.close(); cenPrintByName(name); } };
     if(!d.open) d.showModal();
+    cenFitAll(d); if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>{if(d.open)cenFitAll(d);});
     const bd=d.querySelector(".av-body"); if(bd) bd.scrollTop=0;
   }catch(e){ try{ notify("No se pudo mostrar el censo: "+friendly(e),"warn"); }catch(_){} }
   end();
@@ -10002,7 +10024,7 @@ async function cenViewPop(name){
 <script>
 function labelMobileRecordTables(){
   document.querySelectorAll('table').forEach(table=>{
-    if(table.closest('#paper,#blankPrint,.cp-page,.sheet,.print-supplement,#cenWrap'))return;
+    if(table.matches('table.cen,table.cenp,table.rev')||table.closest('#paper,#blankPrint,.cp-page,.sheet,.print-supplement,#cenWrap,.cen-vw'))return;
     const heads=[...table.querySelectorAll('thead th')].map(th=>th.textContent.trim());if(!heads.length)return;
     table.classList.add('mobile-record-table');
     table.querySelectorAll('tbody tr').forEach(row=>[...row.children].forEach((cell,index)=>{
@@ -13158,5 +13180,72 @@ html body .app-footer p.app-footer-legal{margin:10px auto 8px;font-size:12.5px;f
 .pp-datetime{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:12px}
 .pp-datetime label{display:grid;gap:5px;font-size:13px;font-weight:600;color:inherit}
 </style>
+
+<style id="hjm-v372-layout">
+@media screen{
+/* Una cuadrícula para todas las pestañas, incluidos Censo y Expedientes. */
+html body.pp-browse #pPanel .pp-head{display:grid!important;grid-template-columns:minmax(240px,1fr) 380px 160px!important;grid-template-rows:minmax(68px,auto) auto;gap:12px!important;align-items:center!important}
+html body.pp-browse #pPanel .pp-head::after{display:none!important}
+html body.pp-browse #pPanel .pp-head .pp-ttl,html body.pp-browse #pPanel.cen-on .pp-head .pp-ttl{display:contents!important}
+html body.pp-browse #pPanel .pp-head .pp-actions{display:contents!important}
+html body.pp-browse #pPanel .pp-head h2,html body.pp-browse #pPanel.cen-on .pp-ttl>h2{grid-column:1!important;grid-row:1!important;align-self:start!important;white-space:normal!important;margin:0!important;font-size:36px!important;line-height:1.1!important}
+html body.pp-browse #pPanel .pp-head .pp-count{grid-column:1!important;grid-row:1!important;align-self:end!important;margin:0!important;padding:0!important;display:block}
+html body.pp-browse #pPanel .pp-head .pp-view-btns{grid-column:2!important;grid-row:1!important;align-self:start!important;margin:0!important;justify-self:end;max-width:100%}
+html body.pp-browse #pPanel .pp-head #ppRefresh{grid-column:3!important;grid-row:1!important;justify-self:end;align-self:start!important;margin:0!important}
+html body.pp-browse #pPanel .pp-head #ppSearch{grid-column:1!important;grid-row:2!important;width:100%!important;min-width:0!important;height:46px!important;margin:0!important}
+html body.pp-browse #pPanel .pp-head #ppFilt{grid-column:2!important;grid-row:2!important;justify-self:stretch;align-self:center!important;margin:0!important;display:flex!important;gap:8px!important;width:100%;max-width:100%}
+html body.pp-browse #pPanel .pp-head #ppFilt label{height:46px!important;min-width:0;flex:1 1 0;box-sizing:border-box;overflow:hidden}
+html body.pp-browse #pPanel .pp-head #ppFilt .ppms{min-width:0;max-width:100%;width:auto!important;flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body.pp-browse #pPanel .pp-head #ppCensus,html body.pp-browse #pPanel .pp-head #cenPrint{grid-column:3!important;grid-row:2!important;align-self:center!important;justify-self:stretch;margin:0!important;height:46px!important;min-width:0!important;width:100%!important;justify-content:center}
+html body.pp-browse #pPanel .pp-head #cenChips{grid-column:1/3!important;grid-row:3!important;justify-self:start!important;margin:0!important}
+html body.pp-browse #pPanel .pp-head #cenNavBtn{grid-column:3!important;grid-row:3!important;justify-self:stretch;align-self:center!important;margin:0!important;width:100%!important}
+html body.pp-browse #pPanel .pp-head #cenSendBtn{grid-column:2!important;grid-row:4!important;justify-self:end;align-self:center!important;margin:0!important}
+html body.pp-browse #pPanel .pp-head #cenEditBtn{grid-column:3!important;grid-row:4!important;align-self:center!important;margin:0!important}
+html body.pp-browse #pPanel .pp-head #cenAlert{grid-column:1!important;grid-row:4!important;margin:0!important;max-width:100%}
+html body.pp-browse #pPanel .pp-head #cenLegend{grid-column:1/-1!important;grid-row:5!important;margin:0!important}
+html body.pp-browse #pPanel .pp-head #cenResBar{grid-column:1/-1!important;grid-row:6!important;margin:0!important}
+html body.pp-browse #pPanel .pp-head #cenSave{display:none!important}
+html body.pp-browse #pPanel .pp-head [hidden]{display:none!important}
+.cen-exbar{align-items:center;width:100%;box-sizing:border-box}
+.cen-exbar .cen-undo{margin-left:auto!important;background:#873b42;color:#fff;border:1px solid #873b42;border-radius:10px;padding:8px 14px;font-weight:600;cursor:pointer}
+.cen-exbar .cen-undo:hover:not(:disabled){background:#6e2f35}.cen-exbar .cen-undo:disabled{opacity:.42;cursor:default}
+html body table.cen th,html body table.cen td,html body table.cen textarea,html body table.cen input.cc,html body dialog.cen-vw .av-tab .vt,html body table.rev td,html body table.rev textarea{word-break:normal!important;overflow-wrap:normal!important;hyphens:none!important}
+html body table.cen td,html body table.cen textarea,html body dialog.cen-vw .av-tab .vt{white-space:pre-wrap}
+html body dialog.cen-vw .av-tab table.cen{font-size:12px}
+@media(max-width:1000px){
+html body.pp-browse #pPanel .pp-head{grid-template-columns:minmax(0,1fr) 160px!important;grid-template-rows:minmax(60px,auto) auto auto auto!important;gap:10px!important}
+html body.pp-browse #pPanel .pp-head h2,html body.pp-browse #pPanel.cen-on .pp-ttl>h2{grid-column:1!important;grid-row:1!important;font-size:32px!important}
+html body.pp-browse #pPanel .pp-head #ppRefresh{grid-column:2!important;grid-row:1!important}
+html body.pp-browse #pPanel .pp-head .pp-view-btns{grid-column:1/-1!important;grid-row:2!important;justify-self:start;width:auto!important;align-self:center!important}
+html body.pp-browse #pPanel .pp-head #ppSearch{grid-column:1/-1!important;grid-row:3!important}
+html body.pp-browse #pPanel .pp-head #ppFilt{grid-column:1!important;grid-row:4!important;justify-self:start;flex-wrap:wrap!important}
+html body.pp-browse #pPanel .pp-head #ppCensus,html body.pp-browse #pPanel .pp-head #cenPrint{grid-column:2!important;grid-row:4!important}
+html body.pp-browse #pPanel .pp-head #cenChips{grid-column:1!important;grid-row:5!important;flex-wrap:wrap!important}
+html body.pp-browse #pPanel .pp-head #cenNavBtn{grid-column:2!important;grid-row:5!important}
+html body.pp-browse #pPanel .pp-head #cenAlert{grid-column:1/-1!important;grid-row:6!important}
+html body.pp-browse #pPanel .pp-head #cenLegend{grid-column:1/-1!important;grid-row:7!important}
+html body.pp-browse #pPanel .pp-head #cenResBar{grid-column:1/-1!important;grid-row:8!important}
+html body.pp-browse #pPanel .pp-head #cenSendBtn{grid-column:1!important;grid-row:9!important;justify-self:start}
+html body.pp-browse #pPanel .pp-head #cenEditBtn{grid-column:2!important;grid-row:9!important}
+}
+@media(max-width:540px){
+html body.pp-browse #pPanel .pp-head{grid-template-columns:minmax(0,1fr) 132px!important}
+html body.pp-browse #pPanel .pp-head #ppFilt{grid-column:1/-1!important;grid-row:4!important;justify-self:stretch;flex-wrap:nowrap!important}
+html body.pp-browse #pPanel .pp-head #ppFilt label{flex:1 1 0;padding-left:10px!important;gap:4px!important;overflow:hidden}
+html body.pp-browse #pPanel .pp-head #ppFilt label>span{font-size:11px!important}
+html body.pp-browse #pPanel .pp-head #ppCensus,html body.pp-browse #pPanel .pp-head #cenPrint{grid-column:2!important;grid-row:5!important;height:40px!important}
+html body.pp-browse #pPanel .pp-head #cenChips{grid-column:1!important;grid-row:6!important}
+html body.pp-browse #pPanel .pp-head #cenNavBtn{grid-column:2!important;grid-row:6!important}
+html body.pp-browse #pPanel .pp-head #cenAlert{grid-row:7!important}
+html body.pp-browse #pPanel .pp-head #cenLegend{grid-row:8!important}
+html body.pp-browse #pPanel .pp-head #cenResBar{grid-row:9!important}
+html body.pp-browse #pPanel .pp-head #cenSendBtn,html body.pp-browse #pPanel .pp-head #cenEditBtn{grid-row:10!important}
+}
+}
+</style>
+
+<script>
+(function(){let frame=0;addEventListener("resize",()=>{if(frame)return;frame=requestAnimationFrame(()=>{frame=0;try{const w=document.getElementById("cenWrap");if(w&&!w.hidden)cenFitAll(w);const d=document.querySelector("dialog.cen-vw[open]");if(d)cenFitAll(d);}catch(_){}});});})();
+</script>
 </body>
 </html>
