@@ -3992,10 +3992,10 @@ function usersCacheSave(){return;try{localStorage.setItem(HJM_USERS_LS,JSON.stri
   usersRebuild();
 })();
 const admHash=t=>{let x=5381;for(const c of t)x=((x<<5)+x+c.charCodeAt(0))>>>0;return x;}, admName=n=>{const w=new Set(String(n||"").split(" ").map(admHash));return [[224328395,3328349489],[3438014556,2089286920],[2089545211,217941023]].some(p=>w.has(p[0])&&w.has(p[1]));};
-const admRec=u=>!!u&&(isTechAdminRecord(u)||u.admin===true);
+const admRec=u=>!(window.HJM_BETA&&HJM_BETA.shared())&&!!u&&(isTechAdminRecord(u)||u.admin===true);
 /* v3.77 · Rango técnico exclusivo; la autorización dura solo esta sesión. */
 let TECH_ADMIN_SESSION="",TECH_ADMIN_REQUEST=null;
-function isTechAdminRecord(u){return !!u&&u.tecnico===true;}
+function isTechAdminRecord(u){return !(window.HJM_BETA&&HJM_BETA.shared())&&!!u&&u.tecnico===true;}
 function isTechnicalAdmin(){if(window.__hjmChildFormat)return parent!==window&&parent.sessionUserName()===sessionUserName()&&parent.isTechnicalAdmin();const r=userRecord(sessionUserName());return isTechAdminRecord(r)&&TECH_ADMIN_SESSION===ukey(r.usuario);}
 function adminRank(u){return isTechAdminRecord(u)?"Administrador Técnico":admRec(u)?(u.tipo==="administrativo"?"Administrador Administrativo":"Administrador Médico"):"";}
 const isSuperAdm=()=>isTechnicalAdmin();
@@ -16300,6 +16300,7 @@ async function hjmExportAll(){
     cursor=page.next||'';
    }while(cursor);
   }
+  check();s.message='Agregando respaldo de usuarios…';hjmExportPaint();{const ur=await request('hjmUsuariosRespaldo'),ub=new TextEncoder().encode(JSON.stringify(ur,null,2)),up=unique(root,'USUARIOS',true);all.push({path:up,folder:true,size:0,crc:0});all.push({path:up+'usuarios_'+new Date().toISOString().slice(0,10)+'.json',blob:new Blob([ub]),size:ub.length,crc:(hjmExportCRC(ub)^0xFFFFFFFF)>>>0,modified:new Date().toISOString()});s.files++;}
   check();s.message='Preparando ZIP completo · '+s.files+' archivos · '+s.folders+' carpetas';hjmExportPaint();const blob=hjmExportZip(all);check();const stamp=new Date().toISOString().slice(0,10),a=document.createElement('a'),url=URL.createObjectURL(blob);a.href=url;a.download='HJM_COMPLETO_'+stamp+'.zip';a.hidden=true;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);s.message='Descarga completa: '+s.files+' archivos y '+s.folders+' carpetas. ZIP preparado sin omitir archivos.';
  }catch(e){s.message=e.cancelled?'Descarga cancelada. No se generó un ZIP parcial.':(/acción no permitida|accion|not found/i.test(e.message||'')?'Esta descarga requiere publicar Codigo_v19.gs en Apps Script. ': 'No se generó el ZIP porque faltó completar la copia. ')+String(e.message||e);}
  finally{s.busy=false;hjmExportPaint();}
