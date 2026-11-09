@@ -12,12 +12,21 @@ if(L){var SP=Storage.prototype,g=SP.getItem,s=SP.setItem,r=SP.removeItem;
 window.HJM_BETA=(function(){'use strict';
 const CID='811485096329-kos6c8k61t9rlq08jbc6hjs85ii1ucpp.apps.googleusercontent.com',SK='hjm-beta-t',MSG='No tienes autorizado el acceso. Solicítalo a la Jefatura de Oncología.';
 const $=id=>document.getElementById(id),child=()=>!!window.__hjmChildFormat;
-const B={t:'',exp:0,email:'',ses:null,entering:false,exiting:false,waiters:[],gisP:null,inited:false,wrapped:false};
+const B={t:'',exp:0,email:'',ses:null,u:'',entering:false,exiting:false,waiters:[],gisP:null,inited:false,wrapped:false};
 function jwt(c){try{const p=c.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');return JSON.parse(decodeURIComponent(escape(atob(p+'==='.slice((p.length+3)%4)))));}catch(_){return null;}}
 function load(){if(B.t)return;try{const o=JSON.parse(sessionStorage.getItem(SK)||'null');if(o&&o.t&&o.exp>Date.now()){B.t=o.t;B.exp=o.exp;B.email=o.email||'';}}catch(_){}}
 B.token=function(){if(child()){try{return parent.HJM_BETA.token();}catch(_){return '';}}load();if(!B.t||B.exp-Date.now()<60000)return '';return B.t;};
 B.set=function(c){const d=jwt(c);if(!d||!d.exp)return false;B.t=c;B.exp=d.exp*1000;B.email=String(d.email||'').toLowerCase();try{sessionStorage.setItem(SK,JSON.stringify({t:B.t,exp:B.exp,email:B.email}));}catch(_){}return true;};
-B.clear=function(){B.t='';B.exp=0;try{sessionStorage.removeItem(SK);}catch(_){}};
+B.clear=function(){B.t='';B.exp=0;B.setU('');try{sessionStorage.removeItem(SK);}catch(_){}};
+B.setU=function(u){B.u=u||'';try{if(B.u)sessionStorage.setItem('hjm-beta-u',B.u);else sessionStorage.removeItem('hjm-beta-u');}catch(_){}};
+B.who=function(){if(child()){try{return parent.HJM_BETA.who();}catch(_){return '';}}if(!B.u){try{B.u=sessionStorage.getItem('hjm-beta-u')||'';}catch(_){}}return B.u;};
+B.shared=function(){return !!(B.ses&&B.ses.compartida);};
+B.pick=function(s){const dlg=shell();if(!dlg)return;B.ses=s;applyUsers(inject(s));try{SESSION_ADSCRITO='';SESSION_RESIDENT='';}catch(_){}
+ dlg.classList.remove('beta-denied');dlg.classList.add('beta-shared');$('betaG').hidden=true;
+ let o=$('betaSharedOut');if(!o){o=document.createElement('button');o.type='button';o.id='betaSharedOut';o.className='beta-out';o.textContent='Cerrar sesión';o.onclick=()=>{B.clear();try{google.accounts.id.disableAutoSelect();}catch(_){}wipe();location.reload();};const bt=document.querySelector('#dlgResidentGate .resident-gate-buttons');bt.after(o);}
+ const n=$('residentGateName');if(n){n.value='';n.required=true;}status('Cuenta del servicio: '+s.email+'. Escribe tu usuario para continuar.','info');if(!dlg.open)dlg.showModal();setTimeout(()=>{try{n.focus();}catch(_){}},80);};
+document.addEventListener('submit',e=>{if(!e.target||e.target.id!=='residentGateForm')return;e.preventDefault();e.stopImmediatePropagation();const dlg=$('dlgResidentGate');if(!dlg||!dlg.classList.contains('beta-shared'))return;
+ let name='';try{name=resolveGateUser();}catch(_){}if(!name)return;const rec=userRecord(name);if(!rec){status('Ese usuario no existe. Elige uno de la lista.');return;}B.setU(rec.usuario);B.enter();},true);
 B.mine=function(it){try{const ed=it&&it.meta&&it.meta.ed;return !ed||ukey(ed)===ukey(sessionUserName());}catch(_){return true;}};
 function status(t,st){try{gateStatus(t,st);}catch(_){}}
 function okOrigin(){return location.protocol==='https:'||/^(localhost|127\.0\.0\.1)$/.test(location.hostname);}
@@ -34,16 +43,21 @@ function shell(){const dlg=$('dlgResidentGate');if(!dlg)return null;dlg.classLis
  if(!$('betaG')){const box=document.createElement('div');box.id='betaG';box.innerHTML='<p class="beta-g-t">Inicia sesión con tu cuenta de Google autorizada</p><div id="betaGBtn"></div><p class="beta-g-who" id="betaGWho" hidden></p>';const msg=$('residentGateMsg');msg.parentNode.insertBefore(box,msg);
   const lg=$('residentGateLegal');if(lg&&!$('betaPrivLink')){const a=document.createElement('a');a.id='betaPrivLink';a.href='#privacidad';a.textContent='Política de privacidad';a.onclick=e=>{e.preventDefault();B.privacy();};lg.after(a);}}
  const n=$('residentGateName');if(n)n.required=false;return dlg;}
-B.privacy=function(){let d=$('dlgBetaPriv');if(!d){d=document.createElement('dialog');d.id='dlgBetaPriv';const src=$('privacidad');d.innerHTML=(src?src.innerHTML:'')+'<p style="text-align:right;margin:12px 0 0"><button type="button">Cerrar</button></p>';d.querySelector('button').onclick=()=>d.close();document.body.appendChild(d);}d.showModal();};
-B.gate=function(opt){opt=opt||{};const dlg=shell();if(!dlg)return;dlg.classList.remove('beta-denied');try{resetTechnicalAdmin();}catch(_){}
+B.privacy=function(){let d=$('dlgBetaPriv');if(!d){d=document.createElement('dialog');d.id='dlgBetaPriv';const src=$('privacidad');d.innerHTML=(src?[...src.children].filter(e=>e.tagName!=='SUMMARY').map(e=>e.outerHTML).join(''):'')+'<p style="text-align:right;margin:12px 0 0"><button type="button">Cerrar</button></p>';d.querySelector('button').onclick=()=>d.close();document.body.appendChild(d);}d.showModal();};
+B.gate0=null;B.gate=function(opt){opt=opt||{};const dlg=shell();if(!dlg)return;dlg.classList.remove('beta-denied','beta-shared');try{resetTechnicalAdmin();}catch(_){}
  const who=$('betaGWho');if(who){who.hidden=!opt.who;who.textContent=opt.who||'';}
  status(opt.msg||'',opt.state);if(!dlg.open)dlg.showModal();$('betaG').hidden=!!opt.lock;
  if(!opt.lock)B.renderBtn();if(!opt.lock&&!opt.keep&&B.token())B.enter();};
-B.denied=function(){const em=B.email;B.clear();B.ses=null;try{google.accounts.id.disableAutoSelect();}catch(_){}try{SESSION_ADSCRITO='';SESSION_RESIDENT='';}catch(_){}
+B.denied=function(){const em=B.email;B.ses=null;try{google.accounts.id.disableAutoSelect();}catch(_){}try{SESSION_ADSCRITO='';SESSION_RESIDENT='';}catch(_){}
  const dlg=shell();if(!dlg)return;try{resetTechnicalAdmin();}catch(_){}status('');let f=$('betaFinal');
- if(!f){f=document.createElement('div');f.id='betaFinal';f.innerHTML='<p class="gate-final-title">Versión de Prueba Finalizada</p><p class="resident-gate-legal gate-final-note">Aplicación Web en espera de autorización de Jefatura de Oncología para su uso</p><p class="beta-g-who" id="betaFinalWho"></p><button type="button" class="beta-out" id="betaFinalOut">Cerrar sesión</button>';$('betaG').before(f);
+ if(!f){f=document.createElement('div');f.id='betaFinal';f.innerHTML='<p class="gate-final-title">Versión de Prueba Finalizada</p><p class="resident-gate-legal gate-final-note">Aplicación Web en espera de autorización de Jefatura de Oncología para su uso</p><p class="beta-g-who" id="betaFinalWho"></p><button type="button" class="beta-out" id="betaFinalOut">Cerrar sesión</button><button type="button" class="beta-req-link" id="betaReqOpen">Solicitar acceso a versión de prueba</button><div id="betaReq" hidden><label class="beta-req-l" for="betaReqQ">Busca tu usuario</label><input id="betaReqQ" type="search" placeholder="Escribe tu nombre (mín. 3 letras)" autocomplete="off"><div id="betaReqList" role="listbox"></div><button type="button" class="beta-req-go" id="betaReqGo" disabled>Solicitar acceso</button><p class="beta-req-msg" id="betaReqMsg" role="status"></p></div>';$('betaG').before(f);
+  let sel='',tq=0;$('betaReqOpen').onclick=()=>{$('betaReq').hidden=false;$('betaReqOpen').hidden=true;setTimeout(()=>$('betaReqQ').focus(),30);};
+  $('betaReqQ').oninput=()=>{clearTimeout(tq);sel='';$('betaReqGo').disabled=true;const q=$('betaReqQ').value.trim();if(q.length<3){$('betaReqList').innerHTML='';return;}
+   tq=setTimeout(async()=>{try{const l=await call('hjmSolicitudBuscar',q);$('betaReqList').innerHTML=(l||[]).length?l.map(u=>'<button type="button" role="option" data-u="'+esc(u.usuario)+'">'+esc(u.nombre)+'<small>'+esc(u.tipo==='adscrito'?(u.servicio||'Adscrito'):u.tipo==='residente'?'Residente'+(u.servicio?' · '+u.servicio:''):'Administrativo')+'</small></button>').join(''):'<p class="beta-req-msg">Sin coincidencias.</p>';}catch(e){$('betaReqMsg').textContent=e.message;}},350);};
+  $('betaReqList').onclick=e=>{const b=e.target.closest('[data-u]');if(!b)return;sel=b.dataset.u;$('betaReqList').querySelectorAll('[data-u]').forEach(x=>x.setAttribute('aria-selected',x===b?'true':'false'));$('betaReqGo').disabled=false;};
+  $('betaReqGo').onclick=async()=>{if(!sel)return;$('betaReqGo').disabled=true;$('betaReqMsg').textContent='Enviando…';try{await call('hjmSolicitar',sel);$('betaReq').innerHTML='<p class="beta-req-ok"><b>Versión de prueba finalizada.</b> Una vez que se cuente con la autorización de la Jefatura de Oncología, se dará permiso y acceso a la misma.</p>';}catch(e){$('betaReqGo').disabled=false;$('betaReqMsg').textContent=e.message||'No se pudo enviar.';}};
   $('betaFinalOut').onclick=()=>{B.clear();try{google.accounts.id.disableAutoSelect();}catch(_){}dlg.classList.remove('beta-denied');B.gate({});};}
- $('betaFinalWho').textContent=em?'Cuenta: '+em:'';dlg.classList.add('beta-denied');if(!dlg.open)dlg.showModal();setTimeout(()=>{try{$('betaFinalOut').focus({preventScroll:true});}catch(_){}},50);};
+ $('betaFinalWho').textContent=em?'Cuenta: '+em:'';dlg.classList.add('beta-denied');if(!dlg.open)dlg.showModal();};
 B.authError=function(e){if(child()||B.entering)return;if(e.code==='noautorizado')B.denied(e.message);else if(e.code==='token'){B.clear();}};
 function inject(s){return (s.usuarios||[]).map(u=>Object.assign({},u));}
 B.apply=function(s,ident){B.ses=s;const us=inject(s);if(!applyUsers(us)){HJM_USERS=[];}
@@ -51,13 +65,16 @@ B.apply=function(s,ident){B.ses=s;const us=inject(s);if(!applyUsers(us)){HJM_USE
  try{syncAdminClass();}catch(_){}try{admvSync();}catch(_){}try{usersStateDraw();}catch(_){}};
 B.enter=async function(){if(B.entering)return;if(!B.token()){B.gate({});return;}B.entering=true;status('Verificando acceso…','info');const prev=B.ses&&B.ses.email;
  try{const s=await call('hjmSesion');if(prev&&prev!==s.email){location.reload();return;}
+  if(s.compartida&&!s.usuario){B.entering=false;B.pick(s);return;}
+  const dlg0=$('dlgResidentGate');if(dlg0)dlg0.classList.remove('beta-shared');
   B.apply(s,true);wrap();const g=$('dlgResidentGate');if(g&&g.open)g.close();status('');
   CONNECT_FAIL=false;try{if(CAN_DRIVE&&STORE!=='drive')setStore('drive');}catch(_){}
   if(!USER)initDrive();else{try{driveReconnect();}catch(_){}}
   if(IDLE_LOCKED){IDLE_LOCKED=false;try{if(ppOn()){PP_LAST=0;LIST_STAMP=null;loadPatients({fresco:true});}}catch(_){}}
   try{flushOutbox({quiet:true});}catch(_){}
-  B.wake();
+  B.wake();const np=s.tecnico?Object.keys(s.solicitudes||{}).length:0;if(np)setTimeout(()=>{try{notify(np===1?'1 solicitud de acceso por autorizar (Panel → Usuarios).':np+' solicitudes de acceso por autorizar (Panel → Usuarios).','warn');}catch(_){}},1500);
  }catch(e){if(e.code==='noautorizado'){B.entering=false;B.denied(e.message);return;}
+  if(e.code==='usuario'&&B.who()){B.setU('');B.entering=false;status(e.message);B.enter();return;}
   if(e.code==='token'){B.clear();B.entering=false;B.gate({msg:'Tu sesión de Google no es válida o expiró. Vuelve a iniciar sesión.',keep:true});return;}
   status('No se pudo verificar el acceso: '+(typeof friendly==='function'?friendly(e):e.message)+' Vuelve a intentarlo.');B.renderBtn();
  }finally{B.entering=false;}};
@@ -67,26 +84,33 @@ B.lockUI=function(){B.exiting=true;B.gate({lock:true,msg:'Cerrando sesión…',s
 function wipe(){try{const raw=window.__hjmLSRaw;if(!raw)return;raw.keys().forEach(k=>{if(!/pendiente|cenq|queue|cola/i.test(k))raw.del(k);});}catch(_){}}
 B.finishExit=async function(ok){try{if(outboxCount())await flushOutbox({quiet:true});}catch(_){}
  const left=(()=>{try{return outboxCount()+(typeof cenQCount==='function'?cenQCount():0);}catch(_){return 0;}})();
- B.clear();B.ses=null;try{google.accounts.id.disableAutoSelect();}catch(_){}
- if(!ok){B.exiting=false;B.gate({keep:true});return;}
+ const sh=B.shared();if(sh){B.setU('');}else{B.clear();try{google.accounts.id.disableAutoSelect();}catch(_){}}B.ses=null;
+ if(!ok){B.exiting=false;if(sh)B.enter();else B.gate({keep:true});return;}
  wipe();status(left?'Sesión cerrada. Quedan '+left+' cambios por subir: se subirán cuando vuelvas a entrar con tu cuenta.':'Sesión cerrada.','ok');
  setTimeout(()=>location.reload(),left?2500:600);};
-B.idle=function(){B.clear();try{google.accounts.id.disableAutoSelect();}catch(_){}};
+B.idle=function(){if(B.shared()){B.setU('');return;}B.clear();try{google.accounts.id.disableAutoSelect();}catch(_){}};
 function wrap(){if(B.wrapped)return;B.wrapped=true;let q=false;new MutationObserver(()=>{if(q)return;q=true;requestAnimationFrame(()=>{q=false;try{const h=document.getElementById('stTab');if(h&&!h.querySelector('#betaAcc')&&h.querySelector('#stUsrState'))B.usrCard(h);}catch(_){}});}).observe(document.body,{childList:true,subtree:true});}
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 B.usrCard=function(host){if(!host||!isTechnicalAdmin()||!B.ses)return;let c=host.querySelector('#betaAcc');if(!c){c=document.createElement('section');c.id='betaAcc';c.className='st-card';host.prepend(c);}
- const s=B.ses,cu=s.cuentas||{},so=s.solicitudes||{},us=[...HJM_USERS].filter(u=>!accessRoot(u)).sort((a,b)=>String(a.nombre).localeCompare(String(b.nombre),'es')),
+ const s=B.ses,cu=s.cuentas||{},us=[...HJM_USERS].filter(u=>!accessRoot(u)).sort((a,b)=>String(a.nombre).localeCompare(String(b.nombre),'es')),
   opts=sel=>'<option value="">Elige usuario…</option>'+us.map(u=>'<option value="'+esc(u.usuario)+'"'+(sel&&ukey(sel)===ukey(u.usuario)?' selected':'')+'>'+esc(printName(u))+'</option>').join(''),
-  pend=Object.keys(so).sort((a,b)=>(so[b].ts||0)-(so[a].ts||0)),lig=Object.keys(cu).sort((a,b)=>String(cu[a]).localeCompare(String(cu[b]),'es'));
+  comp=Object.keys(s.compartidas||{}).sort(),lig=Object.keys(cu).sort((a,b)=>String(cu[a]).localeCompare(String(cu[b]),'es'));
+ const so=s.solicitudes||{},pend=Object.keys(so).sort((a,b)=>(so[b].ts||0)-(so[a].ts||0));
  c.innerHTML='<h3>Cuentas de Google</h3><p class="st-msg">Solo entran las cuentas ligadas a un usuario. Quien entre con otra cuenta verá «Versión de Prueba Finalizada» y podrá cerrar sesión para intentar con otra.</p>'
+ +'<h4 class="beta-h4">Pendientes de autorizar'+(pend.length?' <span class="st-cnt st-bad">'+pend.length+'</span>':'')+'</h4>'
+ +(pend.length?pend.map(e=>{const q=so[e];return '<div class="beta-acc-row beta-pend" data-mail="'+esc(e)+'"><div><b>'+esc(e)+'</b><small>'+esc((q.nombre?q.nombre+' · ':'')+(q.ts?new Date(q.ts).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'}):''))+'</small></div><select class="st-in" data-acc-user>'+opts(q.usuario)+'</select><button type="button" class="st-btn beta-ok" data-acc-link>Autorizar</button><button type="button" class="st-btn" data-acc-drop data-pend="1">Rechazar</button></div>';}).join(''):'<p class="st-msg">No hay solicitudes. Quien no tenga acceso puede pedirlo desde la pantalla «Versión de Prueba Finalizada»; aparecerá aquí con el usuario que eligió.</p>')
  +'<h4 class="beta-h4">Ligar un correo a un usuario</h4><div class="beta-acc-row"><input class="st-in" type="email" data-acc-mail placeholder="correo@gmail.com" autocomplete="off"><select class="st-in" data-acc-user>'+opts('')+'</select><button type="button" class="st-btn" data-acc-link>Ligar</button></div>'
+ +'<h4 class="beta-h4">Cuenta compartida (ventana de usuarios)</h4><p class="st-msg">Quien entre con una cuenta compartida verá la ventana para elegir usuario, como en la versión anterior. Úsala para la cuenta del servicio cuando la aplicación esté autorizada.</p>'
+ +(comp.length?comp.map(e=>'<div class="beta-acc-row" data-mail="'+esc(e)+'" data-comp="1"><div><b>'+esc(e)+'</b><small>Cuenta compartida · muestra la ventana de usuarios</small></div><button type="button" class="st-btn" data-acc-drop>Quitar</button></div>').join(''):'<p class="st-msg">Sin cuenta compartida asignada.</p>')
+ +'<div class="beta-acc-row" data-comp="1"><input class="st-in" type="email" data-acc-mail placeholder="correo del servicio" autocomplete="off"><button type="button" class="st-btn" data-acc-comp>Asignar como compartida</button></div>'
  +'<h4 class="beta-h4">Cuentas ligadas <span class="st-cnt">'+lig.length+'</span></h4>'
- +(lig.length?lig.map(e=>{const u=userRecord(cu[e]);return '<div class="beta-acc-row" data-mail="'+esc(e)+'"><div><b>'+esc(u?printName(u):cu[e])+'</b><small>'+esc(e)+'</small></div><button type="button" class="st-btn" data-acc-drop>Quitar acceso</button></div>';}).join(''):'<p class="st-msg">Todavía no hay cuentas ligadas.</p>')
+ +(lig.length?lig.map(e=>{const u=userRecord(cu[e]),me=e===s.email;return '<div class="beta-acc-row" data-mail="'+esc(e)+'"><div><b>'+esc(u?printName(u):cu[e])+'</b><small>'+esc(e)+'</small></div>'+(me?'<small class="beta-me">Tu cuenta</small>':'<button type="button" class="st-btn" data-acc-drop>Quitar acceso</button>')+'</div>';}).join(''):'<p class="st-msg">Todavía no hay cuentas ligadas.</p>')
  +'<p class="st-msg" data-acc-msg role="status"></p>';
  const msg=c.querySelector('[data-acc-msg]'),say=(t,ok)=>{msg.textContent=t;msg.style.color=ok?'#2E8B57':'';};
- c.onclick=async ev=>{const b=ev.target.closest('[data-acc-link],[data-acc-drop]');if(!b||b.disabled)return;const row=b.closest('.beta-acc-row');let mail=row.dataset.mail||(row.querySelector('[data-acc-mail]')||{}).value||'';mail=String(mail).trim().toLowerCase();
-  try{if(b.hasAttribute('data-acc-link')){const u=row.querySelector('[data-acc-user]').value;if(!mail){say('Escribe el correo.');return;}if(!u){say('Elige a qué usuario se liga.');return;}b.disabled=true;say('Guardando…');B.apply(await gcall('hjmCuentaLigar',mail,u),false);B.usrCard(host);host.querySelector('#betaAcc [data-acc-msg]').textContent='✓ '+mail+' quedó ligado.';}
-   else{if(!b.dataset.ok){b.dataset.ok='1';b.textContent='¿Seguro?';setTimeout(()=>{if(b.isConnected){delete b.dataset.ok;b.textContent='Quitar acceso';}},4000);return;}b.disabled=true;say('Guardando…');B.apply(await gcall('hjmCuentaQuitar',mail),false);B.usrCard(host);host.querySelector('#betaAcc [data-acc-msg]').textContent='✓ Se quitó '+mail+'.';}}
+ c.onclick=async ev=>{const b=ev.target.closest('[data-acc-link],[data-acc-drop],[data-acc-comp]');if(!b||b.disabled)return;const row=b.closest('.beta-acc-row');let mail=row.dataset.mail||(row.querySelector('[data-acc-mail]')||{}).value||'';mail=String(mail).trim().toLowerCase();
+  try{if(b.hasAttribute('data-acc-comp')){if(!mail){say('Escribe el correo.');return;}b.disabled=true;say('Guardando…');B.apply(await gcall('hjmCompartida',mail,true),false);B.usrCard(host);host.querySelector('#betaAcc [data-acc-msg]').textContent='✓ '+mail+' quedó como cuenta compartida.';}
+   else if(b.hasAttribute('data-acc-link')){const u=row.querySelector('[data-acc-user]').value;if(!mail){say('Escribe el correo.');return;}if(!u){say('Elige a qué usuario se liga.');return;}b.disabled=true;say('Guardando…');B.apply(await gcall('hjmCuentaLigar',mail,u),false);B.usrCard(host);host.querySelector('#betaAcc [data-acc-msg]').textContent='✓ '+mail+' quedó ligado.';}
+   else{if(!b.dataset.ok){b.dataset.ok='1';b.textContent='¿Seguro?';setTimeout(()=>{if(b.isConnected){delete b.dataset.ok;b.textContent=b.dataset.pend?'Rechazar':row.dataset.comp?'Quitar':'Quitar acceso';}},4000);return;}b.disabled=true;say('Guardando…');B.apply(await gcall(row.dataset.comp?'hjmCompartida':b.dataset.pend?'hjmSolicitudQuitar':'hjmCuentaQuitar',mail,false),false);B.usrCard(host);host.querySelector('#betaAcc [data-acc-msg]').textContent='✓ Se quitó '+mail+'.';}}
   catch(e){b.disabled=false;say('⚠ '+(typeof friendly==='function'?friendly(e):e.message));}};};
 setInterval(()=>{try{if(child()||!B.ses)return;if(B.t&&B.exp-Date.now()<10*60000&&!B.exiting)B.silent();const c=document.getElementById('cfgU');if(c&&!c.readOnly){c.readOnly=true;c.title='El usuario está ligado a tu cuenta de Google';}}catch(_){}},60000);
 setInterval(()=>{if(!child()&&B.ses&&!document.hidden)B.refresh();},300000);
@@ -96,26 +120,35 @@ const tc=v=>String(v||'').toLocaleLowerCase('es-MX').replace(/(^|[\s.\-(])(\p{L}
 B.name=r=>r?tc(r.nombre||r.usuario):'';
 B.label=function(r){if(!r)return '';const p=r.tipo==='residente'?'Residente'+(r.servicio?' · '+r.servicio:''):r.tipo==='adscrito'?(r.servicio?tc(r.servicio):'Médico adscrito'):'Administrativo';return B.name(r)+'\n'+p;};
 setInterval(()=>{try{if(child())return;const r=B.ses?userRecord(B.ses.usuario):null,nm=B.name(r);
- const lr=document.querySelector('.app-footer-legal .legal-risk');if(lr){const t=nm?'El uso de esta aplicación es responsabilidad exclusiva de '+nm+', titular de la sesión iniciada con su cuenta de Google. Cada acción queda registrada a su nombre; no dejes la sesión abierta ni la compartas.':'El uso de esta aplicación es responsabilidad exclusiva de la persona que inicia sesión con su cuenta de Google.';if(lr.textContent!==t)lr.textContent=t;}}catch(_){}},1000);
+ const lr=document.querySelector('.app-footer-legal .legal-risk');if(lr){const t=nm?'El uso de esta aplicación es responsabilidad exclusiva de '+nm+'. Cada acción queda registrada a su nombre; no dejes la sesión abierta ni la compartas.':'El uso de esta aplicación es responsabilidad exclusiva de la persona que inicia sesión.';if(lr.textContent!==t)lr.textContent=t;}}catch(_){}},1000);
 return B;})();
 </script>
 <script src="https://accounts.google.com/gsi/client" async></script>
 <style id="hjm-beta">
-#dlgResidentGate.beta-gate .resident-gate-field,#dlgResidentGate.beta-gate #residentGateClinic,#dlgResidentGate.beta-gate #residentGateKeyRow,#dlgResidentGate.beta-gate #residentGateRequest,#dlgResidentGate.beta-gate .resident-gate-buttons{display:none!important}
+#dlgResidentGate.beta-gate:not(.beta-shared) .resident-gate-field,#dlgResidentGate.beta-gate:not(.beta-shared) #residentGateClinic,#dlgResidentGate.beta-gate:not(.beta-shared) .resident-gate-buttons,#dlgResidentGate.beta-gate:not(.beta-shared) #betaSharedOut{display:none!important}#dlgResidentGate.beta-shared #betaG{display:none!important}#betaSharedOut{justify-self:center;display:block;margin:10px auto 0}
 #betaG{display:grid;justify-items:center;gap:10px;margin:4px 0 2px}#betaG[hidden]{display:none}
 .beta-g-t{margin:0;font-size:13px;text-align:center;color:var(--rd-mute,#5f6b78)}#betaGBtn{min-height:44px;width:100%;max-width:300px;display:flex;justify-content:center}
 .beta-g-who{margin:0;font-size:12px;font-weight:600;color:#8d3f42;text-align:center;overflow-wrap:anywhere}
 #betaPrivLink{display:block;text-align:center;font-size:11.5px;margin-top:6px;color:var(--rd-mute,#5f6b78)}
-#dlgBetaPriv{max-width:min(92vw,640px);border:0;border-radius:16px;padding:18px 20px;font-size:14px;line-height:1.5}#dlgBetaPriv::backdrop{background:rgba(25,28,31,.55)}
-#privacidad h2{font-size:16px;margin:0 0 6px}#privacidad p{margin:0 0 8px}
+#dlgBetaPriv{max-width:min(92vw,680px);max-height:86vh;overflow:auto;border:0;border-radius:16px;padding:18px 20px;font-size:14px;line-height:1.5}#dlgBetaPriv::backdrop{background:rgba(25,28,31,.55)}
+#privacidad>h2{display:none}#dlgBetaPriv h2{font-size:16px;margin:0 0 6px}#privacidad[open]>summary{margin-bottom:8px}#privacidad p{margin:0 0 8px}
 #betaAcc h3{margin:0 0 4px}.beta-h4{margin:14px 0 6px;font-size:13px}
 .beta-acc-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 0;border-top:1px solid #E8E9EB}
 .beta-acc-row>div{flex:1 1 220px;min-width:0;display:grid}.beta-acc-row small{color:#7B7E81;overflow-wrap:anywhere}.beta-acc-row b{overflow-wrap:anywhere}
 .beta-acc-row .st-in{flex:1 1 200px;min-width:0}
+#dlgResidentGate.beta-gate .resident-gate-body{min-height:398px;display:flex;flex-direction:column;justify-content:center}
 #betaFinal{display:none}#dlgResidentGate.beta-denied #betaFinal{display:grid;justify-items:center;gap:6px}#dlgResidentGate.beta-denied #betaG,#dlgResidentGate.beta-denied #residentGateMsg,#dlgResidentGate.beta-denied #residentGateLegal{display:none!important}
 html body #dlgResidentGate .gate-final-title{margin:0;padding:6px 0 0;text-align:center;font:700 24px/1.25 var(--rd-sans,system-ui);color:var(--rd-ink,#1e2f44);letter-spacing:-.01em}
 html body #dlgResidentGate .gate-final-note{margin:0;text-align:center;font:500 11.5px/1.45 var(--rd-sans,system-ui);color:var(--rd-mute,#6a7e93)}
 @media (max-width:420px){html body #dlgResidentGate .gate-final-title{font-size:20px}}
+.beta-req-link{border:0;background:none;color:var(--rd-mute,#6a7e93);font-size:11.5px;text-decoration:underline;cursor:pointer;padding:2px 6px;margin-top:2px}
+#betaReq{display:grid;gap:6px;width:min(320px,100%);margin-top:4px}#betaReq[hidden]{display:none}.beta-req-l{font-size:11.5px;font-weight:600;color:var(--rd-mute,#6a7e93)}
+#betaReqQ{border:1px solid #cfd7df;border-radius:10px;padding:7px 10px;font-size:13px}
+#betaReqList{display:grid;gap:4px;max-height:140px;overflow:auto}#betaReqList button{display:grid;text-align:left;border:1px solid #e1e6eb;background:#fff;border-radius:8px;padding:5px 9px;font-size:12.5px;font-weight:600;cursor:pointer}#betaReqList button small{font-weight:400;color:#7B7E81;font-size:11px}#betaReqList button[aria-selected=true]{border-color:#26486e;background:#eef3f9}
+.beta-req-go{justify-self:center;border:0;background:#26486e;color:#fff;font-weight:700;font-size:12px;border-radius:999px;padding:6px 16px;cursor:pointer}.beta-req-go:disabled{opacity:.45;cursor:default}
+.beta-req-msg{margin:0;font-size:11.5px;text-align:center;color:#8d3f42}.beta-req-ok{margin:4px 0 0;font-size:12px;text-align:center;color:#2b4660;line-height:1.45}
+.beta-pend{background:#fff8e6;border-radius:10px;padding:8px 10px}.beta-ok{background:#2E8B57!important;color:#fff!important;border-color:#2E8B57!important}.beta-me{color:#2E8B57;font-weight:700}
+#dlgResidentGate.beta-gate .resident-gate-body{max-height:calc(100vh - 40px);overflow:auto}
 .beta-out{margin-top:8px;border:1px solid #cfd7df;background:#fff;color:#8d3f42;font-weight:700;font-size:13px;border-radius:999px;padding:8px 18px;cursor:pointer}
 html body .top .credit #creditUser{text-transform:none!important;letter-spacing:0!important;white-space:pre-line!important;overflow:visible!important;text-overflow:clip!important;max-width:min(520px,46vw)!important;line-height:1.3!important;text-align:right}
 </style><style id="hjm-boot">dialog,dialog::backdrop{opacity:0!important;transition:none!important;animation:none!important}</style>
@@ -232,7 +265,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="7.00">
+<meta name="application-version" content="7.01">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2604,8 +2637,6 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
   <form class="resident-gate-body" id="residentGateForm" autocomplete="off">
     <label class="resident-gate-field"><span>Usuario</span><input id="residentGateName" autocomplete="off" placeholder="Escribe tu nombre" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="residentGateSuggestions" required><div id="residentGateSuggestions" class="gate-suggestions" role="listbox" aria-label="Usuarios coincidentes" hidden></div></label>
     <div class="resident-gate-clinic" id="residentGateClinic" hidden aria-live="polite"><small id="residentGateClinicLbl"></small><b id="residentGateClinicVal"></b></div>
-    <label class="resident-gate-field" id="residentGateKeyRow" hidden><span class="resident-key-label"><img class="resident-drive-logo" data-drive-logo alt="Google Drive"><b>Clave de Drive</b></span><input id="residentGateKey" type="password" autocomplete="current-password" placeholder="Clave del Servicio de Oncología"></label>
-    <a class="resident-gate-request" id="residentGateRequest" href="https://drive.google.com/file/d/1y5_ckuGclZjEJkRRp7EvbbO8VDFYigHA/view?usp=drive_link" target="_blank" rel="noopener noreferrer" hidden><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="m10.8 12.2 8.7-8.7M16 6l3 3M14 8l2 2"/></svg>Solicitar Clave</a>
     <p class="resident-gate-msg" id="residentGateMsg" role="alert"></p>
     <div class="resident-gate-buttons"><button class="resident-gate-submit" id="residentGateSubmit" type="submit">Ingresar</button></div>
     <p class="resident-gate-legal" id="residentGateLegal"><span class="legal-risk">Aplicación de prueba en espera de autorización por el Servicio y la Jefatura de Oncología. Su uso es responsabilidad exclusiva de quien inicia sesión.</span></p>
@@ -2758,17 +2789,24 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 7.00 beta · Fecha de publicación: 09.11.26</div>
+  <div class="app-footer-version">Versión 7.01 beta · Fecha de publicación: 09.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
-    <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba (versión beta), en espera de autorización por el Servicio y la Jefatura de Oncología; aún no es una herramienta oficial ni sustituye al expediente clínico. Se ofrece tal cual, sin garantía de funcionamiento; quien la desarrolló no asume responsabilidad por el uso que se le dé ni por la información capturada en ella.</span></p>
-    <p>La información viaja por conexión segura (HTTPS) y se almacena en el mismo servicio de nube (Google Drive) que utiliza actualmente la Jefatura de Oncología. Esta página no guarda datos de pacientes ni de usuarios: todo se consulta con la cuenta de Google autorizada de quien inicia sesión.</p>
+    <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la Jefatura del Servicio de Oncología. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
+    <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
     <p id="hjmOffInfo" role="status" hidden></p>
-<section id="privacidad" style="max-width:720px;margin:24px auto;padding:16px;font-size:14px;line-height:1.5">
-  <h2>Política de privacidad</h2>
-  <p>Esta aplicación es de uso interno del servicio de Oncología del Hospital Juárez de México. Se accede con una cuenta de Google solo para verificar la identidad del usuario; la app únicamente recibe el correo, el nombre y la foto de perfil de esa cuenta y no solicita permisos adicionales sobre tus datos de Google.</p>
-  <p>El acceso está limitado a personal autorizado por la Jefatura de Oncología. La información clínica se almacena en el sistema institucional del servicio, no se vende ni se comparte con terceros y se usa solo para fines asistenciales y de gestión del servicio.</p>
-  <p>Para dudas o solicitudes sobre tus datos, escribe a oncociruhjm2024@gmail.com.</p>
-</section>
+<details id="privacidad" style="max-width:720px;margin:14px auto 0;padding:0 16px;font-size:13.5px;line-height:1.5">
+  <summary style="text-align:center;cursor:pointer;font-weight:600">Aviso de privacidad y condiciones de uso</summary>
+  <h2>Aviso de privacidad y condiciones de uso</h2>
+  <p><b>Naturaleza de la aplicación.</b> «Oncología HJM» es una aplicación web de prueba (versión beta), creada por el Servicio de Oncología del Hospital Juárez de México y desarrollada por su personal, de uso exclusivamente interno y como herramienta de apoyo para preparar e imprimir los formatos oficiales y organizar los censos y los ingresos. Se encuentra en espera del visto bueno de la Jefatura del Servicio de Oncología; no es una herramienta oficial del Hospital y su uso podrá suspenderse en cualquier momento.</p>
+  <p><b>No es expediente clínico.</b> No es un expediente clínico electrónico ni sustituye al expediente físico, que continúa siendo el expediente oficial del paciente. Los documentos generados se imprimen, se firman y se integran al expediente conforme al procedimiento vigente.</p>
+  <p><b>Datos de tu cuenta de Google.</b> Se accede con una cuenta de Google solo para verificar la identidad del usuario; la app únicamente recibe el correo, el nombre y la foto de perfil de esa cuenta y no solicita permisos adicionales sobre tus datos de Google.</p>
+  <p><b>Información clínica.</b> Se guarda en la misma cuenta y en las mismas carpetas de Google Drive que la Jefatura de Oncología ya designó para los censos y los ingresos. No se agregan datos, finalidades ni proveedores de almacenamiento distintos de los que el Servicio ya utiliza. Esta página no guarda datos de pacientes ni de usuarios. La información no se vende ni se comparte con terceros y se usa solo para fines asistenciales y de organización del Servicio.</p>
+  <p><b>Acceso.</b> Solo pueden entrar las cuentas autorizadas y ligadas a un usuario del Servicio. El acceso total corresponde únicamente a la Jefatura y al administrador técnico; los demás usuarios tienen acceso limitado a las funciones de su labor. Las acciones quedan registradas a nombre del usuario que inició sesión, y cualquier acceso puede retirarse en todo momento.</p>
+  <p><b>Reglas de uso.</b> No compartas tu cuenta ni dejes la sesión abierta. Usa solo equipos del Servicio o equipos personales de los integrantes del Servicio. No extraigas información fuera de Drive (descargas, capturas, copias o envíos por otros medios) sin el consentimiento previo del Jefe del Servicio. Reporta de inmediato la pérdida o el robo de un dispositivo con acceso a la aplicación y cualquier acceso no autorizado o sospecha del mismo.</p>
+  <p><b>Responsabilidad.</b> El uso de la aplicación es responsabilidad exclusiva de cada usuario que inicia sesión. Se ofrece tal cual, como prueba, sin garantía de disponibilidad, exactitud ni continuidad. Quienes la desarrollaron no asumen responsabilidad por el uso que se le dé, por la información capturada en ella ni por las decisiones clínicas o administrativas que se tomen con base en ella; verificar la información corresponde al personal que la utiliza.</p>
+  <p><b>Marco institucional.</b> Esta aplicación no sustituye ni modifica los lineamientos del Hospital Juárez de México ni la normatividad aplicable en materia de expediente clínico, protección de datos personales y seguridad de la información, a los que el Servicio y cada usuario continúan sujetos.</p>
+  <p>Para dudas o solicitudes sobre tus datos, escribe a oncociruhjm2024@gmail.com o acude a la Jefatura del Servicio de Oncología.</p>
+</details>
   </footer>
 </main>
 
@@ -3823,7 +3861,7 @@ const ACCESS_BASE_GROUPS=[
 const ACCESS_TREE={ver_hospitalizados:['editar_pendientes'],ver_datos:['crear_pacientes','editar_pacientes'],ver_censo:['editar_censo','guardar_censo','imprimir_censo'],editar_censo:['agregar_censo'],ver_censos_archivados:['editar_censos_archivados'],ver_archivo:['editar_documentos','cancelar_documentos'],buscar_diagnostico:['descargar_diagnostico']};
 const ACCESS_ADMIN_GROUPS=[
  ['Panel de control',[['ver_estadisticas','Estadísticas y Pacientes','Pestañas Estadísticas y Pacientes.'],['ver_errores','Errores de la plataforma','Pestaña Errores.'],['responder_comentarios','Responder comentarios','Pestaña Comentarios.']]],
- ['Descargas',[['descargar_index','Integrar y descargar el Index','HTML con los usuarios actualizados.'],['descargar_bases','Descargar bases principales','Pacientes, censos y estadísticas.']]],
+ ['Descargas',[['descargar_bases','Descargar bases principales','Pacientes, censos y estadísticas.']]],
  ['Documentos',[['restaurar_documentos','Restaurar documentos cancelados','']]]
 ];
 const ACCESS_TECH_GROUP=['Solo Administrador Técnico',[['gestionar_usuarios','Usuarios y permisos','Pestaña Usuarios.'],['administrar_sistema','Administrar y mantenimiento','Pestaña Administrar.'],['descargar_todo','Descargar toda la carpeta y subcarpetas',''],['borrar_documentos','Borrar definitivamente documentos',''],['borrar_comentarios','Borrar mensajes y conversaciones','']]];
@@ -6570,7 +6608,7 @@ async function call1(u,fn,args,ms){
   const t=ctl?setTimeout(()=>ctl.abort(),ms):0;
   try{
     let r;
-    try{ r=await fetch(u,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({t:apiKey(),v:(document.querySelector('meta[name="application-version"]')||{}).content||"",fn,args}),credentials:"omit",redirect:"follow",signal:ctl?ctl.signal:undefined}); }
+    try{ r=await fetch(u,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({t:apiKey(),u:HJM_BETA.who(),v:(document.querySelector('meta[name="application-version"]')||{}).content||"",fn,args}),credentials:"omit",redirect:"follow",signal:ctl?ctl.signal:undefined}); }
     catch(_){ throw new Error(ctl&&ctl.signal.aborted?"tiempo":"red"); }
     let j; try{ j=await r.json(); }catch(_){ throw new Error(ctl&&ctl.signal.aborted?"tiempo":"respuesta"); }
     if(!j||!j.ok){ const er=new Error((j&&j.error)||"error"); er.code=j&&j.code; if(er.code==="token"||er.code==="noautorizado"){ try{ HJM_BETA.authError(er); }catch(_){} } if(er.code==="version"){ try{ hjmVersionAviso(er.message); }catch(_){} } throw er; }
@@ -12656,11 +12694,11 @@ function usrItem(u){
 }
 function usrDraw(){
   const l=$s("stUsrList"); if(!l) return;
-  if(usrSub==="actualizar"&&!canPerm("descargar_index")) usrSub="residente";
+  if(usrSub==="actualizar") usrSub="residente";
   if(usrSub==="permisos"){accessProfilesDraw(l);}else if(usrSub==="actualizar"){ l.innerHTML=offUpdHTML(); offUpdWire(l); } else { const L=usrGroup(usrSub);
   l.innerHTML=L.length?L.map(usrItem).join(""):'<div class="st-msg">Sin resultados.</div>'; }
   { const q=document.getElementById("stUsrQ"), ad=document.getElementById("stUsrAdd"), u=usrSub==="actualizar"||usrSub==="permisos"; if(q) q.hidden=u; if(ad) ad.hidden=u; }
-  { const tu=document.getElementById("stUsrTU"); if(tu&&!canPerm("descargar_index")) tu.hidden=true; else if(tu){ const np=opsPendN(); tu.innerHTML=`Actualizar${np?` <span class="usr-dot" title="${np} sin integrar al Index">${np}</span>`:""}`; tu.classList.toggle("on",usrSub==="actualizar"); tu.setAttribute("aria-selected",usrSub==="actualizar"?"true":"false"); } }
+  { const tu=document.getElementById("stUsrTU"); if(tu) tu.hidden=true; else if(false){ const np=opsPendN(); tu.innerHTML=`Actualizar${np?` <span class="usr-dot" title="${np} sin integrar al Index">${np}</span>`:""}`; tu.classList.toggle("on",usrSub==="actualizar"); tu.setAttribute("aria-selected",usrSub==="actualizar"?"true":"false"); } }
   [["residente","stUsrTR","Residentes"],["adscrito","stUsrTA","Adscritos"],["administrativo","stUsrTD","Administrativos"]].forEach(([t,id,nm])=>{
     const b=$s(id); if(!b) return; const all=HJM_USERS.filter(u=>u.tipo===t), np=all.filter(usrPend).length;
     b.innerHTML=`${nm} <span class="st-cnt">${all.length}</span>${np?` <span class="usr-dot" title="${np} sin integrar al Index">${np}</span>`:""}`;
@@ -12736,7 +12774,7 @@ function usrEditor(key,tipoNuevo){
 function renderUsr(host){
   if(!isTechnicalAdmin())return;
   host.innerHTML=`<div class="st-card"><h3>Usuarios de la app</h3>
-    <div class="st-msg" style="margin:0 0 10px"><b>Usuario</b> es lo que se escribe al ingresar; <b>Nombre completo</b> es el que se llena e imprime en los formatos.</div>
+    <div class="st-msg" style="margin:0 0 10px"><b>Usuario</b> se elige al ingresar con la cuenta compartida y solo lo cambia el Administrador Técnico; <b>Nombre completo</b> es el que se llena e imprime en los formatos.</div>
     <div class="usr-bar"><input class="st-in" id="stUsrQ" type="search" placeholder="Buscar por nombre, usuario o servicio…" value="${esc(usrQ)}" autocomplete="off" aria-label="Buscar usuario"><button type="button" class="st-btn" id="stUsrAdd">+ Agregar usuario</button><button type="button" class="st-btn" id="stUsrDiscard" hidden>Descartar cambios</button></div>
     <div class="usr-state" id="stUsrState" role="status"></div>
     <div class="usr-tabs" role="tablist"><button type="button" role="tab" class="usr-tab" id="stUsrTR" data-sub="residente"></button><button type="button" role="tab" class="usr-tab" id="stUsrTA" data-sub="adscrito"></button><button type="button" role="tab" class="usr-tab" id="stUsrTD" data-sub="administrativo"></button><button type="button" role="tab" class="usr-tab" id="stUsrTP" data-sub="permisos">Permisos</button><button type="button" role="tab" class="usr-tab" id="stUsrTU" data-sub="actualizar">Actualizar</button></div>
@@ -12887,7 +12925,7 @@ function offDbHTML(){
  const bases=canPerm('descargar_bases')?offTile('btnDbDownload','pac','Pacientes','Todos los expedientes · .zip','PACIENTES')+offTile('btnDbCensos','cen','Censos','Todos los censos · .zip','CENSOS')+offTile('btnDbStats','est','Estadísticas','Archivo de uso · .json','ESTADISTICAS'):'';
  const full=canPerm('descargar_todo')?offTile('hjmFullDownload','all','Descargar todo','Carpeta completa y subcarpetas · .zip',''):'';
  const backup=canPerm('descargar_bases')?'<div class="db-bak"><button type="button" class="st-btn st-sm" id="btnBakNow">Hacer copia en línea ahora</button><small>Incluye expedientes, censos y estadísticas en RespaldosJCF.</small></div>':'';
- return '<div class="st-card"><h3>Descargar archivos</h3>'+search+(bases||full?'<div class="db-grid" style="margin-top:14px">'+bases+full+'</div>':'')+backup+(!search&&!bases&&!full?'<p class="st-msg">La descarga de Oncología HJM sin conexión está disponible abajo. Tu tipo de usuario no permite descargar archivos clínicos ni bases de datos.</p>':'')+'<div class="db-msg" id="dbMsg" role="status"></div></div>';
+ return '<div class="st-card"><h3>Descargar archivos</h3>'+search+(bases||full?'<div class="db-grid" style="margin-top:14px">'+bases+full+'</div>':'')+backup+(!search&&!bases&&!full?'<p class="st-msg">Tu tipo de usuario no permite descargar archivos clínicos ni bases de datos.</p>':'')+'<div class="db-msg" id="dbMsg" role="status"></div></div>';
 }
 function offSaveBlob(name,blob){ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },4000); }
 function offStamp(){ const d=new Date(),p=n=>String(n).padStart(2,"0"); return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate()); }
@@ -16973,7 +17011,7 @@ function accessProfilesDraw(host){
  const tecnico=isTechnicalAdmin(), roles=['adscrito','residente','administrativo','admin'];
  const nav=roles.concat(['comparar']).map(r=>{ const m=PM_ROLE_META[r], on=r===pmRole, c=r==='comparar'?null:pmCount(r), n=r==='comparar'?null:pmUsers(r);
   return '<button type="button" role="tab" aria-selected="'+on+'" class="pm-role'+(on?' on':'')+(r==='comparar'?' is-cmp':'')+'" data-pm-role="'+r+'"><span class="pm-ri">'+pmSvg(m.ic)+'</span><span class="pm-rt"><b>'+esc(m.t)+'</b><small>'+(r==='comparar'?'Todos los roles':n+(n===1?' usuario':' usuarios')+' · '+c[0]+'/'+c[1])+'</small></span>'+(c?'<span class="pm-bar" aria-hidden="true"><i style="width:'+Math.round(c[0]/Math.max(1,c[1])*100)+'%"></i></span>':'')+'</button>'; }).join('');
- const always='<div class="pm-always"><span>Siempre permitido para todos</span>'+ACCESS_ALWAYS.map(k=>'<em>'+esc(PM_ALWAYS_LBL[k]||ACCESS_LABELS[k]||k)+'</em>').join('')+'</div>';
+ const always='<div class="pm-always"><span>Siempre permitido para todos</span>'+ACCESS_ALWAYS.filter(k=>k!=='descargar_aplicacion').map(k=>'<em>'+esc(PM_ALWAYS_LBL[k]||ACCESS_LABELS[k]||k)+'</em>').join('')+'</div>';
  let body='';
  if(pmRole==='comparar') body=pmCompareHTML();
  else body='<form class="pm-form" id="pmForm" novalidate><div class="pm-tools"><label class="pm-search">'+pmSvg('M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm5-2 5 5')+'<input type="search" id="pmQ" placeholder="Buscar un permiso…" value="'+esc(pmQuery)+'" autocomplete="off"></label><div class="pm-tbtn"><button type="button" class="pm-chip" data-pm-bulk="on">Activar todo</button><button type="button" class="pm-chip" data-pm-bulk="off">Quitar todo</button><button type="button" class="pm-chip" data-pm-bulk="def" title="Volver a los permisos de fábrica de este rol (no se guarda hasta presionar Guardar)">Valores de fábrica</button></div></div>'+
