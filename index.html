@@ -16,7 +16,7 @@ const B={t:'',exp:0,email:'',ses:null,u:'',entering:false,exiting:false,waiters:
 function jwt(c){try{const p=c.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');return JSON.parse(decodeURIComponent(escape(atob(p+'==='.slice((p.length+3)%4)))));}catch(_){return null;}}
 function load(){if(B.t)return;try{const o=JSON.parse(localStorage.getItem(SK)||'null');if(o&&o.t&&o.exp>Date.now()){B.t=o.t;B.exp=o.exp;B.email=o.email||'';B.foto=o.foto||'';}}catch(_){}}
 B.token=function(){if(child()){try{return parent.HJM_BETA.token();}catch(_){return '';}}load();if(!B.t||B.exp-Date.now()<60000)return '';return B.t;};
-B.set=function(c){const d=jwt(c);if(!d||!d.exp)return false;B.t=c;B.exp=d.exp*1000;B.email=String(d.email||'').toLowerCase();B.foto=/^https:\/\//.test(d.picture||'')?d.picture:'';try{localStorage.removeItem('hjm-beta-out');localStorage.setItem(SK,JSON.stringify({t:B.t,exp:B.exp,email:B.email,foto:B.foto}));}catch(_){}return true;};
+B.set=function(c){const d=jwt(c);if(!d||!d.exp)return false;B.t=c;B.exp=d.exp*1000;B.email=String(d.email||'').toLowerCase();B.foto=/^https:\/\//.test(d.picture||'')?d.picture:'';try{localStorage.removeItem('hjm-beta-out');if(B.email)localStorage.setItem('hjm-beta-out-mail',B.email);localStorage.setItem(SK,JSON.stringify({t:B.t,exp:B.exp,email:B.email,foto:B.foto}));}catch(_){}return true;};
 B.clear=function(){B.blocked=false;B.t='';B.exp=0;B.setU('');try{localStorage.removeItem(SK);}catch(_){}};
 B.out=function(){try{localStorage.setItem('hjm-beta-out','1');}catch(_){}try{google.accounts.id.disableAutoSelect();}catch(_){}};
 B.setU=function(u){B.u=u||'';try{if(B.u)sessionStorage.setItem('hjm-beta-u',B.u);else sessionStorage.removeItem('hjm-beta-u');}catch(_){}};
@@ -33,7 +33,7 @@ B.mine=function(it){try{const ed=it&&it.meta&&it.meta.ed;return !ed||ukey(ed)===
 function status(t,st){try{gateStatus(t,st);}catch(_){}}
 function okOrigin(){return location.protocol==='https:'||/^(localhost|127\.0\.0\.1)$/.test(location.hostname);}
 B.gis=function(){if(B.gisP)return B.gisP;B.gisP=new Promise((res,rej)=>{const t0=Date.now();(function w(){if(window.google&&google.accounts&&google.accounts.id)return res(google.accounts.id);if(Date.now()-t0>20000){B.gisP=null;return rej(Error('gis'));}setTimeout(w,150);})();});return B.gisP;};
-B.init=async function(){const id=await B.gis();if(B.inited)return id;id.initialize({client_id:CID,callback:r=>B.onCred(r&&r.credential),auto_select:true,cancel_on_tap_outside:false,context:'signin',ux_mode:'popup',use_fedcm_for_prompt:true,itp_support:true,prompt_parent_id:'betaOneTap'});B.inited=true;return id;};
+B.init=async function(){const id=await B.gis();if(B.inited)return id;id.initialize({client_id:CID,callback:r=>B.onCred(r&&r.credential),auto_select:true,cancel_on_tap_outside:false,context:'signin',ux_mode:'popup',use_fedcm_for_prompt:true,itp_support:true,prompt_parent_id:'betaOneTap',login_hint:(function(){try{return localStorage.getItem('hjm-beta-out-mail')||undefined;}catch(_){return undefined;}})()});B.inited=true;return id;};
 B.renderBtn=async function(){const box=$('betaGBtn');if(!box)return;if(!okOrigin()){box.innerHTML='';status('Esta versión solo funciona desde la página publicada (https). No se puede abrir desde un archivo local.');return;}
  try{const id=await B.init();box.innerHTML='';id.renderButton(box,{theme:'filled_blue',size:'large',text:'signin_with',shape:'pill',locale:'es-419',logo_alignment:'left',width:Math.min(300,(box.clientWidth||300))});}
  catch(_){box.innerHTML='';status('No se pudo cargar el inicio de sesión de Google. Revisa tu conexión y recarga la página.');}};
@@ -50,10 +50,10 @@ B.gate0=null;B.gate=function(opt){opt=opt||{};if(B.blocked&&B.token())return;con
  const who=$('betaGWho');if(who){who.hidden=!opt.who;who.textContent=opt.who||'';}
  status(opt.msg||'',opt.state);if(!dlg.open)dlg.showModal();$('betaG').hidden=!!opt.lock;
  if(!opt.lock)B.renderBtn();if(!opt.lock&&!opt.keep&&B.token())B.enter();
- else if(!opt.lock&&!B.token()){let o='',sw='';try{o=localStorage.getItem('hjm-beta-out');sw=localStorage.getItem('hjm-beta-switch');localStorage.removeItem('hjm-beta-switch');}catch(_){}if(!o||sw)B.silent();}};
+ else if(!opt.lock&&!B.token()){let o='',sw='';try{o=localStorage.getItem('hjm-beta-out');sw=localStorage.getItem('hjm-beta-switch');localStorage.removeItem('hjm-beta-switch');}catch(_){}B.silent();}};
 B.denied=function(msg,pend,grupal){const em=B.email;B.ses=null;const dd=$('dlgResidentGate');if(B.blocked&&dd&&dd.open&&dd.classList.contains('beta-denied'))return;B.blocked=true;try{SESSION_ADSCRITO='';SESSION_RESIDENT='';}catch(_){}
  const dlg=shell();if(!dlg)return;try{resetTechnicalAdmin();}catch(_){}status('');let f=$('betaFinal');
- if(!f){f=document.createElement('div');f.id='betaFinal';f.innerHTML='<p class="gate-final-title">Versión de Prueba Finalizada</p><p class="resident-gate-legal gate-final-note">Aplicación Web en espera de autorización de Jefatura de Oncología para su uso</p><p class="beta-g-who" id="betaFinalWho"></p><button type="button" class="beta-out" id="betaFinalOut">Cerrar sesión</button><button type="button" class="beta-req-link" id="betaReqOpen">Solicitar acceso a versión de prueba</button><div id="betaReq" hidden><label class="resident-gate-field beta-req-field"><span>Usuario</span><input id="betaReqQ" autocomplete="off" placeholder="Escribe tu nombre" role="combobox" aria-autocomplete="list" aria-controls="betaReqSug"><div id="betaReqSug" class="gate-suggestions" role="listbox" hidden></div></label><div class="resident-gate-buttons"><button type="button" class="resident-gate-submit" id="betaReqGo">Solicitar acceso</button></div><p class="beta-req-msg" id="betaReqMsg" role="alert"></p></div>';$('betaG').before(f);
+ if(!f){f=document.createElement('div');f.id='betaFinal';f.innerHTML='<p class="gate-final-title">Versión de Prueba Finalizada</p><p class="resident-gate-legal gate-final-note">Aplicación Web en espera de autorización por la División Médica del Hospital Juárez de México para su uso</p><p class="beta-g-who" id="betaFinalWho"></p><button type="button" class="beta-out" id="betaFinalOut">Cerrar sesión</button><button type="button" class="beta-req-link" id="betaReqOpen">Solicitar acceso a versión de prueba</button><div id="betaReq" hidden><label class="resident-gate-field beta-req-field"><span>Usuario</span><input id="betaReqQ" autocomplete="off" placeholder="Escribe tu nombre" role="combobox" aria-autocomplete="list" aria-controls="betaReqSug"><div id="betaReqSug" class="gate-suggestions" role="listbox" hidden></div></label><div class="resident-gate-buttons"><button type="button" class="resident-gate-submit" id="betaReqGo">Solicitar acceso</button></div><p class="beta-req-msg" id="betaReqMsg" role="alert"></p></div>';$('betaG').before(f);
   let lista=null,elegido='';const nz=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]+/g,' ').trim();
   const sub=u=>u.tipo==='adscrito'?(u.servicio||'Adscrito'):u.tipo==='residente'?'Residente'+(u.servicio?' · '+u.servicio:''):'Administrativo';
   const pinta=()=>{const box=$('betaReqSug'),q=nz($('betaReqQ').value);elegido='';if(!lista||q.length<3){box.hidden=true;box.innerHTML='';return;}const w=q.split(' ');const m=lista.filter(u=>{const t=nz(u.nombre)+' '+nz(u.usuario);return w.every(x=>t.includes(x));}).slice(0,8);
@@ -313,7 +313,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="7.17">
+<meta name="application-version" content="7.23">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2687,7 +2687,7 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
     <div class="resident-gate-clinic" id="residentGateClinic" hidden aria-live="polite"><small id="residentGateClinicLbl"></small><b id="residentGateClinicVal"></b></div>
     <p class="resident-gate-msg" id="residentGateMsg" role="alert"></p>
     <div class="resident-gate-buttons"><button class="resident-gate-submit" id="residentGateSubmit" type="submit">Ingresar</button></div>
-    <p class="resident-gate-legal" id="residentGateLegal"><span class="legal-risk">Aplicación de prueba en espera de autorización por el Servicio y la Jefatura de Oncología. Su uso es responsabilidad exclusiva de quien inicia sesión.</span></p>
+    <p class="resident-gate-legal" id="residentGateLegal"><span class="legal-risk">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Su uso es responsabilidad exclusiva de quien inicia sesión.</span></p>
   </form>
 </dialog>
 
@@ -2837,18 +2837,18 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 7.17 · Fecha de publicación: 10.11.26</div>
+  <div class="app-footer-version">Versión 7.23 · Fecha de publicación: 10.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
-    <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la Jefatura del Servicio de Oncología. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
+    <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
     <p id="hjmOffInfo" role="status" hidden></p>
 <details id="privacidad" style="max-width:720px;margin:14px auto 0;padding:0 16px;font-size:13.5px;line-height:1.5">
   <summary style="text-align:center;cursor:pointer;font-weight:600">Aviso de privacidad y condiciones de uso</summary>
   <h2>Aviso de privacidad y condiciones de uso</h2>
-  <p><b>Naturaleza de la aplicación.</b> «Oncología HJM» es una aplicación web de prueba (versión beta), creada por el Servicio de Oncología del Hospital Juárez de México y desarrollada por su personal, de uso exclusivamente interno y como herramienta de apoyo para preparar e imprimir los formatos oficiales y organizar los censos y los ingresos. Se encuentra en espera del visto bueno de la Jefatura del Servicio de Oncología; no es una herramienta oficial del Hospital y su uso podrá suspenderse en cualquier momento.</p>
+  <p><b>Naturaleza de la aplicación.</b> «Oncología HJM» es una aplicación web de prueba (versión beta), creada por el Servicio de Oncología del Hospital Juárez de México y desarrollada por su personal, de uso exclusivamente interno y como herramienta de apoyo para preparar e imprimir los formatos oficiales y organizar los censos y los ingresos. Se encuentra en espera de autorización por la División Médica del Hospital Juárez de México; no es una herramienta oficial del Hospital y su uso podrá suspenderse en cualquier momento.</p>
   <p><b>No es expediente clínico.</b> No es un expediente clínico electrónico ni sustituye al expediente físico, que continúa siendo el expediente oficial del paciente. Los documentos generados se imprimen, se firman y se integran al expediente conforme al procedimiento vigente.</p>
   <p><b>Datos de tu cuenta de Google.</b> Se accede con una cuenta de Google solo para verificar la identidad del usuario; la app únicamente recibe el correo, el nombre y la foto de perfil de esa cuenta y no solicita permisos adicionales sobre tus datos de Google.</p>
-  <p><b>Información clínica.</b> Se guarda en la misma cuenta y en las mismas carpetas de Google Drive que la Jefatura de Oncología ya designó para los censos y los ingresos. No se agregan datos, finalidades ni proveedores de almacenamiento distintos de los que el Servicio ya utiliza. Esta página no guarda datos de pacientes ni de usuarios. La información no se vende ni se comparte con terceros y se usa solo para fines asistenciales y de organización del Servicio.</p>
+  <p><b>Información clínica.</b> Se guarda en la misma cuenta y en las mismas carpetas de Google Drive que la Jefatura de Oncología ya designó para los censos y los ingresos. No se agregan datos, finalidades ni proveedores de almacenamiento distintos de los que el Servicio ya utiliza. Esta página no guarda datos de pacientes ni de usuarios: funciona solo como un puente con Google Drive, protegido por los certificados de seguridad de Google, y no usa ningún servicio de almacenamiento nuevo. Al concentrar la información en una sola cuenta administrada por el Servicio de Oncología, ordena y homologa los datos, disminuye el riesgo de fuga de información (copias dispersas en cuentas o equipos personales) y permite una lectura más confiable para el análisis y la obtención de información del Servicio. Todo lo elaborado se imprime y se integra al expediente físico oficial. La información no se vende ni se comparte con terceros y se usa solo para fines asistenciales y de organización del Servicio.</p>
   <p><b>Acceso.</b> Solo pueden entrar las cuentas autorizadas y ligadas a un usuario del Servicio. El acceso total corresponde únicamente a la Jefatura y al administrador técnico; los demás usuarios tienen acceso limitado a las funciones de su labor. Las acciones quedan registradas a nombre del usuario que inició sesión, y cualquier acceso puede retirarse en todo momento.</p>
   <p><b>Reglas de uso.</b> No compartas tu cuenta ni dejes la sesión abierta. Usa solo equipos del Servicio o equipos personales de los integrantes del Servicio. No extraigas información fuera de Drive (descargas, capturas, copias o envíos por otros medios) sin el consentimiento previo del Jefe del Servicio. Reporta de inmediato la pérdida o el robo de un dispositivo con acceso a la aplicación y cualquier acceso no autorizado o sospecha del mismo.</p>
   <p><b>Responsabilidad.</b> El uso de la aplicación es responsabilidad exclusiva de cada usuario que inicia sesión. Se ofrece tal cual, como prueba, sin garantía de disponibilidad, exactitud ni continuidad. Quienes la desarrollaron no asumen responsabilidad por el uso que se le dé, por la información capturada en ella ni por las decisiones clínicas o administrativas que se tomen con base en ella; verificar la información corresponde al personal que la utiliza.</p>
@@ -6580,9 +6580,7 @@ let EXITING=false;
 /* Inactividad: si la página no se usa en 10 minutos, al volver a usarla se pide de nuevo el usuario actual.
    Los datos del paciente se conservan; solo se cierra la sesión del usuario. */
 const IDLE_MS=10*60*1000;let LAST_ACTIVITY=Date.now();let IDLE_LOCKED=false;
-function idleLock(){
-  if(window.__hjmChildFormat)return hjmChildIdleLock();
-  if(!HJM_BETA.shared())return false;
+function idleLock(){   if(window.__hjmChildFormat)return hjmChildIdleLock();   if(!HJM_BETA.shared()){ if(HJM_BETA.ses&&HJM_BETA.ses.usuario&&!EXITING&&Date.now()-LAST_ACTIVITY>=IDLE_MS&&!(window.hjmLockOn&&hjmLockOn())){ LAST_ACTIVITY=Date.now(); try{hjmLockShow();}catch(_){} return true; } return false; }
 
   if($("dlgResidentGate").open||EXITING)return false;
   if(Date.now()-LAST_ACTIVITY<IDLE_MS)return false;
@@ -9240,7 +9238,7 @@ function cenContHTML(per,cen){
   const S=cenSinPrevioHTML(per,cen);
   const L=cenContinuidad(per,cen); CEN._cont=L; if(!L.length) return S;
   const pv=cenDay(per.next.y,per.next.m,per.next.d,-1);
-  return `<div class="cen-cont" role="alert"><b>Revisar: ${L.length} paciente(s) del censo anterior (${cenDot(pv)}) ya no aparecen en este censo y no tienen alta ni defunción registrada.</b><ul>${L.map((x,i)=>`<li><span>${esc((x.p.cama?x.p.cama+" · ":"")+x.p.nombre)} · Exp. ${esc(x.p.exp)}${x.f?" · cama actual: "+esc(String((x.f.meta&&x.f.meta.cama)||"vacía"))+(((ppRowS(x.f)||{}).camaLiberada)?" (cama liberada a CE, sin alta)":""):" · sin expediente en la app"}</span>${x.f&&accessCensusWrite()?`<button type="button" class="cen-btn" data-contalta="${i}">Registrar alta</button>`:""}</li>`).join("")}</ul><small>Si salieron del servicio, registra el alta para que aparezcan en ALTAS. Si siguen hospitalizados, corrige su cama en Hospitalizados.</small></div>`+S;
+  return `<div class="cen-cont" role="alert"><b>Revisar: ${L.length} paciente(s) del censo anterior (${cenDot(pv)}) ya no aparecen en este censo y no tienen alta ni defunción registrada.</b><ul>${L.map((x,i)=>`<li><span>${esc((x.p.cama?x.p.cama+" · ":"")+x.p.nombre)} · Exp. ${esc(x.p.exp)}${x.f?" · cama actual: "+esc(String((x.f.meta&&x.f.meta.cama)||"vacía"))+(((ppRowS(x.f)||{}).camaLiberada)?" (cama liberada a CE, sin alta)":""):" · sin expediente en la app"}</span>${x.f&&accessCensusWrite()?`<button type="button" class="cen-btn" data-contalta="${i}">Registrar alta</button>`:""}${!x.f&&x.p.exp&&x.p.nombre&&accessCensusWrite()?`<button type="button" class="cen-btn" data-contnew="${i}">Crear paciente</button>`:""}</li>`).join("")}</ul><small>Si salieron del servicio, registra el alta para que aparezcan en ALTAS. Si siguen hospitalizados, corrige su cama en Hospitalizados. Si no tienen expediente en la app, «Crear paciente» abre Agregar Paciente con los datos del censo anterior.</small></div>`+S;
 }
 document.addEventListener("click",e=>{ const b=e.target&&e.target.closest&&e.target.closest("[data-contalta]"); if(!b) return; const x=(CEN._cont||[])[+b.dataset.contalta]; if(!x||!x.f||!accessCensusWrite()) return;
   b.disabled=true; b.textContent="Registrando…"; const now0=Date.now(), prev=String(x.p.cama||"").trim().toUpperCase();
@@ -9280,7 +9278,7 @@ async function cenReadEntry(e){ const k=e.id+"|"+e.modified; if(CEN.cache.has(k)
 /* Conjunto de expedientes del censo del día previo (para saber qué ingresos ya salieron en negritas ayer) */
 async function cenPrevSet(prevDay){ const name=cenFile(prevDay); if(CEN.prevSets.has(name)&&CEN.prevSets.get(name)!==undefined&&Date.now()-(CEN.prevSets.get(name+"@")||0)<60000) return CEN.prevSets.get(name);
   const list=await cenList(); const e=list.find(x=>x.name===name); let v="none";
-  if(e){ try{ const r=await cenReadEntry(e); if(r.obj&&Array.isArray(r.obj.pac)){ v=new Set(r.obj.pac.map(x=>String(x.exp||"").trim()).filter(Boolean)); CEN.prevRows=CEN.prevRows||new Map(); CEN.prevHP=CEN.prevHP||new Map(); CEN.prevHP.set(name,new Set(r.obj.pac.filter(x=>x&&x.sec!=="E"&&x.sec!=="D").map(x=>String(x.exp||"").trim()).filter(Boolean))); CEN.prevRows.set(name,r.obj.pac.filter(x=>x&&x.sec==="H").map(x=>({exp:String(x.exp||"").trim(),cama:String(x.cama||""),nombre:String(x.nombre||"")}))); } }catch(_){ v=undefined; } }
+  if(e){ try{ const r=await cenReadEntry(e); if(r.obj&&Array.isArray(r.obj.pac)){ v=new Set(r.obj.pac.map(x=>String(x.exp||"").trim()).filter(Boolean)); CEN.prevRows=CEN.prevRows||new Map(); CEN.prevHP=CEN.prevHP||new Map(); CEN.prevHP.set(name,new Set(r.obj.pac.filter(x=>x&&x.sec!=="E"&&x.sec!=="D").map(x=>String(x.exp||"").trim()).filter(Boolean))); CEN.prevFull=CEN.prevFull||new Map(); r.obj.pac.forEach(x=>{ if(x&&x.exp) CEN.prevFull.set(String(x.exp).trim(),x); }); CEN.prevRows.set(name,r.obj.pac.filter(x=>x&&x.sec==="H").map(x=>({exp:String(x.exp||"").trim(),cama:String(x.cama||""),nombre:String(x.nombre||"")}))); } }catch(_){ v=undefined; } }
   if(v!==undefined){ CEN.prevSets.set(name,v); CEN.prevSets.set(name+"@",Date.now()); } return v; }
 function cenSetPath(o,path,v){ const a=path.split("."); let c=o; for(let i=0;i<a.length-1;i++){ if(!c[a[i]]||typeof c[a[i]]!=="object") c[a[i]]={}; c=c[a[i]]; } c[a[a.length-1]]=v; }
 /* Cambios pequeños («operaciones») que se pueden volver a aplicar sobre una versión más nueva del archivo */
@@ -17281,7 +17279,9 @@ for(const original of pending){const live=document.createElement('script');for(c
     const ses=B.ses||{}, nm=ses.nombre||'', em=B.email||ses.email||'', ini=String(nm||em||'?').trim().charAt(0).toUpperCase();
     const comp=B.shared&&B.shared();
     m.innerHTML='<div class="ba-h"><div class="ba-ph">'+(B.foto?'<img alt="" referrerpolicy="no-referrer" src="'+esc(B.foto)+'">':esc(ini))+'</div><div><div class="ba-n">'+esc(nm||'Cuenta de Google')+'</div><div class="ba-e">'+esc(em)+'</div></div></div>'
+      +(comp?'':'<button type="button" data-ba="sw" role="menuitem">'+ico.sw+'Cambiar de cuenta de Google</button>')
       +'<button type="button" data-ba="out" role="menuitem" class="ba-out">'+ico.out+(comp?'Salir (cambiar de usuario)':'Cerrar sesión en la app')+'</button>'
+      +(comp?'':'<button type="button" data-ba="rev" role="menuitem">'+ico.x+'Quitar esta cuenta de la app</button>')
       +'<a href="https://accounts.google.com/Logout" target="_blank" rel="noopener" data-ba="gout" role="menuitem">'+ico.g+'Cerrar sesión de Google en este navegador</a>'
 ;
     const img=m.querySelector('img'); if(img) img.onerror=()=>{ img.parentNode.textContent=ini; };
@@ -17298,15 +17298,103 @@ for(const original of pending){const live=document.createElement('script');for(c
     const it=e.target.closest&&e.target.closest('#betaAcct [data-ba]');
     if(it){ const a=it.dataset.ba; if(a==='gout'){ close(); setTimeout(salir,300); return; }
       e.preventDefault(); close();
-      if(a==='sw'){ try{ localStorage.setItem('hjm-beta-switch','1'); google.accounts.id.disableAutoSelect(); }catch(_){} salir(); }
+      if(a==='sw'){ try{ localStorage.removeItem('hjm-beta-out-mail'); localStorage.setItem('hjm-beta-switch','1'); google.accounts.id.disableAutoSelect(); }catch(_){} salir(); }
       else if(a==='out'){ salir(); }
-      else if(a==='rev'){ const em=B.email; try{ localStorage.setItem('hjm-beta-switch','1'); if(em) google.accounts.id.revoke(em,()=>{}); }catch(_){} salir(); }
+      else if(a==='rev'){ const em=B.email; try{ localStorage.removeItem('hjm-beta-out-mail'); localStorage.setItem('hjm-beta-switch','1'); if(em) google.accounts.id.revoke(em,()=>{}); }catch(_){} salir(); }
       return; }
     if(!(e.target.closest&&e.target.closest('#betaAcct'))) close();
   },true);
   document.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); if((e.key==='Enter'||e.key===' ')&&document.activeElement&&document.activeElement.id==='betaAvatar'){ e.preventDefault(); menu(document.activeElement); } });
   addEventListener('resize',close); addEventListener('scroll',close,true);
   setInterval(()=>{ const a=$('betaAvatar'); if(a&&!a.dataset.btn){ a.dataset.btn='1'; a.removeAttribute('aria-hidden'); a.setAttribute('role','button'); a.setAttribute('tabindex','0'); a.setAttribute('title','Cuenta de Google'); a.setAttribute('aria-label','Cuenta de Google: cambiar de cuenta o cerrar sesión'); } },1000);
+})();
+</script>
+<style id="hjm-v721">
+#dlgResidentGate.hjm-locked .resident-gate-body{display:none!important}
+#dlgResidentGate #hjmLockBox{display:none}
+#dlgResidentGate.hjm-locked #hjmLockBox{display:block;text-align:center;padding:4px 4px 2px}
+#hjmLockBox .lk-ph{width:88px;height:88px;border-radius:50%;margin:6px auto 12px;overflow:hidden;background:#5b2a86;color:#fff;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;box-shadow:0 0 0 4px #e8eef5}
+#hjmLockBox .lk-ph img{width:100%;height:100%;object-fit:cover}
+#hjmLockBox .lk-n{font-weight:650;font-size:18px;margin:0 0 3px;color:#1f2d3d}
+#hjmLockBox .lk-r{color:#3d5a78;font-size:14px;margin:0 0 2px}
+#hjmLockBox .lk-e{color:#7a8b9c;font-size:12.5px;margin:0 0 16px;word-break:break-all}
+#dlgResidentGate #hjmLockBox .resident-gate-buttons{display:flex!important;justify-content:center}
+#dlgResidentGate #hjmLockBox #hjmLockIn{display:inline-flex!important;align-items:center;justify-content:center;visibility:visible!important;width:100%;max-width:320px}
+#hjmLockBox .lk-out{margin-top:10px;background:none;border:0;color:#b3261e;font-size:13.5px;cursor:pointer}
+#hjmLockBox .lk-m{color:#5f7489;font-size:12px;margin:12px 0 0}
+</style>
+<script id="hjm-v721-js">
+/* v7.21 · Inactividad: cuenta personal 10 min → pantalla con la sesión activa y botón Ingresar (no cierra sesión); cuenta compartida → ventana de usuario; 15 min → recarga para traer actualizaciones */
+(function(){
+  const B=window.HJM_BETA, $=id=>document.getElementById(id), KEY='hjm-lock';
+  const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  let lastUse=Date.now();
+  const G=()=>$('dlgResidentGate');
+  window.hjmLockOn=()=>{ const d=G(); return !!(d&&d.open&&d.classList.contains('hjm-locked')); };
+  function build(){
+    const d=G(); if(!d) return null;
+    let box=$('hjmLockBox'); if(!box){ box=document.createElement('div'); box.id='hjmLockBox'; const f=$('residentGateForm'); d.insertBefore(box,f); }
+    const ses=(B&&B.ses)||{}; let r=null; try{ r=userRecord(ses.usuario); }catch(_){}
+    const lab=(B&&B.label&&r)?B.label(r).split('\n'):[ses.nombre||'',''];
+    const nm=lab[0]||ses.nombre||'', pu=lab[1]||'', em=(B&&B.email)||ses.email||'', foto=(B&&B.foto)||'', ini=String(nm||em||'?').trim().charAt(0).toUpperCase();
+    box.innerHTML='<div class="lk-ph">'+(foto?'<img alt="" referrerpolicy="no-referrer" src="'+esc(foto)+'">':esc(ini))+'</div><p class="lk-n">'+esc(nm)+'</p>'+(pu?'<p class="lk-r">'+esc(pu)+'</p>':'')+'<p class="lk-e">'+esc(em)+'</p><div class="resident-gate-buttons"><button type="button" class="resident-gate-submit" id="hjmLockIn">Ingresar</button></div><button type="button" class="lk-out" id="hjmLockOut">No soy yo · Cerrar sesión</button><p class="lk-m">Pantalla bloqueada por inactividad. Tu sesión sigue abierta.</p>';
+    const im=box.querySelector('img'); if(im) im.onerror=()=>{ im.parentNode.textContent=ini; };
+    $('hjmLockIn').onclick=()=>hide();
+    $('hjmLockOut').onclick=()=>{ hide(); const b=$('bandExit'); if(b) b.click(); };
+    if(!d.dataset.lkc){ d.dataset.lkc='1'; d.addEventListener('cancel',e=>{ if(d.classList.contains('hjm-locked')) e.preventDefault(); }); }
+    return d;
+  }
+  window.hjmLockShow=function(){ try{ if(typeof current!=='undefined'&&current&&typeof captureCurrentRecent==='function') captureCurrentRecent(); }catch(_){}
+    const d=build(); if(!d) return; d.classList.add('hjm-locked'); if(!d.open) d.showModal(); try{ sessionStorage.setItem(KEY,'1'); }catch(_){} setTimeout(()=>{ try{$('hjmLockIn').focus();}catch(_){} },60); };
+  function hide(){ const d=G(); if(d){ d.classList.remove('hjm-locked'); if(d.open) d.close(); } try{ sessionStorage.removeItem(KEY); }catch(_){} lastUse=Date.now(); try{ LAST_ACTIVITY=Date.now(); }catch(_){} }
+  let was=false; try{ was=sessionStorage.getItem(KEY)==='1'; }catch(_){}
+  if(was){ const t0=Date.now(); const iv=setInterval(()=>{ if(B&&B.ses&&B.ses.usuario&&!B.shared()){ clearInterval(iv); hjmLockShow(); } else if(Date.now()-t0>60000||(B&&B.shared&&B.shared())){ clearInterval(iv); try{sessionStorage.removeItem(KEY);}catch(_){} } },200); }
+  ['pointerdown','keydown','touchstart','wheel','input'].forEach(t=>addEventListener(t,()=>{ lastUse=Date.now(); },{capture:true,passive:true}));
+  setInterval(()=>{ try{
+    if(Date.now()-lastUse<15*60*1000) return;
+    if(typeof EXITING!=='undefined'&&EXITING) return;
+    const g=$('dlgResidentGate'), idle=g&&g.open;
+    if(!idle){ if(B&&B.ses&&B.ses.usuario&&!B.shared()) hjmLockShow(); else return; }
+    let pend=0; try{ pend=(typeof outboxCount==='function'?outboxCount():0)+(typeof cenQCount==='function'?cenQCount():0); }catch(_){}
+    if(pend){ try{ flushOutbox({quiet:true}); }catch(_){} lastUse=Date.now()-14*60*1000; return; }
+    location.reload();
+  }catch(_){} },30000);
+})();
+</script>
+<script id="hjm-v722-js">
+/* v7.22 · «Crear paciente» en el aviso amarillo: abre Agregar Paciente con los datos del censo anterior ya puestos (para verificar, completar y agregar) */
+(function(){
+  const $=id=>document.getElementById(id);
+  const NOMBRES=new Set('MARIA MA JOSE JUAN JESUS ROSA TOMASA VICTOR MANUEL LUIS CARLOS JORGE PEDRO MIGUEL ANGEL ANA GUADALUPE FRANCISCO ANTONIO JULIO EDUARDO FERNANDO ISABEL LUCERO PATRICIA VERONICA SILVIA MONICA HILDA REYNA ENRIQUETA LILIA MARBELLA ENOELIA JAVIER RICARDO ROBERTO ALEJANDRO DANIEL DAVID MARTHA LETICIA LAURA ELENA CARMEN TERESA JOSEFINA ALICIA SANDRA ADRIANA CLAUDIA GABRIELA MARIANA ANDREA DIANA MARGARITA GLORIA ESPERANZA RAUL SERGIO ARTURO ALFREDO ALBERTO ENRIQUE HECTOR OSCAR RAFAEL RAMON MARIO JAIME GERARDO JOAQUIN SALVADOR IGNACIO ESTEBAN PABLO ANDRES DIEGO'.split(' '));
+  const sinAc=t=>String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase();
+  const PART=new Set(['DE','DEL','LA','LAS','LOS','Y','SAN','SANTA','MC','VAN','VON']);
+  function partir(nombre){
+    let t=String(nombre||'').replace(/\([^)]*\)/g,' ').replace(/[.,]/g,' ').trim().toUpperCase().split(/\s+/).filter(Boolean);
+    const g=[]; for(let i=0;i<t.length;i++){ let w=t[i]; while(PART.has(sinAc(w.split(' ').pop()))&&i+1<t.length){ w+=' '+t[++i]; } g.push(w); }   // «DE LA CRUZ» = un apellido
+    if(g.length<2) return {p:g[0]||'',m:'',n:''};
+    const nameFirst=NOMBRES.has(sinAc(g[0]).split(' ')[0])&&!NOMBRES.has(sinAc(g[g.length-1]).split(' ')[0]);
+    if(nameFirst){ if(g.length===2) return {n:g[0],p:g[1],m:''}; return {n:g.slice(0,g.length-2).join(' '),p:g[g.length-2],m:g[g.length-1]}; }
+    if(g.length===2) return {p:g[0],m:'',n:g[1]};
+    return {p:g[0],m:g[1],n:g.slice(2).join(' ')};
+  }
+  const fecha=v=>{ const m=/(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2,4})/.exec(String(v||'')); return m?String(m[1]).padStart(2,'0')+'.'+String(m[2]).padStart(2,'0')+'.'+m[3].slice(-2):''; };
+  function put(id,v){ const e=$(id); if(!e||v==null||String(v).trim()==='') return; e.value=String(v); e.dispatchEvent(new Event('input',{bubbles:true})); e.dispatchEvent(new Event('change',{bubbles:true})); }
+  async function crear(p){
+    if(typeof accessRequire==='function'&&!accessRequire('agregar_censo')) return;
+    await cenAddOpen(); await new Promise(r=>setTimeout(r,150));
+    try{ cenAddNew(); }catch(_){}
+    await new Promise(r=>setTimeout(r,120));
+    const n=partir(p.nombre);
+    put('expediente',p.exp); put('apPaterno',n.p); put('apMaterno',n.m); put('nombres',n.n);
+    put('fnac',fecha(p.fnac)); put('cama',p.cama); put('medico',p.adsRaw||p.ads);
+    put('clinica',(Array.isArray(p.cf)&&p.cf[0])||p.clin); put('diagnostico',p.dx); put('fIngreso',fecha(p.ing));
+    put('censoCirugias',p.cir); put('censoQT',p.qt); put('censoMT',p.mt); put('censoLabs',p.labs); put('pendientes',p.pend); put('censoEstatus',p.est);
+    try{ const ex=$('expediente'); if(ex) ex.dispatchEvent(new Event('blur')); }catch(_){}
+    try{ refresh(); }catch(_){} try{ cenAddPresentation(false); }catch(_){}
+    try{ notify('Datos tomados del censo anterior. Verifica nombre y apellidos, sexo y adscrito, y presiona «Agregar paciente».','info',{ms:7000}); }catch(_){}
+  }
+  window.cenCrearDesdeCenso=crear;
+  document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('[data-contnew]'); if(!b) return; e.preventDefault(); const x=(CEN._cont||[])[+b.dataset.contnew]; if(!x) return; const full=(CEN.prevFull&&CEN.prevFull.get(String(x.p.exp)))||x.p; crear(full); },true);
 })();
 </script>
 </body>
