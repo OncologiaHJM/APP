@@ -14,14 +14,15 @@ const CID='811485096329-kos6c8k61t9rlq08jbc6hjs85ii1ucpp.apps.googleusercontent.
 const $=id=>document.getElementById(id),child=()=>!!window.__hjmChildFormat;
 const B={t:'',exp:0,email:'',ses:null,u:'',entering:false,exiting:false,waiters:[],gisP:null,inited:false,wrapped:false};
 function jwt(c){try{const p=c.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');return JSON.parse(decodeURIComponent(escape(atob(p+'==='.slice((p.length+3)%4)))));}catch(_){return null;}}
-function load(){if(B.t)return;try{const o=JSON.parse(localStorage.getItem(SK)||'null');if(o&&o.t&&o.exp>Date.now()){B.t=o.t;B.exp=o.exp;B.email=o.email||'';}}catch(_){}}
+function load(){if(B.t)return;try{const o=JSON.parse(localStorage.getItem(SK)||'null');if(o&&o.t&&o.exp>Date.now()){B.t=o.t;B.exp=o.exp;B.email=o.email||'';B.foto=o.foto||'';}}catch(_){}}
 B.token=function(){if(child()){try{return parent.HJM_BETA.token();}catch(_){return '';}}load();if(!B.t||B.exp-Date.now()<60000)return '';return B.t;};
-B.set=function(c){const d=jwt(c);if(!d||!d.exp)return false;B.t=c;B.exp=d.exp*1000;B.email=String(d.email||'').toLowerCase();try{localStorage.removeItem('hjm-beta-out');localStorage.setItem(SK,JSON.stringify({t:B.t,exp:B.exp,email:B.email}));}catch(_){}return true;};
+B.set=function(c){const d=jwt(c);if(!d||!d.exp)return false;B.t=c;B.exp=d.exp*1000;B.email=String(d.email||'').toLowerCase();B.foto=/^https:\/\//.test(d.picture||'')?d.picture:'';try{localStorage.removeItem('hjm-beta-out');localStorage.setItem(SK,JSON.stringify({t:B.t,exp:B.exp,email:B.email,foto:B.foto}));}catch(_){}return true;};
 B.clear=function(){B.blocked=false;B.t='';B.exp=0;B.setU('');try{localStorage.removeItem(SK);}catch(_){}};
 B.out=function(){try{localStorage.setItem('hjm-beta-out','1');}catch(_){}try{google.accounts.id.disableAutoSelect();}catch(_){}};
 B.setU=function(u){B.u=u||'';try{if(B.u)sessionStorage.setItem('hjm-beta-u',B.u);else sessionStorage.removeItem('hjm-beta-u');}catch(_){}};
 B.who=function(){if(child()){try{return parent.HJM_BETA.who();}catch(_){return '';}}if(!B.u){try{B.u=sessionStorage.getItem('hjm-beta-u')||'';}catch(_){}}return B.u;};
 B.shared=function(){return !!(B.ses&&B.ses.compartida);};
+B.sinPriv=function(){return B.shared()&&!(B.ses&&B.ses.suplanta);};
 B.pick=function(s){const dlg=shell();if(!dlg)return;B.ses=s;applyUsers(inject(s));try{SESSION_ADSCRITO='';SESSION_RESIDENT='';}catch(_){}
  dlg.classList.remove('beta-denied');dlg.classList.add('beta-shared');$('betaG').hidden=true;
  let o=$('betaSharedOut');if(!o){o=document.createElement('button');o.type='button';o.id='betaSharedOut';o.className='beta-out';o.textContent='Cerrar sesión';o.onclick=()=>{B.clear();B.out();wipe();location.reload();};const bt=document.querySelector('#dlgResidentGate .resident-gate-buttons');bt.after(o);}
@@ -134,7 +135,8 @@ document.addEventListener('focusin',e=>{if(e.target&&e.target.id==='cfgU'){e.tar
 const tc=v=>String(v||'').toLocaleLowerCase('es-MX').replace(/(^|[\s.\-(])(\p{L})/gu,(m,a,b)=>a+b.toLocaleUpperCase('es-MX')).replace(/\b(De|Del|La|Las|Los|Y)\b/g,w=>w.toLowerCase());
 B.name=r=>r?tc(r.nombre||r.usuario):'';
 B.label=function(r){if(!r)return '';const p=r.tipo==='residente'?'Residente'+(r.servicio?' · '+r.servicio:''):r.tipo==='adscrito'?(r.servicio?tc(r.servicio):'Médico adscrito'):'Administrativo';return B.name(r)+'\n'+p;};
-setInterval(()=>{try{if(child())return;const r=B.ses?userRecord(B.ses.usuario):null,nm=B.name(r);
+setInterval(()=>{try{if(child())return;const cu=$('creditUser');if(cu){let im=$('betaAvatar');const on=!!(B.ses&&B.ses.usuario)&&!cu.hidden,src=B.foto||'',ini=String((B.ses&&B.ses.nombre)||B.email||'?').trim().charAt(0).toUpperCase();if(!im){im=document.createElement('span');im.id='betaAvatar';im.setAttribute('aria-hidden','true');cu.after(im);}if(im.dataset.src!==src+'|'+ini){im.dataset.src=src+'|'+ini;im.innerHTML=src?'<img alt="" referrerpolicy="no-referrer" src="'+esc(src)+'">':'<b>'+esc(ini)+'</b>';const ig=im.querySelector('img');if(ig)ig.onerror=()=>{im.innerHTML='<b>'+esc(ini)+'</b>';};}im.hidden=!on;}}catch(_){}
+try{if(child())return;const r=B.ses?userRecord(B.ses.usuario):null,nm=B.name(r);
  const lr=document.querySelector('.app-footer-legal .legal-risk');if(lr){const t=nm?'El uso de esta aplicación es responsabilidad exclusiva de '+nm+'. Cada acción queda registrada a su nombre; no dejes la sesión abierta ni la compartas.':'El uso de esta aplicación es responsabilidad exclusiva de la persona que inicia sesión.';if(lr.textContent!==t)lr.textContent=t;}}catch(_){}},1000);
 return B;})();
 </script>
@@ -142,6 +144,13 @@ return B;})();
 <style id="hjm-beta">
 #dlgResidentGate.beta-gate:not(.beta-shared) .resident-gate-field,#dlgResidentGate.beta-gate:not(.beta-shared) #residentGateClinic,#dlgResidentGate.beta-gate:not(.beta-shared) .resident-gate-buttons,#dlgResidentGate.beta-gate:not(.beta-shared) #betaSharedOut{display:none!important}#dlgResidentGate.beta-shared #betaG{display:none!important}#betaSharedOut{justify-self:center;display:block;margin:10px auto 0}
 html body #dlgResidentGate::backdrop{background:rgba(22,32,48,.72)!important;backdrop-filter:blur(48px) saturate(.9)!important;-webkit-backdrop-filter:blur(48px) saturate(.9)!important}
+html body .top .credit:has(#betaAvatar:not([hidden])){display:grid!important;grid-template-columns:auto auto;grid-template-rows:auto auto;column-gap:8px;row-gap:2px;align-items:center;justify-content:end}
+html body .top .credit:has(#betaAvatar:not([hidden]))>.credit-name{grid-column:1/-1;grid-row:1;text-align:right}
+html body .top .credit:has(#betaAvatar:not([hidden]))>#creditUser{grid-column:1;grid-row:2}
+#betaAvatar{grid-column:2;grid-row:2;width:30px;height:30px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,.85);box-shadow:0 1px 4px rgba(0,0,0,.25);display:grid;place-items:center;background:#5b7fa6;color:#fff;font:700 13px/1 var(--rd-sans,system-ui)}#betaAvatar img{width:100%;height:100%;object-fit:cover;display:block}#betaAvatar[hidden]{display:none!important}@media (max-width:480px){#betaAvatar{display:none!important}}
+html:root body header.top img.seal.crab{padding:4px!important}
+@media screen and (min-width:1024px){html:root body .top .seal,html:root body .top>.seal.crab,html:root body .top .home-logo .seal,html:root body header.top img.seal.crab,html:root body header.top img.seal{width:56px!important;height:56px!important}#betaAvatar{width:36px;height:36px}}
+html body #dlgResidentGate.beta-gate #residentGateMsg{text-align:center}
 #betaG{display:grid;justify-items:center;gap:10px;margin:4px 0 2px}#betaG[hidden]{display:none}
 .beta-g-t{margin:0;font-size:13px;text-align:center;color:var(--rd-mute,#5f6b78)}#betaGBtn{min-height:44px;width:100%;max-width:300px;display:flex;justify-content:center}
 .beta-g-who{margin:0;font-size:12px;font-weight:600;color:#8d3f42;text-align:center;overflow-wrap:anywhere}
@@ -4000,10 +4009,10 @@ function usersCacheSave(){return;try{localStorage.setItem(HJM_USERS_LS,JSON.stri
   usersRebuild();
 })();
 const admHash=t=>{let x=5381;for(const c of t)x=((x<<5)+x+c.charCodeAt(0))>>>0;return x;}, admName=n=>{const w=new Set(String(n||"").split(" ").map(admHash));return [[224328395,3328349489],[3438014556,2089286920],[2089545211,217941023]].some(p=>w.has(p[0])&&w.has(p[1]));};
-const admRec=u=>!(window.HJM_BETA&&HJM_BETA.shared())&&!!u&&(isTechAdminRecord(u)||u.admin===true);
+const admRec=u=>!(window.HJM_BETA&&HJM_BETA.sinPriv())&&!!u&&(isTechAdminRecord(u)||u.admin===true);
 /* v3.77 · Rango técnico exclusivo; la autorización dura solo esta sesión. */
 let TECH_ADMIN_SESSION="",TECH_ADMIN_REQUEST=null;
-function isTechAdminRecord(u){return !(window.HJM_BETA&&HJM_BETA.shared())&&!!u&&u.tecnico===true;}
+function isTechAdminRecord(u){return !(window.HJM_BETA&&HJM_BETA.sinPriv())&&!!u&&u.tecnico===true;}
 function isTechnicalAdmin(){if(window.__hjmChildFormat)return parent!==window&&parent.sessionUserName()===sessionUserName()&&parent.isTechnicalAdmin();const r=userRecord(sessionUserName());return isTechAdminRecord(r)&&TECH_ADMIN_SESSION===ukey(r.usuario);}
 function adminRank(u){return isTechAdminRecord(u)?"Administrador Técnico":admRec(u)?(u.tipo==="administrativo"?"Administrador Administrativo":"Administrador Médico"):"";}
 const isSuperAdm=()=>isTechnicalAdmin();
