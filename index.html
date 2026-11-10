@@ -33,16 +33,16 @@ B.mine=function(it){try{const ed=it&&it.meta&&it.meta.ed;return !ed||ukey(ed)===
 function status(t,st){try{gateStatus(t,st);}catch(_){}}
 function okOrigin(){return location.protocol==='https:'||/^(localhost|127\.0\.0\.1)$/.test(location.hostname);}
 B.gis=function(){if(B.gisP)return B.gisP;B.gisP=new Promise((res,rej)=>{const t0=Date.now();(function w(){if(window.google&&google.accounts&&google.accounts.id)return res(google.accounts.id);if(Date.now()-t0>20000){B.gisP=null;return rej(Error('gis'));}setTimeout(w,150);})();});return B.gisP;};
-B.init=async function(){const id=await B.gis();if(B.inited)return id;id.initialize({client_id:CID,callback:r=>B.onCred(r&&r.credential),auto_select:true,cancel_on_tap_outside:false,context:'signin',ux_mode:'popup',use_fedcm_for_prompt:true,itp_support:true});B.inited=true;return id;};
+B.init=async function(){const id=await B.gis();if(B.inited)return id;id.initialize({client_id:CID,callback:r=>B.onCred(r&&r.credential),auto_select:true,cancel_on_tap_outside:false,context:'signin',ux_mode:'popup',use_fedcm_for_prompt:true,itp_support:true,prompt_parent_id:'betaOneTap'});B.inited=true;return id;};
 B.renderBtn=async function(){const box=$('betaGBtn');if(!box)return;if(!okOrigin()){box.innerHTML='';status('Esta versión solo funciona desde la página publicada (https). No se puede abrir desde un archivo local.');return;}
  try{const id=await B.init();box.innerHTML='';id.renderButton(box,{theme:'filled_blue',size:'large',text:'signin_with',shape:'pill',locale:'es-419',logo_alignment:'left',width:Math.min(300,(box.clientWidth||300))});}
  catch(_){box.innerHTML='';status('No se pudo cargar el inicio de sesión de Google. Revisa tu conexión y recarga la página.');}};
 B.onCred=function(c){if(!c||!B.set(c))return;B.blocked=false;const g=$('dlgResidentGate');if(B.ses&&B.ses.email===B.email&&!(g&&g.open)){B.wake();return;}B.enter();};
 B.wake=function(){const w=B.waiters.splice(0);w.forEach(f=>{try{f();}catch(_){}});};
 B.ensure=function(){if(B.token())return Promise.resolve();return new Promise(res=>{B.waiters.push(res);B.silent();const had=!!B.ses;setTimeout(()=>{if(B.token()||B.exiting)return;const g=$('dlgResidentGate');if(had&&B.ses)B.gate({msg:'Tu sesión de Google expiró. Vuelve a iniciar sesión para continuar; tus cambios se conservan.',state:'info',keep:true});else if(!(g&&g.open))B.gate({keep:true});},5000);});};
-B.silent=async function(){try{const id=await B.init();id.prompt();}catch(_){}};
+B.silent=async function(){try{const dlg=$('dlgResidentGate');if(dlg&&!$('betaOneTap')){const ot=document.createElement('div');ot.id='betaOneTap';dlg.appendChild(ot);}const id=await B.init();id.prompt();}catch(_){}};
 function shell(){const dlg=$('dlgResidentGate');if(!dlg)return null;dlg.classList.add('beta-gate');
- if(!$('betaG')){const box=document.createElement('div');box.id='betaG';box.innerHTML='<p class="beta-g-t">Inicia sesión con tu cuenta de Google autorizada</p><div id="betaGBtn"></div><p class="beta-g-who" id="betaGWho" hidden></p>';const msg=$('residentGateMsg');msg.parentNode.insertBefore(box,msg);
+ if(!$('betaG')){const box=document.createElement('div');box.id='betaG';box.innerHTML='<p class="beta-g-t">Inicia sesión con tu cuenta de Google autorizada</p><div id="betaGBtn"></div><p class="beta-g-who" id="betaGWho" hidden></p>';const msg=$('residentGateMsg');msg.parentNode.insertBefore(box,msg);if(!$('betaOneTap')){const ot=document.createElement('div');ot.id='betaOneTap';dlg.appendChild(ot);}
   const lg=$('residentGateLegal');if(lg&&!$('betaPrivLink')){const a=document.createElement('a');a.id='betaPrivLink';a.href='#privacidad';a.textContent='Política de privacidad';a.onclick=e=>{e.preventDefault();B.privacy();};lg.after(a);}}
  const n=$('residentGateName');if(n)n.required=false;return dlg;}
 B.privacy=function(){let d=$('dlgBetaPriv');if(!d){d=document.createElement('dialog');d.id='dlgBetaPriv';const src=$('privacidad');d.innerHTML=(src?[...src.children].filter(e=>e.tagName!=='SUMMARY').map(e=>e.outerHTML).join(''):'')+'<p style="text-align:right;margin:12px 0 0"><button type="button">Cerrar</button></p>';d.querySelector('button').onclick=()=>d.close();document.body.appendChild(d);}d.showModal();};
@@ -50,7 +50,7 @@ B.gate0=null;B.gate=function(opt){opt=opt||{};if(B.blocked&&B.token())return;con
  const who=$('betaGWho');if(who){who.hidden=!opt.who;who.textContent=opt.who||'';}
  status(opt.msg||'',opt.state);if(!dlg.open)dlg.showModal();$('betaG').hidden=!!opt.lock;
  if(!opt.lock)B.renderBtn();if(!opt.lock&&!opt.keep&&B.token())B.enter();
- else if(!opt.lock&&!B.token()){let o='';try{o=localStorage.getItem('hjm-beta-out');}catch(_){}if(!o)B.silent();}};
+ else if(!opt.lock&&!B.token()){let o='',sw='';try{o=localStorage.getItem('hjm-beta-out');sw=localStorage.getItem('hjm-beta-switch');localStorage.removeItem('hjm-beta-switch');}catch(_){}if(!o||sw)B.silent();}};
 B.denied=function(msg,pend,grupal){const em=B.email;B.ses=null;const dd=$('dlgResidentGate');if(B.blocked&&dd&&dd.open&&dd.classList.contains('beta-denied'))return;B.blocked=true;try{SESSION_ADSCRITO='';SESSION_RESIDENT='';}catch(_){}
  const dlg=shell();if(!dlg)return;try{resetTechnicalAdmin();}catch(_){}status('');let f=$('betaFinal');
  if(!f){f=document.createElement('div');f.id='betaFinal';f.innerHTML='<p class="gate-final-title">Versión de Prueba Finalizada</p><p class="resident-gate-legal gate-final-note">Aplicación Web en espera de autorización de Jefatura de Oncología para su uso</p><p class="beta-g-who" id="betaFinalWho"></p><button type="button" class="beta-out" id="betaFinalOut">Cerrar sesión</button><button type="button" class="beta-req-link" id="betaReqOpen">Solicitar acceso a versión de prueba</button><div id="betaReq" hidden><label class="resident-gate-field beta-req-field"><span>Usuario</span><input id="betaReqQ" autocomplete="off" placeholder="Escribe tu nombre" role="combobox" aria-autocomplete="list" aria-controls="betaReqSug"><div id="betaReqSug" class="gate-suggestions" role="listbox" hidden></div></label><div class="resident-gate-buttons"><button type="button" class="resident-gate-submit" id="betaReqGo">Solicitar acceso</button></div><p class="beta-req-msg" id="betaReqMsg" role="alert"></p></div>';$('betaG').before(f);
@@ -313,7 +313,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="7.14">
+<meta name="application-version" content="7.15">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2837,7 +2837,7 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 7.14 · Fecha de publicación: 09.11.26</div>
+  <div class="app-footer-version">Versión 7.15 · Fecha de publicación: 10.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la Jefatura del Servicio de Oncología. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -17249,6 +17249,66 @@ document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closes
 // The HTML file contains each format, image and module only once.
 Object.defineProperty(window,'__hjmDownloadSource',{value:'<!DOCTYPE html>\n'+document.documentElement.outerHTML,writable:false,configurable:false});
 for(const original of pending){const live=document.createElement('script');for(const attr of original.attributes)if(attr.name!=='type')live.setAttribute(attr.name,attr.value);live.textContent=original.textContent;original.replaceWith(live);}
+})();
+</script>
+<style id="hjm-v715">
+#betaOneTap{position:fixed;top:14px;right:14px;z-index:5}
+@media (max-width:767px){#betaOneTap{top:auto;bottom:0;right:0;left:0;display:flex;justify-content:center}}
+#betaAvatar{cursor:pointer}
+#betaAvatar:focus-visible{outline:2px solid #1a73e8;outline-offset:2px;border-radius:50%}
+#betaAcct{position:fixed;z-index:2147483000;min-width:270px;max-width:calc(100vw - 24px);background:#fff;color:#1f2d3d;border:1px solid #d7e0ea;border-radius:16px;box-shadow:0 12px 32px rgba(15,35,60,.22);padding:14px;font:14px/1.35 var(--rd-sans,system-ui)}
+#betaAcct[hidden]{display:none}
+#betaAcct .ba-h{display:flex;gap:12px;align-items:center;padding:2px 2px 12px;border-bottom:1px solid #e6edf3;margin-bottom:8px}
+#betaAcct .ba-ph{width:44px;height:44px;border-radius:50%;overflow:hidden;flex:none;background:#5b2a86;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px}
+#betaAcct .ba-ph img{width:100%;height:100%;object-fit:cover}
+#betaAcct .ba-n{font-weight:650}
+#betaAcct .ba-e{color:#5f7489;font-size:12.5px;word-break:break-all}
+#betaAcct button,#betaAcct a{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;padding:10px 10px;border:0;border-radius:10px;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer;text-decoration:none}
+#betaAcct button:hover,#betaAcct a:hover{background:#eef3f8}
+#betaAcct svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#betaAcct .ba-out{color:#b3261e}
+#betaAcct small{display:block;color:#7a8b9c;font-size:11.5px;padding:6px 10px 0}
+</style>
+<script id="hjm-v715-js">
+/* v7.15 · Menú de cuenta al tocar la foto de Google: cambiar de cuenta, cerrar sesión en la app, desconectar la cuenta y cerrar la sesión de Google del navegador */
+(function(){
+  const $=id=>document.getElementById(id), B=window.HJM_BETA; if(!B) return;
+  const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const ico={sw:'<svg viewBox="0 0 24 24"><path d="M16 3l4 4-4 4M20 7H9M8 21l-4-4 4-4M4 17h11"/></svg>',out:'<svg viewBox="0 0 24 24"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/></svg>',g:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',x:'<svg viewBox="0 0 24 24"><path d="M5 12h14"/><circle cx="12" cy="12" r="9"/></svg>'};
+  function salir(){ const b=$('bandExit'); if(b) b.click(); else location.reload(); }
+  function menu(anchor){
+    let m=$('betaAcct'); if(!m){ m=document.createElement('div'); m.id='betaAcct'; m.setAttribute('role','menu'); document.body.appendChild(m); }
+    const ses=B.ses||{}, nm=ses.nombre||'', em=B.email||ses.email||'', ini=String(nm||em||'?').trim().charAt(0).toUpperCase();
+    const comp=B.shared&&B.shared();
+    m.innerHTML='<div class="ba-h"><div class="ba-ph">'+(B.foto?'<img alt="" referrerpolicy="no-referrer" src="'+esc(B.foto)+'">':esc(ini))+'</div><div><div class="ba-n">'+esc(nm||'Cuenta de Google')+'</div><div class="ba-e">'+esc(em)+'</div></div></div>'
+      +(comp?'':'<button type="button" data-ba="sw" role="menuitem">'+ico.sw+'Cambiar de cuenta de Google</button>')
+      +'<button type="button" data-ba="out" role="menuitem" class="ba-out">'+ico.out+(comp?'Salir (cambiar de usuario)':'Cerrar sesión en la app')+'</button>'
+      +(comp?'':'<button type="button" data-ba="rev" role="menuitem">'+ico.x+'Quitar esta cuenta de la app</button>')
+      +'<a href="https://accounts.google.com/Logout" target="_blank" rel="noopener" data-ba="gout" role="menuitem">'+ico.g+'Cerrar sesión de Google en este navegador</a>'
+      +'<small>En computadoras compartidas usa la última opción: cierra Google en todo el navegador (Gmail, Drive…).</small>';
+    const img=m.querySelector('img'); if(img) img.onerror=()=>{ img.parentNode.textContent=ini; };
+    m.hidden=false;
+    const r=anchor.getBoundingClientRect(), w=m.offsetWidth, h=m.offsetHeight;
+    let left=Math.min(Math.max(12,r.right-w),innerWidth-w-12), top=r.bottom+8; if(top+h>innerHeight-12) top=Math.max(12,r.top-h-8);
+    m.style.left=left+'px'; m.style.top=top+'px';
+    const f=m.querySelector('button,a'); if(f) f.focus();
+  }
+  function close(){ const m=$('betaAcct'); if(m) m.hidden=true; }
+  document.addEventListener('click',e=>{
+    const av=e.target.closest&&e.target.closest('#betaAvatar');
+    if(av){ e.preventDefault(); e.stopPropagation(); const m=$('betaAcct'); if(m&&!m.hidden) close(); else menu(av); return; }
+    const it=e.target.closest&&e.target.closest('#betaAcct [data-ba]');
+    if(it){ const a=it.dataset.ba; if(a==='gout'){ close(); setTimeout(salir,300); return; }
+      e.preventDefault(); close();
+      if(a==='sw'){ try{ localStorage.setItem('hjm-beta-switch','1'); google.accounts.id.disableAutoSelect(); }catch(_){} salir(); }
+      else if(a==='out'){ salir(); }
+      else if(a==='rev'){ const em=B.email; try{ localStorage.setItem('hjm-beta-switch','1'); if(em) google.accounts.id.revoke(em,()=>{}); }catch(_){} salir(); }
+      return; }
+    if(!(e.target.closest&&e.target.closest('#betaAcct'))) close();
+  },true);
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); if((e.key==='Enter'||e.key===' ')&&document.activeElement&&document.activeElement.id==='betaAvatar'){ e.preventDefault(); menu(document.activeElement); } });
+  addEventListener('resize',close); addEventListener('scroll',close,true);
+  setInterval(()=>{ const a=$('betaAvatar'); if(a&&!a.dataset.btn){ a.dataset.btn='1'; a.removeAttribute('aria-hidden'); a.setAttribute('role','button'); a.setAttribute('tabindex','0'); a.setAttribute('title','Cuenta de Google'); a.setAttribute('aria-label','Cuenta de Google: cambiar de cuenta o cerrar sesión'); } },1000);
 })();
 </script>
 </body>
