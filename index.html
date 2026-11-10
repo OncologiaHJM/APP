@@ -119,7 +119,7 @@ B.usrCard=function(host,kind){if(!host||!isTechnicalAdmin()||!B.ses)return;kind=
  {const so=s.solicitudes||{},pend=Object.keys(so).sort((a,b)=>(so[b].ts||0)-(so[a].ts||0));
   c.innerHTML='<h4 class="beta-h4">Solicitudes</h4>'+(pend.length?pend.map(e=>{const q=so[e];return '<div class="beta-acc-row beta-pend" data-mail="'+esc(e)+'"><div><b>'+esc(e)+'</b><small>'+esc((q.nombre?q.nombre+' · ':'')+(q.ts?new Date(q.ts).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'}):''))+'</small></div><select class="st-in" data-acc-user>'+opts(q.usuario)+'</select><button type="button" class="st-btn beta-ok" data-acc-link>Autorizar</button><button type="button" class="st-btn" data-acc-drop data-pend="1">Rechazar</button></div>';}).join(''):'<p class="st-msg">Sin solicitudes pendientes.</p>');}
  {const cm=s.compartidas||{},ks=Object.keys(cm).sort();
-  c.innerHTML+='<h4 class="beta-h4">Cuentas compartidas</h4>'+ks.map(e=>'<div class="beta-acc-row" data-mail="'+esc(e)+'" data-comp="1"><div><b>'+esc(e)+'</b><small class="'+(cm[e].activa?'beta-on':'beta-off')+'">'+(cm[e].activa?'Activa':'Desactivada')+'</small></div><button type="button" class="st-btn'+(cm[e].activa?'':' beta-ok')+'" data-comp-set="'+(cm[e].activa?'0':'1')+'">'+(cm[e].activa?'Desactivar':'Activar')+'</button><button type="button" class="st-btn" data-acc-drop>Quitar</button></div>').join('')
+  c.innerHTML+='<h4 class="beta-h4">Cuentas compartidas</h4>'+ks.map(e=>'<div class="beta-acc-row" data-mail="'+esc(e)+'" data-comp="1"><div><b>'+esc(e)+'</b><small class="'+(cm[e].activa?'beta-on':'beta-off')+'">'+(cm[e].activa?'Activa':'Desactivada')+'</small></div><button type="button" class="st-btn'+(cm[e].activa?'':' beta-ok')+'" data-comp-set="'+(cm[e].activa?'0':'1')+'">'+(cm[e].activa?'Desactivar':'Activar')+'</button>'+(cm[e].fija?'':'<button type="button" class="st-btn" data-acc-drop>Quitar</button>')+'</div>').join('')
   +'<div class="beta-acc-row" data-comp="1"><input class="st-in" type="email" data-acc-mail placeholder="Agregar correo compartido" autocomplete="off"><button type="button" class="st-btn" data-acc-comp>Agregar</button></div><p class="st-msg" data-acc-msg role="status"></p>';}
  const say=(t,ok)=>{const m=host.querySelector('#betaAcc [data-acc-msg]');if(m){m.textContent=t;m.style.color=ok?'#2E8B57':'';}},redo=t=>{B.usrCard(host,kind);say(t,true);};
  c.onclick=async ev=>{const b=ev.target.closest('[data-acc-link],[data-acc-drop],[data-acc-comp],[data-comp-set]');if(!b||b.disabled)return;const row=b.closest('.beta-acc-row');let mail=String(row.dataset.mail||(row.querySelector('[data-acc-mail]')||{}).value||'').trim().toLowerCase();
@@ -3927,7 +3927,7 @@ function accessRequire(key){if(canPerm(key))return true;try{notify('Tu usuario n
 function accessViewAllowed(view){return canPerm(({censoActual:'ver_censo',censos:'ver_censos_archivados',cama:'ver_hospitalizados',recientes:'ver_expedientes'})[view]||'ver_datos');}
 function accessFirstView(){return ['censoActual','cama','recientes','censos'].find(accessViewAllowed)||'';}
 function accessCensusWrite(){return canPerm(CEN.mode==='hist'?'editar_censos_archivados':'editar_censo');}
-function accessPanelTab(tab){if(tab==="ownFiles")return canPerm("crear_notas")||canPerm("crear_formatos");if(tab==="ownStats"){const u=userRecord(sessionUserName());return !!u&&["adscrito","residente"].includes(u.tipo);}return canPerm(({stats:'ver_estadisticas',pac:'ver_estadisticas',err:'ver_errores',idx:'ver_descargas',cmt:'responder_comentarios',usr:'gestionar_usuarios',pend:'administrar_sistema',cfg:'editar_perfil'})[tab]||'administrar_sistema');}
+function accessPanelTab(tab){if(tab==="err"){const u0=userRecord(sessionUserName());if(u0&&u0.tipo==="administrativo")return false;}if(tab==="ownFiles")return canPerm("crear_notas")||canPerm("crear_formatos");if(tab==="ownStats"){const u=userRecord(sessionUserName());return !!u&&["adscrito","residente"].includes(u.tipo);}return canPerm(({stats:'ver_estadisticas',pac:'ver_estadisticas',err:'ver_errores',idx:'ver_descargas',cmt:'responder_comentarios',usr:'gestionar_usuarios',pend:'administrar_sistema',cfg:'editar_perfil'})[tab]||'administrar_sistema');}
 function accessHasPanel(){return ['stats','ownStats','ownFiles','err','idx','cmt','usr','pend'].some(accessPanelTab);}
 function cleanUsers(list){
   const out=[],seen=new Set();
@@ -12725,7 +12725,7 @@ function usrItem(u){
 }
 function usrDraw(){
   const l=$s("stUsrList"); if(!l) return;
-  if(usrSub==="actualizar") usrSub="residente";
+  if(usrSub==="actualizar"||(usrSub==="permisos"&&!isTechnicalAdmin())) usrSub="residente";
   if(usrSub==="permisos"){accessProfilesDraw(l);}else if(usrSub==="actualizar"){ l.innerHTML=offUpdHTML(); offUpdWire(l); } else { const L=usrGroup(usrSub);
   l.innerHTML=L.length?L.map(usrItem).join(""):'<div class="st-msg">Sin resultados.</div>'; }
   { const q=document.getElementById("stUsrQ"), ad=document.getElementById("stUsrAdd"), u=usrSub==="actualizar"||usrSub==="permisos"; if(q) q.hidden=u; if(ad) ad.hidden=u; }
@@ -12737,7 +12737,7 @@ function usrDraw(){
   });
   const t=document.querySelector('#dlgStats [data-tab="usr"]'); if(t) t.innerHTML=`Usuarios <span class="st-cnt">${HJM_USERS.length}</span>`;
   { const dd=document.getElementById("stUsrDiscard"); if(dd) dd.hidden=!opsPendN(); }
-  const ap=$s("stUsrTP");if(ap){ap.classList.toggle("on",usrSub==="permisos");ap.setAttribute("aria-selected",usrSub==="permisos"?"true":"false");}
+  const ap=$s("stUsrTP");if(ap)ap.hidden=!isTechnicalAdmin();if(ap){ap.classList.toggle("on",usrSub==="permisos");ap.setAttribute("aria-selected",usrSub==="permisos"?"true":"false");}
   usersStateDraw();
 }
 function usrOptions(tipo){
