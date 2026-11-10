@@ -313,7 +313,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="7.25">
+<meta name="application-version" content="7.26">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2837,7 +2837,7 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 7.25 · Fecha de publicación: 10.11.26</div>
+  <div class="app-footer-version">Versión 7.26 · Fecha de publicación: 10.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -15236,7 +15236,7 @@ function editorWindowState(key){
  if(!['notas','indicaciones','repCx','alta','postop'].includes(key))return null;
  const clinical=['notas','indicaciones','postop'].includes(key),loaded=clinical?!!clinicalEditing[currentClinical]:!!loadedFormatRecord();
  const ids=clinical?['clinicalDoubleTop','clinicalSaveTop','clinicalEditTop','clinicalPrintTop']:['btnSaveFmt','btnEditFmt','btnPrint'];
- const actions=ids.map(id=>$(id)).filter(b=>b&&!b.hidden&&!(key==='postop'&&b.id==='clinicalSaveTop')).map(b=>({id:b.id,label:b.textContent.trim(),icon:b.querySelector('svg')?.outerHTML||'',disabled:b.disabled,pressed:b.getAttribute('aria-pressed'),primary:['clinicalEditTop','btnEditFmt'].includes(b.id)}));
+ const actions=(clinical?ids:(BLANKS[current]?['btnSaveFmt','btnEditFmt','btnPrintBlank','btnPrint']:ids)).map(id=>$(id)).filter(b=>b&&(!b.hidden||b.id==='btnPrintBlank')&&!(key==='postop'&&b.id==='clinicalSaveTop')).map(b=>({id:b.id,label:b.textContent.trim(),icon:b.querySelector('svg')?.outerHTML||'',disabled:b.disabled,pressed:b.getAttribute('aria-pressed'),primary:['clinicalEditTop','btnEditFmt'].includes(b.id)}));
  if(key==='postop'&&window.__hjmInlinePostop)actions.unshift({id:'postopInlineBack',label:'Volver al reporte',icon:postopIcon('back')});
  return {loaded,actions,status:$(clinical?'clinicalRecordState':'fmtRecordState')?.textContent||'',selector:key!=='postop'?sectionSwitcherHTML(['notas','indicaciones','repCx','alta'],key).replaceAll('data-section-go','data-window-section'):''};
 }
@@ -17410,6 +17410,28 @@ for(const original of pending){const live=document.createElement('script');for(c
   if(v&&(camaFuera(v)||camaConsulta(v))) return; if(h&&h.value!=="1"){ h.value="1"; h.dispatchEvent(new Event("input",{bubbles:true})); } if(k) k.checked=true; try{ hospOncoSync(); }catch(_){} }catch(_){} };
   document.addEventListener("input",e=>{ if(e.target&&e.target.id==="cama") setTimeout(mark,0); },true);
   setInterval(mark,800); })();
+</script>
+<script id="hjm-v726-js">
+/* v7.26 · Ventana: «Imprimir en blanco» también en la barra de la ventana; la nota postoperatoria creada en la ventana del Reporte de Cirugía se integra al paciente abierto (Notas previas y Archivo Clínico) */
+(function(){
+  const ICO='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9V3h12v6M6 18H3v-8h18v8h-3"/><rect x="6" y="14" width="12" height="7" stroke-dasharray="2 2"/></svg>';
+  /* icono y texto del botón en blanco dentro de la barra de la ventana */
+  new MutationObserver(()=>{ const b=document.querySelector('#ppEditorActions [data-frame-action="btnPrintBlank"]'); if(b&&!b.dataset.v726){ b.dataset.v726='1'; b.className='editor-secondary'; b.title='Imprime solo los datos, para hojas ya impresas'; b.innerHTML=ICO+'<span>Imprimir en blanco</span>'; } }).observe(document.documentElement,{childList:true,subtree:true});
+  /* padre: recibe reporte + nota vinculada desde la ventana */
+  window.hjmAdoptRecords=function(exp,recs){ try{
+    if(!hasSelectedPatient()||String(data().expediente||'')!==String(exp||'')) return false;
+    let n=0; for(const [tp,r] of recs){ if(!r||!r.id) continue; HIST[tp]=HIST[tp]||[]; const i=HIST[tp].findIndex(x=>x.id===r.id); const c=JSON.parse(JSON.stringify(r)); if(i>=0){ if(Number(HIST[tp][i].ts||0)<=Number(c.ts||0)) HIST[tp][i]=c; } else HIST[tp].unshift(c); n++; }
+    try{ if(currentClinical) renderClinicalRecents(currentClinical); }catch(_){} try{ if(current) renderRecent(current); }catch(_){} try{ if(typeof renderArchive==='function'&&document.body.classList.contains('showing-archive')) renderArchive(); }catch(_){}
+    return n>0; }catch(_){ return false; } };
+  /* hija: tras crear o actualizar la nota postoperatoria, la manda al paciente de la ventana principal */
+  if(window.__hjmChildFormat||window.parent!==window){
+    const orig=window.postopAction; if(typeof orig==='function'){
+      window.postopAction=postopAction=async function(a){ const out=await orig.apply(this,arguments);
+        try{ if(['create','update'].includes(a)&&window.parent&&window.parent!==window&&window.parent.hjmAdoptRecords){ const rep=postopReport(), note=rep&&postopLinked(rep); if(rep&&note) window.parent.hjmAdoptRecords(data().expediente,[['repCx',rep],['notas',note]]); } }catch(_){}
+        return out; };
+    }
+  }
+})();
 </script>
 </body>
 </html>
