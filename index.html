@@ -74,7 +74,7 @@ B.apply=function(s,ident){B.ses=s;const us=inject(s);if(!applyUsers(us)){HJM_USE
  if(ident){const rec=userRecord(s.usuario);applyGateUser(rec?rec.usuario:s.usuario);TECH_ADMIN_SESSION=s.tecnico&&rec?ukey(rec.usuario):'';}
  try{syncAdminClass();}catch(_){}try{admvSync();}catch(_){}try{usersStateDraw();}catch(_){}};
 B.enter=async function(){if(B.entering)return;if(!B.token()){B.gate({});return;}B.entering=true;status('Verificando acceso…','info');const prev=B.ses&&B.ses.email;
- try{const s=await call('hjmSesion');if(prev&&prev!==s.email){location.reload();return;}
+ try{const s=await call('hjmSesion');if(prev&&prev!==s.email){try{if(typeof driveSaveNow==='function'&&typeof DIRTY!=='undefined'&&DIRTY)await Promise.race([driveSaveNow({silent:true}),new Promise(r=>setTimeout(r,4000))]);}catch(_){}try{await Promise.race([flushOutbox({quiet:true}),new Promise(r=>setTimeout(r,4000))]);}catch(_){}try{sessionStorage.removeItem('hjm-beta-u');}catch(_){}location.reload();return;}
   if(s.compartida&&!s.usuario){B.entering=false;B.pick(s);return;}
   const dlg0=$('dlgResidentGate');if(dlg0)dlg0.classList.remove('beta-shared');
   B.apply(s,true);wrap();const g=$('dlgResidentGate');if(g&&g.open)g.close();status('');
@@ -313,7 +313,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="7.23">
+<meta name="application-version" content="7.25">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2837,7 +2837,7 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 7.23 · Fecha de publicación: 10.11.26</div>
+  <div class="app-footer-version">Versión 7.25 · Fecha de publicación: 10.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -17265,6 +17265,10 @@ for(const original of pending){const live=document.createElement('script');for(c
 #betaAcct button:hover,#betaAcct a:hover{background:#eef3f8}
 #betaAcct svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 #betaAcct .ba-out{color:#b3261e}
+#betaAcct .ba-sw{position:relative}
+#betaAcct .ba-gis{position:absolute;inset:0;opacity:.01;overflow:hidden;z-index:2}
+#betaAcct .ba-gis>div,#betaAcct .ba-gis iframe{width:100%!important;height:100%!important;min-height:44px}
+#betaAcct .ba-sw:hover>button{background:#eef3f8}
 #betaAcct small{display:block;color:#7a8b9c;font-size:11.5px;padding:6px 10px 0}
 </style>
 <script id="hjm-v715-js">
@@ -17279,13 +17283,14 @@ for(const original of pending){const live=document.createElement('script');for(c
     const ses=B.ses||{}, nm=ses.nombre||'', em=B.email||ses.email||'', ini=String(nm||em||'?').trim().charAt(0).toUpperCase();
     const comp=B.shared&&B.shared();
     m.innerHTML='<div class="ba-h"><div class="ba-ph">'+(B.foto?'<img alt="" referrerpolicy="no-referrer" src="'+esc(B.foto)+'">':esc(ini))+'</div><div><div class="ba-n">'+esc(nm||'Cuenta de Google')+'</div><div class="ba-e">'+esc(em)+'</div></div></div>'
-      +(comp?'':'<button type="button" data-ba="sw" role="menuitem">'+ico.sw+'Cambiar de cuenta de Google</button>')
+      +(comp?'':'<div class="ba-sw"><button type="button" data-ba="sw" role="menuitem" tabindex="-1">'+ico.sw+'Cambiar de cuenta de Google</button><div class="ba-gis" id="baGis"></div></div>')
       +'<button type="button" data-ba="out" role="menuitem" class="ba-out">'+ico.out+(comp?'Salir (cambiar de usuario)':'Cerrar sesión en la app')+'</button>'
       +(comp?'':'<button type="button" data-ba="rev" role="menuitem">'+ico.x+'Quitar esta cuenta de la app</button>')
       +'<a href="https://accounts.google.com/Logout" target="_blank" rel="noopener" data-ba="gout" role="menuitem">'+ico.g+'Cerrar sesión de Google en este navegador</a>'
 ;
     const img=m.querySelector('img'); if(img) img.onerror=()=>{ img.parentNode.textContent=ini; };
     m.hidden=false;
+    (async()=>{ try{ const box=document.getElementById('baGis'); if(!box) return; const id=await B.init(); box.innerHTML=''; id.renderButton(box,{type:'standard',theme:'outline',size:'large',text:'signin_with',width:Math.max(200,Math.min(400,box.parentNode.clientWidth||260)),locale:'es-419'}); }catch(_){} })();
     const r=anchor.getBoundingClientRect(), w=m.offsetWidth, h=m.offsetHeight;
     let left=Math.min(Math.max(12,r.right-w),innerWidth-w-12), top=r.bottom+8; if(top+h>innerHeight-12) top=Math.max(12,r.top-h-8);
     m.style.left=left+'px'; m.style.top=top+'px';
@@ -17298,7 +17303,8 @@ for(const original of pending){const live=document.createElement('script');for(c
     const it=e.target.closest&&e.target.closest('#betaAcct [data-ba]');
     if(it){ const a=it.dataset.ba; if(a==='gout'){ close(); setTimeout(salir,300); return; }
       e.preventDefault(); close();
-      if(a==='sw'){ try{ localStorage.removeItem('hjm-beta-out-mail'); localStorage.setItem('hjm-beta-switch','1'); google.accounts.id.disableAutoSelect(); }catch(_){} salir(); }
+      if(a==='sw'){ return; }
+      if(a==='sw0'){ try{ localStorage.removeItem('hjm-beta-out-mail'); localStorage.setItem('hjm-beta-switch','1'); google.accounts.id.disableAutoSelect(); }catch(_){} salir(); }
       else if(a==='out'){ salir(); }
       else if(a==='rev'){ const em=B.email; try{ localStorage.removeItem('hjm-beta-out-mail'); localStorage.setItem('hjm-beta-switch','1'); if(em) google.accounts.id.revoke(em,()=>{}); }catch(_){} salir(); }
       return; }
@@ -17396,6 +17402,14 @@ for(const original of pending){const live=document.createElement('script');for(c
   window.cenCrearDesdeCenso=crear;
   document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('[data-contnew]'); if(!b) return; e.preventDefault(); const x=(CEN._cont||[])[+b.dataset.contnew]; if(!x) return; const full=(CEN.prevFull&&CEN.prevFull.get(String(x.p.exp)))||x.p; crear(full); },true);
 })();
+</script>
+<style id="hjm-v724">#dlgCenAdd #hospOncoRow{display:none!important}</style>
+<script id="hjm-v724-js">
+/* v7.24 · Agregar paciente al censo = hospitalizado en Oncología: la casilla se marca sola y no se muestra en esa ventana */
+(function(){ const mark=()=>{ try{ if(!(typeof CENADD!=="undefined"&&CENADD.open)) return; const c=document.getElementById("cama"), h=document.getElementById("hospOnco"), k=document.getElementById("hospOncoChk"); const v=String((c&&c.value)||"").trim();
+  if(v&&(camaFuera(v)||camaConsulta(v))) return; if(h&&h.value!=="1"){ h.value="1"; h.dispatchEvent(new Event("input",{bubbles:true})); } if(k) k.checked=true; try{ hospOncoSync(); }catch(_){} }catch(_){} };
+  document.addEventListener("input",e=>{ if(e.target&&e.target.id==="cama") setTimeout(mark,0); },true);
+  setInterval(mark,800); })();
 </script>
 </body>
 </html>
