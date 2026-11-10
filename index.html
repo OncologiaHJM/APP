@@ -130,6 +130,8 @@ B.usrCard=function(host,kind){if(!host||!isTechnicalAdmin()||!B.ses)return;kind=
   catch(e){b.disabled=false;say('⚠ '+(typeof friendly==='function'?friendly(e):e.message));}};};
 setInterval(()=>{try{if(child()||!B.ses)return;if(B.t&&B.exp-Date.now()<10*60000&&!B.exiting)B.silent();const c=document.getElementById('cfgU');if(c&&!c.readOnly){c.readOnly=true;c.title='El usuario está ligado a tu cuenta de Google';}}catch(_){}},60000);
 setInterval(()=>{if(!child()&&B.ses&&!document.hidden)B.refresh();},300000);
+let pdT=null;document.addEventListener('pointerdown',e=>{pdT=e.target;},true);
+document.addEventListener('click',e=>{const t=e.target;if(!t||!t.closest)return;const hv=t.closest('.hm-seg [data-hv]');if(hv&&e.detail>0&&!(pdT&&hv.contains(pdT))){e.preventDefault();e.stopImmediatePropagation();return;}const l=t.closest('label');if(l&&l.querySelector('.hm-seg')&&!t.closest('.hm-seg [data-hv]'))e.preventDefault();},true);
 document.addEventListener('focusin',e=>{if(e.target&&e.target.id==='cfgU'){e.target.readOnly=true;e.target.title='El usuario está ligado a tu cuenta de Google';}},true);
 
 const tc=v=>String(v||'').toLocaleLowerCase('es-MX').replace(/(^|[\s.\-(])(\p{L})/gu,(m,a,b)=>a+b.toLocaleUpperCase('es-MX')).replace(/\b(De|Del|La|Las|Los|Y)\b/g,w=>w.toLowerCase());
@@ -184,7 +186,7 @@ html body .top .credit #creditUser{text-transform:none!important;letter-spacing:
 </style><style id="hjm-boot">dialog,dialog::backdrop{opacity:0!important;transition:none!important;animation:none!important}</style>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Oncología · Hospital Juárez de México · Beta</title>
+<title>Oncología · Hospital Juárez de México</title>
 <!-- HJM · CONTRATO DE TÉRMINOS Y ALCANCE DE CAMBIOS
 BUSCADOR COMPACTO EXCLUSIVO DE HOJA DE DATOS (v4.20, requisito permanente):
 - Cuando body NO tiene .pp-browse, el buscador de #pPanel sólo muestra búsqueda y expandir/contraer resultados, en una fila compacta.
@@ -295,7 +297,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="7.01">
+<meta name="application-version" content="7.13">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2819,7 +2821,7 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 7.01 beta · Fecha de publicación: 09.11.26</div>
+  <div class="app-footer-version">Versión 7.13 · Fecha de publicación: 09.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la Jefatura del Servicio de Oncología. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -13293,7 +13295,7 @@ function cfgCommit(hf){
   if(!r.ok){ cfgMsg("⚠ "+r.err,true); return; }
   if(r.same) return;
   if(hf===true) applyHomeFilters(true);   /* v3.13 · el filtro elegido se ve de inmediato en Pacientes */
-  cfgMsg("✓ Guardado. Se sube a Drive en segundo plano."+(r.renamed?" Tus estadísticas anteriores quedan con tu nombre anterior.":""));
+  cfgMsg("✓ Guardado."+(r.renamed?" Tus estadísticas anteriores quedan con tu nombre anterior.":""));
   try{ usrDraw(); }catch(_){}
   cfgStatsDraw();
 }
