@@ -137,7 +137,7 @@ B.name=r=>r?tc(r.nombre||r.usuario):'';
 B.label=function(r){if(!r)return '';const p=r.tipo==='residente'?'Residente'+(r.servicio?' · '+r.servicio:''):r.tipo==='adscrito'?(r.servicio?tc(r.servicio):'Médico adscrito'):'Administrativo';return B.name(r)+'\n'+p;};
 setInterval(()=>{try{if(child())return;const cu=$('creditUser');if(cu){let im=$('betaAvatar');const on=!!(B.ses&&B.ses.usuario)&&!cu.hidden,src=B.foto||'',ini=String((B.ses&&B.ses.nombre)||B.email||'?').trim().charAt(0).toUpperCase();if(!im){im=document.createElement('span');im.id='betaAvatar';im.setAttribute('aria-hidden','true');cu.after(im);}if(im.dataset.src!==src+'|'+ini){im.dataset.src=src+'|'+ini;im.innerHTML=src?'<img alt="" referrerpolicy="no-referrer" src="'+esc(src)+'">':'<b>'+esc(ini)+'</b>';const ig=im.querySelector('img');if(ig)ig.onerror=()=>{im.innerHTML='<b>'+esc(ini)+'</b>';};}im.hidden=!on;}}catch(_){}
 try{if(child())return;const r=B.ses?userRecord(B.ses.usuario):null,nm=B.name(r);
- const lr=document.querySelector('.app-footer-legal .legal-risk');if(lr){const t=nm?'El uso de esta aplicación es responsabilidad exclusiva de '+nm+'. Cada acción queda registrada a su nombre; no dejes la sesión abierta ni la compartas.':'El uso de esta aplicación es responsabilidad exclusiva de la persona que inicia sesión.';if(lr.textContent!==t)lr.textContent=t;}}catch(_){}},1000);
+ const lr=document.querySelector('.app-footer-legal .legal-risk');if(lr){const t=nm?'El uso de esta aplicación es responsabilidad exclusiva del usuario actual\n'+nm+'\nCada acción queda registrada a su nombre; no dejes la sesión abierta ni la compartas.':'El uso de esta aplicación es responsabilidad exclusiva de la persona que inicia sesión.';if(lr.textContent!==t)lr.textContent=t;}}catch(_){}},1000);
 return B;})();
 </script>
 <script src="https://accounts.google.com/gsi/client" async></script>
@@ -151,6 +151,7 @@ html body .top .credit:has(#betaAvatar:not([hidden]))>#creditUser{grid-column:1;
 html:root body header.top img.seal.crab{padding:4px!important}
 @media screen and (min-width:1024px){html:root body .top .seal,html:root body .top>.seal.crab,html:root body .top .home-logo .seal,html:root body header.top img.seal.crab,html:root body header.top img.seal{width:56px!important;height:56px!important}#betaAvatar{width:36px;height:36px}}
 html body #dlgResidentGate.beta-gate #residentGateMsg{text-align:center}
+html body .app-footer p.app-footer-legal .legal-risk{white-space:pre-line}
 #betaG{display:grid;justify-items:center;gap:10px;margin:4px 0 2px}#betaG[hidden]{display:none}
 .beta-g-t{margin:0;font-size:13px;text-align:center;color:var(--rd-mute,#5f6b78)}#betaGBtn{min-height:44px;width:100%;max-width:300px;display:flex;justify-content:center}
 .beta-g-who{margin:0;font-size:12px;font-weight:600;color:#8d3f42;text-align:center;overflow-wrap:anywhere}
