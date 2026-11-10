@@ -17,7 +17,7 @@ function jwt(c){try{const p=c.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
 function load(){if(B.t)return;try{const o=JSON.parse(localStorage.getItem(SK)||'null');if(o&&o.t&&o.exp>Date.now()){B.t=o.t;B.exp=o.exp;B.email=o.email||'';}}catch(_){}}
 B.token=function(){if(child()){try{return parent.HJM_BETA.token();}catch(_){return '';}}load();if(!B.t||B.exp-Date.now()<60000)return '';return B.t;};
 B.set=function(c){const d=jwt(c);if(!d||!d.exp)return false;B.t=c;B.exp=d.exp*1000;B.email=String(d.email||'').toLowerCase();try{localStorage.removeItem('hjm-beta-out');localStorage.setItem(SK,JSON.stringify({t:B.t,exp:B.exp,email:B.email}));}catch(_){}return true;};
-B.clear=function(){B.t='';B.exp=0;B.setU('');try{localStorage.removeItem(SK);}catch(_){}};
+B.clear=function(){B.blocked=false;B.t='';B.exp=0;B.setU('');try{localStorage.removeItem(SK);}catch(_){}};
 B.out=function(){try{localStorage.setItem('hjm-beta-out','1');}catch(_){}try{google.accounts.id.disableAutoSelect();}catch(_){}};
 B.setU=function(u){B.u=u||'';try{if(B.u)sessionStorage.setItem('hjm-beta-u',B.u);else sessionStorage.removeItem('hjm-beta-u');}catch(_){}};
 B.who=function(){if(child()){try{return parent.HJM_BETA.who();}catch(_){return '';}}if(!B.u){try{B.u=sessionStorage.getItem('hjm-beta-u')||'';}catch(_){}}return B.u;};
@@ -36,7 +36,7 @@ B.init=async function(){const id=await B.gis();if(B.inited)return id;id.initiali
 B.renderBtn=async function(){const box=$('betaGBtn');if(!box)return;if(!okOrigin()){box.innerHTML='';status('Esta versión solo funciona desde la página publicada (https). No se puede abrir desde un archivo local.');return;}
  try{const id=await B.init();box.innerHTML='';id.renderButton(box,{theme:'filled_blue',size:'large',text:'signin_with',shape:'pill',locale:'es-419',logo_alignment:'left',width:Math.min(300,(box.clientWidth||300))});}
  catch(_){box.innerHTML='';status('No se pudo cargar el inicio de sesión de Google. Revisa tu conexión y recarga la página.');}};
-B.onCred=function(c){if(!c||!B.set(c))return;const g=$('dlgResidentGate');if(B.ses&&B.ses.email===B.email&&!(g&&g.open)){B.wake();return;}B.enter();};
+B.onCred=function(c){if(!c||!B.set(c))return;B.blocked=false;const g=$('dlgResidentGate');if(B.ses&&B.ses.email===B.email&&!(g&&g.open)){B.wake();return;}B.enter();};
 B.wake=function(){const w=B.waiters.splice(0);w.forEach(f=>{try{f();}catch(_){}});};
 B.ensure=function(){if(B.token())return Promise.resolve();return new Promise(res=>{B.waiters.push(res);B.silent();const had=!!B.ses;setTimeout(()=>{if(B.token()||B.exiting)return;const g=$('dlgResidentGate');if(had&&B.ses)B.gate({msg:'Tu sesión de Google expiró. Vuelve a iniciar sesión para continuar; tus cambios se conservan.',state:'info',keep:true});else if(!(g&&g.open))B.gate({keep:true});},5000);});};
 B.silent=async function(){try{const id=await B.init();id.prompt();}catch(_){}};
@@ -45,22 +45,29 @@ function shell(){const dlg=$('dlgResidentGate');if(!dlg)return null;dlg.classLis
   const lg=$('residentGateLegal');if(lg&&!$('betaPrivLink')){const a=document.createElement('a');a.id='betaPrivLink';a.href='#privacidad';a.textContent='Política de privacidad';a.onclick=e=>{e.preventDefault();B.privacy();};lg.after(a);}}
  const n=$('residentGateName');if(n)n.required=false;return dlg;}
 B.privacy=function(){let d=$('dlgBetaPriv');if(!d){d=document.createElement('dialog');d.id='dlgBetaPriv';const src=$('privacidad');d.innerHTML=(src?[...src.children].filter(e=>e.tagName!=='SUMMARY').map(e=>e.outerHTML).join(''):'')+'<p style="text-align:right;margin:12px 0 0"><button type="button">Cerrar</button></p>';d.querySelector('button').onclick=()=>d.close();document.body.appendChild(d);}d.showModal();};
-B.gate0=null;B.gate=function(opt){opt=opt||{};const dlg=shell();if(!dlg)return;dlg.classList.remove('beta-denied','beta-shared');try{resetTechnicalAdmin();}catch(_){}
+B.gate0=null;B.gate=function(opt){opt=opt||{};if(B.blocked&&B.token())return;const dlg=shell();if(!dlg)return;dlg.classList.remove('beta-denied','beta-shared');try{resetTechnicalAdmin();}catch(_){}
  const who=$('betaGWho');if(who){who.hidden=!opt.who;who.textContent=opt.who||'';}
  status(opt.msg||'',opt.state);if(!dlg.open)dlg.showModal();$('betaG').hidden=!!opt.lock;
  if(!opt.lock)B.renderBtn();if(!opt.lock&&!opt.keep&&B.token())B.enter();
  else if(!opt.lock&&!B.token()){let o='';try{o=localStorage.getItem('hjm-beta-out');}catch(_){}if(!o)B.silent();}};
-B.denied=function(msg,pend,grupal){const em=B.email;B.ses=null;try{SESSION_ADSCRITO='';SESSION_RESIDENT='';}catch(_){}
+B.denied=function(msg,pend,grupal){const em=B.email;B.ses=null;const dd=$('dlgResidentGate');if(B.blocked&&dd&&dd.open&&dd.classList.contains('beta-denied'))return;B.blocked=true;try{SESSION_ADSCRITO='';SESSION_RESIDENT='';}catch(_){}
  const dlg=shell();if(!dlg)return;try{resetTechnicalAdmin();}catch(_){}status('');let f=$('betaFinal');
- if(!f){f=document.createElement('div');f.id='betaFinal';f.innerHTML='<p class="gate-final-title">Versión de Prueba Finalizada</p><p class="resident-gate-legal gate-final-note">Aplicación Web en espera de autorización de Jefatura de Oncología para su uso</p><p class="beta-g-who" id="betaFinalWho"></p><button type="button" class="beta-out" id="betaFinalOut">Cerrar sesión</button><button type="button" class="beta-req-link" id="betaReqOpen">Solicitar acceso a versión de prueba</button><div id="betaReq" hidden><label class="resident-gate-field beta-req-field"><span>Usuario</span><input id="betaReqQ" autocomplete="off" placeholder="Escribe tu nombre completo"></label><div class="resident-gate-buttons"><button type="button" class="resident-gate-submit" id="betaReqGo">Solicitar acceso</button></div><p class="beta-req-msg" id="betaReqMsg" role="alert"></p></div>';$('betaG').before(f);
-  $('betaReqOpen').onclick=()=>{$('betaReq').hidden=false;$('betaReqOpen').hidden=true;setTimeout(()=>$('betaReqQ').focus(),30);};
-  const go=async()=>{const q=$('betaReqQ').value.trim(),m=$('betaReqMsg');if(q.length<3){m.textContent='Escribe tu nombre completo.';return;}$('betaReqGo').disabled=true;m.textContent='Enviando…';
+ if(!f){f=document.createElement('div');f.id='betaFinal';f.innerHTML='<p class="gate-final-title">Versión de Prueba Finalizada</p><p class="resident-gate-legal gate-final-note">Aplicación Web en espera de autorización de Jefatura de Oncología para su uso</p><p class="beta-g-who" id="betaFinalWho"></p><button type="button" class="beta-out" id="betaFinalOut">Cerrar sesión</button><button type="button" class="beta-req-link" id="betaReqOpen">Solicitar acceso a versión de prueba</button><div id="betaReq" hidden><label class="resident-gate-field beta-req-field"><span>Usuario</span><input id="betaReqQ" autocomplete="off" placeholder="Escribe tu nombre" role="combobox" aria-autocomplete="list" aria-controls="betaReqSug"><div id="betaReqSug" class="gate-suggestions" role="listbox" hidden></div></label><div class="resident-gate-buttons"><button type="button" class="resident-gate-submit" id="betaReqGo">Solicitar acceso</button></div><p class="beta-req-msg" id="betaReqMsg" role="alert"></p></div>';$('betaG').before(f);
+  let lista=null,elegido='';const nz=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]+/g,' ').trim();
+  const sub=u=>u.tipo==='adscrito'?(u.servicio||'Adscrito'):u.tipo==='residente'?'Residente'+(u.servicio?' · '+u.servicio:''):'Administrativo';
+  const pinta=()=>{const box=$('betaReqSug'),q=nz($('betaReqQ').value);elegido='';if(!lista||q.length<3){box.hidden=true;box.innerHTML='';return;}const w=q.split(' ');const m=lista.filter(u=>{const t=nz(u.nombre)+' '+nz(u.usuario);return w.every(x=>t.includes(x));}).slice(0,8);
+   if(!m.length){box.hidden=true;box.innerHTML='';return;}box.innerHTML=m.map(u=>'<button type="button" role="option" tabindex="-1" data-u="'+esc(u.usuario)+'" data-n="'+esc(u.nombre)+'"><strong>'+esc(u.nombre)+'</strong><small>'+esc(sub(u))+'</small></button>').join('');box.hidden=false;};
+  $('betaReqOpen').onclick=async()=>{$('betaReq').hidden=false;$('betaReqOpen').hidden=true;setTimeout(()=>$('betaReqQ').focus(),30);if(!lista){try{lista=await call('hjmSolicitudLista')||[];pinta();}catch(_){lista=[];}}};
+  $('betaReqQ').oninput=pinta;$('betaReqQ').onblur=()=>setTimeout(()=>{const x=$('betaReqSug');if(x)x.hidden=true;},150);
+  $('betaReqSug').onpointerdown=e=>e.preventDefault();
+  $('betaReqSug').onclick=e=>{const b=e.target.closest('[data-u]');if(!b)return;$('betaReqQ').value=b.dataset.n;elegido=b.dataset.u;$('betaReqSug').hidden=true;$('betaReqMsg').textContent='';};
+  const go=async()=>{const q=elegido||$('betaReqQ').value.trim(),m=$('betaReqMsg');if(q.length<3){m.textContent='Escribe tu nombre completo.';return;}$('betaReqGo').disabled=true;m.textContent='Enviando…';
    try{await call('hjmSolicitar',q);$('betaReq').innerHTML='<p class="beta-req-ok">Tu solicitud quedó registrada. La aplicación está en espera de autorización; una vez que se cuente con ella, se te admitirá el acceso.</p>';}
    catch(e){$('betaReqGo').disabled=false;m.textContent=e.message||'No se pudo enviar.';if(e.code==='noalta')try{alert(e.message);}catch(_){}}};
-  $('betaReqGo').onclick=go;$('betaReqQ').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go();}};
+  $('betaReqGo').onclick=go;$('betaReqQ').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();const f=$('betaReqSug').querySelector('[data-u]');if(!elegido&&f&&!$('betaReqSug').hidden){f.click();return;}go();}};
   $('betaFinalOut').onclick=()=>{B.clear();B.out();dlg.classList.remove('beta-denied');B.gate({});};}
  $('betaFinalWho').textContent=em?'Cuenta: '+em:'';$('betaReqOpen').hidden=!!grupal;$('betaReq').hidden=true;if(grupal)$('betaFinalWho').textContent='Entra con tu correo personal.';if(pend&&!grupal){$('betaReqOpen').hidden=true;$('betaReq').hidden=false;$('betaReq').innerHTML='<p class="beta-req-ok">Tu solicitud quedó registrada. La aplicación está en espera de autorización; una vez que se cuente con ella, se te admitirá el acceso.</p>';}dlg.classList.add('beta-denied');if(!dlg.open)dlg.showModal();};
-B.authError=function(e){if(child()||B.entering)return;if(e.code==='noautorizado')B.denied(e.message,e.pendiente,e.grupal);else if(e.code==='token'){B.clear();}};
+B.authError=function(e){if(child()||B.entering||B.blocked)return;if(e.code==='noautorizado')B.denied(e.message,e.pendiente,e.grupal);else if(e.code==='token'){B.clear();}};
 function inject(s){return (s.usuarios||[]).map(u=>Object.assign({},u));}
 B.apply=function(s,ident){B.ses=s;const us=inject(s);if(!applyUsers(us)){HJM_USERS=[];}
  if(ident){const rec=userRecord(s.usuario);applyGateUser(rec?rec.usuario:s.usuario);TECH_ADMIN_SESSION=s.tecnico&&rec?ukey(rec.usuario):'';}
@@ -101,17 +108,17 @@ document.addEventListener('click',async ev=>{const b=ev.target.closest('.beta-ma
  if(b.hasAttribute('data-mail-save')){const mail=String(d.querySelector('input').value||'').trim().toLowerCase();if(!mail)return;b.disabled=true;try{B.apply(await gcall('hjmCuentaLigar',mail,u.usuario),false);d.dataset.sig='~';B.decorate(d.closest('#stTab')||document);}catch(e){b.disabled=false;fail(e);}return;}
  if(b.hasAttribute('data-mail-drop')){if(!b.dataset.ok){b.dataset.ok='1';b.textContent='¿Seguro?';setTimeout(()=>{if(b.isConnected){delete b.dataset.ok;b.textContent='Quitar';}},4000);return;}const mail=b.closest('[data-mail]').dataset.mail;b.disabled=true;try{B.apply(await gcall('hjmCuentaQuitar',mail),false);d.dataset.sig='~';B.decorate(d.closest('#stTab')||document);}catch(e){b.disabled=false;fail(e);}}},true);
 function wrap(){if(B.wrapped)return;B.wrapped=true;let q=false;new MutationObserver(()=>{if(q)return;q=true;requestAnimationFrame(()=>{q=false;try{const h=document.getElementById('stTab');if(h&&isTechnicalAdmin()&&B.ses){const tabs=h.querySelector('.usr-tabs');if(tabs){const np=Object.keys(B.ses.solicitudes||{}).length,cur=h.querySelector('#stUsrList #betaAcc')?B.kind:'';
- [['acc','Accesos'+(np?' <span class="st-cnt st-bad">'+np+'</span>':'')],['comp','Compartidas']].forEach(([k,lbl])=>{let t=tabs.querySelector('[data-beta-tab="'+k+'"]');
+ [['acc','Accesos'+(np?' <span class="st-cnt st-bad">'+np+'</span>':'')]].forEach(([k,lbl])=>{let t=tabs.querySelector('[data-beta-tab="'+k+'"]');
   if(!t){t=document.createElement('button');t.type='button';t.className='usr-tab';t.dataset.betaTab=k;t.setAttribute('role','tab');tabs.appendChild(t);t.onclick=()=>{tabs.querySelectorAll('.usr-tab').forEach(x=>{x.classList.remove('on');x.setAttribute('aria-selected','false');});t.classList.add('on');t.setAttribute('aria-selected','true');['stUsrQ','stUsrAdd'].forEach(id=>{const e=document.getElementById(id);if(e)e.hidden=true;});const l=h.querySelector('#stUsrList');l.innerHTML='';B.usrCard(l,k);};}
   if(t.innerHTML!==lbl)t.innerHTML=lbl;const on=cur===k;if(t.classList.contains('on')!==on){t.classList.toggle('on',on);t.setAttribute('aria-selected',on?'true':'false');}});}}if(h&&h.querySelector('#stUsrList'))B.decorate(h);if(h&&!isTechnicalAdmin())h.querySelectorAll('.usr-item [data-del]').forEach(x=>x.remove());const uf=document.querySelector('#dlgUsr[open] #usrfU');if(uf&&!isTechnicalAdmin()&&uf.value&&!uf.readOnly){uf.readOnly=true;uf.title='Solo el Administrador Técnico cambia el nombre de usuario';}}catch(_){}});}).observe(document.body,{childList:true,subtree:true});}
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 B.usrCard=function(host,kind){if(!host||!isTechnicalAdmin()||!B.ses)return;kind=kind||B.kind||'acc';B.kind=kind;let c=host.querySelector('#betaAcc');if(!c){c=document.createElement('section');c.id='betaAcc';host.innerHTML='';host.appendChild(c);}
  const s=B.ses,us=[...HJM_USERS].sort((a,b)=>String(a.nombre).localeCompare(String(b.nombre),'es')),
   opts=sel=>'<option value="">Elige usuario…</option>'+us.map(u=>'<option value="'+esc(u.usuario)+'"'+(sel&&ukey(sel)===ukey(u.usuario)?' selected':'')+'>'+esc(printName(u))+'</option>').join('');
- if(kind==='acc'){const so=s.solicitudes||{},pend=Object.keys(so).sort((a,b)=>(so[b].ts||0)-(so[a].ts||0));
-  c.innerHTML=(pend.length?pend.map(e=>{const q=so[e];return '<div class="beta-acc-row beta-pend" data-mail="'+esc(e)+'"><div><b>'+esc(e)+'</b><small>'+esc((q.nombre?q.nombre+' · ':'')+(q.ts?new Date(q.ts).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'}):''))+'</small></div><select class="st-in" data-acc-user>'+opts(q.usuario)+'</select><button type="button" class="st-btn beta-ok" data-acc-link>Autorizar</button><button type="button" class="st-btn" data-acc-drop data-pend="1">Rechazar</button></div>';}).join(''):'<p class="st-msg">Sin solicitudes pendientes.</p>')+'<p class="st-msg" data-acc-msg role="status"></p>';}
- else{const cm=s.compartidas||{},ks=Object.keys(cm).sort();
-  c.innerHTML=ks.map(e=>'<div class="beta-acc-row" data-mail="'+esc(e)+'" data-comp="1"><div><b>'+esc(e)+'</b><small class="'+(cm[e].activa?'beta-on':'beta-off')+'">'+(cm[e].activa?'Activa':'Desactivada')+'</small></div><button type="button" class="st-btn'+(cm[e].activa?'':' beta-ok')+'" data-comp-set="'+(cm[e].activa?'0':'1')+'">'+(cm[e].activa?'Desactivar':'Activar')+'</button><button type="button" class="st-btn" data-acc-drop>Quitar</button></div>').join('')
+ {const so=s.solicitudes||{},pend=Object.keys(so).sort((a,b)=>(so[b].ts||0)-(so[a].ts||0));
+  c.innerHTML='<h4 class="beta-h4">Solicitudes</h4>'+(pend.length?pend.map(e=>{const q=so[e];return '<div class="beta-acc-row beta-pend" data-mail="'+esc(e)+'"><div><b>'+esc(e)+'</b><small>'+esc((q.nombre?q.nombre+' · ':'')+(q.ts?new Date(q.ts).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'}):''))+'</small></div><select class="st-in" data-acc-user>'+opts(q.usuario)+'</select><button type="button" class="st-btn beta-ok" data-acc-link>Autorizar</button><button type="button" class="st-btn" data-acc-drop data-pend="1">Rechazar</button></div>';}).join(''):'<p class="st-msg">Sin solicitudes pendientes.</p>');}
+ {const cm=s.compartidas||{},ks=Object.keys(cm).sort();
+  c.innerHTML+='<h4 class="beta-h4">Cuentas compartidas</h4>'+ks.map(e=>'<div class="beta-acc-row" data-mail="'+esc(e)+'" data-comp="1"><div><b>'+esc(e)+'</b><small class="'+(cm[e].activa?'beta-on':'beta-off')+'">'+(cm[e].activa?'Activa':'Desactivada')+'</small></div><button type="button" class="st-btn'+(cm[e].activa?'':' beta-ok')+'" data-comp-set="'+(cm[e].activa?'0':'1')+'">'+(cm[e].activa?'Desactivar':'Activar')+'</button><button type="button" class="st-btn" data-acc-drop>Quitar</button></div>').join('')
   +'<div class="beta-acc-row" data-comp="1"><input class="st-in" type="email" data-acc-mail placeholder="Agregar correo compartido" autocomplete="off"><button type="button" class="st-btn" data-acc-comp>Agregar</button></div><p class="st-msg" data-acc-msg role="status"></p>';}
  const say=(t,ok)=>{const m=host.querySelector('#betaAcc [data-acc-msg]');if(m){m.textContent=t;m.style.color=ok?'#2E8B57':'';}},redo=t=>{B.usrCard(host,kind);say(t,true);};
  c.onclick=async ev=>{const b=ev.target.closest('[data-acc-link],[data-acc-drop],[data-acc-comp],[data-comp-set]');if(!b||b.disabled)return;const row=b.closest('.beta-acc-row');let mail=String(row.dataset.mail||(row.querySelector('[data-acc-mail]')||{}).value||'').trim().toLowerCase();
@@ -134,10 +141,11 @@ return B;})();
 <script src="https://accounts.google.com/gsi/client" async></script>
 <style id="hjm-beta">
 #dlgResidentGate.beta-gate:not(.beta-shared) .resident-gate-field,#dlgResidentGate.beta-gate:not(.beta-shared) #residentGateClinic,#dlgResidentGate.beta-gate:not(.beta-shared) .resident-gate-buttons,#dlgResidentGate.beta-gate:not(.beta-shared) #betaSharedOut{display:none!important}#dlgResidentGate.beta-shared #betaG{display:none!important}#betaSharedOut{justify-self:center;display:block;margin:10px auto 0}
+html body #dlgResidentGate::backdrop{background:rgba(22,32,48,.72)!important;backdrop-filter:blur(48px) saturate(.9)!important;-webkit-backdrop-filter:blur(48px) saturate(.9)!important}
 #betaG{display:grid;justify-items:center;gap:10px;margin:4px 0 2px}#betaG[hidden]{display:none}
 .beta-g-t{margin:0;font-size:13px;text-align:center;color:var(--rd-mute,#5f6b78)}#betaGBtn{min-height:44px;width:100%;max-width:300px;display:flex;justify-content:center}
 .beta-g-who{margin:0;font-size:12px;font-weight:600;color:#8d3f42;text-align:center;overflow-wrap:anywhere}
-#dlgResidentGate :focus:not(:focus-visible){outline:none!important}#betaPrivLink{display:block;text-align:center;font-size:11.5px;margin-top:6px;color:var(--rd-mute,#5f6b78)}
+#dlgResidentGate :focus:not(:focus-visible),#betaPrivLink:focus{outline:none!important}#betaPrivLink{display:block;text-align:center;font-size:11.5px;margin-top:6px;color:var(--rd-mute,#5f6b78)}
 #dlgBetaPriv{max-width:min(92vw,680px);max-height:86vh;overflow:auto;border:0;border-radius:16px;padding:18px 20px;font-size:14px;line-height:1.5}#dlgBetaPriv::backdrop{background:rgba(25,28,31,.55)}
 #privacidad>h2{display:none}#dlgBetaPriv h2{font-size:16px;margin:0 0 6px}#privacidad[open]>summary{margin-bottom:8px}#privacidad p{margin:0 0 8px}
 #betaAcc h3{margin:0 0 4px}.beta-h4{margin:14px 0 6px;font-size:13px}
@@ -153,7 +161,7 @@ html body #dlgResidentGate .gate-final-note{margin:0;text-align:center;font:500 
 .beta-mail button{border:1px solid #cfd7df;background:#fff;border-radius:999px;font-size:11px;font-weight:600;padding:2px 9px;cursor:pointer;color:#26486e}.beta-mail input{border:1px solid #cfd7df;border-radius:8px;padding:4px 8px;font-size:12px;min-width:200px}.beta-mail-err{color:#8d3f42;width:100%}
 #dlgResidentGate #betaReq .resident-gate-field{display:grid!important;text-align:left}#dlgResidentGate #betaReq .resident-gate-buttons{display:flex!important;justify-content:center}#betaReq .resident-gate-submit{width:100%}
 .beta-on{color:#2E8B57;font-weight:600}.beta-off{color:#9aa3ad}
-.beta-req-link{border:0;background:none;color:var(--rd-mute,#6a7e93);font-size:11.5px;text-decoration:underline;cursor:pointer;padding:2px 6px;margin-top:2px}
+html body #dlgResidentGate .beta-req-link{border:0;background:var(--rd-inkbtn);color:var(--rd-on-ink);font:650 12.5px/1 var(--rd-sans);border-radius:999px;cursor:pointer;padding:10px 18px;margin-top:8px}html body #dlgResidentGate .beta-req-link:hover{filter:brightness(1.1)}#betaReq .beta-req-field{position:relative}
 #betaReq{display:grid;gap:10px;width:100%;margin-top:6px}#betaReq[hidden]{display:none}.beta-req-l{font-size:11.5px;font-weight:600;color:var(--rd-mute,#6a7e93)}
 #betaReqQ{border:1px solid #cfd7df;border-radius:10px;padding:7px 10px;font-size:13px}
 #betaReqList{display:grid;gap:4px;max-height:140px;overflow:auto}#betaReqList button{display:grid;text-align:left;border:1px solid #e1e6eb;background:#fff;border-radius:8px;padding:5px 9px;font-size:12.5px;font-weight:600;cursor:pointer}#betaReqList button small{font-weight:400;color:#7B7E81;font-size:11px}#betaReqList button[aria-selected=true]{border-color:#26486e;background:#eef3f9}
@@ -6969,6 +6977,7 @@ async function driveHandshake(fn){
   catch(e){ if(!isOldServer(e)) throw e; USER=await fn("hjmUser"); FOLDER=await fn("hjmGetFolder"); }
 }
 async function initDrive(){
+  if(window.HJM_BETA&&HJM_BETA.blocked)return;
   if(!CAN_DRIVE||STORE!=="drive"||!apiUrl()||!apiKey()){ renderAcct(); return; }
   CONNECTING=true; renderAcct();
   try{ await driveHandshake(call); CONNECT_FAIL=false; DRIVE_RETRIES=0; }
