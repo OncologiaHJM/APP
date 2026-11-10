@@ -154,6 +154,8 @@ html:root body header.top img.seal.crab{padding:4px!important}
 @media screen and (min-width:1024px){html:root body .top .seal,html:root body .top>.seal.crab,html:root body .top .home-logo .seal,html:root body header.top img.seal.crab,html:root body header.top img.seal{width:56px!important;height:56px!important}#betaAvatar{width:36px;height:36px}}
 html body #dlgResidentGate.beta-gate #residentGateMsg{text-align:center}
 html body .app-footer p.app-footer-legal .legal-risk{white-space:pre-line}
+html body #dlgStats .usr-list{max-height:none!important;overflow:visible!important}
+html body.pp-browse #pPanel #ppSharedHead #ppHeaderTabs .pp-view-btns.pp-view-btns,html body.pp-browse #pPanel.cen-on #ppSharedHead #ppHeaderTabs .pp-view-btns.pp-view-btns,html body #pPanel #ppHeaderTabs .pp-view-btns.pp-view-btns{grid-template-columns:none!important;grid-auto-flow:column!important;grid-auto-columns:minmax(0,1fr)!important}html body #pPanel #ppHeaderTabs .pp-view-btns.pp-view-btns>*:not([hidden]){flex:1 1 0!important;min-width:0!important}html body #pPanel #ppHeaderTabs .pp-view-btns>[hidden]{display:none!important}
 #betaG{display:grid;justify-items:center;gap:10px;margin:4px 0 2px}#betaG[hidden]{display:none}
 .beta-g-t{margin:0;font-size:13px;text-align:center;color:var(--rd-mute,#5f6b78)}#betaGBtn{min-height:44px;width:100%;max-width:300px;display:flex;justify-content:center}
 .beta-g-who{margin:0;font-size:12px;font-weight:600;color:#8d3f42;text-align:center;overflow-wrap:anywhere}
@@ -3894,7 +3896,8 @@ const ACCESS_TREE={ver_hospitalizados:['editar_pendientes'],ver_datos:['crear_pa
 const ACCESS_ADMIN_GROUPS=[
  ['Panel de control',[['ver_estadisticas','Estadísticas y Pacientes','Pestañas Estadísticas y Pacientes.'],['ver_errores','Errores de la plataforma','Pestaña Errores.'],['responder_comentarios','Responder comentarios','Pestaña Comentarios.']]],
  ['Descargas',[['descargar_bases','Descargar bases principales','Pacientes, censos y estadísticas.']]],
- ['Documentos',[['restaurar_documentos','Restaurar documentos cancelados','']]]
+ ['Documentos',[['restaurar_documentos','Restaurar documentos cancelados','']]],
+ ['Censo (adicional para administradores)',[['ver_censo','Pestaña Censo','Aunque su rol base no la tenga.'],['editar_censo','Editar el Censo actual y el reverso',''],['agregar_censo','Agregar pacientes al censo',''],['guardar_censo','Guardar el Censo final',''],['imprimir_censo','Imprimir el censo',''],['ver_censos_archivados','Ver censos anteriores',''],['editar_censos_archivados','Editar censos anteriores','']]]
 ];
 const ACCESS_TECH_GROUP=['Solo Administrador Técnico',[['gestionar_usuarios','Usuarios y permisos','Pestaña Usuarios (también el Administrador Médico). Ligar correos de Google es exclusivo del Administrador Técnico.'],['administrar_sistema','Administrar y mantenimiento','Pestaña Administrar.'],['descargar_todo','Descargar toda la carpeta y subcarpetas',''],['borrar_documentos','Borrar definitivamente documentos',''],['borrar_comentarios','Borrar mensajes y conversaciones','']]];
 const ACCESS_GROUPS=ACCESS_BASE_GROUPS.map(g=>[g[0],g[1],g[2]]).concat(ACCESS_ADMIN_GROUPS.map(g=>[g[0],'',g[1]]),[[ACCESS_TECH_GROUP[0],'',ACCESS_TECH_GROUP[1]],['Siempre disponibles','',ACCESS_ALWAYS.map(k=>[k,k,''])]]);
