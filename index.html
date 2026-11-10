@@ -27,7 +27,7 @@ B.pick=function(s){const dlg=shell();if(!dlg)return;B.ses=s;applyUsers(inject(s)
  dlg.classList.remove('beta-denied');dlg.classList.add('beta-shared');$('betaG').hidden=true;
  let o=$('betaSharedOut');if(!o){o=document.createElement('button');o.type='button';o.id='betaSharedOut';o.className='beta-out';o.textContent='Cerrar sesión';o.onclick=()=>{B.clear();B.out();wipe();location.reload();};const bt=document.querySelector('#dlgResidentGate .resident-gate-buttons');bt.after(o);}
  const n=$('residentGateName');if(n){n.value='';n.required=true;}status('Cuenta del servicio: '+s.email+'. Escribe tu usuario para continuar.','info');if(!dlg.open)dlg.showModal();setTimeout(()=>{try{n.focus();}catch(_){}},80);};
-document.addEventListener('submit',e=>{if(!e.target||e.target.id!=='residentGateForm')return;e.preventDefault();e.stopImmediatePropagation();const dlg=$('dlgResidentGate');if(!dlg||!dlg.classList.contains('beta-shared'))return;
+document.addEventListener('submit',e=>{if(!e.target||e.target.id!=='residentGateForm')return;e.preventDefault();e.stopImmediatePropagation();const dlg=$('dlgResidentGate');if(!dlg||!dlg.classList.contains('beta-shared'))return;if(B.exiting){status('Guardando los cambios del usuario anterior… intenta en un momento.','info');return;}
  let name='';try{name=resolveGateUser();}catch(_){}if(!name)return;const rec=userRecord(name);if(!rec){status('Ese usuario no existe. Elige uno de la lista.');return;}B.setU(rec.usuario);B.enter();},true);
 B.mine=function(it){try{const ed=it&&it.meta&&it.meta.ed;return !ed||ukey(ed)===ukey(sessionUserName());}catch(_){return true;}};
 function status(t,st){try{gateStatus(t,st);}catch(_){}}
@@ -90,13 +90,14 @@ B.enter=async function(){if(B.entering)return;if(!B.token()){B.gate({});return;}
  }finally{B.entering=false;}};
 B.refresh=async function(){if(!B.ses||!B.token())return;try{B.apply(await call('hjmSesion'),false);USERS_ERR='';}catch(e){if(e.code==='noautorizado')B.denied(e.message);else USERS_ERR='No se pudo actualizar la lista de usuarios ('+(typeof friendly==='function'?friendly(e):e.message)+').';}try{usersStateDraw();}catch(_){}};
 B.pushUsers=async function(ch){try{const s=await gcall('hjmUsuariosCambiar',ch);B.apply(s,false);HJM_OPS_DIRTY=false;USERS_ERR='';}catch(e){USERS_ERR='No se guardó el cambio en el servidor: '+(typeof friendly==='function'?friendly(e):e.message);await B.refresh();}try{usersStateDraw();}catch(_){}};
-B.lockUI=function(){B.exiting=true;B.gate({lock:true,msg:'Cerrando sesión…',state:'info'});};
+B.lockUI=function(){B.exiting=true;if(B.shared()&&B.ses){B.pick(Object.assign({},B.ses,{usuario:''}));return;}B.gate({lock:true,msg:'Cerrando sesión…',state:'info'});};
 function wipe(keepT){try{const raw=window.__hjmLSRaw;if(!raw)return;raw.keys().forEach(k=>{if(/pendiente|cenq|queue|cola|beta-out/i.test(k))return;if(keepT&&k===SK)return;raw.del(k);});}catch(_){}}
 B.finishExit=async function(ok){try{if(outboxCount())await flushOutbox({quiet:true});}catch(_){}
  const left=(()=>{try{return outboxCount()+(typeof cenQCount==='function'?cenQCount():0);}catch(_){return 0;}})();
- const sh=B.shared();if(sh){B.setU('');}else{B.clear();B.out();}B.ses=null;
- if(!ok){B.exiting=false;if(sh)B.enter();else B.gate({keep:true});return;}
- wipe(sh);status(left?'Sesión cerrada. Quedan '+left+' cambios por subir: se subirán cuando vuelvas a entrar con tu cuenta.':'Sesión cerrada.','ok');
+ const sh=B.shared();if(sh){B.setU('');B.exiting=false;const cat=B.ses;B.ses=null;if(cat)B.pick(Object.assign({},cat,{usuario:''}));else B.enter();return;}
+ B.clear();B.out();B.ses=null;
+ if(!ok){B.exiting=false;B.gate({keep:true});return;}
+ wipe();status(left?'Sesión cerrada. Quedan '+left+' cambios por subir: se subirán cuando vuelvas a entrar con tu cuenta.':'Sesión cerrada.','ok');
  setTimeout(()=>location.reload(),left?2500:600);};
 B.idle=function(){if(B.shared()){B.setU('');return;}B.clear();try{google.accounts.id.disableAutoSelect();}catch(_){}};
 B.decorate=function(host){if(!host||!isTechnicalAdmin()||!B.ses)return;const cu=B.ses.cuentas||{},by={};Object.keys(cu).forEach(e=>{const k=ukey(cu[e]);(by[k]=by[k]||[]).push(e);});
@@ -130,6 +131,11 @@ B.usrCard=function(host,kind){if(!host||!isTechnicalAdmin()||!B.ses)return;kind=
   catch(e){b.disabled=false;say('⚠ '+(typeof friendly==='function'?friendly(e):e.message));}};};
 setInterval(()=>{try{if(child()||!B.ses)return;if(B.t&&B.exp-Date.now()<10*60000&&!B.exiting)B.silent();const c=document.getElementById('cfgU');if(c&&!c.readOnly){c.readOnly=true;c.title='El usuario está ligado a tu cuenta de Google';}}catch(_){}},60000);
 setInterval(()=>{if(!child()&&B.ses&&!document.hidden)B.refresh();},300000);
+let anaShown=false,anaT=0;setInterval(()=>{try{if(child())return;const S=window.__hjmAnaS;if(!S||!S.run)return;const T={x:S.done},P={f:S.f,p:S.p};const d=document.getElementById('dlgStats'),open=!!(d&&d.open),keys=Object.keys(T||{}),busy=keys.length&&keys.some(k=>!T[k]);let el=document.getElementById('betaAna');
+ if(!el){el=document.createElement('div');el.id='betaAna';el.setAttribute('role','status');el.hidden=true;document.body.appendChild(el);}
+ if(busy&&!open){const f=(P&&P.f)||{},p=(P&&P.p)||{};el.textContent='Analizando pacientes…'+(f.t?' '+f.d+' de '+f.t:'')+(p.t?' · pendientes '+p.d+'/'+p.t:'');el.className='';el.hidden=false;anaShown=true;clearTimeout(anaT);}
+ else if(!busy&&anaShown&&!open){anaShown=false;el.textContent='✓ Análisis de pacientes terminado';el.className='ok';el.hidden=false;clearTimeout(anaT);anaT=setTimeout(()=>{el.hidden=true;},5000);}
+ else if(open&&!el.hidden){el.hidden=true;anaShown=busy;}}catch(_){}},700);
 let pdT=null;document.addEventListener('pointerdown',e=>{pdT=e.target;},true);
 document.addEventListener('click',e=>{const t=e.target;if(!t||!t.closest)return;const hv=t.closest('.hm-seg [data-hv]');if(hv&&e.detail>0&&!(pdT&&hv.contains(pdT))){e.preventDefault();e.stopImmediatePropagation();return;}const l=t.closest('label');if(l&&l.querySelector('.hm-seg')&&!t.closest('.hm-seg [data-hv]'))e.preventDefault();},true);
 document.addEventListener('focusin',e=>{if(e.target&&e.target.id==='cfgU'){e.target.readOnly=true;e.target.title='El usuario está ligado a tu cuenta de Google';}},true);
@@ -159,6 +165,7 @@ html body.pp-browse #pPanel #ppSharedHead #ppHeaderTabs .pp-view-btns.pp-view-bt
 html body #dlgResidentGate .resident-gate-buttons{flex-wrap:wrap!important}html body #dlgResidentGate .resident-gate-buttons>.resident-gate-submit{flex:1 1 100%!important}
 html body #dlgResidentGate .resident-gate-buttons [data-hjm-install]{flex:0 0 auto!important;margin:6px auto 0!important;font-size:12px!important;padding:7px 14px!important;min-height:0!important;border-radius:999px!important}
 [data-hjm-install]{display:inline-flex;align-items:center;gap:6px}[data-hjm-install][hidden]{display:none!important}[data-hjm-install] .ic{width:15px;height:15px}.hjm-inst-crab{width:18px;height:18px;object-fit:contain;border-radius:50%;background:#fff}
+#betaAna{position:fixed;left:14px;bottom:14px;z-index:2147483000;max-width:min(92vw,360px);padding:9px 14px;border-radius:12px;background:#1f3864;color:#fff;font:600 12.5px/1.35 var(--rd-sans,system-ui);box-shadow:0 6px 20px rgba(0,0,0,.25)}#betaAna.ok{background:#2E8B57}#betaAna[hidden]{display:none}
 #betaG{display:grid;justify-items:center;gap:10px;margin:4px 0 2px}#betaG[hidden]{display:none}
 .beta-g-t{margin:0;font-size:13px;text-align:center;color:var(--rd-mute,#5f6b78)}#betaGBtn{min-height:44px;width:100%;max-width:300px;display:flex;justify-content:center}
 .beta-g-who{margin:0;font-size:12px;font-weight:600;color:#8d3f42;text-align:center;overflow-wrap:anywhere}
@@ -302,7 +309,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="7.13">
+<meta name="application-version" content="7.14">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2639,7 +2646,7 @@ html body:not(.pp-browse) #pPanel #ppList.pp-list .dlg-item{display:flex!importa
 html body:not(.pp-browse) #pPanel #ppList.pp-list .dlg-item .pinfo{display:block!important;width:100%!important;min-width:0!important;padding:0!important}
 html body:not(.pp-browse) #pPanel #ppList.pp-list .pp-row-actions{position:static!important;display:flex!important;justify-content:flex-end!important;gap:5px!important;margin-top:5px!important}
 html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
-[data-hjm-install]{align-items:center;justify-content:center;gap:7px;white-space:nowrap}.resident-gate-buttons [data-hjm-install]{font-size:12px;border:1px solid var(--line);background:var(--surface);color:var(--navy);border-radius:12px;padding:10px 13px;cursor:pointer}.hjm-install-footer{display:flex;justify-content:flex-end;padding:10px 16px}.hjm-install-footer:has([hidden]){display:none}
+[data-hjm-install]{align-items:center;justify-content:center;gap:7px;white-space:nowrap}.resident-gate-buttons [data-hjm-install]{font-size:12px;border:1px solid var(--line);background:var(--surface);color:var(--navy);border-radius:12px;padding:10px 13px;cursor:pointer}.hjm-install-footer{display:flex;justify-content:flex-end;padding:10px 16px calc(88px + env(safe-area-inset-bottom,0px))}.hjm-install-footer:has([hidden]){display:none}
 }@media print{[data-hjm-install],.hjm-install-footer{display:none!important}}
 </style>
 <style id="hjm414-personal-css">.hjm-personal-download{width:100%;display:flex;flex-direction:column;align-items:center;gap:7px;margin:18px 0 0;padding-top:16px;border-top:1px solid var(--line,#d7e2ec)}.hjm-personal-download button{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 16px;font-size:13px}.hjm-personal-download small{font:11px/1.5 var(--rd-sans,Arial,sans-serif);color:var(--rd-mute,#758393);text-align:center}.hjm-personal-dialog{width:min(620px,calc(100vw - 24px));max-height:calc(100dvh - 24px);padding:0;border:1px solid var(--line,#d7e2ec);border-radius:18px;background:var(--surface,#fff);color:var(--ink,#24364b)}.hjm-personal-dialog::backdrop{background:#1a304866;backdrop-filter:blur(3px)}.hjm-personal-dialog form{padding:22px;display:grid;gap:15px}.hjm-personal-dialog header,.hjm-personal-dialog footer{display:flex;justify-content:space-between;align-items:center;gap:12px}.hjm-personal-dialog header strong{font-size:19px;color:var(--navy)}.hjm-personal-dialog header button{border:0;background:transparent;font-size:25px;cursor:pointer}.hjm-personal-dialog label{display:grid;gap:7px;font:600 12px/1.5 var(--rd-sans,Arial,sans-serif)}.hjm-personal-dialog input,.hjm-personal-dialog select{width:100%;min-width:0;padding:11px;border:1px solid var(--line,#ccd8e5);border-radius:10px;color:inherit;background:var(--surface,#fff);font:13px/1.5 var(--rd-sans,Arial,sans-serif)}.hjm-personal-dialog select{min-height:210px}.hjm-personal-dialog option{padding:6px;white-space:normal}.hjm-personal-dialog p,.hjm-personal-status{font:12px/1.6 var(--rd-sans,Arial,sans-serif);margin:0;color:var(--rd-mute,#758393)}.hjm-personal-dialog footer{justify-content:flex-end}.hjm-personal-dialog footer button{padding:10px 14px;border:1px solid var(--line,#ccd8e5);border-radius:10px;cursor:pointer}.hjm-personal-dialog [data-personal-go]{background:var(--navy,#193e60);color:#fff}.hjm-personal-dialog button:disabled{opacity:.6;cursor:wait}@media(max-width:500px){.hjm-personal-dialog form{padding:15px}.hjm-personal-dialog header strong{font-size:16px}.hjm-personal-dialog select{font-size:12px}}@media print{.hjm-personal-dialog,.hjm-personal-download{display:none!important}}</style>
@@ -2826,7 +2833,7 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 7.13 · Fecha de publicación: 09.11.26</div>
+  <div class="app-footer-version">Versión 7.14 · Fecha de publicación: 09.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la Jefatura del Servicio de Oncología. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -11577,7 +11584,7 @@ let tab="stats", pacQ="", DET={}, pendData=null;
 let PEND_RUN=false, BAD_RUN=false, BADERR="", TASK={stats:false,pac:false,pend:false,err:false}, PROG={};
 let STATS_RUN=0,STATS_ISSUES=[];
 function statsWait(promise,ms=60000){let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Drive no respondió a tiempo')),ms);})]).finally(()=>clearTimeout(timer));}
-function updStatus(){const e=$s('stStatus');if(!e)return;const done=Object.values(TASK).every(Boolean);e.classList.toggle('ok',done&&!STATS_ISSUES.length);if(done){e.textContent=STATS_ISSUES.length?'Revisión finalizada · '+STATS_ISSUES.join(' · '):driveOK()?'✓ Estadísticas listas':'Sin conexión con Drive · datos disponibles en este equipo';return;}const f=PROG.f||{d:0,t:0},p=PROG.p||{d:0,t:0};e.textContent='Analizando…'+(f.t?' · archivos '+f.d+'/'+f.t:'')+(p.t?' · pendientes '+p.d+'/'+p.t:'');}
+function updStatus(){try{window.__hjmAnaS={run:STATS_RUN,done:Object.values(TASK).every(Boolean),f:PROG.f,p:PROG.p};}catch(_){}const e=$s('stStatus');if(!e)return;const done=Object.values(TASK).every(Boolean);e.classList.toggle('ok',done&&!STATS_ISSUES.length);if(done){e.textContent=STATS_ISSUES.length?'Revisión finalizada · '+STATS_ISSUES.join(' · '):driveOK()?'✓ Estadísticas listas':'Sin conexión con Drive · datos disponibles en este equipo';return;}const f=PROG.f||{d:0,t:0},p=PROG.p||{d:0,t:0};e.textContent='Analizando…'+(f.t?' · archivos '+f.d+'/'+f.t:'')+(p.t?' · pendientes '+p.d+'/'+p.t:'');}
 function taskDone(k){ TASK[k]=true; PROG.cur=""; updStatus(); }
 const sink=(k,lbl)=>({set textContent(v){ const m=/(\d+) de (\d+)/.exec(String(v)); if(m&&k==="pend"){ PROG.p={d:+m[1],t:+m[2]}; updStatus(); } },get textContent(){ return ""; }});
 let MEDMSG="", _mini=null, _miniT=0;
@@ -11586,13 +11593,14 @@ function mini(text,state){ try{ if(!_mini){ _mini=document.createElement("div");
   _mini.innerHTML=(state==="ok"?"✓ ":'<span class="sp"></span>')+"<span></span>"; _mini.lastChild.textContent=text; _mini.classList.add("on"); _mini.classList.toggle("ok",state==="ok");
   try{ if(_mini.showPopover&&!_mini.matches(":popover-open")) _mini.showPopover(); }catch(_){}
   if(state==="ok") _miniT=setTimeout(()=>mini(""),6000); }catch(_){} }
-let JOBS=0; const G=(...a)=>{ const w=!/^hjm(Read|ReadFull|List|Pendientes)$/.test(a[0]); if(w) JOBS++; return (/^hjm(Read|ReadFull|List|Pendientes|PendientesExtra)$/.test(a[0])?statsWait(gcall(...a),20000):gcall(...a)).finally(()=>{ if(w) JOBS--; }); };
+let JOBS=0; const G=(...a)=>{ const w=!/^hjm(Read|ReadFull|List|Pendientes)$/.test(a[0]); if(w) JOBS++; return (/^hjm(Read|ReadFull|List|Pendientes|PendientesExtra)$/.test(a[0])?statsWait(gcall(...a),a[0]==="hjmList"?120000:60000):gcall(...a)).finally(()=>{ if(w) JOBS--; }); };
 async function bg(fn){ JOBS++; try{ return await fn(); } finally{ JOBS--; } }
 addEventListener("beforeunload",e=>{ if(JOBS>0){ e.preventDefault(); e.returnValue=""; } });
 const CENIMP={on:false,msg:""};
 let dirty=Object.keys(local).length>0, remoteCache=null, period=7, rangeA="", rangeB="", lastSync=0, syncMsg="";
 const pad=n=>String(n).padStart(2,"0");
-const dayKey=t=>{ const d=new Date(t); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); };
+/* v7.13 · Día de estadísticas = guardia según los cortes del censo (Lun–Vie 05:30 · Sáb–Dom 07:30, hora de CDMX): lo hecho antes del corte cuenta para la guardia anterior */
+const dayKey=t=>{ const off=6*36e5, ms=+new Date(t), d=new Date(ms-off); let y=d.getUTCFullYear(),m=d.getUTCMonth(),dd=d.getUTCDate(); const w=new Date(Date.UTC(y,m,dd)).getUTCDay(), cut=Date.UTC(y,m,dd,(w===0||w===6)?7:5,30)+off; if(ms<cut){ const p=new Date(Date.UTC(y,m,dd-1)); y=p.getUTCFullYear(); m=p.getUTCMonth(); dd=p.getUTCDate(); } return y+"-"+pad(m+1)+"-"+pad(dd); };
 const userName=()=>String(sessionUserName()||"").toLocaleUpperCase("es-MX").trim();
 /* v2.151 · Panel del cangrejo: SOLO el administrador, y solo si su usuario está registrado en la lista de usuarios */
 const isAdmin=()=>['stats','err','cmt','usr','pend'].some(accessPanelTab)||canPerm('descargar_index');
@@ -12100,7 +12108,7 @@ function censoCard(remote){
    ${lastPs?`<div class="st-click" role="button" tabindex="0" data-det="ps" title="Ver pacientes por servicio" style="margin-top:12px"><div class="st-msg" style="margin:0 0 6px"><b>Pacientes hospitalizados por clínica</b> · censo ${esc(lastPs.f||lastPs.k)}</div>${SRV.map(s=>`<div class="frow"><span>${NM[s]} <small>(${s})</small></span><div class="bar"><i style="width:${Math.round((lastPs.ps[s]||0)/psMx*100)}%"></i></div><b>${lastPs.ps[s]||0}</b></div>`).join("")}</div>`:""}
    ${rs.length?`<div class="st-scroll"><table class="st-act"><thead><tr><th>Clínica</th><th>Ingresos</th><th>Egresos</th></tr></thead><tbody>${SRV.map(s=>`<tr class="st-click" data-det="ing" data-dclin="${s}" tabindex="0" title="Ver ingresos y egresos de esta clínica"><td class="nm">${NM[s]} <small>(${s})</small></td><td>${sv("ing",s)}</td><td>${sv("egr",s)}</td></tr>`).join("")}</tbody></table></div>
    <div class="st-scroll" style="margin-top:12px"><table class="st-act"><thead><tr><th>Censo</th><th>Ingresos</th><th>Egresos</th><th>Cx realizadas</th><th>Cx programadas</th><th>Interconsultas</th><th>Solicitadas</th><th>Defunciones</th><th>Pacientes</th></tr></thead><tbody>${rs.slice(0,31).map(r=>`<tr><td class="nm">${esc(r.f||r.k)}</td><td>${SRV.reduce((n,s)=>n+((r.ing||{})[s]||0),0)}</td><td>${SRV.reduce((n,s)=>n+((r.egr||{})[s]||0),0)}</td><td>${(r.cr||[]).length}</td><td>${(r.cp||[]).length}</td><td>${Object.values(r.ic||{}).reduce((a,b)=>a+(+b||0),0)}</td><td>${cenCnt(r.iso)}</td><td title="${esc(r.dfn||"")}">${cenCnt(r.dfn)}</td><td>${r.tot||r.pac||0}</td></tr>`).join("")}</tbody></table></div>`:`<div class="st-msg">Aún no hay censos finales registrados en este periodo.</div>`}
-   ${admin?`<div style="display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap"><button type="button" class="st-btn st-sm" data-cenbf>Importar censos ya guardados</button><span class="st-msg" id="stCenMsg" style="margin:0" aria-live="polite">Trae los censos nuevos o modificados desde la última importación y pasa el último censo cargado desde fuera al Censo actual.</span></div>`:""}</div>`;
+   ${admin&&isTechnicalAdmin()?`<div style="display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap"><button type="button" class="st-btn st-sm" data-cenbf>Importar censos ya guardados</button><span class="st-msg" id="stCenMsg" style="margin:0" aria-live="polite">Trae los censos nuevos o modificados desde la última importación y pasa el último censo cargado desde fuera al Censo actual.</span></div>`:""}</div>`;
 }
 
 /* ===== v3.61 · Estadísticas con detalle: gráficas, listas y selector por clínica ===== */
@@ -16482,7 +16490,7 @@ html body #dlgDxFiles .dx-select-table tr>td:nth-child(n+5){grid-column:1/-1!imp
 
 <script id="hjm413-local-install" type="text/hjm-init">(()=>{'use strict';let installEvent=null;const label='Instalar aplicación',buttons=()=>document.querySelectorAll('[data-hjm-install]');
 function addButton(parent,footer=false){if(!parent||parent.querySelector('[data-hjm-install]'))return;const button=document.createElement('button');button.type='button';button.hidden=true;button.dataset.hjmInstall='';button.className='btn';button.innerHTML='<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 15v6h16v-6"/></svg><span>'+label+'</span><img class="hjm-inst-crab" alt="" data-logo="crab" src="'+((document.querySelector('header.top img.crab')||{}).src||'')+'">';button.addEventListener('click',async()=>{if(!installEvent)return;const event=installEvent;installEvent=null;buttons().forEach(b=>b.hidden=true);await event.prompt();await event.userChoice;});if(footer){const wrap=document.createElement('div');wrap.className='hjm-install-footer';wrap.append(button);parent.append(wrap);}else parent.append(button);}
-addButton(document.querySelector('#residentGateForm .resident-gate-buttons'));addButton(document.querySelector('.app-footer')||document.body,true);
+addButton(document.querySelector('.app-footer')||document.body,true);
 addEventListener('beforeinstallprompt',event=>{event.preventDefault();installEvent=event;buttons().forEach(b=>b.hidden=false);});addEventListener('appinstalled',()=>{installEvent=null;buttons().forEach(b=>b.hidden=true);});
 })();</script>
 
