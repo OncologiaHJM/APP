@@ -91,12 +91,12 @@ B.enter=async function(){if(B.entering)return;if(!B.token()){B.gate({});return;}
 B.refresh=async function(){if(!B.ses||!B.token())return;try{B.apply(await call('hjmSesion'),false);USERS_ERR='';}catch(e){if(e.code==='noautorizado')B.denied(e.message);else USERS_ERR='No se pudo actualizar la lista de usuarios ('+(typeof friendly==='function'?friendly(e):e.message)+').';}try{usersStateDraw();}catch(_){}};
 B.pushUsers=async function(ch){try{const s=await gcall('hjmUsuariosCambiar',ch);B.apply(s,false);HJM_OPS_DIRTY=false;USERS_ERR='';}catch(e){USERS_ERR='No se guardó el cambio en el servidor: '+(typeof friendly==='function'?friendly(e):e.message);await B.refresh();}try{usersStateDraw();}catch(_){}};
 B.lockUI=function(){B.exiting=true;B.gate({lock:true,msg:'Cerrando sesión…',state:'info'});};
-function wipe(){try{const raw=window.__hjmLSRaw;if(!raw)return;raw.keys().forEach(k=>{if(!/pendiente|cenq|queue|cola|beta-out/i.test(k))raw.del(k);});}catch(_){}}
+function wipe(keepT){try{const raw=window.__hjmLSRaw;if(!raw)return;raw.keys().forEach(k=>{if(/pendiente|cenq|queue|cola|beta-out/i.test(k))return;if(keepT&&k===SK)return;raw.del(k);});}catch(_){}}
 B.finishExit=async function(ok){try{if(outboxCount())await flushOutbox({quiet:true});}catch(_){}
  const left=(()=>{try{return outboxCount()+(typeof cenQCount==='function'?cenQCount():0);}catch(_){return 0;}})();
  const sh=B.shared();if(sh){B.setU('');}else{B.clear();B.out();}B.ses=null;
  if(!ok){B.exiting=false;if(sh)B.enter();else B.gate({keep:true});return;}
- wipe();status(left?'Sesión cerrada. Quedan '+left+' cambios por subir: se subirán cuando vuelvas a entrar con tu cuenta.':'Sesión cerrada.','ok');
+ wipe(sh);status(left?'Sesión cerrada. Quedan '+left+' cambios por subir: se subirán cuando vuelvas a entrar con tu cuenta.':'Sesión cerrada.','ok');
  setTimeout(()=>location.reload(),left?2500:600);};
 B.idle=function(){if(B.shared()){B.setU('');return;}B.clear();try{google.accounts.id.disableAutoSelect();}catch(_){}};
 B.decorate=function(host){if(!host||!isTechnicalAdmin()||!B.ses)return;const cu=B.ses.cuentas||{},by={};Object.keys(cu).forEach(e=>{const k=ukey(cu[e]);(by[k]=by[k]||[]).push(e);});
@@ -156,6 +156,9 @@ html body #dlgResidentGate.beta-gate #residentGateMsg{text-align:center}
 html body .app-footer p.app-footer-legal .legal-risk{white-space:pre-line}
 html body #dlgStats .usr-list{max-height:none!important;overflow:visible!important}
 html body.pp-browse #pPanel #ppSharedHead #ppHeaderTabs .pp-view-btns.pp-view-btns,html body.pp-browse #pPanel.cen-on #ppSharedHead #ppHeaderTabs .pp-view-btns.pp-view-btns,html body #pPanel #ppHeaderTabs .pp-view-btns.pp-view-btns{grid-template-columns:none!important;grid-auto-flow:column!important;grid-auto-columns:minmax(0,1fr)!important}html body #pPanel #ppHeaderTabs .pp-view-btns.pp-view-btns>*:not([hidden]){flex:1 1 0!important;min-width:0!important}html body #pPanel #ppHeaderTabs .pp-view-btns>[hidden]{display:none!important}
+html body #dlgResidentGate .resident-gate-buttons{flex-wrap:wrap!important}html body #dlgResidentGate .resident-gate-buttons>.resident-gate-submit{flex:1 1 100%!important}
+html body #dlgResidentGate .resident-gate-buttons [data-hjm-install]{flex:0 0 auto!important;margin:6px auto 0!important;font-size:12px!important;padding:7px 14px!important;min-height:0!important;border-radius:999px!important}
+[data-hjm-install]{display:inline-flex;align-items:center;gap:6px}[data-hjm-install][hidden]{display:none!important}[data-hjm-install] .ic{width:15px;height:15px}.hjm-inst-crab{width:18px;height:18px;object-fit:contain;border-radius:50%;background:#fff}
 #betaG{display:grid;justify-items:center;gap:10px;margin:4px 0 2px}#betaG[hidden]{display:none}
 .beta-g-t{margin:0;font-size:13px;text-align:center;color:var(--rd-mute,#5f6b78)}#betaGBtn{min-height:44px;width:100%;max-width:300px;display:flex;justify-content:center}
 .beta-g-who{margin:0;font-size:12px;font-weight:600;color:#8d3f42;text-align:center;overflow-wrap:anywhere}
@@ -16478,7 +16481,7 @@ html body #dlgDxFiles .dx-select-table tr>td:nth-child(n+5){grid-column:1/-1!imp
 
 
 <script id="hjm413-local-install" type="text/hjm-init">(()=>{'use strict';let installEvent=null;const label='Instalar aplicación',buttons=()=>document.querySelectorAll('[data-hjm-install]');
-function addButton(parent,footer=false){if(!parent||parent.querySelector('[data-hjm-install]'))return;const button=document.createElement('button');button.type='button';button.hidden=true;button.dataset.hjmInstall='';button.className='btn';button.innerHTML='<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 15v6h16v-6"/></svg><span>'+label+'</span>';button.addEventListener('click',async()=>{if(!installEvent)return;const event=installEvent;installEvent=null;buttons().forEach(b=>b.hidden=true);await event.prompt();await event.userChoice;});if(footer){const wrap=document.createElement('div');wrap.className='hjm-install-footer';wrap.append(button);parent.append(wrap);}else parent.append(button);}
+function addButton(parent,footer=false){if(!parent||parent.querySelector('[data-hjm-install]'))return;const button=document.createElement('button');button.type='button';button.hidden=true;button.dataset.hjmInstall='';button.className='btn';button.innerHTML='<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 15v6h16v-6"/></svg><span>'+label+'</span><img class="hjm-inst-crab" alt="" data-logo="crab" src="'+((document.querySelector('header.top img.crab')||{}).src||'')+'">';button.addEventListener('click',async()=>{if(!installEvent)return;const event=installEvent;installEvent=null;buttons().forEach(b=>b.hidden=true);await event.prompt();await event.userChoice;});if(footer){const wrap=document.createElement('div');wrap.className='hjm-install-footer';wrap.append(button);parent.append(wrap);}else parent.append(button);}
 addButton(document.querySelector('#residentGateForm .resident-gate-buttons'));addButton(document.querySelector('.app-footer')||document.body,true);
 addEventListener('beforeinstallprompt',event=>{event.preventDefault();installEvent=event;buttons().forEach(b=>b.hidden=false);});addEventListener('appinstalled',()=>{installEvent=null;buttons().forEach(b=>b.hidden=true);});
 })();</script>
