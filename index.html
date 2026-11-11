@@ -313,7 +313,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="7.28">
+<meta name="application-version" content="7.29">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2837,7 +2837,7 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 7.28 · Fecha de publicación: 11.11.26</div>
+  <div class="app-footer-version">Versión 7.29 · Fecha de publicación: 11.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -17461,9 +17461,10 @@ for(const original of pending){const live=document.createElement('script');for(c
     return names.length?`<p style="${F}font-size:7.5pt;font-weight:bold;text-align:${align};margin:13pt 0 0 0;line-height:1.3">${names.join("<br>")}</p>`:"";
   }
   function encabezado(d){
-    return `<table style="width:100%;border-collapse:collapse;border:none"><tr><td style="width:15%;border:none;padding:0;vertical-align:top">{{IMG0}}</td><td style="border:none;text-align:center;vertical-align:middle;font-family:'Times New Roman',serif;font-size:14pt;font-weight:bold;line-height:1.1">HOSPITAL JUÁREZ DE MÉXICO<br>ONCOLOGÍA</td><td style="width:15%;border:none;padding:0;text-align:right;vertical-align:top">{{IMG1}}</td></tr></table>`+
-    `<table style="width:100%;border-collapse:collapse;border:none;font-family:'Times New Roman',serif;font-size:10pt"><tr><td colspan="2" style="border:none;padding:2pt 0">NOMBRE DEL PACIENTE: <b style="font-size:14pt">${E(d.nombreCompleto||"")}</b></td><td style="border:none;padding:2pt 0;text-align:right;font-size:8pt">ALERGIAS: <b>${E(d.alergias||"")}</b></td></tr>`+
-    `<tr><td style="border:none;padding:2pt 0">No. de Expediente: <b style="font-size:11pt">${E(d.expediente||"")}</b></td><td style="border:none;padding:2pt 0;text-align:center">Cama: <b style="font-size:11pt">${E(d.cama||"")}</b></td><td style="border:none;padding:2pt 0;text-align:right">Fecha de Nacimiento: <b style="font-size:11pt">${E(d.fnac||"")}</b></td></tr></table>`;
+    const TD="border:none;padding:0;font-family:'Times New Roman',serif;";
+    return `<table style="width:100%;border-collapse:collapse;border:none"><tr><td style="${TD}width:15%;vertical-align:top">{{IMG0}}</td><td style="${TD}text-align:center;vertical-align:middle;font-size:14pt;font-weight:bold;line-height:1.1">HOSPITAL JUÁREZ DE MÉXICO<br>ONCOLOGÍA</td><td style="${TD}width:15%;text-align:right;vertical-align:top">{{IMG1}}</td></tr></table>`+
+    `<table style="width:100%;border-collapse:collapse;border:none"><tr><td style="${TD}font-size:10pt;vertical-align:bottom">NOMBRE DEL PACIENTE:&nbsp;&nbsp;<b style="font-size:14pt">${E(d.nombreCompleto||"")}</b></td><td style="${TD}text-align:right;vertical-align:bottom;font-size:8pt">ALERGIAS: <b>${E(d.alergias||"")}</b></td></tr></table>`+
+    `<table style="width:100%;border-collapse:collapse;border:none"><tr><td style="${TD}font-size:10pt">No. de Expediente:&nbsp;&nbsp;<b style="font-size:11pt">${E(d.expediente||"")}</b></td><td style="${TD}font-size:10pt;text-align:center">Cama:&nbsp;&nbsp;<b style="font-size:11pt">${E(d.cama||"")}</b></td><td style="${TD}font-size:10pt;text-align:right">Fecha de Nacimiento:&nbsp;&nbsp;<b style="font-size:11pt">${E(d.fnac||"")}</b></td></tr></table>`;
   }
   function rich(h){ return `<div style="${F}font-size:8.5pt;line-height:1.12;text-align:justify">${h}</div>`; }
   function cuerpo(tp,p){
@@ -17504,7 +17505,8 @@ for(const original of pending){const live=document.createElement('script');for(c
       const hjm=document.querySelector(".home-logo .seal")?.src||document.querySelector(".top .seal")?.src||"", crab=document.querySelector(".top > .seal.crab")?.src||"";
       const fecha=String(p.fecha||"").trim(), hora=String(p.hora||"").trim().replace(":",".");
       const o={ rid:String(r.id), exp, name:`${exp} ${tipoCorto(tp,p)} ${fecha}`.trim(), alt:`${exp} ${tipoCorto(tp,p)} ${fecha} ${hora}`.trim(),
-        header:encabezado(d), body:cuerpo(tp,p), imgs:[await png(hjm),await png(crab)] };
+        header:encabezado(d), body:cuerpo(tp,p), imgs:[await png(hjm),await png(crab)],
+        anchos:{ header:[[15,70,15],[75,25],[34,32,34]], body:tp==="notas"?[[15.5,84.5]]:[[17,83]] }, llenar:tp==="notas" };
       const H=host(), U=H.eval("typeof apiUrl==='function'?apiUrl():''"); if(!U) throw new Error("Sin conexión con el servidor"); const res=await H.call1(U,"hjmDocDrive",[o],120000);
       if(!res||!res.url) throw new Error("Sin respuesta del servidor");
       if(w) w.location.href=res.url; else window.open(res.url,"_blank");
