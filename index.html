@@ -313,7 +313,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="7.26">
+<meta name="application-version" content="7.27">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2837,7 +2837,7 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 7.26 · Fecha de publicación: 10.11.26</div>
+  <div class="app-footer-version">Versión 7.27 · Fecha de publicación: 11.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -8522,7 +8522,7 @@ function renderClinicalRecents(tp){
   $("clinicalRecentTitle").textContent=tp==="notas"?"Últimas notas":"Últimas indicaciones";
   const list=arCollectLive([tp]); // Fecha y hora del documento, de más nueva a más antigua.
   $("clinicalRecentList").innerHTML=list.length?`<table class="clinical-table"><thead><tr><th>Fecha</th><th>Tipo</th><th>Acciones</th></tr></thead><tbody>${list.map(e=>{const r=e.r,own=e.tp===tp;
-    const acts=own?`${rbBtn("edit","Editar",`data-cl-edit="${esc(r.id)}"`)}${rbBtn("view","Ver",`data-ar-ver="${tp}|${esc(r.id)}"`)}${rbBtn("print","Imprimir",`data-cl-print="${esc(r.id)}"`)}`:arActions(e);
+    const acts=own?`${rbBtn("edit","Editar",`data-cl-edit="${esc(r.id)}"`)}${rbBtn("view","Ver",`data-ar-ver="${tp}|${esc(r.id)}"`)}${rbBtn("print","Imprimir",`data-cl-print="${esc(r.id)}"`)}${window.hjmDriveBtn?hjmDriveBtn(`data-doc-drive="${tp}|${esc(r.id)}"`):""}`:arActions(e);
     return `<tr data-src="${esc(e.tp)}"><td><strong>${esc(e.fecha||"")}</strong><small>${esc(e.hora||"")}</small></td><td>${esc(own?((r.p&&r.p.tipo)||(tp==="notas"?"Nota":"Indicaciones")):e.tipo)}${!own&&e.detail?`<small class="clinical-detail">${esc(e.detail)}</small>`:""}<small class="clinical-saved-by">${hjmAuthorshipHTML(r)}</small></td><td>${acts}</td></tr>`;}).join("")}</tbody></table>`:`<div class="clinical-empty">Todavía no hay registros para este paciente.</div>`;
 }
 function openClinical(tp){
@@ -8683,7 +8683,7 @@ const CX_WORD={notas:"NOTA CANCELADA",prequx:"NOTA CANCELADA",indicaciones:"INDI
 function cxWord(tp){ return CX_WORD[tp]||"CANCELADO"; }
 function arCollect(src){return src.flatMap(tp=>(HIST[tp]||[]).map(r=>arEntry(tp,r))).sort((a,b)=>(b.ms-a.ms)||((b.r.ts||0)-(a.r.ts||0)));}
 const AR_EDIT=new Set(["notas","indicaciones","prequx","altas","solCx","repCx"]);   // v2.58 · Editar en notas, indicaciones, procedimientos y altas
-function arActions(e,allowDelete=false){const a=`data-ar-tp="${esc(e.tp)}" data-ar-id="${esc(e.r.id)}"`;return rbBtn("edit","Editar",a+' data-ar="view"')+rbBtn("view","Ver",a+' data-ar="ver"')+rbBtn("print","Imprimir",a+' data-ar="print"')+(allowDelete&&canDeleteClinicalRecord()?rbBtn("del","Borrar",a+' data-ar="del"'):"");}
+function arActions(e,allowDelete=false){const a=`data-ar-tp="${esc(e.tp)}" data-ar-id="${esc(e.r.id)}"`;return rbBtn("edit","Editar",a+' data-ar="view"')+rbBtn("view","Ver",a+' data-ar="ver"')+rbBtn("print","Imprimir",a+' data-ar="print"')+((e.tp==="notas"||e.tp==="indicaciones")&&window.hjmDriveBtn?hjmDriveBtn('data-doc-drive="'+esc(e.tp)+'|'+esc(e.r.id)+'"'):"")+(allowDelete&&canDeleteClinicalRecord()?rbBtn("del","Borrar",a+' data-ar="del"'):"");}
 const ARCHIVE_UI={patient:"",query:"",group:"all",sort:"desc",limits:{}};
 const AR_ICON_PATHS={all:'<path d="M3 7V5a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/><path d="M3 10h18"/>',notas:'<path d="M6 3h9l4 4v14H6zM15 3v5h4M9 12h7M9 16h7"/>',indicaciones:'<rect x="5" y="4" width="14" height="17" rx="2"/><rect x="9" y="2" width="6" height="4" rx="1"/><path d="m8 11 1 1 2-2M13 11h3m-8 6 1 1 2-2M13 17h3"/>',solCx:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 10h18m-9 3v5m-2.5-2.5h5"/>',repCx:'<path d="m3.5 18.5 9-9 2 2-9 9a1.4 1.4 0 0 1-2-2Z"/><path d="m13.5 8.5 7-6c.5 3-1.5 6-5 8l-2-2Z"/><path d="m12.5 9.5 1-1m0 2 1-1M7 16l2-2"/>',other:'<path d="M4 4h12v16H4zM8 8h5m-5 4h5m-5 4h3M16 7h4v15H8"/>'};
 function arIcon(key){return `<svg viewBox="0 0 24 24" aria-hidden="true">${AR_ICON_PATHS[key]||AR_ICON_PATHS.other}</svg>`;}
@@ -10772,7 +10772,7 @@ function arViewPop(tp,id){
   try{ html=kind==="cl"?clinicalPrintHTML(tp,r.p,data()):arGenericHTML(tp,r); }catch(_){ html=arGenericHTML(tp,r); }
   let d=$("dlgArView"); if(!d){ d=document.createElement("dialog"); d.id="dlgArView"; d.className="ar-view"; document.body.appendChild(d); }
   const ttl=(kind==="cl"&&r.p.tipo)?String(r.p.tipo):((CAT[tp]&&CAT[tp].tt)||(FORMATS[tp]&&FORMATS[tp].title)||"Documento");
-  d.innerHTML=`<div class="av-head"><div class="av-t"><b>${esc(ttl)}</b><small>${esc(r.t||"")} · ${esc(hjmAuthorshipText(r))}</small></div><div class="av-b">${!canPerm("editar_documentos")||isCx(r)?"":rbBtn("edit","Editar","data-ave")}${rbBtn("print","Imprimir","data-avp")}<button type="button" class="av-x" data-avx aria-label="Cerrar">×</button></div></div><iframe class="av-frame" title="Vista previa de ${esc(ttl)}"></iframe>`;
+  d.innerHTML=`<div class="av-head"><div class="av-t"><b>${esc(ttl)}</b><small>${esc(r.t||"")} · ${esc(hjmAuthorshipText(r))}</small></div><div class="av-b">${!canPerm("editar_documentos")||isCx(r)?"":rbBtn("edit","Editar","data-ave")}${rbBtn("print","Imprimir","data-avp")}${kind==="cl"&&window.hjmDriveBtn?hjmDriveBtn(`data-doc-drive="${tp}|${esc(id)}"`):""}<button type="button" class="av-x" data-avx aria-label="Cerrar">×</button></div></div><iframe class="av-frame" title="Vista previa de ${esc(ttl)}"></iframe>`;
   const fr=d.querySelector("iframe");
   const doc=`<!doctype html><html><head><meta charset="utf-8"><style>${arViewCss()}</style><style id="arViewCss">html,body{margin:0!important;padding:0!important;background:#e6e7e9!important;height:auto!important;overflow:auto!important;-webkit-user-select:text!important;user-select:text!important}body>*:not(#clinicalPrint){display:none!important}html body,html body #clinicalPrint,html body #clinicalPrint *{visibility:visible!important}#clinicalPrint{display:block!important;position:static!important;width:auto!important;height:auto!important;padding:14px 0 24px}.cp-page{margin:0 auto 16px!important;box-shadow:0 2px 14px rgba(0,0,0,.28);zoom:var(--z,1);-webkit-user-select:text;user-select:text}.cp-page *{-webkit-user-select:text;user-select:text}</style></head><body class="printing-clinical"><div id="clinicalPrint">${html}</div></body></html>`;
   fr.srcdoc=doc;
@@ -10923,7 +10923,7 @@ function ar2Row(e){
   let acts;
   if(e.dateOnly)acts="";
   else if(!cxable)acts=(adm?"":B("edit","Editar","view"))+B("view","Ver","ver")+(canPerm("imprimir_documentos")?B("print","Imprimir","print"):"")+(del?B("del","Borrar","del"," av2-del"):"");
-  else acts=(adm||cx?"":B("edit","Editar","view"))+B("view","Ver","ver")+(canPerm("imprimir_documentos")?B("print","Imprimir","print"):"")+(canPerm("cancelar_documentos")||canPerm("restaurar_documentos")?(cx?(adn?B("restore","Restaurar","restore"," av2-cx av2-rs"):""):(canPerm("cancelar_documentos")?B("cancel","Cancelar","cancel"," av2-del av2-cx"):"")):"")+(del?B("del","Borrar","del"," av2-del"):"");
+  else acts=(adm||cx?"":B("edit","Editar","view"))+B("view","Ver","ver")+(canPerm("imprimir_documentos")?B("print","Imprimir","print"):"")+((e.tp==="notas"||e.tp==="indicaciones")&&!cx&&canPerm("imprimir_documentos")&&window.hjmDriveIco?`<button type="button" class="av2-b av2-drive" data-doc-drive="${esc(e.tp)}|${esc(e.r.id)}" title="Crear Google Doc" aria-label="Drive">${hjmDriveIco}<span>Drive</span></button>`:"")+(canPerm("cancelar_documentos")||canPerm("restaurar_documentos")?(cx?(adn?B("restore","Restaurar","restore"," av2-cx av2-rs"):""):(canPerm("cancelar_documentos")?B("cancel","Cancelar","cancel"," av2-del av2-cx"):"")):"")+(del?B("del","Borrar","del"," av2-del"):"");
   const tag=cx?`<span class="av2-cxtag">${cxWord(e.tp)}</span>`:"";
   return `<article class="av2-row${e.dateOnly?" av2-dim":""}${cx?" av2-cancelled":""}" style="--c:${m.c}" data-src="${esc(e.tp)}"><span class="av2-ic">${arIcon(m.i)}</span><div class="av2-main"><div class="av2-t"><b>${esc(title)}</b>${m.n!==title?`<span class="av2-kind">${esc(m.n)}</span>`:""}</div><div class="av2-meta">${e.hora?`<span>${esc(e.hora)} h</span>`:""}${e.fecha?`<span class="av2-d">${esc(e.fecha)}</span>`:""}<span>${esc(savedBy(e.r))}</span></div>${pv?`<p class="av2-pv">${esc(pv)}</p>`:""}</div>${tag}<div class="av2-act">${acts}</div></article>`;
 }
@@ -17431,6 +17431,91 @@ for(const original of pending){const live=document.createElement('script');for(c
         return out; };
     }
   }
+})();
+</script>
+<style id="hjm-v727">
+.rb-drive{background:#fff!important;border-color:#c9d3df!important;color:#243446!important}
+.rb-drive svg.ic,.rb-drive svg{stroke:none!important;fill:initial}
+.rb-drive.busy,.av2-drive.busy{opacity:.6;pointer-events:none}
+.av2-drive svg{stroke:none!important}
+@media print{.rb-drive{display:none!important}}
+</style>
+<script id="hjm-v727-js">
+/* v7.27 · Botón «Drive» en notas médicas (sin notas de alta) e indicaciones: crea un Google Doc con el diseño de impresión en la carpeta Notas e Indicaciones (Codigo.gs beta-16, hjmDocDrive). Mismo registro → reemplaza el Doc anterior. */
+(function(){
+  const ICO='<svg class="ic" viewBox="0 0 87.3 78" aria-hidden="true"><path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/><path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0-1.2 4.5h27.5z" fill="#00ac47"/><path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/><path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/><path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/><path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/></svg>';
+  window.hjmDriveIco=ICO;
+  window.hjmDriveBtn=function(attrs){ return `<button type="button" class="rb rb-drive" title="Crear Google Doc en Drive" ${attrs}>${ICO}<span class="rb-l">Drive</span></button>`; };
+  const E=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const F='font-family:Arial,sans-serif;';
+  function tipoCorto(tp,p){
+    if(tp==="indicaciones") return "Indicacion";
+    let t=String((p&&p.tipo)||"Nota de Evolución"); try{ t=normalizedNoteType(t)||t; }catch(_){}
+    t=t.replace(/^nota\s+(de\s+)?/i,"").trim(); return t?t.charAt(0).toUpperCase()+t.slice(1):"Evolución";
+  }
+  function firmas(p,align){
+    const names=[p.adscrito,p.otros,p.residente].map(v=>String(v||"").split("/").map(x=>x.trim()).filter(Boolean).map(n=>{ let c=""; try{ c=cpOf(n); }catch(_){} return `${E(n)}${c?` <span style="font-size:6pt;font-weight:400">CP ${E(c)}</span>`:""}`; }).join(" / ")).filter(Boolean);
+    return names.length?`<p style="${F}font-size:7.5pt;font-weight:bold;text-align:${align};margin:13pt 0 0 0;line-height:1.3">${names.join("<br>")}</p>`:"";
+  }
+  function encabezado(d){
+    return `<table style="width:100%;border-collapse:collapse;border:none"><tr><td style="width:15%;border:none;padding:0;vertical-align:top">{{IMG0}}</td><td style="border:none;text-align:center;vertical-align:middle;font-family:'Times New Roman',serif;font-size:14pt;font-weight:bold;line-height:1.1">HOSPITAL JUÁREZ DE MÉXICO<br>ONCOLOGÍA</td><td style="width:15%;border:none;padding:0;text-align:right;vertical-align:top">{{IMG1}}</td></tr></table>`+
+    `<table style="width:100%;border-collapse:collapse;border:none;font-family:'Times New Roman',serif;font-size:10pt"><tr><td colspan="2" style="border:none;padding:2pt 0">NOMBRE DEL PACIENTE: <b style="font-size:14pt">${E(d.nombreCompleto||"")}</b></td><td style="border:none;padding:2pt 0;text-align:right;font-size:8pt">ALERGIAS: <b>${E(d.alergias||"")}</b></td></tr>`+
+    `<tr><td style="border:none;padding:2pt 0">No. de Expediente: <b style="font-size:11pt">${E(d.expediente||"")}</b></td><td style="border:none;padding:2pt 0;text-align:center">Cama: <b style="font-size:11pt">${E(d.cama||"")}</b></td><td style="border:none;padding:2pt 0;text-align:right">Fecha de Nacimiento: <b style="font-size:11pt">${E(d.fnac||"")}</b></td></tr></table>`;
+  }
+  function rich(h){ return `<div style="${F}font-size:8.5pt;line-height:1.12;text-align:justify">${h}</div>`; }
+  function cuerpo(tp,p){
+    let title="INDICACIONES MÉDICAS"; try{ if(tp==="notas") title=notePrintTitle(p.tipo); }catch(_){}
+    const T=`font-family:'Times New Roman',serif;font-size:14pt;font-weight:bold;text-align:center;`;
+    if(tp==="notas"){
+      let table=true; try{ table=clinicalNoteUsesTable(p.tipo); }catch(_){}
+      let content=""; try{ content=clinicalRichHTML(p.contenido); }catch(_){ content=E(p.contenido); }
+      if(!table) return `<p style="${T}margin:8pt 0">${E(title)}</p><p style="font-family:'Times New Roman',serif;font-size:12pt;font-weight:bold;margin:0">${E(p.fecha)}</p><p style="font-family:'Times New Roman',serif;font-size:12pt;font-weight:bold;margin:0 0 12pt 0">${E(p.hora)}</p>${rich(content)}${firmas(p,"right")}`;
+      let vit=""; try{ const s=p.signos||{}; vit=NOTE_VITAL_FIELDS.map(f=>{ let v=String(s[f.key]??"").trim(); if(!v) return ""; if(f.unit&&/^\d+(?:[.,]\d+)?$/.test(v)) v=v.replace(",",".")+" "+f.unit; return `<p style="${F}font-size:10pt;margin:0 0 12pt 0">${E(f.print)}: ${E(v)}</p>`; }).join(""); }catch(_){}
+      const B="border:1pt solid #000;";
+      return `<table style="width:100%;border-collapse:collapse;${B}margin-top:6pt"><tr><th style="${B}width:15.5%;padding:7pt 4pt;text-align:center;vertical-align:middle;${F}font-size:9pt;font-weight:bold">FECHA, HORA Y<br>SIGNOS VITALES</th><th style="${B}padding:7pt 4pt;text-align:center;vertical-align:middle;${T}">${E(title)}</th></tr>`+
+        `<tr><td style="${B}padding:12pt 7pt;vertical-align:top;${F}font-size:10pt"><p style="${F}font-size:10pt;font-weight:bold;text-align:center;margin:0">${E(p.fecha)}</p><p style="${F}font-size:10pt;font-weight:bold;text-align:center;margin:0 0 12pt 0">${E(p.hora)}</p>${vit}</td><td style="${B}padding:12pt 7pt;vertical-align:top">${rich(content)}${firmas(p,"right")}</td></tr></table>`;
+    }
+    const secs=[["DIETA",p.dieta],["SOLUCIONES",p.soluciones],["MEDICAMENTOS",p.medicamentos],["CUIDADOS GENERALES",p.cuidados]];
+    let pend=""; try{ if(clinicalRichHasText(p.pendientes||"")) pend=clinicalRichHTML(p.pendientes); }catch(_){}
+    const R=h=>{ try{ return clinicalRichHTML(h||""); }catch(_){ return E(h); } };
+    const lis=secs.map(x=>`<li style="${F}font-size:10pt;margin:0 0 5pt 0"><b>${x[0]}:</b><div style="${F}font-size:10pt">${R(x[1])}</div></li>`).join("");
+    return `<p style="${T}margin:8pt 0 10pt 0">INDICACIONES MÉDICAS</p><table style="width:100%;border-collapse:collapse;border:none"><tr><td style="width:17%;border:none;vertical-align:top;${F}font-size:10pt"><b>FECHA</b><br>${E(p.fecha)}<br>${E(p.hora)} HRS</td><td style="border:none;vertical-align:top"><ul style="margin:0;padding-left:18pt">${lis}</ul>${pend?`<div style="${F}font-size:10pt;margin-top:12pt">${pend}</div>`:""}</td></tr></table>${firmas(p,"right")}`;
+  }
+  async function png(src){
+    if(!src) return "";
+    try{ const im=new Image(); im.crossOrigin="anonymous"; await new Promise((ok,ko)=>{ im.onload=ok; im.onerror=ko; im.src=src; });
+      const c=document.createElement("canvas"), W=200, H=Math.round(200*(im.naturalHeight||1)/(im.naturalWidth||1)); c.width=W; c.height=H; c.getContext("2d").drawImage(im,0,0,W,H);
+      return c.toDataURL("image/png").split(",")[1]||""; }catch(_){ return ""; }
+  }
+  function host(){ try{ if(window.parent&&window.parent!==window&&typeof window.parent.call1==="function"&&typeof window.parent.apiUrl==="function") return window.parent; }catch(_){} return window; }
+  window.hjmDocDrive=async function(tp,id,btn){
+    if(!(tp==="notas"||tp==="indicaciones")) return;
+    try{ if(!accessRequire("imprimir_documentos")) return; }catch(_){}
+    const r=(HIST[tp]||[]).find(x=>x&&x.id===id); if(!r||!r.p){ try{ notify("No se encontró el registro.","warn"); }catch(_){} return; }
+    let p=r.p, d=data(); try{ p=clinStaffFixV(p); d=clinEncMerge(d,p); }catch(_){}
+    const exp=String(d.expediente||"").trim(); if(!exp){ try{ notify("El paciente no tiene expediente.","warn"); }catch(_){} return; }
+    const w=window.open("","_blank"); try{ if(w) w.document.write('<p style="font:16px system-ui;padding:24px">Creando el Google Doc…</p>'); }catch(_){}
+    if(btn) btn.classList.add("busy");
+    try{ notify("Creando el Google Doc en Drive…","info",4000); }catch(_){}
+    try{
+      const hjm=document.querySelector(".home-logo .seal")?.src||document.querySelector(".top .seal")?.src||"", crab=document.querySelector(".top > .seal.crab")?.src||"";
+      const fecha=String(p.fecha||"").trim(), hora=String(p.hora||"").trim().replace(":",".");
+      const o={ rid:String(r.id), exp, name:`${exp} ${tipoCorto(tp,p)} ${fecha}`.trim(), alt:`${exp} ${tipoCorto(tp,p)} ${fecha} ${hora}`.trim(),
+        header:encabezado(d), body:cuerpo(tp,p), imgs:[await png(hjm),await png(crab)] };
+      const H=host(), res=await H.call1(H.apiUrl(),"hjmDocDrive",[o],120000);
+      if(!res||!res.url) throw new Error("Sin respuesta del servidor");
+      if(w) w.location.href=res.url; else window.open(res.url,"_blank");
+      try{ notify(`${res.replaced?"Google Doc reemplazado":"Google Doc creado"}: ${res.name}`,"ok",6000); }catch(_){}
+    }catch(e){
+      try{ if(w) w.close(); }catch(_){}
+      const m=String((e&&e.message)||e||"");
+      try{ notify((e&&e.code==="accion")||/Acci[oó]n no permitida/.test(m)?"Falta actualizar Codigo.gs (beta-16) para crear Google Docs.":"No se pudo crear el Google Doc: "+m,"warn",8000); }catch(_){}
+    }finally{ if(btn) btn.classList.remove("busy"); }
+  };
+  document.addEventListener("click",e=>{
+    const b=e.target.closest&&e.target.closest("[data-doc-drive]"); if(!b) return;
+    e.preventDefault(); e.stopPropagation(); const [tp,id]=String(b.dataset.docDrive).split("|"); hjmDocDrive(tp,id,b);
+  },true);
 })();
 </script>
 </body>
