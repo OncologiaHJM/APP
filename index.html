@@ -313,7 +313,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="7.27">
+<meta name="application-version" content="7.28">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2837,7 +2837,7 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 7.27 · Fecha de publicación: 11.11.26</div>
+  <div class="app-footer-version">Versión 7.28 · Fecha de publicación: 11.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -17438,6 +17438,9 @@ for(const original of pending){const live=document.createElement('script');for(c
 .rb-drive svg.ic,.rb-drive svg{stroke:none!important;fill:initial}
 .rb-drive.busy,.av2-drive.busy{opacity:.6;pointer-events:none}
 .av2-drive svg{stroke:none!important}
+#clinicalRecentList td:has(> .rb-drive){flex-wrap:nowrap!important;gap:4px!important}
+#clinicalRecentList td:has(> .rb-drive)>.rb{flex:1 1 auto!important;min-width:0!important;padding-left:6px!important;padding-right:6px!important;gap:4px!important;white-space:nowrap!important;justify-content:center}
+#clinicalRecentList td:has(> .rb-drive)>.rb svg{flex:0 0 auto}
 @media print{.rb-drive{display:none!important}}
 </style>
 <script id="hjm-v727-js">
@@ -17487,7 +17490,7 @@ for(const original of pending){const live=document.createElement('script');for(c
       const c=document.createElement("canvas"), W=200, H=Math.round(200*(im.naturalHeight||1)/(im.naturalWidth||1)); c.width=W; c.height=H; c.getContext("2d").drawImage(im,0,0,W,H);
       return c.toDataURL("image/png").split(",")[1]||""; }catch(_){ return ""; }
   }
-  function host(){ try{ if(window.parent&&window.parent!==window&&typeof window.parent.call1==="function"&&typeof window.parent.apiUrl==="function") return window.parent; }catch(_){} return window; }
+  function host(){ try{ if(window.parent&&window.parent!==window&&typeof window.parent.call1==="function"&&window.parent.eval("typeof apiUrl")==="function") return window.parent; }catch(_){} return window; }
   window.hjmDocDrive=async function(tp,id,btn){
     if(!(tp==="notas"||tp==="indicaciones")) return;
     try{ if(!accessRequire("imprimir_documentos")) return; }catch(_){}
@@ -17502,7 +17505,7 @@ for(const original of pending){const live=document.createElement('script');for(c
       const fecha=String(p.fecha||"").trim(), hora=String(p.hora||"").trim().replace(":",".");
       const o={ rid:String(r.id), exp, name:`${exp} ${tipoCorto(tp,p)} ${fecha}`.trim(), alt:`${exp} ${tipoCorto(tp,p)} ${fecha} ${hora}`.trim(),
         header:encabezado(d), body:cuerpo(tp,p), imgs:[await png(hjm),await png(crab)] };
-      const H=host(), res=await H.call1(H.apiUrl(),"hjmDocDrive",[o],120000);
+      const H=host(), U=H.eval("typeof apiUrl==='function'?apiUrl():''"); if(!U) throw new Error("Sin conexión con el servidor"); const res=await H.call1(U,"hjmDocDrive",[o],120000);
       if(!res||!res.url) throw new Error("Sin respuesta del servidor");
       if(w) w.location.href=res.url; else window.open(res.url,"_blank");
       try{ notify(`${res.replaced?"Google Doc reemplazado":"Google Doc creado"}: ${res.name}`,"ok",6000); }catch(_){}
