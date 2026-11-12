@@ -327,7 +327,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="8.12">
+<meta name="application-version" content="8.13">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2833,7 +2833,7 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 8.12 · Fecha de publicación: 11.11.26</div>
+  <div class="app-footer-version">Versión 8.13 · Fecha de publicación: 11.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -9279,7 +9279,7 @@ function cenRevisa(per,cen){
   const out=[], add=(lv,cat,txt,act,r,qa)=>out.push({lv,cat,txt,act,r:r||null,qa:qa||""}), rows=(cen._all||cen.pac||[]).filter(r=>!r.exc), H=rows.filter(r=>r.sec==="H"), who=r=>(r.cama?r.cama+" · ":"")+(r.nombre||"Sin nombre")+(r.exp?" · Exp. "+r.exp:"");
   const hoy=cenIngDay(cenDot(per.next)), byId=new Map(uniqueFiles(DRIVE_FILES).map(f=>[f.id,f]));
   const cm=new Map(); H.forEach(r=>{ const c=String(r.cama||"").trim().toUpperCase(); if(c&&/^\d{3}$|^UCI|^URG|^CORON/i.test(c)) (cm.get(c)||cm.set(c,[]).get(c)).push(r); });
-  cm.forEach((a,c)=>{ if(a.length>1) add(3,"Cama repetida",`La cama ${c} la tienen ${a.length} pacientes: ${a.map(r=>r.nombre||r.exp).join(" y ")}.`,"Corrige la cama de quien ya no está ahí.",a[0]); a.slice(1).forEach(r=>add(3,"Cama repetida",`La cama ${c} también la tiene ${r.nombre||r.exp}.`,"Corrige la cama de quien ya no está ahí.",r)); });
+  cm.forEach((a,c)=>{ if(a.length<2) return; a.forEach(r=>add(3,"Cama repetida",who(r)+`: comparte la cama ${c} con ${a.filter(x=>x!==r).map(x=>x.nombre||x.exp).join(" y ")}.`,"Cambia su cama o, si ya se fue, registra su alta.",r,"alta")); });
   const em=new Map(); rows.forEach(r=>{ const e=String(r.exp||"").trim(); if(e) (em.get(e)||em.set(e,[]).get(e)).push(r); });
   em.forEach((a,e)=>{ if(a.length>1) add(3,"Paciente repetido",`El expediente ${e} (${a[0].nombre||""}) aparece ${a.length} veces en el censo.`,"Se unifican solos en un archivo; si sigue, revisa Panel › Pacientes.",a[0]); });
   H.forEach(r=>{ if(!r.ok) return; const tok=cenEstToks(r.est), ing=cenIngDay(r.ing), dias=Number.isFinite(ing)&&Number.isFinite(hoy)?Math.round((hoy-ing)/864e5):null, f=byId.get(r.k), m=(f&&f.meta)||{};
@@ -9302,25 +9302,22 @@ const CENRV={cat:"",lv:0,q:"",hid:false,arm:""};
 const cenRvKey=x=>x.cat+"|"+((x.r&&(x.r.exp||x.r.k))||x.txt);
 function cenRvOk(hoy){ try{ const o=JSON.parse(localStorage.getItem("cenRevisaOk")||"{}"); return Array.isArray(o[hoy])?o[hoy]:[]; }catch(_){ return []; } }
 function cenRvOkSet(hoy,k,on){ try{ const o=JSON.parse(localStorage.getItem("cenRevisaOk")||"{}"); Object.keys(o).forEach(d=>{ if(d!==hoy) delete o[d]; }); const a=new Set(o[hoy]||[]); on?a.add(k):a.delete(k); o[hoy]=[...a]; localStorage.setItem("cenRevisaOk",JSON.stringify(o)); }catch(_){} }
+const CEN_RV_BTN={"Cama repetida":"Cambiar cama","Paciente repetido":"Revisar paciente","Sin cama":"Asignar cama","Defunción sin egreso":"Revisar datos","Sin expediente":"Capturar expediente","Sin clínica":"Asignar clínica","Sin adscrito":"Asignar adscrito","Sin diagnóstico":"Capturar diagnóstico","Sin fecha de ingreso":"Capturar fecha de ingreso","Fecha de ingreso inválida":"Corregir fecha de ingreso","Fecha de ingreso futura":"Corregir fecha de ingreso","Marcado ALTA":"Cambiar estatus","INGRESO antiguo":"Cambiar estatus","Egreso con cama ocupada":"Revisar datos"};
 function cenRevisaHTML(per,cen){
   let L=[]; try{ L=cenRevisa(per,cen); }catch(_){ return ""; } CEN._rv=L; if(!L.length) return "";
-  const w=accessCensusWrite(), q=CENRV.q.trim().toLowerCase(), n3=L.filter(x=>x.lv===3).length, n2=L.length-n3;
-  const show=L.filter(x=>(!CENRV.lv||x.lv===CENRV.lv)&&(!CENRV.cat||x.cat===CENRV.cat)&&(!q||(x.cat+" "+x.txt).toLowerCase().includes(q))), cats=[...new Set(L.map(x=>x.cat))];
-  const chip=(lv,n,t)=>n?`<button type="button" class="cen-rv-c cen-rv${lv}" data-rvlv="${lv}" aria-pressed="${CENRV.lv===lv}"><i>${n}</i>${t}</button>`:"";
-  const btns=(x,i)=>{ const b=[]; if(x.r&&x.r.k&&w) b.push(`<button type="button" class="cen-btn" data-rvedit="${i}">Corregir</button>`);
-    if(x.qa&&x.r&&w){ const lb={alta:"Registrar alta",ce:"Cama a CE",rip:"Cama a RIP"}[x.qa], armed=CENRV.arm===cenRvKey(x); b.push(`<button type="button" class="cen-btn${armed?" cen-rv-arm":""}" data-rvqa="${i}">${armed?"¿Seguro? toca otra vez":lb}</button>`); } return b.join(""); };
-  const items=show.map(x=>{ const i=L.indexOf(x); return `<li class="cen-rv${x.lv}"><em>${esc(x.cat)}</em><span>${esc(x.txt)}${x.act?` <small>→ ${esc(x.act)}</small>`:""}</span><span class="cen-rv-b">${btns(x,i)}</span></li>`; }).join("");
-  const open=!!CEN._rvOpen, filt=L.length>4;
-  return `<details class="cen-rv" role="alert" data-rvbox${open?" open":""}><summary><b>⚠ Revisar datos del censo</b><span class="cen-rv-sum">${chip(3,n3,"por corregir")}${chip(2,n2,"incompletos")}</span></summary>
-   ${filt?`<div class="cen-rv-f"><input type="search" data-rvq placeholder="Buscar paciente, cama o expediente…" value="${esc(CENRV.q)}" autocomplete="off"><select data-rvcat><option value="">Todos los tipos</option>${cats.map(c=>`<option${CENRV.cat===c?" selected":""}>${esc(c)}</option>`).join("")}</select>${CENRV.lv||CENRV.cat||q?`<button type="button" class="cen-btn" data-rvclr>Quitar filtros</button>`:""}</div>`:""}
-   ${items?`<ul class="cen-rv-l">${items}</ul>`:`<div class="cen-rv-none">Ningún aviso con estos filtros.</div>`}
-   <small class="cen-rv-ft">Los avisos desaparecen solos al corregir el dato. Las acciones rápidas piden confirmación y no borran datos.</small></details>`;
+  const w=accessCensusWrite(), n3=L.filter(x=>x.lv===3).length, n2=L.length-n3, show=L.filter(x=>!CENRV.lv||x.lv===CENRV.lv);
+  const chip=(lv,n,t)=>n?`<button type="button" class="cen-rv-c cen-rv${lv}" data-rvlv="${lv}" aria-pressed="${CENRV.lv===lv&&!!CEN._rvOpen}"><i>${n}</i>${t}</button>`:"";
+  const btns=(x,i)=>{ const b=[]; if(!w||!x.r) return "";
+    if(x.qa){ const lb={alta:"Registrar alta",ce:"Pasar cama a CE",rip:"Pasar cama a RIP"}[x.qa], armed=CENRV.arm===cenRvKey(x); b.push(`<button type="button" class="cen-rv-btn cen-rv-q${armed?" cen-rv-arm":""}" data-rvqa="${i}">${armed?"¿Seguro? toca otra vez":lb}</button>`); }
+    if(x.r.k) b.push(`<button type="button" class="cen-rv-btn" data-rvedit="${i}">${esc(CEN_RV_BTN[x.cat]||"Corregir")}</button>`); return b.join(""); };
+  const items=show.map(x=>{ const i=L.indexOf(x); return `<li class="cen-rv${x.lv}"><div class="cen-rv-tx"><em>${esc(x.cat)}</em><span>${esc(x.txt)}</span>${x.act?`<small>${esc(x.act)}</small>`:""}</div><div class="cen-rv-b">${btns(x,i)}</div></li>`; }).join("");
+  return `<details class="cen-rv" data-rvbox${CEN._rvOpen?" open":""}><summary><b>Revisar datos del censo</b><span class="cen-rv-sum">${chip(3,n3,"por corregir")}${chip(2,n2,"incompletos")}</span></summary><ul class="cen-rv-l">${items}</ul></details>`;
 }
 (function(){
   const rr=()=>{ try{ cenRender(); }catch(_){} }, get=i=>(CEN._rv||[])[+i];
-  document.addEventListener("toggle",e=>{ const d=e.target; if(d&&d.matches&&d.matches("[data-rvbox]")) CEN._rvOpen=d.open; },true);
+  document.addEventListener("toggle",e=>{ const d=e.target; if(d&&d.matches&&d.matches("[data-rvbox]")){ CEN._rvOpen=d.open; if(!d.open) CENRV.lv=0; } },true);
   document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest("[data-rvlv],[data-rvedit],[data-rvqa],[data-rvclr]"); if(!t) return; e.preventDefault(); e.stopPropagation();
-    if(t.dataset.rvlv){ const v=+t.dataset.rvlv; CENRV.lv=CENRV.lv===v?0:v; CEN._rvOpen=true; return rr(); }
+    if(t.dataset.rvlv){ const v=+t.dataset.rvlv; if(CEN._rvOpen&&CENRV.lv===v){ CEN._rvOpen=false; CENRV.lv=0; } else { CEN._rvOpen=true; CENRV.lv=v; } return rr(); }
     if(t.hasAttribute("data-rvclr")){ CENRV.lv=0; CENRV.cat=""; CENRV.q=""; return rr(); }
     const x=get(t.dataset.rvedit!==undefined?t.dataset.rvedit:t.dataset.rvqa); if(!x) return;
     if(!accessCensusWrite()) return;
@@ -18086,6 +18083,31 @@ function hjmClinViewDoc(html){
 #dlgStats .sv-main table.st-act td.nm{white-space:nowrap!important}
 #dlgStats .cx-dx{min-width:0!important;max-width:none!important}
 #dlgStats .mv-m .st-scroll{max-height:none}
+}</style>
+<style id="hjm-v813">@media screen{
+html body .cen-rv{background:#fff!important;border:1px solid #E1E4E8!important;border-left:5px solid #B5473A!important;border-radius:12px!important;color:#2B2F33!important;padding:8px 12px!important;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+html body .cen-rv>summary{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;cursor:pointer;list-style:none}
+html body .cen-rv>summary::-webkit-details-marker{display:none}
+html body .cen-rv>summary::before{content:"▸";color:#B5473A;font-weight:800}html body .cen-rv[open]>summary::before{content:"▾"}
+html body .cen-rv>summary b{color:#B5473A;font-size:14px}
+html body .cen-rv-c{background:#F5F6F8!important;border:1px solid #DDE1E5!important;color:#2B2F33!important;outline:0!important}
+html body .cen-rv-c[aria-pressed=true]{background:#2B2F33!important;color:#fff!important;border-color:#2B2F33!important}
+html body .cen-rv-l{margin:10px 0 2px;padding:0;list-style:none;display:grid;gap:8px}
+html body .cen-rv-l li{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 12px;border-radius:10px;background:#F7F8FA!important;border:1px solid #E6E9EC;border-left:4px solid #D9822B!important}
+html body .cen-rv-l li.cen-rv3{border-left-color:#B5473A!important}
+html body .cen-rv-tx{flex:1 1 320px;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;line-height:1.4}
+html body .cen-rv-tx em{font-style:normal;font-weight:800;font-size:11.5px;padding:2px 8px;border-radius:8px;background:#fff;border:1px solid #DDE1E5;color:#2B2F33;white-space:nowrap}
+html body .cen-rv-l li.cen-rv3 .cen-rv-tx em{color:#B5473A;border-color:#E9C4BF}
+html body .cen-rv-tx span{color:#2B2F33;overflow-wrap:anywhere}
+html body .cen-rv-tx small{flex-basis:100%;color:#5F6670;font-size:12px}
+html body .cen-rv-b{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+html body .cen-rv-btn{font:600 13px/1.2 inherit;font-family:inherit;padding:8px 14px;border-radius:9px;border:1px solid #2F6FA7;background:#2F6FA7;color:#fff;cursor:pointer;white-space:nowrap}
+html body .cen-rv-btn:hover{filter:brightness(1.08)}
+html body .cen-rv-btn.cen-rv-q{background:#fff;color:#2F6FA7}
+html body .cen-rv-btn.cen-rv-arm{background:#B5473A!important;border-color:#B5473A!important;color:#fff!important}
+@media (max-width:600px){html body .cen-rv-b{margin-left:0;width:100%}html body .cen-rv-btn{flex:1 1 auto}}
+[data-theme="dark"] .cen-rv{background:#1F2328!important;border-color:#353B42!important;color:#E6E8EB!important}
+[data-theme="dark"] .cen-rv-l li{background:#262B31!important;border-color:#353B42}[data-theme="dark"] .cen-rv-tx span,[data-theme="dark"] .cen-rv-tx em{color:#E6E8EB}[data-theme="dark"] .cen-rv-tx em{background:#1F2328;border-color:#353B42}[data-theme="dark"] .cen-rv-c{background:#262B31!important;color:#E6E8EB!important;border-color:#353B42!important}
 }</style>
 </body>
 </html>
