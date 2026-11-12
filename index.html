@@ -327,7 +327,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="8.17">
+<meta name="application-version" content="8.18">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2841,7 +2841,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 8.17 · Fecha de publicación: 11.11.26</div>
+  <div class="app-footer-version">Versión 8.18 · Fecha de publicación: 11.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -9927,7 +9927,8 @@ function cenStatRec(cen,fname){
     if(!p){ const c=H0.filter(r=>{ const cm=nz(r.cama).trim(); return cm&&!/^\d{3}$/.test(cm)&&new RegExp("(^|[^0-9A-Z])"+cm.replace(/[.*+?^${}()|[\]\\]/g,"\\$&").replace(/\s+/g,"\\s*")+"($|[^0-9])").test(t); }); if(c.length===1) p=c[0]; }
     if(!p){ const ws=new Set(t.split(/[^A-ZÑ]+/).filter(w=>w.length>=4)); const c=H0.filter(r=>{ const a=nz(r.nombre).split(/\s+/).filter(w=>w.length>=4); return a.length>=2&&ws.has(a[0])&&ws.has(a[1]); }); if(c.length===1) p=c[0]; }
     return p?Object.assign({},x,{x:String(p.exp||""),s:cenSrvOf(p.clin)||"OTRO",n:p.nombre||"",d:String(p.dx||"").slice(0,160),c:String(p.cama||"")}):x; };
-  return {v:4,ps,il,el,k:key,f:cen.fecha,est,estc,g:cen.guardia||"",res:cen.res||"",por:cen.por||"",ts:Date.now(),ing,egr,nt,nttot:V("nt.TOT"),
+  const hx=(cen.pac||[]).filter(r=>!r.exc&&(r.sec||"H")==="H"&&String(r.exp||"").trim()).map(r=>[String(r.exp).trim(),cenSrvOf(r.clin)||"OTRO",String(r.nombre||"").slice(0,80),String(r.cama||"")]);
+  return {v:5,hx,ps,il,el,k:key,f:cen.fecha,est,estc,g:cen.guardia||"",res:cen.res||"",por:cen.por||"",ts:Date.now(),ing,egr,nt,nttot:V("nt.TOT"),
     cr:lst("cr",5,1).map(liga),cp:lst("cp",5,1).map(liga),cs:lst("cs",2,1).map(liga),cpe:lst("cpe",3),pr:lst("pr",2),tr:lst("tr",5),gr:lst("gr",5),
     ic:{ce:n("ic.ce"),ho:n("ic.ho"),ur:n("ic.ur"),te:n("ic.te"),qx:n("ic.qx")},iso:V("iso"),dfn:V("dfn"),ev:V("ev"),tot:n("tot")||((cen.pac||[]).filter(r=>!r.exc).length),pac:(cen.pac||[]).length};
 }
@@ -9941,7 +9942,7 @@ function cenStatPush(cen,now){
 async function cenStatBackfill(onTick,have){
   const all=(await cenList(true)).filter(x=>/^JCF\d{6}\.json$/i.test(x.name)), recs={}; let i=0, leidos=0, omit=0; have=have||{};
   /* v3.44 · solo se leen los censos nuevos o modificados después de su última importación */
-  const list=all.filter(x=>{ const o=cenFromName(x.name), k=o?o.y+"-"+String(o.m+1).padStart(2,"0")+"-"+String(o.d).padStart(2,"0"):"", h=k&&have[k], mt=Date.parse(x.modified||"")||0; if(h&&h.ts&&mt&&h.ts>mt&&h.v>=4){ omit++; return false; } return true; });
+  const list=all.filter(x=>{ const o=cenFromName(x.name), k=o?o.y+"-"+String(o.m+1).padStart(2,"0")+"-"+String(o.d).padStart(2,"0"):"", h=k&&have[k], mt=Date.parse(x.modified||"")||0; if(h&&h.ts&&mt&&h.ts>mt&&h.v>=5){ omit++; return false; } return true; });
   if(onTick) onTick(0,list.length);
   await ppPool(list,4,async x=>{ try{ const r=await cenReadEntry(x), o=r&&r.obj; if(o&&Array.isArray(o.pac||[])){ leidos++; const rec=cenStatRec(Object.assign({},o,{pac:o.pac||[]}),x.name); if(rec.k){ if(have[rec.k]&&have[rec.k].lig) rec.lig=have[rec.k].lig; recs[rec.k]=rec; } } }catch(_){} i++; if(onTick) onTick(i,list.length); });   /* v5.26 · 4 censos a la vez */
   const n=Object.keys(recs).length;
@@ -11817,13 +11818,39 @@ async function syncRemote(extra){
       o.upd=Date.now();
       const res=await writeStats(o,r.modified);
       if(res&&res.conflicto){ continue; }
-      remoteCache=o; dirty=false; lastSync=Date.now(); syncMsg=""; statBackup(o); return true;
+      statBackup(o); remoteCache=cenChainFix(o); dirty=false; lastSync=Date.now(); syncMsg=""; return true;
     }
     syncMsg="Otro equipo estaba guardando las estadísticas; se reintentará."; return false;
   }catch(e){ syncMsg="No se pudieron sincronizar las estadísticas: "+friendly(e); return false; }
 }
 window.__statSync=x=>syncRemote(x); window.__hjmStatsCensos=()=>(remoteCache&&remoteCache.censos)||{};
-async function loadRemote(){ if(!driveOK()) return null; try{ const r=await readStats(); remoteCache=r.obj; return r.obj; }catch(e){ syncMsg="No se pudieron leer las estadísticas: "+friendly(e); return remoteCache; } }
+
+/* v8.18 · Cifras del censo contadas en cadena (no se confía en la suma escrita a mano en el reverso):
+   - Ingreso = paciente hospitalizado (o que egresó) en este censo que NO estaba hospitalizado en el censo anterior ni en el de dos días antes.
+   - Egreso = cada paciente en ALTAS/DEFUNCIONES de este censo + quien estaba hospitalizado en el censo anterior y ya no aparece aquí ni en ALTAS/DEFUNCIONES de este censo ni del siguiente (egreso sin registrar).
+   - Si alguien falta un día y reaparece al siguiente, no se cuenta como egreso ni como ingreso (se marca «falta en el censo»).
+   - Sin censo del día anterior, se usa lo escrito en el reverso. La cifra del reverso se conserva (ingRev/egrRev) para compararla. */
+function cenChainFix(o){
+  try{ const C=(o&&o.censos)||{}, ks=Object.keys(C).filter(k=>C[k]&&/^\d{4}-\d\d-\d\d$/.test(k)).sort(), dk=(k,n)=>{ const d=new Date(k+"T12:00:00Z"); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); };
+    const setOf=r=>new Set((r&&Array.isArray(r.hx)?r.hx:[]).map(x=>x[0])), egSet=r=>new Set((r&&Array.isArray(r.el)?r.el:[]).map(x=>String(x.e||"").trim()).filter(Boolean));
+    ks.forEach(k=>{ const r=C[k]; if(!r.ingRev) r.ingRev=Object.assign({},r.ing||{}); if(!r.egrRev) r.egrRev=Object.assign({},r.egr||{});
+      if(!Array.isArray(r.hx)){ r.chk=null; r.ing=Object.assign({},r.ingRev); r.egr=Object.assign({},r.egrRev); return; }
+      const P=C[dk(k,-1)], P2=C[dk(k,-2)], N=C[dk(k,1)], hasP=P&&Array.isArray(P.hx), hasN=N&&Array.isArray(N.hx);
+      const hoyH=setOf(r), hoyE=egSet(r), prevH=setOf(P), prev2H=setOf(P2), nextH=setOf(N), nextE=egSet(N);
+      const ing={}, egr={}, add=(m,s)=>{ m[s]=(m[s]||0)+1; }, faltan=[], sinReg=[], nuevos=[];
+      if(hasP){
+        r.hx.forEach(x=>{ if(!prevH.has(x[0])&&!prev2H.has(x[0])){ add(ing,x[1]); nuevos.push({e:x[0],n:x[2],s:x[1]}); } });
+        (r.el||[]).forEach(x=>{ const e=String(x.e||"").trim(); if(e&&!prevH.has(e)&&!hoyH.has(e)) add(ing,x.s||"OTRO"); });
+        (r.el||[]).forEach(x=>add(egr,x.s||"OTRO"));
+        (P.hx||[]).forEach(x=>{ const e=x[0]; if(hoyH.has(e)||hoyE.has(e)) return; if(hasN&&nextH.has(e)){ faltan.push({e,n:x[2],s:x[1]}); return; } if(hasN&&nextE.has(e)) return; if(!hasN) return; add(egr,x[1]); sinReg.push({e,n:x[2],s:x[1],c:x[3]}); });
+      } else { SRVL.forEach(s=>{ ing[s]=(r.ingRev||{})[s]||0; egr[s]=(r.egrRev||{})[s]||0; }); }
+      const tot=m=>SRVL.reduce((a,s)=>a+(+m[s]||0),0); SRVL.forEach(s=>{ ing[s]=ing[s]||0; egr[s]=egr[s]||0; });
+      r.ing=ing; r.egr=egr; const dfnC=(r.el||[]).filter(x=>x.t==="D").length, dfnR=cenCnt(r.dfn);
+      r.chk=hasP?{ingR:tot(r.ingRev),ingC:tot(ing),egrR:tot(r.egrRev),egrC:tot(egr),dfnR,dfnC,faltan,sinReg,nuevos}:null; });
+  }catch(_){} return o;
+}
+
+async function loadRemote(){ if(!driveOK()) return null; try{ const r=await readStats(); remoteCache=cenChainFix(r.obj); return r.obj; }catch(e){ syncMsg="No se pudieron leer las estadísticas: "+friendly(e); return remoteCache; } }
 
 /* ---------- Agregación ---------- */
 /* v3.13 · Una sola cuenta por persona: las variantes del mismo usuario (usuario, nombre completo, nombre con «R5CO», con o sin DR./DRA.) se suman bajo su usuario de la lista.
@@ -12296,7 +12323,15 @@ function movView(remote){
    <div class="st-grid2"><div class="st-card"><h3>Ingresos contra egresos <small>· por día de censo</small></h3>${chartSVG(L,[{name:"Ingresos",v:A45.map(r=>sv("ing",r)),c:"#2F6FA7"},{name:"Egresos",v:A45.map(r=>sv("egr",r)),c:"#D9822B"}],{line:true,title:"Ingresos contra egresos",xName:"Censo"})}</div>
     <div class="st-card"><h3>Pacientes hospitalizados por día <small>· ${C?"de la clínica":"por clínica"}</small></h3>${chartSVG(L,serP,{stacked:true,title:"Pacientes por censo",avg:avgOf(A45.map(pd).filter(x=>x>0)),avgLabel:"Promedio",xName:"Censo"})}</div></div>
    <div class="st-card"><h3>Estado de los pacientes <small>· según el estatus escrito en el censo · toca una fila para verlo por día</small></h3>${noEc?'<div class="st-msg">Algunos censos aún no traen el estado separado por clínica; se completan solos en la próxima actualización automática.</div>':""}<div class="st-scroll"><table class="st-act mv-est"><thead><tr><th>Estado</th><th>Último censo<br><small>${esc(rs[0].f||rs[0].k)}</small></th><th>Promedio por día</th><th>Máximo en un día</th></tr></thead><tbody>${grp}</tbody></table></div><div class="st-msg" style="margin-top:6px">Un paciente cuenta una vez por cada censo en que tuvo ese estado; por eso se muestra el promedio diario y no la suma.</div></div>
-   ${byClin}${movLists(rs,C)}${icView(remote,true)}${movHist(rs,S,C,pd,dfnN)}${movAdmin()}`;
+   ${byClin}${movChk(rs)}${movLists(rs,C)}${icView(remote,true)}${movHist(rs,S,C,pd,dfnN)}${movAdmin()}`;
+}
+function movChk(rs){
+  const L=rs.filter(r=>r.chk&&(r.chk.ingR!==r.chk.ingC||r.chk.egrR!==r.chk.egrC||r.chk.dfnR!==r.chk.dfnC||r.chk.sinReg.length||r.chk.faltan.length)); const sinCadena=rs.filter(r=>!r.chk).length;
+  if(!L.length&&!sinCadena) return `<div class="st-msg" style="margin:0 0 8px">✓ Cifras verificadas en cadena: los ingresos, egresos y defunciones de todos los censos del periodo coinciden con el conteo de pacientes.</div>`;
+  const d=(a,b)=>a===b?`${b}`:`<b>${b}</b> <small class="st-sub">(reverso ${a})</small>`;
+  return `<div class="st-card mv-chk"><h3>Cifras corregidas en cadena <small>· ${L.length} censo(s) con diferencias${sinCadena?` · ${sinCadena} sin censo del día anterior (se usa el reverso)`:""}</small></h3>
+   <div class="st-msg" style="margin:0 0 6px">Las estadísticas usan el conteo de pacientes de cada censo comparado con el anterior y el siguiente, no la suma escrita en el reverso. Toca un censo para abrirlo.</div>
+   ${L.length?`<div class="mv-lim">${detTbl(["Censo","Ingresos","Egresos","Defunciones","Egresos sin registrar","Faltan un día"],L.map(r=>`<tr class="st-click" data-cenview="JCF${esc(String(r.f||"").replace(/\D/g,""))}.json" tabindex="0"><td class="nm">${esc(r.f||r.k)}</td><td>${d(r.chk.ingR,r.chk.ingC)}</td><td>${d(r.chk.egrR,r.chk.egrC)}</td><td>${d(r.chk.dfnR,r.chk.dfnC)}</td><td>${r.chk.sinReg.map(x=>esc((x.c?x.c+" · ":"")+(x.n||x.e))).join("<br>")||"—"}</td><td>${r.chk.faltan.map(x=>esc(x.n||x.e)).join("<br>")||"—"}</td></tr>`))}</div>`:""}</div>`;
 }
 function movLists(rs,C){
   const I=[], E=[]; rs.forEach(r=>{ (Array.isArray(r.il)?r.il:[]).filter(x=>!C||x.s===C).forEach(x=>I.push(detTr(arCl(x.e,[esc(r.f||r.k),esc(x.c||"—"),esc(x.n||"—"),esc(x.s==="OTRO"?"—":x.s),esc(x.e||"—"),esc(x.x||"")])))); (Array.isArray(r.el)?r.el:[]).filter(x=>!C||x.s===C).forEach(x=>E.push(detTr(arCl(x.e,[esc(r.f||r.k),x.t==="D"?"<b>Defunción</b>":"Alta",esc(x.c||"—"),esc(x.n||"—"),esc(x.s==="OTRO"?"—":x.s),esc(x.e||"—")])))); });
@@ -13247,7 +13282,7 @@ async function bakRun(force,say){
     say("Respaldo semanal: leyendo expedientes…");
     const pl=onlyJsonFiles(await G("hjmList",FOLDER.id));
     const pf=await bakReadAll(pl,async f=>{ try{ const r=await G("hjmReadFull",f.id); return r&&r.content; }catch(_){ return await G("hjmRead",f.id); } },(d,t)=>say("Respaldo semanal: expedientes "+d+" de "+t+"…"));
-    if(pf.length){ say("Respaldo semanal: guardando expedientes…"); r1=await bakUpload("PACIENTES_"+key+".zip",await bakZip(pf),force); }
+    if(pf.length){ say("Respaldo semanal: guardando expedientes…"); r1=await bakUpload("PACIENTES_"+key+".zip",await bakZip(pf),force); if(!(r1&&r1.existe)) await bakReviewAfter(pf,key,say); }
     say("Respaldo semanal: leyendo censos…");
     let cl0=[]; try{ cl0=await G("hjmCensoList"); }catch(_){}
     const cl=(Array.isArray(cl0)?cl0:[]).filter(x=>x&&/\.json$/i.test(x.name||""));
@@ -13258,6 +13293,73 @@ async function bakRun(force,say){
     say("Respaldo semanal guardado en línea","ok"); return true;
   }catch(e){ BAKERR=(e&&e.code==="accion")||/Acción no permitida/i.test(String(e&&e.message))?"Falta actualizar Codigo.gs a la versión 18.":"No se pudo hacer el respaldo en línea: "+friendly(e); say(""); return false; }
   finally{ BAKRUN=false; }
+}
+
+/* v8.18 · Revisión de respaldos: al guardar el respaldo semanal se compara con el anterior; si se perdieron pacientes o registros
+   se avisa en Descargas. Tabla de copias con Ver (diferencias contra lo guardado hoy) y Restaurar (suma lo perdido, nunca borra). Necesita Codigo.gs 22. */
+async function bakUnzip(u8){
+  const dv=new DataView(u8.buffer,u8.byteOffset,u8.byteLength), dec=new TextDecoder(), out=[]; let e=-1;
+  for(let i=u8.length-22;i>=0&&i>=u8.length-70000;i--) if(dv.getUint32(i,true)===0x06054b50){ e=i; break; } if(e<0) throw new Error("Respaldo dañado");
+  let n=dv.getUint16(e+10,true), p=dv.getUint32(e+16,true);
+  for(let j=0;j<n;j++){ const meth=dv.getUint16(p+10,true), cs=dv.getUint32(p+20,true), nl=dv.getUint16(p+28,true), xl=dv.getUint16(p+30,true), cl=dv.getUint16(p+32,true), lo=dv.getUint32(p+42,true), name=dec.decode(u8.subarray(p+46,p+46+nl));
+    const lnl=dv.getUint16(lo+26,true), lxl=dv.getUint16(lo+28,true), st=lo+30+lnl+lxl; let data=u8.subarray(st,st+cs);
+    if(meth===8) data=new Uint8Array(await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer());
+    out.push({name,text:dec.decode(data)}); p+=46+nl+xl+cl; }
+  return out;
+}
+async function bakDownload(id,say){ let parts=[],t=1; for(let i=0;i<t;i++){ const r=await G("hjmRespaldoLeer",id,i); t=r.total||1; parts.push(r.b64||""); if(say) say("Leyendo copia "+(i+1)+" de "+t+"…"); }
+  const bin=atob(parts.join("")), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return u; }
+const bakNameKey=n=>String(n||"").toLowerCase().replace(/\s\(\d+\)(?=\.json$|$)/,"");
+function bakCounts(obj){ const c={}; const walk=(v,path,d)=>{ if(Array.isArray(v)){ c[path]=v.length; return; } if(v&&typeof v==="object"&&d<2) Object.keys(v).forEach(k=>walk(v[k],path?path+"."+k:k,d+1)); }; walk(obj,"",0); return c; }
+const BAK_LBL=k=>({notas:"notas",indicaciones:"indicaciones",solicitudes:"solicitudes",altas:"notas de alta",registros:"registros",historial:"historial"}[k.split(".").pop()]||k);
+function bakDiff(oldF,newF){
+  const nm=new Map(newF.map(f=>[bakNameKey(f.name),f])), out=[], ek=v=>String(v||"").toUpperCase().replace(/[^0-9A-Z]/g,"").replace(/^0+(?=\d)/,""), byExp=new Map();
+  newF.forEach(f=>{ try{ const e=ek((JSON.parse(f.text).datos||{}).expediente); if(e&&!byExp.has(e)) byExp.set(e,f); }catch(_){} });
+  oldF.forEach(f=>{ if(!/\.json$/i.test(f.name)||/^_/.test(f.name)) return; let o=null; try{ o=JSON.parse(f.text); }catch(_){ return; } const d=(o&&o.datos)||{}, who={name:f.name,exp:String(d.expediente||""),nombre:String(d.nombres||d.nombre||[d.apellidoPaterno,d.apellidoMaterno,d.nombres].filter(Boolean).join(" ")||"")};
+    const g=nm.get(bakNameKey(f.name))||byExp.get(ek(d.expediente)); if(!g){ out.push(Object.assign(who,{tipo:"Archivo perdido",det:["El expediente ya no está en la carpeta de pacientes"]})); return; }
+    let n=null; try{ n=JSON.parse(g.text); }catch(_){ out.push(Object.assign(who,{tipo:"Archivo dañado",det:["El archivo actual no se puede leer"]})); return; }
+    const a=bakCounts(o), b=bakCounts(n), det=[]; Object.keys(a).forEach(k=>{ if((b[k]||0)<a[k]) det.push(`${a[k]-(b[k]||0)} ${BAK_LBL(k)} menos (${a[k]} → ${b[k]||0})`); });
+    const dn=(n&&n.datos)||{}; Object.keys(d).forEach(k=>{ const v=String(d[k]==null?"":d[k]).trim(); if(v&&typeof d[k]!=="object"&&!String(dn[k]==null?"":dn[k]).trim()) det.push(`«${k}» quedó vacío (antes: ${v.slice(0,40)})`); });
+    if(det.length) out.push(Object.assign(who,{tipo:"Datos perdidos",det})); });
+  return out;
+}
+async function bakReadCurrent(say){ await ensureFolder(); const pl=onlyJsonFiles(await G("hjmList",FOLDER.id));
+  return await bakReadAll(pl,async f=>{ try{ const r=await G("hjmReadFull",f.id); return r&&r.content; }catch(_){ return await G("hjmRead",f.id); } },(d,t)=>say&&say("Leyendo expedientes actuales "+d+" de "+t+"…")); }
+let BAKLIST=null, BAKREV=null, BAKVIEW=null;
+async function bakListLoad(){ try{ const l=await G("hjmRespaldoLista"); BAKLIST=Array.isArray(l)?l:[]; }catch(e){ BAKLIST=null; } try{ const r=await G("hjmRespaldoRevision"); BAKREV=r&&r.content?JSON.parse(r.content):null; }catch(_){ BAKREV=null; } }
+async function bakReviewAfter(newFiles,key,say){
+  try{ const l=await G("hjmRespaldoLista"), prev=(Array.isArray(l)?l:[]).filter(x=>/^PACIENTES_\d{6}\.zip$/.test(x.name)&&x.name!=="PACIENTES_"+key+".zip").sort((a,b)=>String(b.modified).localeCompare(String(a.modified)))[0];
+    if(!prev) return; say&&say("Respaldo semanal: comparando con la copia anterior…");
+    const old=await bakUnzip(await bakDownload(prev.id)), dif=bakDiff(old,newFiles);
+    const rev={fecha:new Date().toISOString(),nuevo:"PACIENTES_"+key+".zip",previo:prev.name,perdidos:dif,visto:false};
+    await G("hjmRespaldoRevision",JSON.stringify(rev)); BAKREV=rev; }catch(_){}
+}
+function bakCardHTML(){
+  const adm=isAdmin(), R=BAKREV, lost=R&&Array.isArray(R.perdidos)?R.perdidos:[];
+  const warn=lost.length?`<div class="bk-warn"><b>⚠ Posible pérdida de datos</b> entre ${esc(R.previo)} y ${esc(R.nuevo)} (revisado ${new Date(R.fecha).toLocaleString("es-MX",{dateStyle:"short",timeStyle:"short"})}): ${lost.length} expediente(s).
+     <div class="st-scroll"><table class="st-act"><thead><tr><th>Expediente</th><th>Paciente</th><th>Qué pasó</th><th>Detalle</th></tr></thead><tbody>${lost.map(x=>`<tr><td>${esc(x.exp||x.name)}</td><td>${esc(x.nombre||"")}</td><td><b>${esc(x.tipo)}</b></td><td>${x.det.map(esc).join("<br>")}</td></tr>`).join("")}</tbody></table></div>
+     <small>Para recuperarlos usa «Restaurar» en la copia ${esc(R.previo)}: se suman los registros perdidos sin borrar nada de lo actual.</small></div>`
+    :(R?`<div class="st-msg">✓ Última revisión (${esc(R.previo)} → ${esc(R.nuevo)}): sin pérdida de datos.</div>`:"");
+  const rows=(BAKLIST||[]).filter(x=>/^PACIENTES_/.test(x.name)).sort((a,b)=>String(b.modified).localeCompare(String(a.modified)));
+  const tbl=BAKLIST===null?`<div class="st-msg">Cargando copias…</div>`:rows.length?`<div class="st-scroll"><table class="st-act"><thead><tr><th>Copia</th><th>Fecha</th><th>Peso</th><th></th></tr></thead><tbody>${rows.map(x=>`<tr><td class="nm">${esc(x.name)}</td><td>${new Date(x.modified).toLocaleString("es-MX",{dateStyle:"short",timeStyle:"short"})}</td><td>${(x.size/1048576).toFixed(1)} MB</td><td style="white-space:nowrap"><button type="button" class="st-btn st-sm" data-bkv="${esc(x.id)}">Ver</button>${adm?` <button type="button" class="st-btn st-sm" data-bkr="${esc(x.id)}">Restaurar</button>`:""}</td></tr>`).join("")}</tbody></table></div>`:`<div class="st-msg">Aún no hay copias semanales.</div>`;
+  const view=BAKVIEW?`<div class="bk-view"><b>${esc(BAKVIEW.name)} contra lo guardado hoy</b> ${BAKVIEW.msg?`<span class="st-sub">${esc(BAKVIEW.msg)}</span>`:""}${BAKVIEW.dif?(BAKVIEW.dif.length?`<div class="st-scroll"><table class="st-act"><thead><tr><th>Expediente</th><th>Paciente</th><th>Diferencia</th><th>Detalle</th></tr></thead><tbody>${BAKVIEW.dif.map(x=>`<tr><td>${esc(x.exp||x.name)}</td><td>${esc(x.nombre||"")}</td><td><b>${esc(x.tipo)}</b></td><td>${x.det.map(esc).join("<br>")}</td></tr>`).join("")}</tbody></table></div><small>${BAKVIEW.nuevos||0} expediente(s) nuevos desde esa copia.</small>`:`<div class="st-msg">✓ Nada de esa copia se ha perdido: todo sigue en lo guardado hoy (${BAKVIEW.nuevos||0} expediente(s) nuevos desde entonces).</div>`):""}</div>`:"";
+  return `<div class="st-card bk-card" id="bkCard"><h3>Copias de seguridad semanales</h3>${warn}${tbl}${view}<div class="st-msg" id="bkMsg" aria-live="polite"></div></div>`;
+}
+function bakCardWire(host){
+  const box=host.querySelector("#bkCard"); if(!box) return; const msg=t=>{ const m=box.querySelector("#bkMsg"); if(m) m.textContent=t||""; }, redraw=()=>{ box.outerHTML=bakCardHTML(); bakCardWire(host); };
+  box.querySelectorAll("[data-bkv]").forEach(b=>b.onclick=async()=>{ const x=(BAKLIST||[]).find(y=>y.id===b.dataset.bkv); if(!x) return; BAKVIEW={name:x.name,msg:"Comparando…"}; redraw();
+    try{ const old=await bg(()=>bakDownload(x.id,t=>{ BAKVIEW.msg=t; })).then(bakUnzip); const cur=await bg(()=>bakReadCurrent(t=>{ BAKVIEW.msg=t; const s=host.querySelector(".bk-view .st-sub"); if(s) s.textContent=t; }));
+      const ks=new Set(old.map(f=>bakNameKey(f.name))); BAKVIEW={name:x.name,dif:bakDiff(old,cur),nuevos:cur.filter(f=>!ks.has(bakNameKey(f.name))).length,old}; }catch(e){ BAKVIEW={name:x.name,msg:"No se pudo comparar: "+friendly(e)}; } redraw(); });
+  box.querySelectorAll("[data-bkr]").forEach(b=>b.onclick=async()=>{ if(!isAdmin()) return; if(!b.dataset.ok){ b.dataset.ok="1"; b.textContent="¿Seguro? toca otra vez"; b.classList.add("st-danger"); setTimeout(()=>{ if(b.isConnected){ delete b.dataset.ok; b.textContent="Restaurar"; b.classList.remove("st-danger"); } },6000); return; }
+    const x=(BAKLIST||[]).find(y=>y.id===b.dataset.bkr); if(!x) return; b.disabled=true;
+    try{ await bg(async()=>{ msg("Leyendo la copia…"); const old=await bakUnzip(await bakDownload(x.id)); msg("Leyendo lo guardado hoy…"); const cur=await bakReadCurrent(t=>msg(t)); const dif=bakDiff(old,cur); if(!dif.length){ msg("✓ No hay nada que restaurar: no se perdió ningún dato de esa copia."); return; }
+      await ensureFolder(); const files=uniqueFiles(DRIVE_FILES||[]); let ok=0;
+      for(const d of dif){ const of=old.find(f=>f.name===d.name); if(!of) continue; let o; try{ o=JSON.parse(of.text); }catch(_){ continue; }
+        const f=files.find(z=>bakNameKey(z.name)===bakNameKey(d.name)); msg(`Restaurando ${ok+1} de ${dif.length}…`);
+        if(f){ const r=await readRemoteFull(f.id); const merged=r.obj?mergePatient(o,r.obj,null):o; await gcall("hjmSave",FOLDER.id,f.name,JSON.stringify(merged),JSON.stringify(f.meta||{}),JSON.stringify({forzar:true,base:r.modified||""})); }
+        else await gcall("hjmSave",FOLDER.id,d.name,JSON.stringify(o),JSON.stringify({app:"solicitudes-hjm",exp:String((o.datos||{}).expediente||"").slice(0,60)}),JSON.stringify({forzar:true}));
+        ok++; }
+      try{ PP_LAST=0; await loadPatients({fresco:true}); }catch(_){} msg(`✓ Se restauraron ${ok} expediente(s): se sumaron los registros perdidos y se recuperaron los archivos faltantes, sin borrar nada actual.`); }); }catch(e){ msg("No se pudo restaurar: "+friendly(e)); } b.disabled=false; });
 }
 async function bakAuto(){
   if(BAKRUN||!driveOK()||!userName()||Date.now()-BAKTRY<30*60000) return; if($("dlgResidentGate").open||(typeof IDLE_LOCKED!=="undefined"&&IDLE_LOCKED)) return;
@@ -13314,7 +13416,8 @@ document.addEventListener("click",e=>{
 function renderIdx(host){
  if(!accessRequire("ver_descargas"))return;
 
-  host.innerHTML=offDbHTML()+hjmExportCard();hjmExportPaint();window.__hjmDxMount?.();
+  host.innerHTML=offDbHTML()+(canPerm('descargar_bases')?bakCardHTML():"")+hjmExportCard();hjmExportPaint();window.__hjmDxMount?.();
+  if(canPerm('descargar_bases')){ bakCardWire(host); bakListLoad().then(()=>{ const c=host.querySelector("#bkCard"); if(c){ c.outerHTML=bakCardHTML(); bakCardWire(host); } }); }
   if(canPerm('descargar_bases')){bakPaint(host);bakInfo().then(()=>bakPaint(host));}
   { const nb=host.querySelector("#btnBakNow"); if(nb) nb.onclick=async()=>{ if(!canPerm('descargar_bases')||BAKRUN) return; nb.disabled=true; const m=host.querySelector("#dbMsg"); const ok=await bg(()=>bakRun(true,t=>{ if(m){ m.textContent=t||""; m.style.color=""; } })); if(m){ m.textContent=ok?"Copia en línea guardada.":(BAKERR||"No se pudo hacer la copia."); m.style.color=ok?"#2E8B57":""; } bakPaint(host); nb.disabled=false; }; }
   offDlWire(host.querySelector(".off-dl"));
@@ -18143,6 +18246,13 @@ html body .cen-rv-pl em{font-style:normal;font-weight:800;font-size:11.5px;paddi
 html body .cen-rv-pl em.cen-rv-e3{color:#B5473A;border-color:#E9C4BF}
 html body .cen-rv-pl span{color:#2B2F33;overflow-wrap:anywhere}
 [data-theme="dark"] .cen-rv-pt,[data-theme="dark"] .cen-rv-pl span{color:#E6E8EB}[data-theme="dark"] .cen-rv-pl em{background:#1F2328;border-color:#353B42;color:#E6E8EB}
+}</style>
+<style id="hjm-v818">@media screen{
+.bk-warn{margin:0 0 10px;padding:10px 12px;border-radius:10px;background:#FBECEA;border:1px solid #E9C4BF;border-left:5px solid #B5473A;color:#5A1F18}
+.bk-warn b{color:#B5473A}.bk-warn small{display:block;margin-top:6px}
+.bk-view{margin-top:10px;padding:10px 12px;border-radius:10px;background:#F4F7FB;border:1px solid #DCE4EE}
+#dlgStats .mv-chk{border-left:4px solid #2F6FA7}
+[data-theme="dark"] .bk-warn{background:#3A1F1C;color:#F3D6D2;border-color:#6A2E27}[data-theme="dark"] .bk-view{background:#1F2730;border-color:#33404D}
 }</style>
 </body>
 </html>
