@@ -102,11 +102,11 @@ B.enter=async function(){if(B.entering)return;if(!B.token()){B.gate({});return;}
  }finally{B.entering=false;}};
 B.refresh=async function(){if(!B.ses||!B.token())return;try{B.apply(await call('hjmSesion'),false);USERS_ERR='';}catch(e){if(e.code==='noautorizado')B.denied(e.message);else USERS_ERR='No se pudo actualizar la lista de usuarios ('+(typeof friendly==='function'?friendly(e):e.message)+').';}try{usersStateDraw();}catch(_){}};
 B.pushUsers=async function(ch){try{const s=await gcall('hjmUsuariosCambiar',ch);B.apply(s,false);HJM_OPS_DIRTY=false;USERS_ERR='';}catch(e){USERS_ERR='No se guardó el cambio en el servidor: '+(typeof friendly==='function'?friendly(e):e.message);await B.refresh();}try{usersStateDraw();}catch(_){}};
-B.lockUI=function(){B.exiting=true;if(B.shared()&&B.ses){B.pick(Object.assign({},B.ses,{usuario:''}));return;}B.gate({lock:true,msg:'Cerrando sesión…',state:'info'});};
+B.lockUI=function(){B.exiting=true;if(B.shared()&&B.ses&&!B.forceOut){B.pick(Object.assign({},B.ses,{usuario:''}));return;}B.gate({lock:true,msg:'Cerrando sesión…',state:'info'});};
 function wipe(keepT){try{const raw=window.__hjmLSRaw;if(!raw)return;raw.keys().forEach(k=>{if(/pendiente|cenq|queue|cola|beta-out/i.test(k))return;if(keepT&&k===SK)return;raw.del(k);});}catch(_){}}
 B.finishExit=async function(ok){try{if(outboxCount())await flushOutbox({quiet:true});}catch(_){}
  const left=(()=>{try{return outboxCount()+(typeof cenQCount==='function'?cenQCount():0);}catch(_){return 0;}})();
- const sh=B.shared();if(sh){B.setU('');B.exiting=false;const cat=B.ses;B.ses=null;if(cat)B.pick(Object.assign({},cat,{usuario:''}));else B.enter();return;}
+ const sh=B.shared()&&!B.forceOut;B.forceOut=false;if(sh){B.setU('');B.exiting=false;const cat=B.ses;B.ses=null;if(cat)B.pick(Object.assign({},cat,{usuario:''}));else B.enter();return;}
  B.clear();B.out();B.ses=null;
  if(!ok){B.exiting=false;B.gate({keep:true});return;}
  wipe();status(left?'Sesión cerrada. Quedan '+left+' cambios por subir: se subirán cuando vuelvas a entrar con tu cuenta.':'Sesión cerrada.','ok');
@@ -327,7 +327,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="8.10">
+<meta name="application-version" content="8.12">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2833,7 +2833,7 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 8.10 · Fecha de publicación: 11.11.26</div>
+  <div class="app-footer-version">Versión 8.12 · Fecha de publicación: 11.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -12278,17 +12278,17 @@ function movView(remote){
 function movLists(rs,C){
   const I=[], E=[]; rs.forEach(r=>{ (Array.isArray(r.il)?r.il:[]).filter(x=>!C||x.s===C).forEach(x=>I.push(detTr(arCl(x.e,[esc(r.f||r.k),esc(x.c||"—"),esc(x.n||"—"),esc(x.s==="OTRO"?"—":x.s),esc(x.e||"—"),esc(x.x||"")])))); (Array.isArray(r.el)?r.el:[]).filter(x=>!C||x.s===C).forEach(x=>E.push(detTr(arCl(x.e,[esc(r.f||r.k),x.t==="D"?"<b>Defunción</b>":"Alta",esc(x.c||"—"),esc(x.n||"—"),esc(x.s==="OTRO"?"—":x.s),esc(x.e||"—")])))); });
   const box=(t,n,h,rows,k)=>`<div class="st-card"><h3>${t} <small>· ${n} en el periodo</small></h3>${rows.length?`<div class="mv-lim">${detTbl(arHd(h),rows.slice(0,12))}</div>${rows.length>12?`<div class="on-go"><button type="button" class="st-btn st-sm" data-det="${k}" ${C?`data-dclin="${C}"`:""}>Ver los ${rows.length} con gráficas →</button></div>`:""}`:'<div class="st-msg">Sin registros.</div>'}</div>`;
-  return `<div class="st-grid2">${box("Pacientes que ingresaron",I.length,["Censo","Cama","Paciente","Clínica","Expediente","Estatus"],I,"ing")}${box("Pacientes que egresaron",E.length,["Censo","Tipo","Cama","Paciente","Clínica","Expediente"],E,"egr")}</div>`;
+  return `<div class="mv-stack">${box("Pacientes que ingresaron",I.length,["Censo","Cama","Paciente","Clínica","Expediente","Estatus"],I,"ing")}${box("Pacientes que egresaron",E.length,["Censo","Tipo","Cama","Paciente","Clínica","Expediente"],E,"egr")}</div>`;
 }
 function movHist(rs,S,C,pd,dfnN){
   const q=String(MOVF.q||"").trim(), byM={}; rs.forEach(r=>{ const m=r.k.slice(0,7); (byM[m]=byM[m]||[]).push(r); });
-  const ms=Object.keys(byM).sort().reverse(); if(!MOV_OPEN.size&&ms[0]) MOV_OPEN.add(ms[0]);
+  const ms=Object.keys(byM).sort().reverse();
   const sv=(o,r)=>S.reduce((n,s)=>n+(((r||{})[o]||{})[s]||0),0);
-  const cv=canPerm("ver_censos_archivados"), row=r=>`<tr${cv?` class="st-click" data-cenview="JCF${esc(String(r.f||"").replace(/\D/g,""))}.json" tabindex="0" title="Ver este censo"`:""}><td class="nm">${esc(r.f||r.k)} <small>${["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"][new Date(r.k+"T12:00:00").getDay()]}</small></td><td>${pd(r)}</td><td>${sv("ing",r)}</td><td>${sv("egr",r)}</td><td title="${esc(r.dfn||"")}">${dfnN(r)}</td><td>${(r.cr||[]).length}</td><td>${(r.cs||[]).length}</td><td>${icTot(r)}</td><td>${esc(r.g||r.res||"")}</td></tr>`;
-  const sec=ms.map(m=>{ const a=byM[m].filter(r=>!q||(String(r.f||"")+" "+(r.g||"")+" "+(r.res||"")).toLowerCase().includes(q.toLowerCase())); if(!a.length) return "";
+  const cv=canPerm("ver_censos_archivados"), row=r=>`<tr${cv?` class="st-click" data-cenview="JCF${esc(String(r.f||"").replace(/\D/g,""))}.json" tabindex="0" title="Ver este censo"`:""}><td class="nm">${esc(r.f||r.k)} <small>${["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"][new Date(r.k+"T12:00:00").getDay()]}</small></td><td>${pd(r)}</td><td>${sv("ing",r)}</td><td>${sv("egr",r)}</td><td title="${esc(r.dfn||"")}">${dfnN(r)}</td><td>${(r.cr||[]).length}</td><td>${(r.cs||[]).length}</td><td>${icTot(r)}</td></tr>`;
+  const sec=ms.map(m=>{ const a=byM[m].filter(r=>!q||String(r.f||"").toLowerCase().includes(q.toLowerCase())); if(!a.length) return "";
     const tI=a.reduce((n,r)=>n+sv("ing",r),0), tE=a.reduce((n,r)=>n+sv("egr",r),0), tC=a.reduce((n,r)=>n+(r.cr||[]).length,0);
-    return `<details class="mv-m" data-mvm="${m}"${MOV_OPEN.has(m)||q?" open":""}><summary><b>${MES[+m.slice(5)-1].replace(/^./,c=>c.toUpperCase())} ${m.slice(0,4)}</b><span>${a.length} censo(s) · ${tI} ingresos · ${tE} egresos · ${tC} cirugías</span></summary><div class="st-scroll"><table class="st-act"><thead><tr><th>Censo</th><th>Pacientes</th><th>Ingresos</th><th>Egresos</th><th>Defunciones</th><th>Cx realizadas</th><th>Cx suspendidas</th><th>Interconsultas</th><th>Guardia</th></tr></thead><tbody>${a.map(row).join("")}</tbody></table></div></details>`; }).join("");
-  return `<div class="st-card"><h3>Historial de censos finales <small>· ${rs.length} censo(s) del periodo, agrupados por mes${C?" · columnas de pacientes, ingresos, egresos y defunciones de "+esc(SRVN[C]):""}</small></h3><div class="on-tb mv-tb"><input type="search" class="st-in" data-mv="q" value="${esc(MOVF.q)}" placeholder="Buscar fecha (ej. 05.11) o guardia…" autocomplete="off"><button type="button" class="st-btn st-sm" data-mvall="1">Abrir todos</button><button type="button" class="st-btn st-sm" data-mvall="0">Cerrar todos</button></div><div id="mvHist">${sec||'<div class="st-msg">Ningún censo coincide con la búsqueda.</div>'}</div><div class="st-msg" style="margin-top:6px">Usa «Todo» o «Día / Rango» arriba para ver meses anteriores.</div></div>`;
+    return `<details class="mv-m" data-mvm="${m}"${MOV_OPEN.has(m)||q?" open":""}><summary><b>${MES[+m.slice(5)-1].replace(/^./,c=>c.toUpperCase())} ${m.slice(0,4)}</b><span>${a.length} censo(s) · ${tI} ingresos · ${tE} egresos · ${tC} cirugías</span></summary><div class="st-scroll"><table class="st-act"><thead><tr><th>Censo</th><th>Pacientes</th><th>Ingresos</th><th>Egresos</th><th>Defunciones</th><th>Cx realizadas</th><th>Cx suspendidas</th><th>Interconsultas</th></tr></thead><tbody>${a.map(row).join("")}</tbody></table></div></details>`; }).join("");
+  return `<div class="st-card"><h3>Historial de censos finales <small>· ${rs.length} censo(s) del periodo, agrupados por mes${C?" · columnas de pacientes, ingresos, egresos y defunciones de "+esc(SRVN[C]):""}</small></h3><div class="on-tb mv-tb"><input type="search" class="st-in" data-mv="q" value="${esc(MOVF.q)}" placeholder="Buscar fecha del censo (ej. 05.11)…" autocomplete="off"><button type="button" class="st-btn st-sm" data-mvall="1">Abrir todos</button><button type="button" class="st-btn st-sm" data-mvall="0">Cerrar todos</button></div><div id="mvHist">${sec||'<div class="st-msg">Ningún censo coincide con la búsqueda.</div>'}</div><div class="st-msg" style="margin-top:6px">Usa «Todo» o «Día / Rango» arriba para ver meses anteriores.</div></div>`;
 }
 function movAdmin(){ return isAdmin()&&isTechnicalAdmin()?`<div class="st-card"><h3>Mantenimiento <small>· solo Administrador Técnico</small></h3><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button type="button" class="st-btn st-sm" data-cenbf>Importar censos ya guardados</button><span class="st-msg" id="stCenMsg" style="margin:0" aria-live="polite">Los censos nuevos o modificados se integran solos en segundo plano. Este botón además pasa el último censo cargado desde fuera al Censo actual.</span></div></div>`:""; }
 function movWire(root){
@@ -12317,7 +12317,7 @@ function qxView(remote){
      return `<div class="st-card cx-pend"><h3>Cirugías sin paciente ligado <small>· ${pend.length} · no cuentan por clínica hasta ligarlas</small></h3><div class="mv-lim">${detTbl(["Censo","Tipo","Texto del censo","Dato","Paciente"],pend.map(({r,x,key})=>detTr([esc(r.f||r.k),{cr:"Realizada",cp:"Programada",cs:"Suspendida"}[key],esc(x.t||""),esc(x.e||""),cxCell(x)])))}</div><div class="st-msg" style="margin-top:6px">Se ligan solas cuando el texto trae la cama, el expediente o los dos apellidos de un paciente de ese mismo censo. ${cxCanLink()?"Usa «Ligar paciente» para las demás.":""}</div></div>`; })()}
    <div class="st-grid2"><div class="st-card"><h3>Cirugías realizadas por día de la semana <small>· promedio</small></h3>${chartSVG(WD,[{name:"Realizadas",v:wc.map((v,i)=>wn[i]?+(v/wn[i]).toFixed(1):0),c:"#3C8D5A"}],{title:"Por día de la semana",dec:1})}</div>
     <div class="st-card"><h3>Procedimientos y transfusiones <small>· por día de censo</small></h3>${chartSVG(L,[{name:"Procedimientos",v:A45.map(r=>(r.pr||[]).length),c:"#2A9D9D"},{name:"Transfusiones",v:A45.map(r=>(r.tr||[]).length),c:"#D9822B"}],{title:"Procedimientos y transfusiones",xName:"Censo"})}</div></div>
-   <div class="st-grid2">${[["cr","Cirugías realizadas"],["cs","Cirugías suspendidas o diferidas"]].map(([k,t])=>{ const rows=[]; rs.forEach(r=>cxItems(r,k).forEach(x=>{ const P=cxPac(x); rows.push(detTr(arCl(x.x||"",[esc(r.f||r.k),esc(x.t||""),esc(x.e||""),esc(P.n||"—"),`<span class="cx-dx">${esc(P.d||"—")}</span>`,esc(x.s?(x.s==="OTRO"?"Otra":x.s):"—"),cxCell(x)]))); })); return `<div class="st-card"><h3>${t} <small>· ${rows.length} · tal como se escribieron en el censo</small></h3>${rows.length?`<div class="mv-lim">${detTbl(arHd(["Censo","Cirugía (texto del censo)","Dato","Paciente","Diagnóstico","Clínica","Expediente"]),rows.slice(0,12))}</div><div class="on-go"><button type="button" class="st-btn st-sm" data-det="${k}">Ver todas y buscar →</button></div>`:'<div class="st-msg">Sin registros.</div>'}</div>`; }).join("")}</div>
+   <div class="mv-stack">${[["cr","Cirugías realizadas"],["cs","Cirugías suspendidas o diferidas"]].map(([k,t])=>{ const rows=[]; rs.forEach(r=>cxItems(r,k).forEach(x=>{ const P=cxPac(x); rows.push(detTr(arCl(x.x||"",[esc(r.f||r.k),esc(x.t||""),esc(x.e||""),esc(P.n||"—"),`<span class="cx-dx">${esc(P.d||"—")}</span>`,esc(x.s?(x.s==="OTRO"?"Otra":x.s):"—"),cxCell(x)]))); })); return `<div class="st-card"><h3>${t} <small>· ${rows.length} · tal como se escribieron en el censo</small></h3>${rows.length?`<div class="mv-lim">${detTbl(arHd(["Censo","Cirugía (texto del censo)","Dato","Paciente","Diagnóstico","Clínica","Expediente"]),rows.slice(0,12))}</div><div class="on-go"><button type="button" class="st-btn st-sm" data-det="${k}">Ver todas y buscar →</button></div>`:'<div class="st-msg">Sin registros.</div>'}</div>`; }).join("")}</div>
    <div class="st-msg">Tasa de suspensión = suspendidas entre (realizadas + suspendidas); se marca en ámbar desde 20 %. La clínica de cada cirugía se toma del paciente del censo que coincide con la cama, el expediente o los dos apellidos escritos.</div>`;
 }
 function icView(remote,inCen){
@@ -17628,18 +17628,16 @@ for(const original of pending){const live=document.createElement('script');for(c
   const $=id=>document.getElementById(id), B=window.HJM_BETA; if(!B) return;
   const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const ico={sw:'<svg viewBox="0 0 24 24"><path d="M16 3l4 4-4 4M20 7H9M8 21l-4-4 4-4M4 17h11"/></svg>',out:'<svg viewBox="0 0 24 24"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/></svg>',g:'<svg viewBox="0 0 48 48" style="stroke:none"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>',x:'<svg viewBox="0 0 24 24"><path d="M5 12h14"/><circle cx="12" cy="12" r="9"/></svg>'};
+  const comp0=()=>{ try{ return !!(B.shared&&B.shared()); }catch(_){ return false; } };
   function salir(){ const b=$('bandExit'); if(b) b.click(); else location.reload(); }
   function menu(anchor){
     let m=$('betaAcct'); if(!m){ m=document.createElement('div'); m.id='betaAcct'; m.setAttribute('role','menu'); document.body.appendChild(m); }
     const ses=B.ses||{}, nm=ses.nombre||'', em=B.email||ses.email||'', ini=String(nm||em||'?').trim().charAt(0).toUpperCase();
     const comp=B.shared&&B.shared();
     m.innerHTML='<div class="ba-h"><div class="ba-ph">'+(B.foto?'<img alt="" referrerpolicy="no-referrer" src="'+esc(B.foto)+'">':esc(ini))+'</div><div><div class="ba-n">'+esc(nm||'Cuenta de Google')+'</div><div class="ba-e">'+esc(em)+'</div></div></div>'
-      +(comp
-        ?'<button type="button" data-ba="out" role="menuitem" class="ba-out">'+ico.out+'Salir (cambiar de usuario)</button>'
-         +'<a href="https://accounts.google.com/Logout" target="_blank" rel="noopener" data-ba="gout" role="menuitem">'+ico.g+'Cerrar sesión de Google</a>'
-        :'<div class="ba-sw"><button type="button" data-ba="sw" role="menuitem" tabindex="-1">'+ico.sw+'Cambiar de cuenta</button><div class="ba-gis" id="baGis"></div></div>'
+      +('<div class="ba-sw"><button type="button" data-ba="sw" role="menuitem" tabindex="-1">'+ico.sw+'Cambiar de cuenta</button><div class="ba-gis" id="baGis"></div></div>'
          
-         +'<a href="https://accounts.google.com/Logout" target="_blank" rel="noopener" data-ba="gout" role="menuitem">'+ico.g+'Cerrar sesión de Google</a>'
+         +'<a href="https://accounts.google.com/Logout" target="_blank" rel="noopener" data-ba="gout" role="menuitem">'+ico.g+'Cerrar sesión de Google en navegador</a>'
          +'<button type="button" data-ba="out" role="menuitem" class="ba-out">'+ico.out+'Cerrar sesión</button>')
 ;
     const img=m.querySelector('img'); if(img) img.onerror=()=>{ img.parentNode.textContent=ini; };
@@ -17659,7 +17657,7 @@ for(const original of pending){const live=document.createElement('script');for(c
       e.preventDefault(); close();
       if(a==='sw'){ return; }
       if(a==='sw0'){ try{ localStorage.removeItem('hjm-beta-out-mail'); localStorage.setItem('hjm-beta-switch','1'); google.accounts.id.disableAutoSelect(); }catch(_){} salir(); }
-      else if(a==='out'){ salir(); }
+      else if(a==='out'){ if(comp0()) B.forceOut=true; salir(); }
       else if(a==='rev'){ const em=B.email; try{ localStorage.removeItem('hjm-beta-out-mail'); localStorage.setItem('hjm-beta-switch','1'); if(em) google.accounts.id.revoke(em,()=>{}); }catch(_){} salir(); }
       return; }
     if(!(e.target.closest&&e.target.closest('#betaAcct'))) close();
@@ -18080,5 +18078,14 @@ function hjmClinViewDoc(html){
   } };
 })();
 </script>
+<style id="hjm-v811">@media screen{
+#dlgStats .mv-stack{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
+#dlgStats .sv-main table.st-act,#dlgStList table.st-act,#dlgOnc table.st-act{width:100%!important;min-width:0!important;table-layout:auto}
+#dlgStats .sv-main table.st-act th,#dlgStats .sv-main table.st-act td,#dlgStList table.st-act th,#dlgStList table.st-act td,#dlgOnc table.st-act th,#dlgOnc table.st-act td{white-space:normal!important;overflow-wrap:break-word;word-break:normal;padding-left:6px;padding-right:6px}
+#dlgStats .sv-main table.st-act th,#dlgStList table.st-act th{font-size:11.5px;line-height:1.25;letter-spacing:.02em}
+#dlgStats .sv-main table.st-act td.nm{white-space:nowrap!important}
+#dlgStats .cx-dx{min-width:0!important;max-width:none!important}
+#dlgStats .mv-m .st-scroll{max-height:none}
+}</style>
 </body>
 </html>
