@@ -318,7 +318,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="8.01">
+<meta name="application-version" content="8.02">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2842,7 +2842,7 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 8.01 · Fecha de publicación: 11.11.26</div>
+  <div class="app-footer-version">Versión 8.02 · Fecha de publicación: 11.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -9243,35 +9243,74 @@ document.addEventListener("click",e=>{ const a=e.target&&e.target.closest&&e.tar
 
 /* v8.01 · Revisión automática del Censo actual: errores y datos de alerta con mensajes cortos y la acción para corregirlos */
 function cenRevisa(per,cen){
-  const out=[], add=(lv,cat,txt,act)=>out.push({lv,cat,txt,act}), rows=(cen._all||cen.pac||[]).filter(r=>!r.exc), H=rows.filter(r=>r.sec==="H"), who=r=>(r.cama?r.cama+" · ":"")+(r.nombre||"Sin nombre")+(r.exp?" · Exp. "+r.exp:"");
+  const out=[], add=(lv,cat,txt,act,r,qa)=>out.push({lv,cat,txt,act,r:r||null,qa:qa||""}), rows=(cen._all||cen.pac||[]).filter(r=>!r.exc), H=rows.filter(r=>r.sec==="H"), who=r=>(r.cama?r.cama+" · ":"")+(r.nombre||"Sin nombre")+(r.exp?" · Exp. "+r.exp:"");
   const hoy=cenIngDay(cenDot(per.next)), byId=new Map(uniqueFiles(DRIVE_FILES).map(f=>[f.id,f]));
   const cm=new Map(); H.forEach(r=>{ const c=String(r.cama||"").trim().toUpperCase(); if(c&&/^\d{3}$|^UCI|^URG|^CORON/i.test(c)) (cm.get(c)||cm.set(c,[]).get(c)).push(r); });
-  cm.forEach((a,c)=>{ if(a.length>1) add(3,"Cama repetida",`La cama ${c} la tienen ${a.length} pacientes: ${a.map(r=>r.nombre||r.exp).join(" y ")}.`,"Corrige la cama de quien ya no está ahí."); });
+  cm.forEach((a,c)=>{ if(a.length>1) add(3,"Cama repetida",`La cama ${c} la tienen ${a.length} pacientes: ${a.map(r=>r.nombre||r.exp).join(" y ")}.`,"Corrige la cama de quien ya no está ahí.",a[0]); a.slice(1).forEach(r=>add(3,"Cama repetida",`La cama ${c} también la tiene ${r.nombre||r.exp}.`,"Corrige la cama de quien ya no está ahí.",r)); });
   const em=new Map(); rows.forEach(r=>{ const e=String(r.exp||"").trim(); if(e) (em.get(e)||em.set(e,[]).get(e)).push(r); });
-  em.forEach((a,e)=>{ if(a.length>1) add(3,"Paciente repetido",`El expediente ${e} (${a[0].nombre||""}) aparece ${a.length} veces en el censo.`,"Revisa si hay dos archivos del mismo paciente."); });
+  em.forEach((a,e)=>{ if(a.length>1) add(3,"Paciente repetido",`El expediente ${e} (${a[0].nombre||""}) aparece ${a.length} veces en el censo.`,"Revisa si hay dos archivos del mismo paciente.",a[0]); });
   H.forEach(r=>{ if(!r.ok) return; const tok=cenEstToks(r.est), ing=cenIngDay(r.ing), dias=Number.isFinite(ing)&&Number.isFinite(hoy)?Math.round((hoy-ing)/864e5):null, f=byId.get(r.k), m=(f&&f.meta)||{};
-    if(!String(r.cama||"").trim()) add(3,"Sin cama",who(r)+": está hospitalizado pero no tiene cama.","Captura la cama en su hoja de datos.");
-    if(String(m.def||"").trim()) add(3,"Defunción sin egreso",who(r)+": tiene defunción registrada pero sigue en hospitalizados.","Revisa la cama y la fecha de defunción.");
-    if(!r.exp) add(2,"Sin expediente",who(r)+": no tiene número de expediente.","Captúralo en su hoja de datos.");
-    if(!String(r.clin||"").trim()) add(2,"Sin clínica",who(r)+": no tiene clínica; no se cuenta en ingresos y egresos por clínica.","Asigna el adscrito o la clínica.");
-    if(!String(r.adsRaw||"").trim()) add(1,"Sin adscrito",who(r)+": no tiene médico adscrito.","Captúralo en su hoja de datos.");
-    if(!String(r.dx||"").trim()) add(1,"Sin diagnóstico",who(r)+": no tiene diagnóstico.","Captúralo en su hoja de datos.");
-    if(!String(r.ing||"").trim()) add(2,"Sin fecha de ingreso",who(r)+": no tiene fecha de ingreso; no se puede saber si es ingreso nuevo ni sus días de estancia.","Captura la fecha de ingreso.");
-    else if(!Number.isFinite(ing)) add(2,"Fecha de ingreso inválida",who(r)+`: la fecha de ingreso «${r.ing}» no es válida.`,"Escríbela como DD.MM.AA.");
-    else if(dias!=null&&dias<-1) add(3,"Fecha de ingreso futura",who(r)+`: la fecha de ingreso (${r.ing}) es posterior a este censo.`,"Corrige la fecha de ingreso.");
-    if(tok.some(t=>t==="ALTA")) add(2,"Marcado ALTA",who(r)+": tiene estatus ALTA pero sigue en hospitalizados.","Si ya se fue, registra el alta; si no, cambia el estatus a VAL ALTA o PRE ALTA.");
-    if(cenIngresoMarcado(r)&&!r.nu&&dias!=null&&dias>2) add(2,"INGRESO antiguo",who(r)+`: está marcado INGRESO pero ingresó hace ${dias} días (${r.ing}).`,"Quita INGRESO del estatus o corrige la fecha.");
-    if(tok.includes("PROGRAMADO HOY")&&!String(r.cir||"").trim()) add(1,"Programado sin cirugía",who(r)+": está PROGRAMADO HOY pero no tiene cirugía anotada en el censo.","Anota la cirugía programada.");
-    if(dias!=null&&dias>30) add(1,"Estancia prolongada",who(r)+`: lleva ${dias} días hospitalizado (desde ${r.ing}).`,"");
+    if(!String(r.cama||"").trim()) add(3,"Sin cama",who(r)+": está hospitalizado pero no tiene cama.","Captura la cama.",r);
+    if(String(m.def||"").trim()) add(3,"Defunción sin egreso",who(r)+": tiene defunción registrada pero sigue en hospitalizados.","Si falleció, pasa su cama a RIP; si no, borra la defunción.",r,"rip");
+    if(!r.exp) add(2,"Sin expediente",who(r)+": no tiene número de expediente.","Captúralo.",r);
+    if(!String(r.clin||"").trim()) add(2,"Sin clínica",who(r)+": no tiene clínica; no se cuenta en ingresos y egresos por clínica.","Asigna el adscrito o la clínica.",r);
+    if(!String(r.adsRaw||"").trim()) add(1,"Sin adscrito",who(r)+": no tiene médico adscrito.","Captúralo.",r);
+    if(!String(r.dx||"").trim()) add(1,"Sin diagnóstico",who(r)+": no tiene diagnóstico.","Captúralo.",r);
+    if(!String(r.ing||"").trim()) add(2,"Sin fecha de ingreso",who(r)+": no tiene fecha de ingreso; no se puede saber si es ingreso nuevo ni sus días de estancia.","Captura la fecha de ingreso.",r);
+    else if(!Number.isFinite(ing)) add(2,"Fecha de ingreso inválida",who(r)+`: la fecha de ingreso «${r.ing}» no es válida.`,"Escríbela como DD.MM.AA.",r);
+    else if(dias!=null&&dias<-1) add(3,"Fecha de ingreso futura",who(r)+`: la fecha de ingreso (${r.ing}) es posterior a este censo.`,"Corrige la fecha de ingreso.",r);
+    if(tok.some(t=>t==="ALTA")) add(2,"Marcado ALTA",who(r)+": tiene estatus ALTA pero sigue en hospitalizados.","Si ya se fue, registra el alta; si no, cambia el estatus a VAL ALTA o PRE ALTA.",r,"alta");
+    if(cenIngresoMarcado(r)&&!r.nu&&dias!=null&&dias>2) add(2,"INGRESO antiguo",who(r)+`: está marcado INGRESO pero ingresó hace ${dias} días (${r.ing}).`,"Quita INGRESO del estatus o corrige la fecha.",r);
+    if(tok.includes("PROGRAMADO HOY")&&!String(r.cir||"").trim()) add(1,"Programado sin cirugía",who(r)+": está PROGRAMADO HOY pero no tiene cirugía anotada en el censo.","Anota la cirugía programada.",r);
+    if(dias!=null&&dias>30) add(1,"Estancia prolongada",who(r)+`: lleva ${dias} días hospitalizado (desde ${r.ing}).`,"",r);
   });
-  rows.filter(r=>(r.sec==="E"||r.sec==="D")&&r.ok).forEach(r=>{ const f=byId.get(r.k); if(f&&metaHosp(f.meta||{})) add(3,"Egreso con cama ocupada",who(r)+`: aparece en ${r.sec==="D"?"DEFUNCIONES":"ALTAS"} pero en la app sigue con cama de hospitalización.`,"Cambia su cama a CE"+(r.sec==="D"?" o RIP":"")+"."); });
+  rows.filter(r=>(r.sec==="E"||r.sec==="D")&&r.ok).forEach(r=>{ const f=byId.get(r.k); if(f&&metaHosp(f.meta||{})) add(3,"Egreso con cama ocupada",who(r)+`: aparece en ${r.sec==="D"?"DEFUNCIONES":"ALTAS"} pero en la app sigue con cama de hospitalización.`,"Pasa su cama a "+(r.sec==="D"?"RIP":"CE")+".",r,r.sec==="D"?"rip":"ce"); });
   return out.sort((a,b)=>b.lv-a.lv);
 }
+const CENRV={cat:"",lv:0,q:"",hid:false,arm:""};
+const cenRvKey=x=>x.cat+"|"+((x.r&&(x.r.exp||x.r.k))||x.txt);
+function cenRvOk(hoy){ try{ const o=JSON.parse(localStorage.getItem("cenRevisaOk")||"{}"); return Array.isArray(o[hoy])?o[hoy]:[]; }catch(_){ return []; } }
+function cenRvOkSet(hoy,k,on){ try{ const o=JSON.parse(localStorage.getItem("cenRevisaOk")||"{}"); Object.keys(o).forEach(d=>{ if(d!==hoy) delete o[d]; }); const a=new Set(o[hoy]||[]); on?a.add(k):a.delete(k); o[hoy]=[...a]; localStorage.setItem("cenRevisaOk",JSON.stringify(o)); }catch(_){} }
 function cenRevisaHTML(per,cen){
-  let L=[]; try{ L=cenRevisa(per,cen); }catch(_){ return ""; } if(!L.length) return `<div class="cen-rv cen-rv-ok">✓ Revisión automática: sin errores ni datos de alerta en este censo.</div>`;
-  const G=[[3,"Corregir","Errores que cambian las cuentas del censo"],[2,"Revisar","Datos incompletos o que no cuadran"],[1,"Para saber","Avisos informativos"]];
-  return `<div class="cen-rv" role="alert"><b>Revisión automática del censo: ${L.filter(x=>x.lv===3).length} por corregir · ${L.filter(x=>x.lv===2).length} por revisar · ${L.filter(x=>x.lv===1).length} avisos</b>${G.map(([lv,t,d])=>{ const a=L.filter(x=>x.lv===lv); if(!a.length) return ""; return `<details class="cen-rv-g cen-rv${lv}"${lv>1?" open":""}><summary><i>${a.length}</i>${t} <small>· ${d}</small></summary><ul>${a.map(x=>`<li><em>${esc(x.cat)}</em><span>${esc(x.txt)}${x.act?` <small>→ ${esc(x.act)}</small>`:""}</span></li>`).join("")}</ul></details>`; }).join("")}</div>`;
+  let L=[]; try{ L=cenRevisa(per,cen); }catch(_){ return ""; }
+  if(!L.length) return `<div class="cen-rv cen-rv-ok">✓ Revisión automática: sin errores ni datos de alerta en este censo.</div>`;
+  const hoy=cenDot(per.next), ok=new Set(cenRvOk(hoy)); L.forEach(x=>x.ok=ok.has(cenRvKey(x))); CEN._rv=L;
+  const vis=L.filter(x=>!x.ok), nh=L.length-vis.length, w=accessCensusWrite(), q=CENRV.q.trim().toLowerCase();
+  const show=L.filter(x=>(CENRV.hid||!x.ok)&&(!CENRV.lv||x.lv===CENRV.lv)&&(!CENRV.cat||x.cat===CENRV.cat)&&(!q||(x.cat+" "+x.txt).toLowerCase().includes(q)));
+  const cats=[...new Set(vis.concat(CENRV.hid?L:[]).map(x=>x.cat))];
+  const G=[[3,"Corregir","cambian las cuentas del censo"],[2,"Revisar","datos incompletos o que no cuadran"],[1,"Para saber","informativos"]];
+  const cnt=lv=>vis.filter(x=>x.lv===lv).length;
+  const chip=(lv,t)=>`<button type="button" class="cen-rv-c cen-rv${lv}" data-rvlv="${lv}" aria-pressed="${CENRV.lv===lv}"><i>${cnt(lv)}</i>${t}</button>`;
+  const btns=(x,i)=>{ const b=[]; if(x.r&&x.r.k&&w) b.push(`<button type="button" class="cen-btn" data-rvedit="${i}" title="Abre la edición de este paciente en el censo">Corregir</button>`);
+    if(x.qa&&x.r&&w){ const lb={alta:"Registrar alta",ce:"Cama a CE",rip:"Cama a RIP"}[x.qa], armed=CENRV.arm===cenRvKey(x); b.push(`<button type="button" class="cen-btn${armed?" cen-rv-arm":""}" data-rvqa="${i}">${armed?"¿Seguro? toca otra vez":lb}</button>`); }
+    b.push(`<button type="button" class="cen-btn cen-rv-k" data-rvok="${i}" title="${x.ok?"Volver a mostrar este aviso":"Ya lo revisé: ocultarlo en este censo"}">${x.ok?"Mostrar":"Ya revisado"}</button>`); return b.join(""); };
+  const items=G.map(([lv,t,d])=>{ const a=show.filter(x=>x.lv===lv); if(!a.length) return ""; return `<div class="cen-rv-g cen-rv${lv}"><div class="cen-rv-gh"><i>${a.length}</i>${t} <small>· ${d}</small></div><ul>${a.map(x=>{ const i=L.indexOf(x); return `<li class="${x.ok?"cen-rv-done":""}"><em>${esc(x.cat)}</em><span>${esc(x.txt)}${x.act?` <small>→ ${esc(x.act)}</small>`:""}</span><span class="cen-rv-b">${btns(x,i)}</span></li>`; }).join("")}</ul></div>`; }).join("");
+  const open=CEN._rvOpen!==undefined?CEN._rvOpen:(cnt(3)+cnt(2)>0);
+  return `<details class="cen-rv" role="alert" data-rvbox${open?" open":""}><summary><b>Revisión automática del censo</b><span class="cen-rv-sum">${chip(3,"por corregir")}${chip(2,"por revisar")}${chip(1,"avisos")}${nh?`<small>${nh} ya revisado(s)</small>`:""}</span></summary>
+   <div class="cen-rv-f"><input type="search" data-rvq placeholder="Buscar paciente, cama o expediente…" value="${esc(CENRV.q)}" autocomplete="off"><select data-rvcat><option value="">Todos los tipos</option>${cats.map(c=>`<option${CENRV.cat===c?" selected":""}>${esc(c)}</option>`).join("")}</select><label><input type="checkbox" data-rvhid${CENRV.hid?" checked":""}> Ver ya revisados</label>${CENRV.lv||CENRV.cat||q?`<button type="button" class="cen-btn" data-rvclr>Quitar filtros</button>`:""}</div>
+   ${items||`<div class="cen-rv-none">${vis.length?"Ningún aviso con estos filtros.":"✓ Todos los avisos de este censo ya se revisaron."}</div>`}
+   <small class="cen-rv-ft">«Ya revisado» solo oculta el aviso en este censo y en este equipo; si el dato sigue mal, vuelve a salir mañana. Las acciones rápidas piden confirmación y no borran datos.</small></details>`;
 }
+(function(){
+  const rr=()=>{ try{ cenRender(); }catch(_){} }, get=i=>(CEN._rv||[])[+i];
+  document.addEventListener("toggle",e=>{ const d=e.target; if(d&&d.matches&&d.matches("[data-rvbox]")) CEN._rvOpen=d.open; },true);
+  document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest("[data-rvlv],[data-rvedit],[data-rvqa],[data-rvok],[data-rvclr]"); if(!t) return; e.preventDefault(); e.stopPropagation();
+    if(t.dataset.rvlv){ const v=+t.dataset.rvlv; CENRV.lv=CENRV.lv===v?0:v; CEN._rvOpen=true; return rr(); }
+    if(t.hasAttribute("data-rvclr")){ CENRV.lv=0; CENRV.cat=""; CENRV.q=""; return rr(); }
+    const x=get(t.dataset.rvedit||t.dataset.rvqa||t.dataset.rvok); if(!x) return;
+    if(t.dataset.rvok!==undefined){ cenRvOkSet(cenDot(cenPeriod().next),cenRvKey(x),!x.ok); return rr(); }
+    if(!accessCensusWrite()) return;
+    if(t.dataset.rvedit!==undefined){ try{ cenEditOpen(x.r.k); }catch(_){} return; }
+    const k=cenRvKey(x); if(CENRV.arm!==k){ CENRV.arm=k; rr(); setTimeout(()=>{ if(CENRV.arm===k){ CENRV.arm=""; rr(); } },6000); return; }
+    CENRV.arm=""; const f=uniqueFiles(DRIVE_FILES).find(z=>z.id===x.r.k); if(!f){ try{ notify("No se encontró el expediente en Drive; usa «Corregir».","warn"); }catch(_){} return; }
+    const now0=Date.now(), prev=String(x.r.cama||(f.meta&&f.meta.cama)||"").trim().toUpperCase();
+    if(x.qa==="alta"){ ppApply(f,{altaEn:new Date(now0).toISOString(),camaPrevia:prev,defEn:"",hospOnco:""},{quiet:true}); try{ cenFreezeRow(f,"E",now0,prev); }catch(_){} }
+    else if(x.qa==="ce") ppApply(f,{cama:"CE",camaPrevia:prev,hospOnco:""},{quiet:true});
+    else if(x.qa==="rip") ppApply(f,{cama:"RIP",camaPrevia:prev,hospOnco:""},{quiet:true});
+    try{ notify("Listo: "+(x.r.nombre||x.r.exp)+".","ok"); }catch(_){} setTimeout(rr,400); },true);
+  let tm=0; document.addEventListener("input",e=>{ const t=e.target; if(!t||!t.matches||!t.matches("[data-rvq]")) return; clearTimeout(tm); tm=setTimeout(()=>{ CENRV.q=t.value; const pos=t.selectionStart; rr(); setTimeout(()=>{ const n=document.querySelector("[data-rvq]"); if(n){ n.focus(); try{ n.setSelectionRange(pos,pos); }catch(_){} } },30); },300); },true);
+  document.addEventListener("change",e=>{ const t=e.target; if(!t||!t.matches) return; if(t.matches("[data-rvcat]")){ CENRV.cat=t.value; rr(); } else if(t.matches("[data-rvhid]")){ CENRV.hid=t.checked; rr(); } },true);
+})();
 function cenContHTML(per,cen){
   const S=cenSinPrevioHTML(per,cen)+cenRevisaHTML(per,cen);
   const L=cenContinuidad(per,cen); CEN._cont=L; if(!L.length) return S;
@@ -17070,7 +17109,29 @@ html:root body #dlgStats .sv-nav{grid-template-columns:repeat(5,minmax(0,1fr))!i
 @media (max-width:560px){#dlgStats .on-dn svg{max-width:210px;margin:0 auto;display:block}}
 }
 </style>
-<style id="hjm-v801">
+<style id="hjm-v802">
+.cen-rv>summary{cursor:pointer;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;list-style:none}
+.cen-rv>summary::-webkit-details-marker{display:none}
+.cen-rv>summary::before{content:"▸";font-weight:800;color:#B07A2A}.cen-rv[open]>summary::before{content:"▾"}
+.cen-rv-sum{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.cen-rv-c{font:inherit;font-size:12px;font-weight:700;display:inline-flex;gap:6px;align-items:center;padding:3px 10px 3px 4px;border-radius:14px;border:1px solid #E6D6BC;background:#fff;cursor:pointer;color:inherit}
+.cen-rv-c[aria-pressed=true]{outline:2px solid #2F6FA7;outline-offset:1px}
+.cen-rv-c i,.cen-rv-gh i{font-style:normal;min-width:20px;height:20px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:11px;padding:0 6px}
+.cen-rv-c.cen-rv3 i,.cen-rv-g.cen-rv3 .cen-rv-gh i{background:#B5473A}.cen-rv-c.cen-rv2 i,.cen-rv-g.cen-rv2 .cen-rv-gh i{background:#D9822B}.cen-rv-c.cen-rv1 i,.cen-rv-g.cen-rv1 .cen-rv-gh i{background:#2F6FA7}
+.cen-rv-f{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.cen-rv-f input[type=search]{flex:1 1 200px;min-width:0;padding:6px 10px;border:1px solid #DCCFB8;border-radius:9px;font:inherit}
+.cen-rv-f select{padding:6px 8px;border:1px solid #DCCFB8;border-radius:9px;font:inherit;max-width:100%}
+.cen-rv-f label{display:flex;gap:5px;align-items:center;font-size:12px}
+.cen-rv-gh{padding:6px 10px;font-weight:800;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.cen-rv-gh small{font-weight:500;color:#7B6A52}
+.cen-rv-b{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.cen-rv-b .cen-btn{font-size:11.5px;padding:3px 9px}
+.cen-rv-arm{background:#B5473A!important;color:#fff!important;border-color:#B5473A!important}
+.cen-rv-k{opacity:.8}
+.cen-rv-done{opacity:.55}.cen-rv-done span{text-decoration:line-through}
+.cen-rv-none{padding:8px 4px;font-weight:600}
+.cen-rv-ft{display:block;margin-top:6px;color:#7B6A52;font-size:11px}
+@media (max-width:560px){.cen-rv-b{margin-left:0;width:100%}}
+</style><style id="hjm-v801">
 .cen-rv{margin:0 0 10px;padding:10px 12px;border:1px solid #E3C79A;background:#FFFBF3;border-radius:12px;color:#4A3A22;font-size:12.5px}
 .cen-rv>b{display:block;margin-bottom:6px}
 .cen-rv-ok{border-color:#B9DCC5;background:#F2FAF5;color:#25603B;font-weight:600}
