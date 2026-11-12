@@ -327,7 +327,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="8.23">
+<meta name="application-version" content="8.24">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2841,7 +2841,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 8.23 · Fecha de publicación: 11.11.26</div>
+  <div class="app-footer-version">Versión 8.24 · Fecha de publicación: 11.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -15812,6 +15812,7 @@ async function ppIsolatedOpen(id,key,options={}){
     if(!PPIW.active||token!==PPIW.token)return;
     $('ppFormatWindowPatient').textContent=patient.datos.nombreCompleto||[patient.datos.nombres,patient.datos.apPaterno,patient.datos.apMaterno].filter(Boolean).join(' ');
     const cfg={key,token,session:sessionUserName(),noteId:options.noteId||'',personalRecord:options.personalRecord||null,exp:patient.datos.expediente,adscrito:SESSION_ADSCRITO,residente:SESSION_RESIDENT,tech:TECH_ADMIN_SESSION,user:USER,folder:FOLDER,store:STORE};
+    if(PPIW.saving&&PPIW.saving===PPIW.frame){ PPIW.frame.style.visibility='hidden'; PPIW.frame.style.display='none'; PPIW.frame=null; }   /* v8.24 · el anterior sigue guardando en segundo plano: se abre en un marco nuevo */
     const cached=PPIW.frame;
     if(cached&&cached.contentWindow&&cached.contentWindow.__hjmChildOpen){
       cached.title=$('ppFormatWindowTitle').textContent;
@@ -15834,15 +15835,19 @@ function ppIsolatedReveal(token){
   PPIW.frame.style.visibility='visible';$('ppFormatWindowStatus').textContent='';
   $('dlgPatientFormat').querySelectorAll('[data-frame-action],[data-frame-blank]').forEach(b=>b.disabled=b.dataset.permissionDisabled==='true');
 }
+/* v8.24 · la ventana se cierra al instante; el guardado pendiente (p. ej. después de imprimir) sigue en segundo plano.
+   Si ese guardado falla, la ventana se vuelve a abrir con los cambios intactos para no perderlos. */
 async function ppIsolatedClose(){
-  if(!PPIW.active||PPIW.busy)return;PPIW.busy=true;
-  const close=$('ppFormatWindowClose');close.disabled=true;
-  try{
-    const win=PPIW.frame&&PPIW.frame.contentWindow;
-    if(win&&win.__hjmChildReady&&win.__hjmChildCanClose&&!await win.__hjmChildCanClose()){$('ppFormatWindowStatus').textContent='No se pudo guardar. La ventana sigue abierta para conservar los cambios.';return;}
-    PPIW.active=false;++PPIW.token;if(PPIW.frame)PPIW.frame.style.visibility='hidden';$('dlgPatientFormat').close();
-  }catch(e){$('ppFormatWindowStatus').textContent='No se pudo cerrar: '+friendly(e);}
-  finally{PPIW.busy=false;close.disabled=false;}
+  if(!PPIW.active)return;
+  const d=$('dlgPatientFormat'), win=PPIW.frame&&PPIW.frame.contentWindow, tok=++PPIW.token, title=$('ppFormatWindowTitle').textContent;
+  PPIW.active=false; try{ d.close(); }catch(_){}
+  if(!(win&&win.__hjmChildReady&&win.__hjmChildCanClose)){ if(PPIW.frame)PPIW.frame.style.visibility='hidden'; return; }
+  const fr0=PPIW.frame; PPIW.saving=fr0; let ok=true; try{ ok=await win.__hjmChildCanClose(); }catch(_){ ok=false; } finally{ if(PPIW.saving===fr0) PPIW.saving=null; }
+  if(fr0&&PPIW.frame!==fr0){ if(ok) try{ fr0.remove(); }catch(_){} else { try{ notify("No se pudo guardar "+title+". Ábrelo de nuevo para revisarlo.","err"); }catch(_){} try{ fr0.remove(); }catch(_){} } return; }
+  if(ok){ if(!PPIW.active&&PPIW.token===tok&&PPIW.frame)PPIW.frame.style.visibility='hidden'; return; }
+  if(PPIW.active||PPIW.token!==tok){ try{ notify("No se pudo guardar "+title+". Ábrelo de nuevo para revisarlo.","err"); }catch(_){} return; }
+  PPIW.active=true; PPIW.token=tok; try{ d.showModal(); }catch(_){} if(PPIW.frame)PPIW.frame.style.visibility='visible';
+  $('ppFormatWindowStatus').textContent='No se pudo guardar. La ventana se volvió a abrir para conservar los cambios.';
 }
 addEventListener('message',e=>{
   if(!PPIW.frame||e.source!==PPIW.frame.contentWindow||!e.data||e.data.token!==PPIW.token)return;
