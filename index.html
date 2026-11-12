@@ -318,7 +318,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="7.43">
+<meta name="application-version" content="8.01">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2842,7 +2842,7 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 7.43 · Fecha de publicación: 11.11.26</div>
+  <div class="app-footer-version">Versión 8.01 · Fecha de publicación: 11.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -3904,8 +3904,8 @@ const ACCESS_ALWAYS=['ver_estadisticas','editar_perfil','ver_comentarios','envia
 const ACCESS_BASE_GROUPS=[
  ['Hospitalizados','',[['ver_hospitalizados','Pestaña Hospitalizados','Lista de pacientes hospitalizados.'],['editar_pendientes','Editar pendientes','Escribir y tachar los pendientes de Hospitalizados.']]],
  ['Pacientes','',[['ver_expedientes','Pestaña Todos','Buscar entre todos los expedientes.'],['ver_datos','Abrir la hoja de datos','Entrar al paciente y ver su hoja de datos.'],['crear_pacientes','Crear pacientes','Botón «Nuevo Paciente».'],['editar_pacientes','Editar la hoja de datos','Guardar cambios de un paciente.']]],
- ['Censo','',[['ver_censo','Pestaña Censo','Ver el censo actual.'],['editar_censo','Editar el Censo actual y el reverso',''],['agregar_censo','Agregar pacientes al censo',''],['guardar_censo','Guardar el Censo final',''],['imprimir_censo','Imprimir el censo','']]],
- ['Censos anteriores','',[['ver_censos_archivados','Ver censos anteriores','Navegar y abrir censos guardados.'],['editar_censos_archivados','Editar censos anteriores','']]],
+ ['Censo','',[['ver_censo','Ver censo actual','La pestaña Censo abre el censo en curso.'],['editar_censo','Editar el Censo actual y el reverso',''],['agregar_censo','Agregar pacientes al censo',''],['guardar_censo','Guardar el Censo final',''],['imprimir_censo','Imprimir el censo','']]],
+ ['Censos anteriores','',[['ver_censos_archivados','Ver censos anteriores','Ventana de censos guardados. Sin «Ver censo actual», la pestaña Censo abre directo esta ventana.'],['editar_censos_archivados','Editar censos anteriores','']]],
  ['Archivo clínico','',[['ver_archivo','Ver el Archivo clínico','Documentos guardados.'],['editar_documentos','Editar documentos guardados',''],['cancelar_documentos','Cancelar documentos','']]],
  ['Documentos clínicos','',[['crear_formatos','Crear solicitudes y formatos oficiales',''],['crear_notas','Crear notas, indicaciones, reportes y altas','']]],
  ['Impresión','',[['imprimir_documentos','Imprimir documentos',''],['imprimir_listas','Imprimir listas','']]],
@@ -3916,7 +3916,7 @@ const ACCESS_ADMIN_GROUPS=[
  ['Panel de control',[['ver_estadisticas','Estadísticas y Pacientes','Pestañas Estadísticas y Pacientes.'],['ver_errores','Errores de la plataforma','Pestaña Errores.'],['responder_comentarios','Responder comentarios','Pestaña Comentarios.']]],
  ['Descargas',[['descargar_bases','Descargar bases principales','Pacientes, censos y estadísticas.']]],
  ['Documentos',[['restaurar_documentos','Restaurar documentos cancelados','']]],
- ['Censo (adicional para administradores)',[['ver_censo','Pestaña Censo','Aunque su rol base no la tenga.'],['editar_censo','Editar el Censo actual y el reverso',''],['agregar_censo','Agregar pacientes al censo',''],['guardar_censo','Guardar el Censo final',''],['imprimir_censo','Imprimir el censo',''],['ver_censos_archivados','Ver censos anteriores',''],['editar_censos_archivados','Editar censos anteriores','']]]
+ ['Censo (adicional para administradores)',[['ver_censo','Ver censo actual','Aunque su rol base no lo tenga.'],['editar_censo','Editar el Censo actual y el reverso',''],['agregar_censo','Agregar pacientes al censo',''],['guardar_censo','Guardar el Censo final',''],['imprimir_censo','Imprimir el censo',''],['ver_censos_archivados','Ver censos anteriores',''],['editar_censos_archivados','Editar censos anteriores','']]]
 ];
 const ACCESS_TECH_GROUP=['Solo Administrador Técnico',[['gestionar_usuarios','Usuarios y permisos','Pestaña Usuarios (también el Administrador Médico). Ligar correos de Google es exclusivo del Administrador Técnico.'],['administrar_sistema','Administrar y mantenimiento','Pestaña Administrar.'],['descargar_todo','Descargar toda la carpeta y subcarpetas',''],['borrar_documentos','Borrar definitivamente documentos',''],['borrar_comentarios','Borrar mensajes y conversaciones','']]];
 const ACCESS_GROUPS=ACCESS_BASE_GROUPS.map(g=>[g[0],g[1],g[2]]).concat(ACCESS_ADMIN_GROUPS.map(g=>[g[0],'',g[1]]),[[ACCESS_TECH_GROUP[0],'',ACCESS_TECH_GROUP[1]],['Siempre disponibles','',ACCESS_ALWAYS.map(k=>[k,k,''])]]);
@@ -9240,8 +9240,40 @@ document.addEventListener("click",e=>{ const a=e.target&&e.target.closest&&e.tar
   if(alta&&x.f){ const now0=Date.now(), prev=String(x.r.cama||"").trim().toUpperCase(); a.textContent="Liberando…"; ppApply(x.f,{altaEn:new Date(now0).toISOString(),camaPrevia:prev,defEn:"",hospOnco:""},{quiet:true}); }
   else { try{ const hoy=cenDot(cenPeriod().next), o=JSON.parse(localStorage.getItem("cenSinPrevioOk")||"{}"); Object.keys(o).forEach(k=>{ if(k!==hoy) delete o[k]; }); o[hoy]=(o[hoy]||[]).concat(String(x.r.exp).trim()); localStorage.setItem("cenSinPrevioOk",JSON.stringify(o)); }catch(_){} }
   setTimeout(()=>{ try{ cenRender(); }catch(_){} },300); });
+
+/* v8.01 · Revisión automática del Censo actual: errores y datos de alerta con mensajes cortos y la acción para corregirlos */
+function cenRevisa(per,cen){
+  const out=[], add=(lv,cat,txt,act)=>out.push({lv,cat,txt,act}), rows=(cen._all||cen.pac||[]).filter(r=>!r.exc), H=rows.filter(r=>r.sec==="H"), who=r=>(r.cama?r.cama+" · ":"")+(r.nombre||"Sin nombre")+(r.exp?" · Exp. "+r.exp:"");
+  const hoy=cenIngDay(cenDot(per.next)), byId=new Map(uniqueFiles(DRIVE_FILES).map(f=>[f.id,f]));
+  const cm=new Map(); H.forEach(r=>{ const c=String(r.cama||"").trim().toUpperCase(); if(c&&/^\d{3}$|^UCI|^URG|^CORON/i.test(c)) (cm.get(c)||cm.set(c,[]).get(c)).push(r); });
+  cm.forEach((a,c)=>{ if(a.length>1) add(3,"Cama repetida",`La cama ${c} la tienen ${a.length} pacientes: ${a.map(r=>r.nombre||r.exp).join(" y ")}.`,"Corrige la cama de quien ya no está ahí."); });
+  const em=new Map(); rows.forEach(r=>{ const e=String(r.exp||"").trim(); if(e) (em.get(e)||em.set(e,[]).get(e)).push(r); });
+  em.forEach((a,e)=>{ if(a.length>1) add(3,"Paciente repetido",`El expediente ${e} (${a[0].nombre||""}) aparece ${a.length} veces en el censo.`,"Revisa si hay dos archivos del mismo paciente."); });
+  H.forEach(r=>{ if(!r.ok) return; const tok=cenEstToks(r.est), ing=cenIngDay(r.ing), dias=Number.isFinite(ing)&&Number.isFinite(hoy)?Math.round((hoy-ing)/864e5):null, f=byId.get(r.k), m=(f&&f.meta)||{};
+    if(!String(r.cama||"").trim()) add(3,"Sin cama",who(r)+": está hospitalizado pero no tiene cama.","Captura la cama en su hoja de datos.");
+    if(String(m.def||"").trim()) add(3,"Defunción sin egreso",who(r)+": tiene defunción registrada pero sigue en hospitalizados.","Revisa la cama y la fecha de defunción.");
+    if(!r.exp) add(2,"Sin expediente",who(r)+": no tiene número de expediente.","Captúralo en su hoja de datos.");
+    if(!String(r.clin||"").trim()) add(2,"Sin clínica",who(r)+": no tiene clínica; no se cuenta en ingresos y egresos por clínica.","Asigna el adscrito o la clínica.");
+    if(!String(r.adsRaw||"").trim()) add(1,"Sin adscrito",who(r)+": no tiene médico adscrito.","Captúralo en su hoja de datos.");
+    if(!String(r.dx||"").trim()) add(1,"Sin diagnóstico",who(r)+": no tiene diagnóstico.","Captúralo en su hoja de datos.");
+    if(!String(r.ing||"").trim()) add(2,"Sin fecha de ingreso",who(r)+": no tiene fecha de ingreso; no se puede saber si es ingreso nuevo ni sus días de estancia.","Captura la fecha de ingreso.");
+    else if(!Number.isFinite(ing)) add(2,"Fecha de ingreso inválida",who(r)+`: la fecha de ingreso «${r.ing}» no es válida.`,"Escríbela como DD.MM.AA.");
+    else if(dias!=null&&dias<-1) add(3,"Fecha de ingreso futura",who(r)+`: la fecha de ingreso (${r.ing}) es posterior a este censo.`,"Corrige la fecha de ingreso.");
+    if(tok.some(t=>t==="ALTA")) add(2,"Marcado ALTA",who(r)+": tiene estatus ALTA pero sigue en hospitalizados.","Si ya se fue, registra el alta; si no, cambia el estatus a VAL ALTA o PRE ALTA.");
+    if(cenIngresoMarcado(r)&&!r.nu&&dias!=null&&dias>2) add(2,"INGRESO antiguo",who(r)+`: está marcado INGRESO pero ingresó hace ${dias} días (${r.ing}).`,"Quita INGRESO del estatus o corrige la fecha.");
+    if(tok.includes("PROGRAMADO HOY")&&!String(r.cir||"").trim()) add(1,"Programado sin cirugía",who(r)+": está PROGRAMADO HOY pero no tiene cirugía anotada en el censo.","Anota la cirugía programada.");
+    if(dias!=null&&dias>30) add(1,"Estancia prolongada",who(r)+`: lleva ${dias} días hospitalizado (desde ${r.ing}).`,"");
+  });
+  rows.filter(r=>(r.sec==="E"||r.sec==="D")&&r.ok).forEach(r=>{ const f=byId.get(r.k); if(f&&metaHosp(f.meta||{})) add(3,"Egreso con cama ocupada",who(r)+`: aparece en ${r.sec==="D"?"DEFUNCIONES":"ALTAS"} pero en la app sigue con cama de hospitalización.`,"Cambia su cama a CE"+(r.sec==="D"?" o RIP":"")+"."); });
+  return out.sort((a,b)=>b.lv-a.lv);
+}
+function cenRevisaHTML(per,cen){
+  let L=[]; try{ L=cenRevisa(per,cen); }catch(_){ return ""; } if(!L.length) return `<div class="cen-rv cen-rv-ok">✓ Revisión automática: sin errores ni datos de alerta en este censo.</div>`;
+  const G=[[3,"Corregir","Errores que cambian las cuentas del censo"],[2,"Revisar","Datos incompletos o que no cuadran"],[1,"Para saber","Avisos informativos"]];
+  return `<div class="cen-rv" role="alert"><b>Revisión automática del censo: ${L.filter(x=>x.lv===3).length} por corregir · ${L.filter(x=>x.lv===2).length} por revisar · ${L.filter(x=>x.lv===1).length} avisos</b>${G.map(([lv,t,d])=>{ const a=L.filter(x=>x.lv===lv); if(!a.length) return ""; return `<details class="cen-rv-g cen-rv${lv}"${lv>1?" open":""}><summary><i>${a.length}</i>${t} <small>· ${d}</small></summary><ul>${a.map(x=>`<li><em>${esc(x.cat)}</em><span>${esc(x.txt)}${x.act?` <small>→ ${esc(x.act)}</small>`:""}</span></li>`).join("")}</ul></details>`; }).join("")}</div>`;
+}
 function cenContHTML(per,cen){
-  const S=cenSinPrevioHTML(per,cen);
+  const S=cenSinPrevioHTML(per,cen)+cenRevisaHTML(per,cen);
   const L=cenContinuidad(per,cen); CEN._cont=L; if(!L.length) return S;
   const pv=cenDay(per.next.y,per.next.m,per.next.d,-1);
   return `<div class="cen-cont" role="alert"><b>Revisar: ${L.length} paciente(s) del censo anterior (${cenDot(pv)}) ya no aparecen en este censo y no tienen alta ni defunción registrada.</b><ul>${L.map((x,i)=>`<li><span>${esc((x.p.cama?x.p.cama+" · ":"")+x.p.nombre)} · Exp. ${esc(x.p.exp)}${x.f?" · cama actual: "+esc(String((x.f.meta&&x.f.meta.cama)||"vacía"))+(((ppRowS(x.f)||{}).camaLiberada)?" (cama liberada a CE, sin alta)":""):" · sin expediente en la app"}</span>${x.f&&accessCensusWrite()?`<button type="button" class="cen-btn" data-contalta="${i}">Registrar alta</button>`:""}${!x.f&&x.p.exp&&x.p.nombre&&accessCensusWrite()?`<button type="button" class="cen-btn" data-contnew="${i}">Crear paciente</button>`:""}</li>`).join("")}</ul><small>Si salieron del servicio, registra el alta para que aparezcan en ALTAS. Si siguen hospitalizados, corrige su cama en Hospitalizados. Si no tienen expediente en la app, «Crear paciente» abre Agregar Paciente con los datos del censo anterior.</small></div>`+S;
@@ -9801,9 +9833,9 @@ function cenStatRec(cen,fname){
   const lst=(key,cnt,two)=>[...Array(cnt)].map((_,i)=>two?{t:V(key+"."+i+".t"),e:V(key+"."+i+".e")}:V(key+"."+i)).filter(x=>two?(x.t||x.e):x);
   const ing={},egr={},nt={}; CEN_SRV.forEach(s=>{ ing[s]=n("ing."+s); egr[s]=n("egr."+s); nt[s]=V("nt."+s); });
   const o=cenFromName(fname)||cenFromDot(cen.fecha), key=o?o.y+"-"+String(o.m+1).padStart(2,"0")+"-"+String(o.d).padStart(2,"0"):"";
-  const est={}; (cen.pac||[]).filter(r=>!r.exc&&(r.sec||"H")==="H").forEach(r=>{ String(r.est||"").split(/\s*[\/,;]\s*/).map(x=>x.toLocaleUpperCase("es-MX").replace(/\s+/g," ").trim()).filter(Boolean).forEach(t=>{ const k=CEN_EST.includes(t)?t:"OTROS"; est[k]=(est[k]||0)+1; }); });
+  const est={}, estc={}; (cen.pac||[]).filter(r=>!r.exc&&(r.sec||"H")==="H").forEach(r=>{ const sc=cenSrvOf(r.clin)||"OTRO"; String(r.est||"").split(/\s*[\/,;]\s*/).map(x=>x.toLocaleUpperCase("es-MX").replace(/\s+/g," ").trim()).filter(Boolean).forEach(t=>{ const k=CEN_EST.includes(t)?t:"OTROS"; est[k]=(est[k]||0)+1; const ec=estc[sc]=estc[sc]||{}; ec[k]=(ec[k]||0)+1; }); });
   const ps={}, il=[], el=[]; (cen.pac||[]).forEach(r=>{ const s=cenSrvOf(r.clin)||"OTRO"; if(r.sec==="H"&&!r.exc) ps[s]=(ps[s]||0)+1; if(r.nu) il.push({c:r.cama||"",n:r.nombre||"",s,e:r.exp||"",x:r.est||""}); if(r.sec==="E"||r.sec==="D") el.push({c:r.cama||"",n:r.nombre||"",s,e:r.exp||"",t:r.sec,x:r.est||""}); });
-  return {v:2,ps,il,el,k:key,f:cen.fecha,est,g:cen.guardia||"",res:cen.res||"",por:cen.por||"",ts:Date.now(),ing,egr,nt,nttot:V("nt.TOT"),
+  return {v:3,ps,il,el,k:key,f:cen.fecha,est,estc,g:cen.guardia||"",res:cen.res||"",por:cen.por||"",ts:Date.now(),ing,egr,nt,nttot:V("nt.TOT"),
     cr:lst("cr",5,1),cp:lst("cp",5,1),cs:lst("cs",2,1),cpe:lst("cpe",3),pr:lst("pr",2),tr:lst("tr",5),gr:lst("gr",5),
     ic:{ce:n("ic.ce"),ho:n("ic.ho"),ur:n("ic.ur"),te:n("ic.te"),qx:n("ic.qx")},iso:V("iso"),dfn:V("dfn"),ev:V("ev"),tot:n("tot")||((cen.pac||[]).filter(r=>!r.exc).length),pac:(cen.pac||[]).length};
 }
@@ -9817,7 +9849,7 @@ function cenStatPush(cen,now){
 async function cenStatBackfill(onTick,have){
   const all=(await cenList(true)).filter(x=>/^JCF\d{6}\.json$/i.test(x.name)), recs={}; let i=0, leidos=0, omit=0; have=have||{};
   /* v3.44 · solo se leen los censos nuevos o modificados después de su última importación */
-  const list=all.filter(x=>{ const o=cenFromName(x.name), k=o?o.y+"-"+String(o.m+1).padStart(2,"0")+"-"+String(o.d).padStart(2,"0"):"", h=k&&have[k], mt=Date.parse(x.modified||"")||0; if(h&&h.ts&&mt&&h.ts>mt&&h.v>=2){ omit++; return false; } return true; });
+  const list=all.filter(x=>{ const o=cenFromName(x.name), k=o?o.y+"-"+String(o.m+1).padStart(2,"0")+"-"+String(o.d).padStart(2,"0"):"", h=k&&have[k], mt=Date.parse(x.modified||"")||0; if(h&&h.ts&&mt&&h.ts>mt&&h.v>=3){ omit++; return false; } return true; });
   if(onTick) onTick(0,list.length);
   await ppPool(list,4,async x=>{ try{ const r=await cenReadEntry(x), o=r&&r.obj; if(o&&Array.isArray(o.pac||[])){ leidos++; const rec=cenStatRec(Object.assign({},o,{pac:o.pac||[]}),x.name); if(rec.k) recs[rec.k]=rec; } }catch(_){} i++; if(onTick) onTick(i,list.length); });   /* v5.26 · 4 censos a la vez */
   const n=Object.keys(recs).length;
@@ -10645,7 +10677,7 @@ function cenHistEdit(k){
 async function cenListOpen(){
   let d=$("dlgCenList"); if(!d){ d=document.createElement("dialog"); d.id="dlgCenList"; d.className="dlg cen-add cen-ld"; document.body.appendChild(d);
     d.addEventListener("cancel",e=>{ e.preventDefault(); d.close(); });
-    d.addEventListener("click",e=>{ if(e.target.closest("[data-x]")){ d.close(); return; } const b=e.target.closest("[data-cl]"); if(!b) return; const name=b.closest("tr").dataset.cn; if(b.dataset.cl==="edit"){ d.close(); cenOpenHist(name); } else if(b.dataset.cl==="ver") cenViewPop(name); else if(b.dataset.cl==="print") cenPrintByName(name); else if(b.dataset.cl==="reload") cenListLoad(d,true); });
+    d.addEventListener("click",e=>{ if(e.target.closest("[data-x]")){ d.close(); return; } const b=e.target.closest("[data-cl]"); if(!b) return; const name=b.closest("tr").dataset.cn; if(b.dataset.cl==="edit"){ if(!canPerm("editar_censos_archivados")) return; d.close(); cenOpenHist(name); } else if(b.dataset.cl==="ver") cenViewPop(name); else if(b.dataset.cl==="print") cenPrintByName(name); else if(b.dataset.cl==="reload") cenListLoad(d,true); });
     d.addEventListener("change",e=>{ if(e.target.matches("#clY,#clM")) cenListDraw(d); }); }
   d.innerHTML=`<div class="ca-head"><b>Censos guardados</b><button type="button" class="ca-x" data-x aria-label="Cerrar">×</button></div><div class="ca-s1"><div class="cl-filt"><label>Año <select id="clY"></select></label><label>Mes <select id="clM"></select></label><button type="button" class="cen-btn" data-cl="reload">Actualizar</button></div><div id="clBody" class="cl-body"><div class="cen-empty">Cargando…</div></div></div>`;
   d.style.display=""; d.showModal(); cenListLoad(d,false);
@@ -10661,7 +10693,7 @@ function cenListDraw(d){
   const MN=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"], y=+$("clY").value, rows=(d._rows||[]).filter(r=>r.t.y===y);
   const ms=[...new Set(rows.map(r=>r.t.m))].sort((a,b)=>b-a), prev=$("clM").value; $("clM").innerHTML=`<option value="">Todos</option>`+ms.map(m=>`<option value="${m}">${MN[m]}</option>`).join(""); if(prev!==""&&ms.map(String).includes(prev)) $("clM").value=prev;
   const m=$("clM").value, list=rows.filter(r=>m===""||String(r.t.m)===m);
-  $("clBody").innerHTML=list.length?`<table class="cenlist"><thead><tr><th>Censo</th><th>Día</th><th>Corte</th><th>Última modificación</th><th></th></tr></thead><tbody>${list.map(({x,t})=>{ const wd=new Date(Date.UTC(t.y,t.m,t.d)).getUTCDay(); return `<tr data-cn="${esc(x.name)}"><td><b>${esc(cenDot4(t))}</b></td><td>${CEN_DIAS[wd].toLowerCase()}</td><td>${wd===0||wd===6?"07:30":"05:30"}</td><td>${esc(new Date(x.modified).toLocaleString("es-MX",{day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"}))}<small class="cl-who" data-who="${esc(x.name)}"></small></td><td class="a"><button type="button" class="cen-btn" data-cl="edit">${CEN_ICO_EDT}Editar</button><button type="button" class="cen-btn" data-cl="ver">${CEN_ICO_VIEW}Ver</button><button type="button" class="cen-btn" data-cl="print">${CEN_ICO_PRT}Imprimir</button></td></tr>`; }).join("")}</tbody></table>`:`<div class="cen-empty">${(d._rows||[]).length?"No hay censos en ese periodo.":"Aún no hay censos guardados. Aparecerán aquí cuando se envíe el primer censo final."}</div>`;
+  $("clBody").innerHTML=list.length?`<table class="cenlist"><thead><tr><th>Censo</th><th>Día</th><th>Corte</th><th>Última modificación</th><th></th></tr></thead><tbody>${list.map(({x,t})=>{ const wd=new Date(Date.UTC(t.y,t.m,t.d)).getUTCDay(); return `<tr data-cn="${esc(x.name)}"><td><b>${esc(cenDot4(t))}</b></td><td>${CEN_DIAS[wd].toLowerCase()}</td><td>${wd===0||wd===6?"07:30":"05:30"}</td><td>${esc(new Date(x.modified).toLocaleString("es-MX",{day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"}))}<small class="cl-who" data-who="${esc(x.name)}"></small></td><td class="a">${canPerm("editar_censos_archivados")?`<button type="button" class="cen-btn" data-cl="edit">${CEN_ICO_EDT}Editar</button>`:""}<button type="button" class="cen-btn" data-cl="ver">${CEN_ICO_VIEW}Ver</button><button type="button" class="cen-btn" data-cl="print">${CEN_ICO_PRT}Imprimir</button></td></tr>`; }).join("")}</tbody></table>`:`<div class="cen-empty">${(d._rows||[]).length?"No hay censos en ese periodo.":"Aún no hay censos guardados. Aparecerán aquí cuando se envíe el primer censo final."}</div>`;
   try{ cenListWho(d,list); }catch(_){}
 }
 
@@ -11798,7 +11830,7 @@ let svTab="res";
 const arC=(exp,id)=>`<span class="on-arw">${arB(exp,id)}</span>`, arHd=h=>canPerm("ver_archivo")?[""].concat(h):h, arCl=(exp,c)=>canPerm("ver_archivo")?[arC(exp)].concat(c):c;
 /* ===== v5.16 · Estadísticas por apartados (Resumen · Actividad · Censo · Oncología) y Oncología por región / tipo de cáncer / estadio ===== */
 const ONC=window.HJM_ONCO;
-const SV_TABS=[["res","Resumen"],["hos","Hospitalización","Hospital"],["cen","Censo"],["onc","Oncología","Onco"],["act","Uso de la app","Uso app"]];
+const SV_TABS=[["res","Resumen"],["hos","Hospitalización","Hospital"],["cen","Movimientos diarios","Movim."],["qx","Quirófano"],["ic","Interconsultas","Intercons."],["onc","Perfil oncológico","Onco"],["act","Uso de la app","Uso app"]];
 const ONC_FLD='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v1M3 7v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H3z"/></svg>';
 const ONC_STAGES=[["0","Estadio 0 / in situ","#8FB8A8"],["I","Estadio I","#6FA8DC"],["II","Estadio II","#4F7FBF"],["III","Estadio III","#D9822B"],["IV","Estadio IV","#B5473A"],["","Sin estadio identificado","#B8BEC6"]];
 const ONC_REF={ing:"Fecha de ingreso",reg:"Fecha de alta en la app",mod:"Última modificación"};
@@ -11897,8 +11929,9 @@ function oncBodyHTML(){
   if(!all.length) return prog+'<div class="st-card"><div class="st-msg">Aún no hay pacientes cargados desde Drive para clasificar.</div></div>';
   const gs=gItems(A,true), top=Object.entries(A.t).filter(([t])=>ONC.group[ONC.leaf[t].g].cancer).sort((a,b)=>b[1]-a[1]), c0=top[0];
   const withSt=A.cancer-(A.stage[""]||0), iv=A.stage.IV||0;
-  const K=[[A.n,"Pacientes en el periodo",""],[A.cancer,"Con diagnóstico oncológico",`${pc(A.cancer,A.n)}% del total`],[gs.length,"Regiones con pacientes",""],
+  const K=[[A.n,"Pacientes en el periodo",""],[A.cancer,"Con diagnóstico oncológico",`${pc(A.cancer,A.n)}% del total`],[gs.length,"Regiones con pacientes","toca para ver la más frecuente",gs[0]?gs[0].a:""],
     [c0?c0[1]:0,"Tipo más frecuente",c0?leafName(c0[0]):"—",c0?`data-ot="${c0[0]}"`:""],[iv,"Estadio IV",withSt?`${pc(iv,withSt)}% de los que tienen estadio`:"",`data-ostage="IV"`],
+    [withSt?pc((A.stage.III||0)+iv,withSt)+"%":"—","Estadios avanzados (III–IV)",withSt?`${(A.stage.III||0)+iv} de ${withSt} con estadio · toca para ver estadio IV`:"sin estadios escritos",`data-ostage="IV"`],[(()=>{ const e=rows.filter(r=>ONC.group[r.cls.g].cancer&&r.edn>=0&&r.edn<125).map(r=>r.edn); return e.length?fmtN(medOf(e))+" años":"—"; })(),"Edad mediana","pacientes oncológicos"],
     [A.stage[""]||0,"Sin estadio identificado","en el diagnóstico escrito",`data-ostage="?"`],[A.ben,"Benignos / no oncológicos","",`data-og="bn"`],[A.unk,"Sin clasificar","revisar en la lista",`data-og="sc"`]];
   const kp=K.map(([n,l,s,a])=>`<div class="st-kpi${a?" st-click":""}"${a?` ${a} role="button" tabindex="0"`:""}><b>${n}</b><span>${l}</span>${s?`<small class="st-sub">${esc(s)}</small>`:""}</div>`).join("");
   const regCards=gs.map(i=>{ const gid=i.a.replace(/.*"(\w+)"/,"$1"), g=ONC.group[gid], ag=A.g[gid], ls=Object.entries(ag.t).sort((a,b)=>b[1]-a[1]);
@@ -11906,7 +11939,7 @@ function oncBodyHTML(){
   const empty=ONC.groups.filter(g=>g.cancer&&!A.g[g.id]).map(g=>g.n);
   const tl=top.slice(0,12).map(([t,n])=>({n:leafName(t),v:n,c:ONC.group[ONC.leaf[t].g].c,a:`data-ot="${t}"`}));
   const cl=Object.entries(A.clin).sort((a,b)=>b[1]-a[1]).map(([k,v],i)=>({n:k,v,c:CH_COL[i%CH_COL.length]})), hs=Object.entries(A.hist).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,v],i)=>({n:k,v,c:CH_COL[i%CH_COL.length]}));
-  return `${prog}<div class="on-note">${esc(lab.charAt(0).toUpperCase()+lab.slice(1))} · referencia: ${esc(ONC_REF[OF.ref].toLowerCase())} · <b>${A.n}</b> de ${all.length} pacientes${nodate&&period!==0?` · ${nodate} sin esa fecha no entran (usa «Todo» para verlos)`:""}</div>
+  return `${prog}<div class="st-msg" style="margin:0 0 6px">Qué tipos de cáncer atiende el servicio, en qué estadio llegan y a quién afectan. Se calcula con el diagnóstico escrito en cada expediente.</div><div class="on-note">${esc(lab.charAt(0).toUpperCase()+lab.slice(1))} · referencia: ${esc(ONC_REF[OF.ref].toLowerCase())} · <b>${A.n}</b> de ${all.length} pacientes${nodate&&period!==0?` · ${nodate} sin esa fecha no entran (usa «Todo» para verlos)`:""}</div>
    <div class="st-kpis">${kp}</div>
    <div class="st-card"><h3>Regiones anatómicas <small>· toca una región para ver sus tipos de cáncer y pacientes</small></h3>${gs.length?`<div class="on-gg">${regCards}</div>`:'<div class="st-msg">Sin pacientes oncológicos con estos filtros.</div>'}${empty.length?`<div class="st-msg on-emp">Sin pacientes ahora: ${esc(empty.join(" · "))}.</div>`:""}</div>
    <div class="st-grid2"><div class="st-card"><h3>Distribución por región</h3><div class="on-dn">${donutSVG(gs.map(i=>Object.assign({},i)),{title:"Pacientes por región",center:"oncológicos"})}${legendHTML(gs,A.cancer)}</div></div>
@@ -11943,7 +11976,7 @@ function oncWinPaint(){
   const G=ONC.group[OW.g], T=OW.t?ONC.leaf[OW.t]:null, base=rows.filter(r=>oncMatch(r,OW.g,OW.t)), A=oncAgg(base), assoc=rows.filter(r=>!oncMatch(r,OW.g,OW.t)&&(()=>{ const was=OW.multi; OW.multi=true; const ok=oncMatch(r,OW.g,OW.t); OW.multi=was; return ok; })()).length;
   const lab=[[1,"hoy"],[7,"últimos 7 días"],[30,"últimos 30 días"],[0,"todo el historial"],[-1,rngLabel()]].find(x=>x[0]===period)[1];
   const chips=[ONC_REF[OF.ref],OF.clin&&"Clínica "+OF.clin,OF.sex&&(OF.sex==="M"?"Hombres":"Mujeres"),OF.stage!==""&&("Estadio "+(OF.stage==="?"?"sin identificar":OF.stage)),OF.sit&&ONC_SIT[OF.sit],OF.q&&"«"+OF.q+"»"].filter(Boolean);
-  d.querySelector(".on-h").innerHTML=`<div class="on-bc"><button type="button" data-on-close>Oncología</button><span>›</span>${T?`<button type="button" data-on-g="${G.id}">${esc(G.n)}</button><span>›</span><b>${esc(T.n)}</b>`:`<b>${esc(G.n)}</b>`}</div><span class="on-cnt"><b>${base.length}</b> paciente${base.length===1?"":"s"}</span><button type="button" class="on-x" data-on-close aria-label="Cerrar">×</button>`;
+  d.querySelector(".on-h").innerHTML=`<div class="on-bc"><button type="button" data-on-close>Perfil oncológico</button><span>›</span>${T?`<button type="button" data-on-g="${G.id}">${esc(G.n)}</button><span>›</span><b>${esc(T.n)}</b>`:`<b>${esc(G.n)}</b>`}</div><span class="on-cnt"><b>${base.length}</b> paciente${base.length===1?"":"s"}</span><button type="button" class="on-x" data-on-close aria-label="Cerrar">×</button>`;
   let body=`<div class="on-note">${esc(lab.charAt(0).toUpperCase()+lab.slice(1))} · ${esc(chips.join(" · "))}${assoc||OW.multi?` <label class="on-multi"><input type="checkbox" data-on-multi${OW.multi?" checked":""}> Incluir pacientes con este diagnóstico como asociado (${assoc||"ya incluidos"})</label>`:""}</div>`;
   if(!T){
     const ls=G.t.map(x=>({id:x.id,n:x.n,v:base.filter(r=>oncMatch(r,"",x.id)).length})).sort((a,b)=>b.v-a.v), live=ls.filter(x=>x.v), none=ls.filter(x=>!x.v);
@@ -12016,8 +12049,8 @@ function censoTrends(remote){
 function resumenView(P){
   const {rows}=oncData(), A=oncAgg(rows), gs=gItems(A,true), {rs}=censoRs(remoteCache), asc=rs.slice().sort((a,b)=>a.k.localeCompare(b.k)).slice(-30), L=asc.map(r=>r.k.slice(8)+"."+r.k.slice(5,7)), sv=(o,r)=>SRVL.reduce((n,s)=>n+(((r||{})[o]||{})[s]||0),0);
   return keyIndicators(P.A)+`<div class="st-card"><h3>Uso de la app <small>· ${esc(perLabel())}</small></h3>${P.kpis}<div class="on-go"><button type="button" class="st-btn st-sm" data-sv="act">Ver uso de la app →</button></div></div><div class="st-grid2">
-   <div class="st-card"><h3>Pacientes oncológicos por región <small>· ${A.cancer} en el periodo</small></h3><div class="on-dn">${donutSVG(gs.map(i=>Object.assign({},i)),{title:"Pacientes por región",center:"oncológicos"})}${legendHTML(gs,A.cancer)}</div><div class="on-go"><button type="button" class="st-btn st-sm" data-sv="onc">Ver Oncología completa →</button></div></div>
-   <div class="st-card"><h3>Ingresos y egresos <small>· por censo final</small></h3>${rs.length?chartSVG(L,[{name:"Ingresos",v:asc.map(r=>sv("ing",r)),c:"#2F6FA7"},{name:"Egresos",v:asc.map(r=>sv("egr",r)),c:"#D9822B"}],{line:true,title:"Ingresos contra egresos",xName:"Censo"}):'<div class="st-msg">Aún no hay censos finales en este periodo.</div>'}<div class="on-go"><button type="button" class="st-btn st-sm" data-sv="cen">Ver Censo →</button></div></div></div>
+   <div class="st-card"><h3>Pacientes oncológicos por región <small>· ${A.cancer} en el periodo</small></h3><div class="on-dn">${donutSVG(gs.map(i=>Object.assign({},i)),{title:"Pacientes por región",center:"oncológicos"})}${legendHTML(gs,A.cancer)}</div><div class="on-go"><button type="button" class="st-btn st-sm" data-sv="onc">Ver perfil oncológico →</button></div></div>
+   <div class="st-card"><h3>Ingresos y egresos <small>· según los censos finales</small></h3>${rs.length?chartSVG(L,[{name:"Ingresos",v:asc.map(r=>sv("ing",r)),c:"#2F6FA7"},{name:"Egresos",v:asc.map(r=>sv("egr",r)),c:"#D9822B"}],{line:true,title:"Ingresos contra egresos",xName:"Censo"}):'<div class="st-msg">Aún no hay censos finales en este periodo.</div>'}<div class="on-go"><button type="button" class="st-btn st-sm" data-sv="cen">Ver movimientos diarios →</button></div></div></div>
    <div class="st-card"><h3>Actividad diaria <small>· últimos 14 días</small></h3>${dailyActivity(P.A,14)}<div class="on-go"><button type="button" class="st-btn st-sm" data-sv="act">Ver uso de la app →</button></div></div>`;
 }
 function svNav(){ return `<div class="sv-nav" role="tablist" aria-label="Apartados de estadísticas">${SV_TABS.map(([k,l,sh])=>`<button type="button" role="tab" data-sv="${k}" aria-selected="${svTab===k}"${sh?` title="${l}"`:""}>${sh?`<span class="sv-l">${l}</span><span class="sv-s" aria-hidden="true">${sh}</span>`:l}</button>`).join("")}</div>`; }
@@ -12046,13 +12079,16 @@ async function renderStats(body){
   if(!SV_TABS.some(x=>x[0]===svTab)) svTab="res"; let main="";
   if(svTab==="res") main=resumenView({kpis:KPIS,A});
   else if(svTab==="act") main=KPIS+ACT+`<div class="st-card"><h3>Actividad diaria <small style="font-weight:500;color:#7B7E81">· últimos 30 días, apilada por tipo</small></h3>${dailyActivity(A,30)}</div>`+GRID+D14;
-  else if(svTab==="cen") main=censoCard(remote)+censoTrends(remote);
+  else if(svTab==="cen") main=movView(remote);
+  else if(svTab==="qx") main=qxView(remote);
+  else if(svTab==="ic") main=icView(remote);
   else if(svTab==="hos") main=hosView();
   else main=oncView();
   body.innerHTML=PER+svNav()+`<div class="sv-main">${main}</div>`;
   wireDet(body); wireList(body,period); hosWire(body);
   body.querySelectorAll("[data-sv]").forEach(b=>b.onclick=b.onkeydown=e=>{ if(e&&e.type==="keydown"&&e.key!=="Enter"&&e.key!==" ") return; if(e&&e.type==="keydown") e.preventDefault(); svTab=b.dataset.sv; render().then(()=>{ const s=scroller($s("stBody")); if(s) s.scrollTop=0; }); });
   if(svTab==="onc") oncWireTop(body); else if(svTab==="res") oncWire(body);
+  if(svTab==="cen") movWire(body);
   body.querySelectorAll("[data-dfn-open]").forEach(b=>{ b.onclick=()=>dfnOpen(); b.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); dfnOpen(); } }; });
   body.querySelectorAll("[data-per]").forEach(b=>b.onclick=()=>{ period=+b.dataset.per; if(period===-1&&!rangeA) rangeA=dayKey(Date.now()); render(); });
   { const ra=body.querySelector("#stRA"), rb=body.querySelector("#stRB"); const fix=()=>{ if(rangeB&&rangeA&&rangeB<rangeA){ const t=rangeA; rangeA=rangeB; rangeB=t; } };
@@ -12120,6 +12156,114 @@ function censoCard(remote){
    ${admin&&isTechnicalAdmin()?`<div style="display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap"><button type="button" class="st-btn st-sm" data-cenbf>Importar censos ya guardados</button><span class="st-msg" id="stCenMsg" style="margin:0" aria-live="polite">Trae los censos nuevos o modificados desde la última importación y pasa el último censo cargado desde fuera al Censo actual.</span></div>`:""}</div>`;
 }
 
+
+/* ===== v7.44 · Apartados del censo final: Movimientos diarios (con filtro por clínica e historial por mes), Quirófano e Interconsultas; actualización automática en segundo plano ===== */
+let MOVF={clin:"",q:""}; const MOV_OPEN=new Set(); const MES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+const CENAUTO={on:false,last:0,msg:"",done:0};
+const icTot=r=>Object.values(r.ic||{}).reduce((a,b)=>a+(+b||0),0);
+function cenSrcNote(lab){ return `<div class="on-note">${esc(lab.charAt(0).toUpperCase()+lab.slice(1))} · fuente: censos finales del servicio${CENAUTO.msg?` · <span class="st-auto${CENAUTO.on?" st-busy":""}">${esc(CENAUTO.msg)}</span>`:""}</div>`; }
+function movView(remote){
+  const {rs,lab}=censoRs(remote), C=MOVF.clin, S=C?[C]:SRVL, asc=rs.slice().sort((a,b)=>a.k.localeCompare(b.k)), L=asc.slice(-45).map(r=>r.k.slice(8)+"."+r.k.slice(5,7)), A45=asc.slice(-45);
+  const sv=(o,r)=>S.reduce((n,s)=>n+(((r||{})[o]||{})[s]||0),0), pd=r=>C?(+((r.ps||{})[C])||0):cenPacDia(r);
+  const es=(r,k)=>C?(((r.estc||{})[C]||{})[k]||0):((r.est||{})[k]||0), dfnN=r=>Array.isArray(r.el)?r.el.filter(x=>x.t==="D"&&(!C||x.s===C)).length:(C?0:cenCnt(r.dfn));
+  const ing=rs.reduce((n,r)=>n+sv("ing",r),0), egr=rs.reduce((n,r)=>n+sv("egr",r),0), dfn=rs.reduce((n,r)=>n+dfnN(r),0), pds=rs.map(pd).filter(x=>x>0), rein=rs.reduce((n,r)=>n+es(r,"RE INGRESO"),0), grv=rs.map(r=>es(r,"GRAVE"));
+  const noEc=C&&rs.some(r=>!r.estc);
+  const sel=`<div class="on-fl mv-fl"><label>Clínica<select data-mv="clin"><option value="">Todas las clínicas</option>${SRVL.map(s=>`<option value="${s}"${C===s?" selected":""}>${esc(SRVN[s])}</option>`).join("")}</select></label></div>`;
+  if(!rs.length) return cenSrcNote(lab)+sel+'<div class="st-card"><div class="st-msg">Aún no hay censos finales en este periodo. Se registran al guardar el censo final y se actualizan solos en segundo plano.</div></div>'+movAdmin();
+  const dc=C?`data-dclin="${C}"`:"";
+  const K=kpi(rs.length,"Censos finales del periodo",`${kFmt(asc[0].k)} al ${kFmt(asc[asc.length-1].k)}`,'data-det="cen"')
+   +kpi(fmtN(avgOf(pds),1),"Pacientes hospitalizados por día",pds.length?`mín. ${Math.min(...pds)} · máx. ${Math.max(...pds)}`:"",'data-det="ps" '+dc)
+   +kpi(ing,"Ingresos",`≈ ${fmtN(ing/rs.length,1)} por día`,'data-det="ing" '+dc)
+   +kpi(egr,"Egresos",`≈ ${fmtN(egr/rs.length,1)} por día`,'data-det="egr" '+dc)
+   +kpi(ing-egr>0?"+"+(ing-egr):ing-egr,"Balance ingresos − egresos",ing-egr>0?"más ingresos que egresos":ing-egr<0?"más egresos que ingresos":"sin cambio",'data-det="ing" '+dc)
+   +kpi(dfn,"Defunciones",C?"con detalle por clínica":"",'data-det="dfn" '+dc,"",dfn?"st-warn":"")
+   +kpi(rein,"Reingresos",ing?`${pc(rein,ing)}% de los ingresos`:"marcados como «Re ingreso»",'data-det="est:RE INGRESO" '+dc)
+   +kpi(fmtN(avgOf(grv),1),"Pacientes graves por día",`máx. ${Math.max(0,...grv)}`,'data-det="est:GRAVE" '+dc);
+  const serP=C?[{name:SRVN[C],v:A45.map(pd),c:CH_COL[SRVL.indexOf(C)]}]:SRVL.map((s,i)=>({name:SRVN[s],c:CH_COL[i%CH_COL.length],v:A45.map(r=>+((r.ps||{})[s])||0)}));
+  if(!C){ const ot=A45.map(r=>Math.max(0,cenPacDia(r)-SRVL.reduce((n,s)=>n+(+((r.ps||{})[s])||0),0))); if(ot.some(x=>x)) serP.push({name:"Otras clínicas",c:"#9AA3AD",v:ot}); }
+  const grp=CEN_EST_GRP.map(([g,ks])=>`<tr class="mv-g"><td colspan="4">${esc(g)}</td></tr>`+ks.map(k=>{ const v=rs.map(r=>es(r,k)); const last=es(rs[0],k);
+     return `<tr class="st-click" data-det="est:${esc(k)}" ${dc} tabindex="0" title="Ver por censo"><td class="nm">${esc(k.charAt(0)+k.slice(1).toLowerCase())}</td><td>${last}</td><td>${fmtN(avgOf(v),1)}</td><td>${Math.max(0,...v)}</td></tr>`; }).join("")).join("")
+   +(()=>{ const v=rs.map(r=>es(r,"OTROS")); return v.some(Boolean)?`<tr class="mv-g"><td colspan="4">Otros</td></tr><tr class="st-click" data-det="est:OTROS" ${dc} tabindex="0"><td class="nm">Escrito a mano</td><td>${es(rs[0],"OTROS")}</td><td>${fmtN(avgOf(v),1)}</td><td>${Math.max(0,...v)}</td></tr>`:""; })();
+  const byClin=C?"":`<div class="st-card"><h3>Ingresos y egresos por clínica <small>· toca una fila para el detalle</small></h3><div class="st-scroll"><table class="st-act"><thead><tr><th>Clínica</th><th>Ingresos</th><th>Egresos</th><th>Balance</th><th>Pacientes por día</th></tr></thead><tbody>${SRVL.map(s=>{ const i=rs.reduce((n,r)=>n+(((r.ing||{})[s])||0),0), e=rs.reduce((n,r)=>n+(((r.egr||{})[s])||0),0), p=avgOf(rs.map(r=>+((r.ps||{})[s])||0)); return `<tr class="st-click" data-det="ing" data-dclin="${s}" tabindex="0"><td class="nm">${esc(SRVN[s])}</td><td>${i}</td><td>${e}</td><td>${i-e>0?"+":""}${i-e}</td><td>${fmtN(p,1)}</td></tr>`; }).join("")}</tbody></table></div></div>`;
+  return cenSrcNote(lab)+sel+`<div class="st-msg" style="margin:0 0 6px">Cómo se mueve el servicio día a día: cuántos pacientes hay, cuántos entran y salen y en qué estado están${C?` · <b>${esc(SRVN[C])}</b>`:""}. Toca cualquier tarjeta para ver gráficas y pacientes.</div>
+   <div class="st-kpis">${K}</div>
+   <div class="st-grid2"><div class="st-card"><h3>Ingresos contra egresos <small>· por día de censo</small></h3>${chartSVG(L,[{name:"Ingresos",v:A45.map(r=>sv("ing",r)),c:"#2F6FA7"},{name:"Egresos",v:A45.map(r=>sv("egr",r)),c:"#D9822B"}],{line:true,title:"Ingresos contra egresos",xName:"Censo"})}</div>
+    <div class="st-card"><h3>Pacientes hospitalizados por día <small>· ${C?"de la clínica":"por clínica"}</small></h3>${chartSVG(L,serP,{stacked:true,title:"Pacientes por censo",avg:avgOf(A45.map(pd).filter(x=>x>0)),avgLabel:"Promedio",xName:"Censo"})}</div></div>
+   <div class="st-card"><h3>Estado de los pacientes <small>· según el estatus escrito en el censo · toca una fila para verlo por día</small></h3>${noEc?'<div class="st-msg">Algunos censos aún no traen el estado separado por clínica; se completan solos en la próxima actualización automática.</div>':""}<div class="st-scroll"><table class="st-act mv-est"><thead><tr><th>Estado</th><th>Último censo<br><small>${esc(rs[0].f||rs[0].k)}</small></th><th>Promedio por día</th><th>Máximo en un día</th></tr></thead><tbody>${grp}</tbody></table></div><div class="st-msg" style="margin-top:6px">Un paciente cuenta una vez por cada censo en que tuvo ese estado; por eso se muestra el promedio diario y no la suma.</div></div>
+   ${byClin}${movLists(rs,C)}${movHist(rs,S,C,pd,dfnN)}${movAdmin()}`;
+}
+function movLists(rs,C){
+  const I=[], E=[]; rs.forEach(r=>{ (Array.isArray(r.il)?r.il:[]).filter(x=>!C||x.s===C).forEach(x=>I.push(detTr(arCl(x.e,[esc(r.f||r.k),esc(x.c||"—"),esc(x.n||"—"),esc(x.s==="OTRO"?"—":x.s),esc(x.e||"—"),esc(x.x||"")])))); (Array.isArray(r.el)?r.el:[]).filter(x=>!C||x.s===C).forEach(x=>E.push(detTr(arCl(x.e,[esc(r.f||r.k),x.t==="D"?"<b>Defunción</b>":"Alta",esc(x.c||"—"),esc(x.n||"—"),esc(x.s==="OTRO"?"—":x.s),esc(x.e||"—")])))); });
+  const box=(t,n,h,rows,k)=>`<div class="st-card"><h3>${t} <small>· ${n} en el periodo</small></h3>${rows.length?`<div class="mv-lim">${detTbl(arHd(h),rows.slice(0,12))}</div>${rows.length>12?`<div class="on-go"><button type="button" class="st-btn st-sm" data-det="${k}" ${C?`data-dclin="${C}"`:""}>Ver los ${rows.length} con gráficas →</button></div>`:""}`:'<div class="st-msg">Sin registros.</div>'}</div>`;
+  return `<div class="st-grid2">${box("Pacientes que ingresaron",I.length,["Censo","Cama","Paciente","Clínica","Expediente","Estatus"],I,"ing")}${box("Pacientes que egresaron",E.length,["Censo","Tipo","Cama","Paciente","Clínica","Expediente"],E,"egr")}</div>`;
+}
+function movHist(rs,S,C,pd,dfnN){
+  const q=String(MOVF.q||"").trim(), byM={}; rs.forEach(r=>{ const m=r.k.slice(0,7); (byM[m]=byM[m]||[]).push(r); });
+  const ms=Object.keys(byM).sort().reverse(); if(!MOV_OPEN.size&&ms[0]) MOV_OPEN.add(ms[0]);
+  const sv=(o,r)=>S.reduce((n,s)=>n+(((r||{})[o]||{})[s]||0),0);
+  const cv=canPerm("ver_censos_archivados"), row=r=>`<tr${cv?` class="st-click" data-cenview="JCF${esc(String(r.f||"").replace(/\D/g,""))}.json" tabindex="0" title="Ver este censo"`:""}><td class="nm">${esc(r.f||r.k)} <small>${["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"][new Date(r.k+"T12:00:00").getDay()]}</small></td><td>${pd(r)}</td><td>${sv("ing",r)}</td><td>${sv("egr",r)}</td><td title="${esc(r.dfn||"")}">${dfnN(r)}</td><td>${(r.cr||[]).length}</td><td>${(r.cs||[]).length}</td><td>${icTot(r)}</td><td>${esc(r.g||r.res||"")}</td></tr>`;
+  const sec=ms.map(m=>{ const a=byM[m].filter(r=>!q||(String(r.f||"")+" "+(r.g||"")+" "+(r.res||"")).toLowerCase().includes(q.toLowerCase())); if(!a.length) return "";
+    const tI=a.reduce((n,r)=>n+sv("ing",r),0), tE=a.reduce((n,r)=>n+sv("egr",r),0), tC=a.reduce((n,r)=>n+(r.cr||[]).length,0);
+    return `<details class="mv-m" data-mvm="${m}"${MOV_OPEN.has(m)||q?" open":""}><summary><b>${MES[+m.slice(5)-1].replace(/^./,c=>c.toUpperCase())} ${m.slice(0,4)}</b><span>${a.length} censo(s) · ${tI} ingresos · ${tE} egresos · ${tC} cirugías</span></summary><div class="st-scroll"><table class="st-act"><thead><tr><th>Censo</th><th>Pacientes</th><th>Ingresos</th><th>Egresos</th><th>Defunciones</th><th>Cx realizadas</th><th>Cx suspendidas</th><th>Interconsultas</th><th>Guardia</th></tr></thead><tbody>${a.map(row).join("")}</tbody></table></div></details>`; }).join("");
+  return `<div class="st-card"><h3>Historial de censos finales <small>· ${rs.length} censo(s) del periodo, agrupados por mes${C?" · columnas de pacientes, ingresos, egresos y defunciones de "+esc(SRVN[C]):""}</small></h3><div class="on-tb mv-tb"><input type="search" class="st-in" data-mv="q" value="${esc(MOVF.q)}" placeholder="Buscar fecha (ej. 05.11) o guardia…" autocomplete="off"><button type="button" class="st-btn st-sm" data-mvall="1">Abrir todos</button><button type="button" class="st-btn st-sm" data-mvall="0">Cerrar todos</button></div><div id="mvHist">${sec||'<div class="st-msg">Ningún censo coincide con la búsqueda.</div>'}</div><div class="st-msg" style="margin-top:6px">Usa «Todo» o «Día / Rango» arriba para ver meses anteriores.</div></div>`;
+}
+function movAdmin(){ return isAdmin()&&isTechnicalAdmin()?`<div class="st-card"><h3>Mantenimiento <small>· solo Administrador Técnico</small></h3><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button type="button" class="st-btn st-sm" data-cenbf>Importar censos ya guardados</button><span class="st-msg" id="stCenMsg" style="margin:0" aria-live="polite">Los censos nuevos o modificados se integran solos en segundo plano. Este botón además pasa el último censo cargado desde fuera al Censo actual.</span></div></div>`:""; }
+function movWire(root){
+  root.querySelectorAll("[data-mv]").forEach(el=>{ const k=el.dataset.mv; if(el.tagName==="INPUT"){ let tm=0; el.oninput=()=>{ clearTimeout(tm); tm=setTimeout(()=>{ MOVF.q=el.value; const pos=el.selectionStart; render().then(()=>{ const n=document.querySelector('[data-mv="q"]'); if(n){ n.focus(); try{ n.setSelectionRange(pos,pos); }catch(_){} } }); },300); }; } else el.onchange=()=>{ MOVF[k]=el.value; render(); }; });
+  root.querySelectorAll("[data-cenview]").forEach(tr=>{ const go=()=>{ try{ cenViewPop(tr.dataset.cenview); }catch(_){} }; tr.onclick=go; tr.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); go(); } }; });
+  root.querySelectorAll("details[data-mvm]").forEach(d=>d.addEventListener("toggle",()=>{ if(d.open) MOV_OPEN.add(d.dataset.mvm); else MOV_OPEN.delete(d.dataset.mvm); }));
+  root.querySelectorAll("[data-mvall]").forEach(b=>b.onclick=()=>{ const on=b.dataset.mvall==="1"; root.querySelectorAll("details[data-mvm]").forEach(d=>{ d.open=on; if(on) MOV_OPEN.add(d.dataset.mvm); else MOV_OPEN.delete(d.dataset.mvm); }); });
+}
+function qxView(remote){
+  const {rs,lab}=censoRs(remote); if(!rs.length) return cenSrcNote(lab)+'<div class="st-card"><div class="st-msg">Aún no hay censos finales en este periodo.</div></div>';
+  const asc=rs.slice().sort((a,b)=>a.k.localeCompare(b.k)), A45=asc.slice(-45), L=A45.map(r=>r.k.slice(8)+"."+r.k.slice(5,7)), len=k=>rs.reduce((n,r)=>n+(r[k]||[]).length,0);
+  const cr=len("cr"), cp=len("cp"), cs=len("cs"), pr=len("pr"), tr=len("tr"), sus=cr+cs?cs/(cr+cs)*100:null, n=rs.length;
+  const pb=prevBounds(), csP=pb?censosEn(pb):null, lenP=k=>csP?csP.reduce((t,r)=>t+(r[k]||[]).length,0):null, susP=csP&&(lenP("cr")+lenP("cs"))?lenP("cs")/(lenP("cr")+lenP("cs"))*100:null;
+  const K=kpi(cr,"Cirugías realizadas",`≈ ${fmtN(cr/n,1)} por día`,'data-det="cr"',csP?dlt(cr,lenP("cr"),{neutral:true}):"")
+   +kpi(cp,"Cirugías programadas",`≈ ${fmtN(cp/n,1)} por día`,'data-det="cp"')
+   +kpi(cs,"Cirugías suspendidas o diferidas","",'data-det="cs"',csP?dlt(cs,lenP("cs"),{inv:true}):"")
+   +kpi(sus==null?"—":fmtN(sus,1)+"%","Tasa de suspensión",`${cs} de ${cr+cs} (realizadas + suspendidas)`,'data-det="cs"',susP!=null&&sus!=null?dlt(sus,susP,{dec:1,inv:true,u:" pts"}):"",sus>=20?"st-warn":"")
+   +kpi(pr,"Procedimientos fuera de quirófano",`≈ ${fmtN(pr/n,1)} por día`,'data-det="pr"')
+   +kpi(tr,"Transfusiones",`≈ ${fmtN(tr/n,1)} por día`,'data-det="tr"');
+  const wc=Array(7).fill(0), wn=Array(7).fill(0); rs.forEach(r=>{ const w=wdOf(r.k); wn[w]++; wc[w]+=(r.cr||[]).length; });
+  return cenSrcNote(lab)+`<div class="st-msg" style="margin:0 0 6px">Productividad quirúrgica del servicio según lo anotado en cada censo final. Toca una tarjeta para ver el texto de cada cirugía.</div><div class="st-kpis">${K}</div>
+   <div class="st-card"><h3>Cirugías por día de censo</h3>${chartSVG(L,[{name:"Realizadas",v:A45.map(r=>(r.cr||[]).length),c:"#3C8D5A"},{name:"Programadas",v:A45.map(r=>(r.cp||[]).length),c:"#7A5AA6"},{name:"Suspendidas",v:A45.map(r=>(r.cs||[]).length),c:"#B5473A"}],{title:"Cirugías por censo",xName:"Censo"})}</div>
+   <div class="st-grid2"><div class="st-card"><h3>Cirugías realizadas por día de la semana <small>· promedio</small></h3>${chartSVG(WD,[{name:"Realizadas",v:wc.map((v,i)=>wn[i]?+(v/wn[i]).toFixed(1):0),c:"#3C8D5A"}],{title:"Por día de la semana",dec:1})}</div>
+    <div class="st-card"><h3>Procedimientos y transfusiones <small>· por día de censo</small></h3>${chartSVG(L,[{name:"Procedimientos",v:A45.map(r=>(r.pr||[]).length),c:"#2A9D9D"},{name:"Transfusiones",v:A45.map(r=>(r.tr||[]).length),c:"#D9822B"}],{title:"Procedimientos y transfusiones",xName:"Censo"})}</div></div>
+   <div class="st-grid2">${[["cr","Cirugías realizadas"],["cs","Cirugías suspendidas o diferidas"]].map(([k,t])=>{ const rows=[]; rs.forEach(r=>(r[k]||[]).forEach(x=>rows.push(detTr([esc(r.f||r.k),esc(x.t||""),esc(x.e||"")])))); return `<div class="st-card"><h3>${t} <small>· ${rows.length} · tal como se escribieron en el censo</small></h3>${rows.length?`<div class="mv-lim">${detTbl(["Censo","Paciente / cirugía","Dato"],rows.slice(0,12))}</div><div class="on-go"><button type="button" class="st-btn st-sm" data-det="${k}">Ver todas y buscar →</button></div>`:'<div class="st-msg">Sin registros.</div>'}</div>`; }).join("")}</div>
+   <div class="st-msg">Tasa de suspensión = suspendidas entre (realizadas + suspendidas); se marca en ámbar desde 20 %. El censo no separa las cirugías por clínica.</div>`;
+}
+function icView(remote){
+  const {rs,lab}=censoRs(remote); if(!rs.length) return cenSrcNote(lab)+'<div class="st-card"><div class="st-msg">Aún no hay censos finales en este periodo.</div></div>';
+  const asc=rs.slice().sort((a,b)=>a.k.localeCompare(b.k)), A45=asc.slice(-45), L=A45.map(r=>r.k.slice(8)+"."+r.k.slice(5,7)), n=rs.length;
+  const N=[["ce","Consulta externa"],["ho","Hospitalización"],["ur","Urgencias"],["te","Terapia"],["qx","Quirófano"]], it=N.map(([k,l],i)=>({n:l,v:rs.reduce((s,r)=>s+((r.ic||{})[k]||0),0),c:CH_COL[i]}));
+  const at=rs.reduce((s,r)=>s+icTot(r),0), so=rs.reduce((s,r)=>s+cenCnt(r.iso),0), top=it.slice().sort((a,b)=>b.v-a.v)[0];
+  const pb=prevBounds(), csP=pb?censosEn(pb):null;
+  const K=kpi(at,"Interconsultas atendidas","que otros servicios pidieron a Oncología",'data-det="ic"',csP?dlt(at,csP.reduce((s,r)=>s+icTot(r),0),{neutral:true}):"")
+   +kpi(fmtN(at/n,1),"Atendidas por día",`${n} censo(s)`,'data-det="ic"')
+   +kpi(top&&top.v?top.n:"—","Origen más frecuente",top&&top.v?`${top.v} (${pc(top.v,at)}%)`:"",'data-det="ic"')
+   +kpi(so,"Solicitadas a otros servicios","que Oncología pidió",'data-det="iso"');
+  return cenSrcNote(lab)+`<div class="st-msg" style="margin:0 0 6px">Trabajo de interconsulta según el censo final: las que Oncología atendió (por dónde estaba el paciente) y las que pidió a otros servicios.</div><div class="st-kpis">${K}</div>
+   <div class="st-grid2"><div class="st-card"><h3>Atendidas por origen</h3><div class="on-dn">${donutSVG(it,{title:"Interconsultas por origen",center:"atendidas"})}${legendHTML(it,at)}</div></div>
+    <div class="st-card"><h3>Atendidas por día de censo</h3>${chartSVG(L,N.map(([k,l],i)=>({name:l,c:CH_COL[i],v:A45.map(r=>(r.ic||{})[k]||0)})),{stacked:true,title:"Interconsultas por censo",xName:"Censo"})}</div></div>
+   <div class="st-card"><h3>Solicitadas a otros servicios <small>· por día de censo</small></h3>${chartSVG(L,[{name:"Solicitadas",v:A45.map(r=>cenCnt(r.iso)),c:"#7A5AA6"}],{title:"Interconsultas solicitadas",xName:"Censo"})}${(()=>{ const rows=[]; rs.forEach(r=>splitTxt(r.iso).forEach(t=>rows.push(detTr([esc(r.f||r.k),esc(t)])))); return rows.length?`<h4 class="det-h">Últimas solicitadas</h4><div class="mv-lim">${detTbl(["Censo","Interconsulta solicitada"],rows.slice(0,10))}</div><div class="on-go"><button type="button" class="st-btn st-sm" data-det="iso">Ver todas →</button></div>`:""; })()}</div>
+   <div class="st-card"><h3>Atendidas por censo <small>· toca para ver el detalle</small></h3><div class="mv-lim">${detTbl(["Censo"].concat(N.map(x=>x[1]),["Total"]),rs.slice(0,14).map(r=>detTr([esc(r.f||r.k)].concat(N.map(([k])=>(r.ic||{})[k]||0),[`<b>${icTot(r)}</b>`]))))}</div><div class="on-go"><button type="button" class="st-btn st-sm" data-det="ic">Ver todo el periodo →</button></div></div>`;
+}
+/* Importación automática e incremental de censos finales (solo lee lo nuevo o modificado); sigue aunque se cierre el panel o se cambie de pestaña */
+async function cenAutoImport(force){
+  if(window.__hjmChildFormat||CENAUTO.on||CENIMP.on) return; if(!driveOK()||!userName()||typeof window.__statSync!=="function") return;
+  if(!force&&Date.now()-CENAUTO.last<30*60000) return; if(force&&Date.now()-CENAUTO.last<90000) return;
+  CENAUTO.on=true; CENAUTO.last=Date.now(); const paint=()=>{ try{ const d=$s("dlgStats"); if(d&&d.open&&tab==="stats"&&!DETV&&["cen","qx","ic","res","hos"].includes(svTab)){ document.querySelectorAll(".st-auto").forEach(e=>{ e.textContent=CENAUTO.msg; e.classList.toggle("st-busy",CENAUTO.on); }); } }catch(_){} };
+  CENAUTO.msg="Buscando censos nuevos…"; paint();
+  try{ if(!remoteCache) await loadRemote();
+    const r=await bg(()=>cenStatBackfill((i,t)=>{ CENAUTO.msg=t?"Actualizando censos "+i+" de "+t+"…":"Censos al día"; paint(); },(remoteCache&&remoteCache.censos)||{}));
+    if(r.n){ await loadRemote(); try{ await bg(()=>statDayFiles(r.recs)); }catch(_){} }
+    CENAUTO.done=Date.now(); CENAUTO.msg="Censos al día · "+new Date().toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit"})+(r.n?" · "+r.n+" actualizado(s)":"");
+    CENAUTO.on=false; const d=$s("dlgStats"); if(r.n&&d&&d.open&&tab==="stats"&&!DETV) await render(); else paint();
+  }catch(e){ CENAUTO.msg="No se pudieron actualizar los censos ("+friendly(e)+"); se reintentará."; CENAUTO.last=Date.now()-25*60000; }
+  finally{ CENAUTO.on=false; paint(); }
+}
+setInterval(()=>{ try{ if(CENAUTO.done||isAdmin()) cenAutoImport(false); }catch(_){} },60000);
 /* ===== v3.61 · Estadísticas con detalle: gráficas, listas y selector por clínica ===== */
 const CH_COL=["#2F6FA7","#D9822B","#3C8D5A","#B5473A","#7A5AA6","#2A9D9D","#8C8C3A"];
 const SRVL=["TM","OM","CYC","GINE","MAMA"], SRVN={TM:"Tumores mixtos (TM)",OM:"Oncología médica (OM)",CYC:"Cabeza y cuello (CYC)",GINE:"Ginecológicos (GINE)",MAMA:"Mama (MAMA)"};
@@ -12196,11 +12340,12 @@ function hosView(){
    +kpi(fmtN(avgCen,1),"Promedio de pacientes por censo",`${cs.length} censo(s) final(es) del periodo`,'data-sv="cen"',dlt(avgCen,avgCenP,{dec:1,neutral:true}))
    +kpi(cur.ing.length,"Ingresos",`según fecha de ingreso`,'data-hl="ing"',dlt(cur.ing.length,prev&&prev.ing.length,{neutral:true}))
    +kpi(cur.egr.length,"Egresos",`${cur.alt} altas · ${cur.def.length} defunciones`,'data-hl="egr"',dlt(cur.egr.length,prev&&prev.egr.length,{neutral:true}))
-   +kpi(cur.ing.length-cur.egr.length>0?"+"+(cur.ing.length-cur.egr.length):cur.ing.length-cur.egr.length,"Balance ingresos − egresos",cur.ing.length-cur.egr.length>0?"el servicio está creciendo":cur.ing.length-cur.egr.length<0?"el servicio está disminuyendo":"estable")
+   +kpi(cur.ing.length-cur.egr.length>0?"+"+(cur.ing.length-cur.egr.length):cur.ing.length-cur.egr.length,"Balance ingresos − egresos",cur.ing.length-cur.egr.length>0?"el servicio está creciendo":cur.ing.length-cur.egr.length<0?"el servicio está disminuyendo":"estable",'data-hl="ing"')
    +kpi(cur.losAvg==null?"—":fmtN(cur.losAvg,1)+" d","Estancia media al egreso",cur.losMed==null?"sin egresos con fecha de ingreso":`mediana ${fmtN(cur.losMed,1)} días · ${cur.los.length} egreso(s)`,'data-hl="egr"',dlt(cur.losAvg,prev&&prev.losAvg,{dec:1,inv:true,u:" d"}))
    +kpi(now.length?fmtN(avgOf(now),1)+" d":"—","Días de estancia actual (promedio)",now.length?`mediana ${fmtN(medOf(now),1)} días`:"sin fecha de ingreso",'data-hl="hosp"')
    +kpi(long.length,`Estancia prolongada (> ${LONG_STAY} días)`,hosp.length?`${pc(long.length,hosp.length)}% de los hospitalizados`:"",'data-hl="long"',"",long.length?"st-warn":"")
-   +kpi(cur.mort==null?"—":fmtN(cur.mort,1)+"%","Mortalidad hospitalaria",`${cur.def.length} de ${cur.egr.length} egresos`,'data-hl="def"',dlt(cur.mort,prev&&prev.mort,{dec:1,inv:true,u:" pts"}));
+   +kpi(cur.mort==null?"—":fmtN(cur.mort,1)+"%","Mortalidad hospitalaria",`${cur.def.length} de ${cur.egr.length} egresos`,'data-hl="def"',dlt(cur.mort,prev&&prev.mort,{dec:1,inv:true,u:" pts"}))
+   +kpi(fmtN(cur.egr.length/BEDS_PISO,2),"Rotación de camas",`egresos por cama del piso (${BEDS_PISO}) en el periodo`,'data-hl="egr"',dlt(cur.egr.length/BEDS_PISO,prev&&prev.egr.length/BEDS_PISO,{dec:2,neutral:true}));
   /* Hospitalizados por clínica ahora */
   const byC={}; hosp.forEach(p=>byC[p.clin]=(byC[p.clin]||0)+1); const cl=Object.entries(byC).sort((a,c)=>c[1]-a[1]).map(([n,v],i)=>({n,v,c:CH_COL[i%CH_COL.length]}));
   /* Estancia: distribución y media por clínica */
@@ -12214,7 +12359,7 @@ function hosView(){
   const long20=long.sort((a,c)=>c.diasHoy-a.diasHoy).slice(0,15);
   return `<div class="on-note">${esc(lab.charAt(0).toUpperCase()+lab.slice(1))}${pb?` · comparado con el periodo anterior (${kFmt(pb.cutoff)} al ${kFmt(pb.upper)})`:""} · los números de «ahora» son en tiempo real. Toca cualquier tarjeta para ver los pacientes.</div>
    <div class="st-kpis">${K}</div>
-   <div class="st-card"><h3>Pacientes en el censo por día <small>· por clínica, según cada censo final</small></h3>${cs.length?chartSVG(L,serC,{stacked:true,title:"Pacientes por censo",avg:avgCen,avgLabel:"Promedio"}):'<div class="st-msg">Aún no hay censos finales en este periodo. Se registran al guardar el censo final (o con «Importar censos ya guardados» en Censo).</div>'}</div>
+   <div class="st-card"><h3>Pacientes en el censo por día <small>· por clínica, según cada censo final</small></h3>${cs.length?chartSVG(L,serC,{stacked:true,title:"Pacientes por censo",avg:avgCen,avgLabel:"Promedio"}):'<div class="st-msg">Aún no hay censos finales en este periodo. Se registran al guardar el censo final y se actualizan solos en segundo plano.</div>'}</div>
    <div class="st-grid2"><div class="st-card"><h3>Hospitalizados ahora por clínica</h3>${cl.length?`<div class="on-dn">${donutSVG(cl,{title:"Hospitalizados por clínica",center:"hospitalizados"})}${legendHTML(cl,hosp.length)}</div>`:'<div class="st-msg">No hay pacientes hospitalizados.</div>'}</div>
     <div class="st-card"><h3>Duración de la estancia <small>· hospitalizados ahora y egresos del periodo</small></h3>${chartSVG(LOS_BK.map(x=>x[0]),[{name:"Hospitalizados ahora",v:losBk(now),c:"#2F6FA7"},{name:"Egresos del periodo",v:losBk(cur.los),c:"#D9822B"}],{title:"Días de estancia"})}</div></div>
    <div class="st-grid2"><div class="st-card"><h3>Ingresos y egresos por día de la semana <small>· promedio por censo</small></h3>${cs.length?chartSVG(WD,[{name:"Ingresos",v:wdI.map((v,i)=>wdN[i]?+(v/wdN[i]).toFixed(1):0),c:"#2F6FA7"},{name:"Egresos",v:wdE.map((v,i)=>wdN[i]?+(v/wdN[i]).toFixed(1):0),c:"#D9822B"}],{title:"Por día de la semana",dec:1}):'<div class="st-msg">Sin censos en este periodo.</div>'}</div>
@@ -12233,8 +12378,8 @@ function keyIndicators(A){
    +kpi(cur.ing.length,"Ingresos","",'data-sv="hos"',dlt(cur.ing.length,prev&&prev.ing.length,{neutral:true}))
    +kpi(cur.egr.length,"Egresos",`${cur.def.length} defunción(es)`,'data-sv="hos"',dlt(cur.egr.length,prev&&prev.egr.length,{neutral:true}))
    +kpi(cur.losAvg==null?"—":fmtN(cur.losAvg,1)+" d","Estancia media","al egreso",'data-sv="hos"',dlt(cur.losAvg,prev&&prev.losAvg,{dec:1,inv:true,u:" d"}))
-   +kpi(sum(cs,cx),"Cirugías realizadas","según censo final",'data-sv="cen"',csP?dlt(sum(cs,cx),sum(csP,cx),{neutral:true}):"")
-   +kpi(sum(cs,r=>Object.values(r.ic||{}).reduce((a,v)=>a+(+v||0),0)),"Interconsultas atendidas","",'data-sv="cen"',csP?dlt(sum(cs,r=>Object.values(r.ic||{}).reduce((a,v)=>a+(+v||0),0)),sum(csP,r=>Object.values(r.ic||{}).reduce((a,v)=>a+(+v||0),0)),{neutral:true}):"")
+   +kpi(sum(cs,cx),"Cirugías realizadas","según censo final",'data-sv="qx"',csP?dlt(sum(cs,cx),sum(csP,cx),{neutral:true}):"")
+   +kpi(sum(cs,r=>Object.values(r.ic||{}).reduce((a,v)=>a+(+v||0),0)),"Interconsultas atendidas","",'data-sv="ic"',csP?dlt(sum(cs,r=>Object.values(r.ic||{}).reduce((a,v)=>a+(+v||0),0)),sum(csP,r=>Object.values(r.ic||{}).reduce((a,v)=>a+(+v||0),0)),{neutral:true}):"")
    +kpi(cur.mort==null?"—":fmtN(cur.mort,1)+"%","Mortalidad hospitalaria",`${cur.def.length} de ${cur.egr.length} egresos`,'data-sv="hos"',dlt(cur.mort,prev&&prev.mort,{dec:1,inv:true,u:" pts"}))
    +kpi(cur.ing.length-cur.egr.length>0?"+"+(cur.ing.length-cur.egr.length):cur.ing.length-cur.egr.length,"Balance ingresos − egresos",cur.ing.length-cur.egr.length>0?"el servicio crece":cur.ing.length-cur.egr.length<0?"el servicio disminuye":"estable",'data-sv="hos"')
    +`</div></div>`;
@@ -12290,7 +12435,7 @@ function chartSVG(labels,series,o){ chartWire(); const id="ch"+(++CHN); const s=
 
 const detTbl=(h,rows)=>`<div class="st-scroll"><table class="st-act det-t"><thead><tr>${h.map(x=>`<th>${x}</th>`).join("")}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`;
 const detTr=c=>{ const k=String(c[0]).startsWith('<span class="on-arw"')?1:0; return "<tr>"+c.map((x,i)=>`<td${i===k?' class="nm"':(i===0&&k?' class="on-arc"':"")}>${x}</td>`).join("")+"</tr>"; };
-const DETT={cen:"Censos finales registrados",ing:"Ingresos y egresos",egr:"Ingresos y egresos",cr:"Cirugías realizadas",cp:"Cirugías programadas",cs:"Cirugías suspendidas o diferidas",pr:"Procedimientos",tr:"Transfusiones",ic:"Interconsultas atendidas",iso:"Interconsultas solicitadas a otros servicios",dfn:"Defunciones",gr:"Pacientes graves",ps:"Pacientes por servicio"};
+const DETT={cen:"Censos finales registrados",ing:"Ingresos y egresos",egr:"Ingresos y egresos",cr:"Cirugías realizadas",cp:"Cirugías programadas",cs:"Cirugías suspendidas o diferidas",pr:"Procedimientos fuera de quirófano",tr:"Transfusiones",ic:"Interconsultas atendidas",iso:"Interconsultas solicitadas a otros servicios",dfn:"Defunciones",gr:"Pacientes graves",ps:"Pacientes por servicio"};
 let DETV=null, DETSC=0;
 function censoRs(remote){
   const all=(remote&&remote.censos&&typeof remote.censos==="object")?Object.values(remote.censos):[];
@@ -12302,11 +12447,11 @@ function scroller(el){ for(let p=el;p;p=p.parentElement){ if(p.scrollHeight>p.cl
 const splitTxt=t=>String(t||"").split(/\n|;/).map(x=>x.trim()).filter(x=>x&&!/^(NINGUN[AO]S?|N\/?A|NO HAY|0|-+|SIN\s.*)$/i.test(x));
 function renderDet(host){
   const D=DETV, {rs,lab}=censoRs(remoteCache), asc=rs.slice().sort((a,b)=>a.k.localeCompare(b.k)).slice(-45), dl=r=>r.k.slice(8)+"."+r.k.slice(5,7), L=asc.map(dl);
-  const isEst=D.k.indexOf("est:")===0, title=isEst?"Estatus: "+D.k.slice(4).toLowerCase():DETT[D.k]||D.k;
+  const isEst=D.k.indexOf("est:")===0, title=isEst?"Estado del paciente: "+D.k.slice(4).toLowerCase():DETT[D.k]||D.k;
   const S=D.clin?[D.clin]:SRVL, sv=(o,r)=>S.reduce((n,s)=>n+(((r||{})[o]||{})[s]||0),0);
   const clinSel=`<label>Clínica <select data-d="clin"><option value="">Todas</option>${SRVL.map(s=>`<option value="${s}"${D.clin===s?" selected":""}>${SRVN[s]}</option>`).join("")}</select></label>`;
   const search=`<label>Buscar <input type="search" data-dq placeholder="Texto, cama, paciente…" value="${esc(D.q||"")}"></label>`;
-  const noD='<div class="st-msg">Este censo se importó sin el detalle individual. Usa «Importar censos ya guardados» (Censo final) para completarlo.</div>';
+  const noD='<div class="st-msg">Este censo se importó sin el detalle individual; se completa solo en la próxima actualización automática.</div>';
   let ctl="", body="";
   if(D.k==="ing"||D.k==="egr"){
     ctl=clinSel+`<label>Lista <select data-d="mode">${[["ing","Ingresos"],["egr","Egresos"],["both","Ambos"]].map(([v,t])=>`<option value="${v}"${D.mode===v?" selected":""}>${t}</option>`).join("")}</select></label>`;
@@ -12342,8 +12487,9 @@ function renderDet(host){
     body=chartSVG(L,[{name:"Pacientes en el censo",v:asc.map(r=>r.tot||r.pac||0)}],{title:"Pacientes por censo",line:true});
     body+=detTbl(["Censo","Ingresos","Egresos","Cx realizadas","Cx programadas","Interconsultas","Solicitadas","Defunciones","Pacientes"],rs.map(r=>detTr([esc(r.f||r.k),SRVL.reduce((n,s)=>n+((r.ing||{})[s]||0),0),SRVL.reduce((n,s)=>n+((r.egr||{})[s]||0),0),(r.cr||[]).length,(r.cp||[]).length,Object.values(r.ic||{}).reduce((a,b)=>a+(+b||0),0),cenCnt(r.iso),cenCnt(r.dfn),r.tot||r.pac||0])));
   } else if(isEst){
-    const k=D.k.slice(4); body=chartSVG(L,[{name:k,v:asc.map(r=>(r.est||{})[k]||0)}],{title:"Estatus"});
-    body+=detTbl(["Censo","Pacientes"],rs.map(r=>detTr([esc(r.f||r.k),(r.est||{})[k]||0])));
+    const k=D.k.slice(4); ctl=clinSel; const ev=r=>D.clin?(((r.estc||{})[D.clin]||{})[k]||0):((r.est||{})[k]||0);
+    body=chartSVG(L,[{name:k.charAt(0)+k.slice(1).toLowerCase(),v:asc.map(ev)}],{title:"Pacientes con este estado por censo",avg:avgOf(asc.map(ev)),avgLabel:"Promedio"});
+    body+=(D.clin&&rs.some(r=>!r.estc)?'<div class="st-msg">Algunos censos aún no traen el estado por clínica; se completan solos en la próxima actualización.</div>':"")+detTbl(["Censo","Pacientes"],rs.map(r=>detTr([esc(r.f||r.k),ev(r)])));
   } else if(D.k==="iso"){
     ctl=search; body=chartSVG(L,[{name:"Solicitadas",v:asc.map(r=>splitTxt(r.iso).length),c:"#7A5AA6"}],{title:"Interconsultas solicitadas"});
     const rows=[]; rs.forEach(r=>splitTxt(r.iso).forEach(t=>rows.push(detTr([esc(r.f||r.k),esc(t)])))); body+=rows.length?detTbl(["Censo","Interconsulta solicitada"],rows):'<div class="st-msg">Sin interconsultas solicitadas en este periodo.</div>';
@@ -13097,6 +13243,7 @@ usrQ='';DETV=null;svTab='res';CFG_ONLY=false;const dlg=$s('dlgStats');dlg.classL
 if(!accessPanelTab(tab))tab=['stats','cmt','err','idx','usr','pend','cfg'].find(accessPanelTab)||'cfg';
 const run=++STATS_RUN;STATS_ISSUES=[];PROG={};
 TASK={stats:!driveOK(),pac:!driveOK()||!canPerm('ver_estadisticas'),pend:!driveOK()||!canPerm('administrar_sistema'),err:!driveOK()||!canPerm('ver_errores')};
+setTimeout(()=>{try{cenAutoImport(true);}catch(_){}},1500);
 if(!dlg.open)dlg.showModal();await render();updStatus();
 const task=async(key,label,fn)=>{if(TASK[key])return;try{await statsWait(Promise.resolve().then(fn),key==='pac'||key==='err'?240000:90000);}catch(error){if(run===STATS_RUN)STATS_ISSUES.push(label+': '+friendly(error));}finally{if(run===STATS_RUN){taskDone(key);if(['stats','pac','err','pend'].includes(tab))render();}}};
 await Promise.all([
@@ -16199,7 +16346,7 @@ function accessMayPersist(){let ok=false;try{if(window.__hjmInlinePostop)ok=canP
 function accessMark(el,allowed){if(el&&el.classList.contains('access-hidden')===allowed)el.classList.toggle('access-hidden',!allowed);}
 function accessApply(){
  if(!sessionUserName())return;const mark=(selector,key)=>document.querySelectorAll(selector).forEach(e=>accessMark(e,typeof key==='boolean'?key:canPerm(key)));
- document.querySelectorAll('[data-pff-key]').forEach(e=>accessMark(e,accessCanOpenFormat(e.dataset.pffKey)));for(const [v,key]of Object.entries({censoActual:'ver_censo',censos:'ver_censos_archivados',cama:'ver_hospitalizados',recientes:'ver_expedientes'}))mark('[data-pp-view="'+v+'"]',key);
+ document.querySelectorAll('[data-pff-key]').forEach(e=>accessMark(e,accessCanOpenFormat(e.dataset.pffKey)));for(const [v,key]of Object.entries({censoActual:'ver_censo',censos:'ver_censos_archivados',cama:'ver_hospitalizados',recientes:'ver_expedientes'}))mark('[data-pp-view="'+v+'"]',v==='censoActual'?(canPerm('ver_censo')||canPerm('ver_censos_archivados')):key);
  mark('#datos,#secNav','ver_datos');mark('#bandNew,#btnClear,[data-pp-new]','crear_pacientes');mark('#archiveOpen,[data-pqa="file"],[data-cenfile]','ver_archivo');mark('[data-pp-formats]',canPerm('crear_formatos')||canPerm('crear_notas'));mark('[data-cenkb]',accessCensusWrite()||canPerm('ver_datos'));mark('#cenNavBtn','ver_censos_archivados');mark('#cenSendBtn','guardar_censo');mark('#cenEditBtn','editar_censos_archivados');mark('#cenPrint','imprimir_censo');mark('#ppCensus','imprimir_listas');mark('#hjmFab,#hjmChat','ver_comentarios');mark('#cfgStats',canPerm('ver_estadisticas')||accessPanelTab('ownStats'));mark('[data-tab="stats"],[data-tab="pac"]','ver_estadisticas');mark('[data-tab="usr"]','gestionar_usuarios');mark('[data-tab="pend"]','administrar_sistema');mark('[data-tab="idx"]','ver_descargas');mark('[data-tab="err"]','ver_errores');mark('[data-tab="cmt"]','responder_comentarios');
  document.querySelectorAll('[data-fmt]').forEach(e=>accessMark(e,accessCanOpenFormat(e.dataset.fmt)));document.querySelectorAll('[data-clinical]').forEach(e=>accessMark(e,canPerm('crear_notas')||canPerm('editar_documentos')));
  mark('#clinicalSaveTop','crear_notas');mark('#clinicalEditTop',canPerm(clinicalEditing[currentClinical]?'editar_documentos':'crear_notas'));mark('#clinicalPrintTop,#btnPrint,#btnPrintBlank','imprimir_documentos');if(current)mark('#btnSaveFmt',accessFormatCreateCap(current));mark('#btnEditFmt',canPerm(loadedFormatRecord()?'editar_documentos':accessFormatCreateCap(current)));mark('#clinicalRecentList,#recPanel','ver_archivo');mark('#postopReportCard [data-postop="create"]','crear_notas');mark('#postopReportCard [data-postop="edit"],#postopReportCard [data-postop="update"]','editar_documentos');
@@ -16210,6 +16357,7 @@ window.HJM_ACCESS_READY=true;
  let queued=false;const schedule=()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;try{accessApply();}catch(e){console.error(e);}});};new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden']});
  document.addEventListener('click',e=>{const t=e.target.closest?.('button,[data-pp-view],[data-ar],[data-section-go]');if(!t)return;let cap=null;
   const id=t.id;cap=({bandNew:'crear_pacientes',btnClear:'crear_pacientes',cenSendBtn:'guardar_censo',cenNavBtn:'ver_censos_archivados',cenPrint:'imprimir_censo',ppCensus:'imprimir_listas',btnPrint:'imprimir_documentos',btnPrintBlank:'imprimir_documentos',clinicalPrintTop:'imprimir_documentos'})[id];
+  if(t.dataset.ppView==='censoActual'&&!canPerm('ver_censo')&&canPerm('ver_censos_archivados')){e.preventDefault();e.stopImmediatePropagation();try{cenListOpen();}catch(_){}return;}
   if(t.dataset.ppView&&!accessViewAllowed(t.dataset.ppView)){e.preventDefault();e.stopImmediatePropagation();return;}if(t.matches('[data-new]')&&t.closest('#dlgCenAdd'))cap='crear_pacientes';if(t.dataset.ar)cap=({view:'editar_documentos',ver:'ver_archivo',print:'imprimir_documentos',del:'borrar_documentos',cancel:'cancelar_documentos',restore:'restaurar_documentos'})[t.dataset.ar];if(t.dataset.fmt&&!accessCanOpenFormat(t.dataset.fmt))cap=accessFormatCreateCap(t.dataset.fmt);if(t.dataset.sectionGo&&!accessCanOpenFormat(t.dataset.sectionGo))cap=accessFormatCreateCap(t.dataset.sectionGo);
   if(cap&&!accessRequire(cap)){e.preventDefault();e.stopImmediatePropagation();}
  },true);schedule();
@@ -16922,7 +17070,43 @@ html:root body #dlgStats .sv-nav{grid-template-columns:repeat(5,minmax(0,1fr))!i
 @media (max-width:560px){#dlgStats .on-dn svg{max-width:210px;margin:0 auto;display:block}}
 }
 </style>
-<style id="hjm-v526">@media screen{#dlgStats #stCenMsg.st-busy{font-weight:700;color:#2F6FA7}#dlgStats #stCenMsg.st-busy::before{content:"";display:inline-block;width:11px;height:11px;margin-right:7px;vertical-align:-1px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:hjmSpin .8s linear infinite}@keyframes hjmSpin{to{transform:rotate(360deg)}}[data-cenbf][aria-busy="true"]{opacity:.75;cursor:progress}}</style>
+<style id="hjm-v801">
+.cen-rv{margin:0 0 10px;padding:10px 12px;border:1px solid #E3C79A;background:#FFFBF3;border-radius:12px;color:#4A3A22;font-size:12.5px}
+.cen-rv>b{display:block;margin-bottom:6px}
+.cen-rv-ok{border-color:#B9DCC5;background:#F2FAF5;color:#25603B;font-weight:600}
+.cen-rv-g{margin:4px 0;border-radius:10px;background:#fff;border:1px solid #EEE2CC}
+.cen-rv-g>summary{cursor:pointer;padding:6px 10px;font-weight:800;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.cen-rv-g>summary small{font-weight:500;color:#7B6A52}
+.cen-rv-g>summary i{font-style:normal;min-width:20px;height:20px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:11px;padding:0 6px}
+.cen-rv3>summary i{background:#B5473A}.cen-rv2>summary i{background:#D9822B}.cen-rv1>summary i{background:#2F6FA7}
+.cen-rv-g ul{margin:0;padding:0 10px 8px;list-style:none;display:grid;gap:5px}
+.cen-rv-g li{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;line-height:1.35}
+.cen-rv-g li em{font-style:normal;font-weight:800;font-size:11px;padding:1px 7px;border-radius:8px;background:#F4EEE4;white-space:nowrap}
+.cen-rv-g li span{flex:1 1 220px;min-width:0;overflow-wrap:anywhere}
+.cen-rv-g li small{color:#6B5A42}
+@media print{.cen-rv{display:none!important}}
+[data-theme="dark"] .cen-rv{background:#2E271C;border-color:#5E4A2A;color:#F1DFC2}[data-theme="dark"] .cen-rv-g{background:#251F17;border-color:#4A3B25}[data-theme="dark"] .cen-rv-g li em{background:#3A2F20}[data-theme="dark"] .cen-rv-ok{background:#1C2A21;border-color:#2F5A3E;color:#A8DDB9}
+</style><style id="hjm-v744">@media screen{
+html:root body #dlgStats .sv-nav{grid-template-columns:repeat(7,minmax(0,1fr))!important}
+@media (max-width:900px){html:root body #dlgStats .sv-nav{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+#dlgStats .mv-fl{margin:0 0 8px}
+#dlgStats .mv-lim .st-scroll{max-height:340px}
+#dlgStats tr[data-cenview]:hover td{background:rgba(47,111,167,.07)}
+#dlgStats .mv-est tr.mv-g td{background:#F1F2F4;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#53565A;text-align:left}
+#dlgStats .mv-est td:not(.nm){text-align:center}
+#dlgStats .mv-m{border:1px solid #E3E5E8;border-radius:12px;margin:0 0 8px;overflow:hidden}
+#dlgStats .mv-m>summary{cursor:pointer;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;padding:10px 12px;background:#F7F8F9;list-style:none}
+#dlgStats .mv-m>summary::-webkit-details-marker{display:none}
+#dlgStats .mv-m>summary::before{content:"▸";color:#2F6FA7;font-weight:800}
+#dlgStats .mv-m[open]>summary::before{content:"▾"}
+#dlgStats .mv-m>summary span{font-size:12px;color:#7B7E81}
+#dlgStats .mv-m .st-scroll{max-height:420px}
+#dlgStats .mv-tb{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 8px}
+#dlgStats .mv-tb .st-in{flex:1 1 220px}
+#dlgStats .st-auto.st-busy{color:#2F6FA7;font-weight:700}
+[data-theme="dark"] #dlgStats .mv-m{border-color:#3A3F44}
+[data-theme="dark"] #dlgStats .mv-m>summary,[data-theme="dark"] #dlgStats .mv-est tr.mv-g td{background:#2A2E32;color:#C9CDD1}
+}</style><style id="hjm-v526">@media screen{#dlgStats #stCenMsg.st-busy{font-weight:700;color:#2F6FA7}#dlgStats #stCenMsg.st-busy::before{content:"";display:inline-block;width:11px;height:11px;margin-right:7px;vertical-align:-1px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:hjmSpin .8s linear infinite}@keyframes hjmSpin{to{transform:rotate(360deg)}}[data-cenbf][aria-busy="true"]{opacity:.75;cursor:progress}}</style>
 <style id="hjm-v528">@media screen{table.cen small.cen-post{display:inline-block;margin:2px 0 0 4px;padding:1px 6px;border-radius:999px;background:#FDECEA;color:#B5473A;font-size:9.5px;font-weight:800;letter-spacing:.02em;white-space:nowrap;vertical-align:middle}
 .cen-cont{margin:0 0 10px;padding:10px 12px;border:1px solid #F2C9A8;background:#FFF6EE;border-radius:12px;color:#5A3A1E;font-size:12.5px}
 .cen-cont ul{margin:6px 0;padding:0;list-style:none;display:grid;gap:4px}.cen-cont li{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
