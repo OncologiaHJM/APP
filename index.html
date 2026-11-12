@@ -318,7 +318,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="7.39">
+<meta name="application-version" content="7.40">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2842,7 +2842,7 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 7.39 · Fecha de publicación: 11.11.26</div>
+  <div class="app-footer-version">Versión 7.40 · Fecha de publicación: 11.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -17683,20 +17683,6 @@ function hjmClinViewDoc(html){
 <script id="hjm-v737-js">
 /* v7.37 · Drive en segundo plano: ventana emergente con el avance; el documento se abre solo al tocar «Abrir» cuando está listo */
 (function(){
-  try{ if(window.__hjmChildFormat&&window.parent!==window&&window.parent.hjmJob){ window.hjmJob=window.parent.hjmJob; return; } }catch(_){}
-  const E=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-  const DRV='<svg viewBox="0 0 87.3 78"><path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/><path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0-1.2 4.5h27.5z" fill="#00ac47"/><path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/><path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/><path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/><path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/></svg>';
-  function root(){ let r=document.getElementById("hjmJobs"); if(!r){ r=document.createElement("div"); r.id="hjmJobs"; r.setAttribute("aria-live","polite"); try{ r.setAttribute("popover","manual"); }catch(_){} document.body.appendChild(r); } return r; }
-  /* Encima de todo: las ventanas (dialog) viven en la capa superior; el aviso usa popover y se vuelve a subir si se abre otra ventana después */
-  let lastTop=null;
-  function raise(){ const r=document.getElementById("hjmJobs"); if(!r) return; if(!r.children.length){ try{ if(r.matches(":popover-open")) r.hidePopover(); }catch(_){} return; }
-    if(typeof r.showPopover!=="function") return;
-    const dl=[...document.querySelectorAll("dialog[open]")], top=dl[dl.length-1]||null;
-    const host=top||document.body;
-    try{ if(r.parentNode!==host){ try{ r.hidePopover(); }catch(_){} host.appendChild(r); }
-      if(!r.matches(":popover-open")){ r.showPopover(); lastTop=top; return; } if(top!==lastTop){ r.hidePopover(); r.showPopover(); lastTop=top; } }catch(_){} }
-  setInterval(raise,400);
-  new MutationObserver(raise).observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:["open"]});
   /* Llamada larga al servidor con reintento: si se corta la conexión, se reintenta (el mismo registro reemplaza su archivo, no se duplica) */
   window.hjmLongCall=async function(fn,o,job){
     let H=window; try{ if(window.parent&&window.parent!==window&&typeof window.parent.call1==="function"&&window.parent.eval("typeof apiUrl")==="function") H=window.parent; }catch(_){}
@@ -17712,6 +17698,20 @@ function hjmClinViewDoc(html){
     if(m==="tiempo") throw new Error("el servidor tardó demasiado. Intenta de nuevo en un momento.");
     throw last;
   };
+  try{ if(window.__hjmChildFormat&&window.parent!==window&&window.parent.hjmJob){ window.hjmJob=window.parent.hjmJob; return; } }catch(_){}
+  const E=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const DRV='<svg viewBox="0 0 87.3 78"><path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/><path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0-1.2 4.5h27.5z" fill="#00ac47"/><path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/><path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/><path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/><path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/></svg>';
+  function root(){ let r=document.getElementById("hjmJobs"); if(!r){ r=document.createElement("div"); r.id="hjmJobs"; r.setAttribute("aria-live","polite"); try{ r.setAttribute("popover","manual"); }catch(_){} document.body.appendChild(r); } return r; }
+  /* Encima de todo: las ventanas (dialog) viven en la capa superior; el aviso usa popover y se vuelve a subir si se abre otra ventana después */
+  let lastTop=null;
+  function raise(){ const r=document.getElementById("hjmJobs"); if(!r) return; if(!r.children.length){ try{ if(r.matches(":popover-open")) r.hidePopover(); }catch(_){} return; }
+    if(typeof r.showPopover!=="function") return;
+    const dl=[...document.querySelectorAll("dialog[open]")], top=dl[dl.length-1]||null;
+    const host=top||document.body;
+    try{ if(r.parentNode!==host){ try{ r.hidePopover(); }catch(_){} host.appendChild(r); }
+      if(!r.matches(":popover-open")){ r.showPopover(); lastTop=top; return; } if(top!==lastTop){ r.hidePopover(); r.showPopover(); lastTop=top; } }catch(_){} }
+  setInterval(raise,400);
+  new MutationObserver(raise).observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:["open"]});
   window.hjmJob={ start(title){
     const el=document.createElement("div"); el.className="hjm-job"; el.setAttribute("role","status");
     el.innerHTML=`<div class="hjm-job-h">${DRV}<span>${E(title)}</span><button type="button" class="hjm-job-x" aria-label="Ocultar">×</button></div><p class="hjm-job-m">Iniciando…</p><div class="hjm-job-bar"><i></i></div><p class="hjm-job-n">Puede tardar de 1 a 3 minutos. Puedes seguir trabajando; aquí te avisamos cuando esté listo.</p>`;
