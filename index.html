@@ -318,7 +318,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="7.35">
+<meta name="application-version" content="7.36">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2842,7 +2842,7 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 7.35 · Fecha de publicación: 11.11.26</div>
+  <div class="app-footer-version">Versión 7.36 · Fecha de publicación: 11.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -8929,7 +8929,7 @@ function reportRecentsTableHTML(newId){
  const reports=(HIST.repCx||[]).filter(r=>!isCx(r));
  return '<div class="rc-head"><h2>Reportes Previos</h2><small>'+reports.length+' registro'+(reports.length===1?'':'s')+'</small></div>'+(reports.length?'<div class="rc-list report-recents-list">'+reports.map(r=>{
   const stamp=r.p?.fecha||(r.ts?tsDate(r.ts):''),text=String(r.t||'Reporte de cirugía');
-  return '<article class="rc-item report-recent-card'+(r.id===newId?' new':'')+'" data-id="'+esc(r.id)+'"><div class="report-recent-date"><b>'+esc(stamp||'Sin fecha')+'</b><small>'+esc(relTime(r.ts))+'</small></div><details class="report-recent-description"><summary><span class="report-recent-preview">'+esc(text)+'</span><span class="report-description-toggle"></span></summary><div class="report-recent-full">'+esc(text)+'</div></details><div class="report-recent-author">'+hjmAuthorshipHTML(r)+'</div><div class="rc-act">'+rbBtn('edit','Editar','data-ra="use" data-n="0"')+rbBtn('view','Ver','data-ar-ver="repCx|'+esc(r.id)+'"')+rbBtn('print','Imprimir','data-ra="print" data-n="0"')+'</div></article>';
+  return '<article class="rc-item report-recent-card'+(r.id===newId?' new':'')+'" data-id="'+esc(r.id)+'"><div class="report-recent-date"><b>'+esc(stamp||'Sin fecha')+'</b><small>'+esc(relTime(r.ts))+'</small></div><details class="report-recent-description"><summary><span class="report-recent-preview">'+esc(text)+'</span><span class="report-description-toggle"></span></summary><div class="report-recent-full">'+esc(text)+'</div></details><div class="report-recent-author">'+hjmAuthorshipHTML(r)+'</div><div class="rc-act">'+rbBtn('edit','Editar','data-ra="use" data-n="0"')+rbBtn('view','Ver','data-ar-ver="repCx|'+esc(r.id)+'"')+rbBtn('print','Imprimir','data-ra="print" data-n="0"')+(window.hjmDriveBtn?hjmDriveBtn('data-pdf-drive="repCx|'+esc(r.id)+'"'):'')+'</div></article>';
  }).join('')+'</div>':'<div class="rc-empty">Todavía no hay reportes guardados para este paciente.</div>');
 }
 
@@ -10860,9 +10860,9 @@ async function arFmtView(tp,id,r){
 
   const key=tp==="altas"?"alta":tp, ttl=(CAT[key]&&CAT[key].tt)||(FORMATS[key]&&FORMATS[key].title)||"Documento";
   let d=$("dlgArView"); if(!d){ d=document.createElement("dialog"); d.id="dlgArView"; d.className="ar-view"; document.body.appendChild(d); }
-  d.innerHTML=`<div class="av-head"><div class="av-t"><b>${esc(ttl)}</b><small>${esc(r.t||"")} · ${esc(hjmAuthorshipText(r))}</small></div><div class="av-b">${!canPerm("editar_documentos")||isCx(r)?"":rbBtn("edit","Editar","data-ave")}${rbBtn("print","Imprimir","data-avp")}<button type="button" class="av-x" data-avx aria-label="Cerrar">×</button></div></div><iframe class="av-frame" title="Vista previa de ${esc(ttl)}"></iframe>`;
+  d.innerHTML=`<div class="av-head"><div class="av-t"><b>${esc(ttl)}</b><small>${esc(r.t||"")} · ${esc(hjmAuthorshipText(r))}</small></div><div class="av-b">${!canPerm("editar_documentos")||isCx(r)?"":rbBtn("edit","Editar","data-ave")}${BLANKS[key]&&canPerm("imprimir_documentos")&&window.hjmBlankBtn?hjmBlankBtn("data-avbl"):""}${rbBtn("print","Imprimir","data-avp")}${(tp==="repCx"||tp==="altas")&&!isCx(r)&&window.hjmDriveBtn?hjmDriveBtn(`data-pdf-drive="${tp}|${esc(id)}"`):""}<button type="button" class="av-x" data-avx aria-label="Cerrar">×</button></div></div><iframe class="av-frame" title="Vista previa de ${esc(ttl)}"></iframe>`;
   const fr=d.querySelector("iframe"); let ready=false;
-  d.onclick=e=>{ if(e.target.closest("[data-avx]")||e.target===d){ d.close(); return; } if(e.target.closest("[data-avp]")){ if(ready){ try{ fr.contentWindow.focus(); fr.contentWindow.print(); }catch(_){} } return; } if(e.target.closest("[data-ave]")){ d.close(); if(tp==="notas"&&r.postop&&current==="repCx"){ppIsolatedOpen("","postop",{noteId:id});return;} arAct(tp,id,"view",null); } };
+  d.onclick=e=>{ if(e.target.closest("[data-avx]")||e.target===d){ d.close(); return; } if(e.target.closest("[data-avbl]")){ if(window.hjmBlankPrint) hjmBlankPrint(tp,id); return; } if(e.target.closest("[data-avp]")){ if(ready){ try{ fr.contentWindow.focus(); fr.contentWindow.print(); }catch(_){} } return; } if(e.target.closest("[data-ave]")){ d.close(); if(tp==="notas"&&r.postop&&current==="repCx"){ppIsolatedOpen("","postop",{noteId:id});return;} arAct(tp,id,"view",null); } };
   d.oncancel=()=>{}; if(!d.open) d.showModal();
   fr.srcdoc='<body style="font:14px sans-serif;color:#555;display:grid;place-items:center;height:80vh">Cargando documento…</body>';
   const host=await arFmtSnap(tp,id);
@@ -10928,7 +10928,7 @@ function ar2Row(e){
   let acts;
   if(e.dateOnly)acts="";
   else if(!cxable)acts=(adm?"":B("edit","Editar","view"))+B("view","Ver","ver")+(canPerm("imprimir_documentos")?B("print","Imprimir","print"):"")+(del?B("del","Borrar","del"," av2-del"):"");
-  else acts=(adm||cx?"":B("edit","Editar","view"))+B("view","Ver","ver")+(canPerm("imprimir_documentos")?B("print","Imprimir","print"):"")+((e.tp==="notas"||e.tp==="indicaciones")&&!cx&&canPerm("imprimir_documentos")&&window.hjmDriveIco?`<button type="button" class="av2-b av2-drive" data-doc-drive="${esc(e.tp)}|${esc(e.r.id)}" title="Crear Google Doc" aria-label="Drive">${hjmDriveIco}<span>Drive</span></button>`:"")+(canPerm("cancelar_documentos")||canPerm("restaurar_documentos")?(cx?(adn?B("restore","Restaurar","restore"," av2-cx av2-rs"):""):(canPerm("cancelar_documentos")?B("cancel","Cancelar","cancel"," av2-del av2-cx"):"")):"")+(del?B("del","Borrar","del"," av2-del"):"");
+  else acts=(adm||cx?"":B("edit","Editar","view"))+B("view","Ver","ver")+(canPerm("imprimir_documentos")?B("print","Imprimir","print"):"")+((e.tp==="repCx"||e.tp==="altas")&&!cx&&canPerm("imprimir_documentos")&&window.hjmDriveIco?`<button type="button" class="av2-b av2-drive" data-pdf-drive="${esc(e.tp)}|${esc(e.r.id)}" title="Guardar PDF en Drive" aria-label="Drive">${hjmDriveIco}<span>Drive</span></button>`:"")+((e.tp==="notas"||e.tp==="indicaciones")&&!cx&&canPerm("imprimir_documentos")&&window.hjmDriveIco?`<button type="button" class="av2-b av2-drive" data-doc-drive="${esc(e.tp)}|${esc(e.r.id)}" title="Crear Google Doc" aria-label="Drive">${hjmDriveIco}<span>Drive</span></button>`:"")+(canPerm("cancelar_documentos")||canPerm("restaurar_documentos")?(cx?(adn?B("restore","Restaurar","restore"," av2-cx av2-rs"):""):(canPerm("cancelar_documentos")?B("cancel","Cancelar","cancel"," av2-del av2-cx"):"")):"")+(del?B("del","Borrar","del"," av2-del"):"");
   const tag=cx?`<span class="av2-cxtag">${cxWord(e.tp)}</span>`:"";
   return `<article class="av2-row${e.dateOnly?" av2-dim":""}${cx?" av2-cancelled":""}" style="--c:${m.c}" data-src="${esc(e.tp)}"><span class="av2-ic">${arIcon(m.i)}</span><div class="av2-main"><div class="av2-t"><b>${esc(title)}</b>${m.n!==title?`<span class="av2-kind">${esc(m.n)}</span>`:""}</div><div class="av2-meta">${e.hora?`<span>${esc(e.hora)} h</span>`:""}${e.fecha?`<span class="av2-d">${esc(e.fecha)}</span>`:""}<span>${esc(savedBy(e.r))}</span></div>${pv?`<p class="av2-pv">${esc(pv)}</p>`:""}</div>${tag}<div class="av2-act">${acts}</div></article>`;
 }
@@ -15272,9 +15272,9 @@ function ppIsolatedChildBoot(){
         document.body.classList.remove('child-postop-view','child-postop');openFormat('repCx');applySurgerySnapshot('repCx',back.snapshot);if(back.reportId)markViewed('repCx','repCx',back.reportId);postopPanel();chrome();window.scrollTo(0,back.scroll);
       });
       button('postopInlineEdit',()=>window.__hjmOpenPostopInPlace('edit',noteId));
-      button('postopInlinePrint',()=>printClinical('notas',noteId));
+      button('postopInlinePrint',()=>{const bd=document.body,had=bd.classList.contains('child-postop-view');bd.classList.remove('child-postop-view');let done=false;const re=()=>{if(done)return;done=true;removeEventListener('afterprint',re);if(had&&window.__hjmInlinePostop&&!preview.hidden)bd.classList.add('child-postop-view');};addEventListener('afterprint',re);printClinical('notas',noteId);setTimeout(re,4000);});
       if(action==='view'){
-        current=null;currentClinical=null;preview.innerHTML=clinicalPrintHTML('notas',record.p,data());preview.hidden=false;document.body.className='hjm-child child-postop-view';
+        current=null;currentClinical=null;preview.innerHTML='<iframe class="hjm-pv-frame" title="Vista previa"></iframe>';const fr=preview.firstChild;fr.srcdoc=hjmClinViewDoc(clinicalPrintHTML('notas',record.p,data()));const fit=()=>{try{const W=fr.clientWidth-30,z=Math.max(.35,Math.min(1,W/(8.5*96)));fr.contentDocument.documentElement.style.setProperty('--z',String(z));}catch(_){}};fr.addEventListener('load',()=>{fit();setTimeout(fit,120);});addEventListener('resize',fit);preview.hidden=false;document.body.className='hjm-child child-postop-view';
       }else{
         if(!accessRequire('editar_documentos'))return false;
         preview.hidden=true;document.body.classList.remove('child-postop-view');openClinical('notas');editClinical('notas',noteId);document.body.classList.add('child-postop');
@@ -17539,5 +17539,120 @@ for(const original of pending){const live=document.createElement('script');for(c
   sync(); setInterval(sync,800); })();
 </script>
 <style id="hjm-v735">#dlgResidentGate .beta-req-closed{color:#b3261e;font-weight:600;text-align:center;margin:6px 0 0;font-size:14px;line-height:1.4}</style>
+<style id="hjm-v736">
+#hjmPostopView{padding:0!important;background:#e6e7e9!important}
+#hjmPostopView .hjm-pv-frame{display:block;width:100%;height:100vh;border:0;background:#e6e7e9}
+.rb-blank svg{fill:none;stroke:currentColor}
+#hjmPdfBusy{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:2147483000;background:#1f3a5f;color:#fff;padding:10px 16px;border-radius:999px;font:600 13px system-ui,sans-serif;box-shadow:0 6px 22px #0004}
+#hjmPdfBusy[hidden]{display:none}
+html body #recPanel .report-recent-card .rc-act:has(.rb-drive){display:flex!important;flex-wrap:nowrap!important;gap:4px!important;grid-template-columns:none!important}
+html body #recPanel .report-recent-card .rc-act:has(.rb-drive)>.rb{flex:1 1 auto!important;min-width:0!important;padding-left:5px!important;padding-right:5px!important;gap:3px!important;white-space:nowrap!important;justify-content:center}
+</style>
+<script id="hjm-v736-js">
+/* v7.36 · Vista de la nota postoperatoria vinculada con su diseño (ventana) · Imprimir en blanco en «Ver» de reportes previos ·
+   Botón Drive en Reporte de Cirugía y Nota de Alta: PDF idéntico a la impresión (html2canvas + jsPDF) → Codigo.gs hjmPdfDrive */
+function hjmClinViewDoc(html){
+  return `<!doctype html><html><head><meta charset="utf-8"><style>${arViewCss()}</style><style id="arViewCss">html,body{margin:0!important;padding:0!important;background:#e6e7e9!important;height:auto!important;overflow:auto!important;-webkit-user-select:text!important;user-select:text!important}body>*:not(#clinicalPrint){display:none!important}html body,html body #clinicalPrint,html body #clinicalPrint *{visibility:visible!important}#clinicalPrint{display:block!important;position:static!important;width:auto!important;height:auto!important;padding:14px 0 24px}.cp-page{margin:0 auto 16px!important;box-shadow:0 2px 14px rgba(0,0,0,.28);zoom:var(--z,1)}</style></head><body class="printing-clinical"><div id="clinicalPrint">${html}</div></body></html>`;
+}
+(function(){
+  const BL='<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9V3h12v6M6 18H3v-8h18v8h-3"/><rect x="6" y="14" width="12" height="7" stroke-dasharray="2 2"/></svg>';
+  window.hjmBlankBtn=a=>`<button type="button" class="rb rb-blank" title="Imprime solo los datos, para hojas ya impresas" ${a}>${BL}<span class="rb-l">Imprimir en blanco</span></button>`;
+  const say=(t,k,ms)=>{ try{ notify(t,k||"info",ms); }catch(_){} };
+  /* Carga el registro en su formato, ejecuta fn y regresa todo como estaba (mismo patrón que arFmtSnap) */
+  async function withRecord(tp,id,fn){
+    const prev={cls:document.body.className,cur:current,cc:currentClinical,rp:$("recPanel").hidden,bi:$("bandIdx").hidden};
+    const key=tp==="altas"?"alta":tp, sy=window.scrollY, toastO=window.toast, aoAlta=(typeof ALTA_OWN!=="undefined")?ALTA_OWN:null;
+    window.__arPass=true; window.toast=function(){};
+    let out=null;
+    try{
+      openFormat(key);
+      if(tp==="altas"){ loadAltaRecent(id,false); try{ await prewarmAltaSupp(); }catch(_){} } else useRecent(tp,id,0);
+      await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+      out=await fn(key);
+    }catch(e){ out=null; }
+    finally{
+      try{ delete VIEWED[key]; }catch(_){}
+      try{ if(typeof ALTA_OWN!=="undefined") ALTA_OWN=aoAlta; }catch(_){}
+      window.toast=toastO; window.__arPass=false;
+      current=prev.cur; currentClinical=prev.cc; document.body.className=prev.cls;
+      try{ $("recPanel").hidden=prev.rp; $("bandIdx").hidden=prev.bi; renderArchive(); }catch(_){}
+      try{ if(current&&BUILT[current]) renderFormat(current); }catch(_){}
+      window.scrollTo(0,sy);
+    }
+    return out;
+  }
+  function allCss(){ let css=""; document.querySelectorAll("style").forEach(s=>{ if(s.id==="arViewCss") return; css+=s.textContent+"\n"; }); return css; }
+  function printFrame(doc){
+    const fr=document.createElement("iframe"); fr.setAttribute("aria-hidden","true"); fr.style.cssText="position:fixed;left:-9999px;top:0;width:8.5in;height:11in;border:0;opacity:0;pointer-events:none";
+    fr.addEventListener("load",()=>{ setTimeout(()=>{ try{ fr.contentWindow.focus(); fr.contentWindow.print(); }catch(_){} setTimeout(()=>fr.remove(),60000); },400); },{once:true});
+    fr.srcdoc=doc; document.body.appendChild(fr);
+  }
+  window.hjmBlankPrint=async function(tp,id){
+    try{ if(!accessRequire("imprimir_documentos")) return; }catch(_){}
+    const html=await withRecord(tp,id,async key=>{
+      if(!BLANKS[key]) return null;
+      renderFormat(key);
+      const host=$("blankPrint"); host.replaceChildren(buildBlankPage(key));
+      host.style.cssText="display:block;position:fixed;left:-9999px;top:0;width:8.5in;height:11in";
+      fitBlank(host); const h=host.innerHTML; host.replaceChildren(); host.removeAttribute("style"); return h;
+    });
+    if(!html){ say("No se pudo preparar la impresión en blanco.","warn"); return; }
+    printFrame(`<!doctype html><html class="hjm-rdy"><head><meta charset="utf-8"><style>${allCss()}</style><style>@media screen{#blankPrint{display:block!important}}</style></head><body class="printing-blank"><div id="blankPrint">${html}</div></body></html>`);
+  };
+  /* ---------- PDF a Drive ---------- */
+  const LIBS=["https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js","https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"];
+  let libsP=null;
+  function libs(){ if(window.html2canvas&&window.jspdf) return Promise.resolve(); if(libsP) return libsP;
+    libsP=Promise.all(LIBS.map(u=>new Promise((ok,ko)=>{ const sc=document.createElement("script"); sc.src=u; sc.onload=ok; sc.onerror=()=>ko(new Error("No se pudo cargar el generador de PDF (revisa tu conexión).")); document.head.appendChild(sc); }))).catch(e=>{ libsP=null; throw e; });
+    return libsP; }
+  function busy(t){ let b=document.getElementById("hjmPdfBusy"); if(!b){ b=document.createElement("div"); b.id="hjmPdfBusy"; b.setAttribute("role","status"); document.body.appendChild(b); } b.hidden=!t; if(t) b.textContent=t; }
+  function host(){ try{ if(window.parent&&window.parent!==window&&typeof window.parent.call1==="function"&&window.parent.eval("typeof apiUrl")==="function") return window.parent; }catch(_){} return window; }
+  function fechaDe(r){ const p=r.p||{}; const f=[p.fecha,p.fechaCx,p.fEgreso,p.fechaEgreso,p.egreso].map(v=>String(v||"").trim()).find(v=>/^\d{2}\.\d{2}\.\d{2}/.test(v)); if(f) return f.slice(0,8); const m=/(\d{2}\.\d{2}\.\d{2})/.exec(String(r.t||"")); if(m) return m[1]; try{ return tsDate(r.ts); }catch(_){ return ""; } }
+  window.hjmPdfDrive=async function(tp,id,btn){
+    if(!(tp==="repCx"||tp==="altas")) return;
+    try{ if(!accessRequire("imprimir_documentos")) return; }catch(_){}
+    const r=(HIST[tp]||[]).find(x=>x&&x.id===id); if(!r){ say("No se encontró el registro.","warn"); return; }
+    const exp=String((data()||{}).expediente||"").trim(); if(!exp){ say("El paciente no tiene expediente.","warn"); return; }
+    if(btn) btn.classList.add("busy");
+    const w=window.open("","_blank"); try{ if(w) w.document.write('<p style="font:16px system-ui;padding:24px">Creando el PDF…</p>'); }catch(_){}
+    let fr=null;
+    try{
+      busy("Preparando el PDF…");
+      await libs();
+      const h=await arFmtSnap(tp,id); if(!h) throw new Error("No se pudo cargar el documento.");
+      fr=document.createElement("iframe"); fr.setAttribute("aria-hidden","true");
+      fr.style.cssText="position:fixed;left:-10000px;top:0;width:9in;height:12in;border:0;opacity:0;pointer-events:none";
+      await new Promise(ok=>{ fr.addEventListener("load",ok,{once:true}); fr.srcdoc=arFmtDocHTML(h).replace('</head>','<style>.papers{transform:none!important}.stage{padding:0!important}.paper{margin:0!important;box-shadow:none!important}</style></head>'); document.body.appendChild(fr); });
+      const doc=fr.contentDocument; try{ await doc.fonts.ready; }catch(_){} await new Promise(r=>setTimeout(r,250));
+      const pages=[...doc.querySelectorAll("#paper .paper")].filter(p=>p.offsetWidth&&p.offsetHeight);
+      if(!pages.length) throw new Error("El documento no tiene páginas.");
+      const pdf=new window.jspdf.jsPDF({unit:"in",format:"letter",orientation:"portrait",compress:true});
+      for(let i=0;i<pages.length;i++){
+        busy(`Generando PDF… página ${i+1} de ${pages.length}`);
+        const cv=await window.html2canvas(pages[i],{scale:2.2,backgroundColor:"#ffffff",useCORS:true,logging:false,windowWidth:doc.documentElement.scrollWidth});
+        if(i) pdf.addPage("letter","portrait");
+        pdf.addImage(cv.toDataURL("image/jpeg",0.9),"JPEG",0,0,8.5,11,undefined,"FAST");
+      }
+      const b64=pdf.output("datauristring").split(",")[1];
+      busy("Guardando en Drive…");
+      const tipo=tp==="altas"?"Alta":"Reporte", fecha=fechaDe(r);
+      const o={rid:String(r.id),exp,name:`${exp} ${tipo} ${fecha}`.trim(),alt:`${exp} ${tipo} ${fecha} ${String((r.p||{}).hora||"").replace(":",".")}`.trim(),b64};
+      const H=host(), U=H.eval("typeof apiUrl==='function'?apiUrl():''"); if(!U) throw new Error("Sin conexión con el servidor");
+      const res=await H.call1(U,"hjmPdfDrive",[o],120000);
+      if(!res||!res.url) throw new Error("Sin respuesta del servidor");
+      if(w) w.location.href=res.url; else window.open(res.url,"_blank");
+      say(`${res.replaced?"PDF reemplazado":"PDF guardado"}: ${res.name}`,"ok",6000);
+    }catch(e){
+      try{ if(w) w.close(); }catch(_){}
+      const m=String((e&&e.message)||e||"");
+      say((e&&e.code==="accion")||/Acci[oó]n no permitida/.test(m)?"Falta actualizar Codigo.gs (beta-19) para guardar PDF en Drive.":"No se pudo guardar el PDF: "+m,"warn",8000);
+    }finally{ busy(""); if(fr) fr.remove(); if(btn) btn.classList.remove("busy"); }
+  };
+  document.addEventListener("click",e=>{
+    const b=e.target.closest&&e.target.closest("[data-pdf-drive]"); if(!b) return;
+    e.preventDefault(); e.stopPropagation(); const [tp,id]=String(b.dataset.pdfDrive).split("|"); hjmPdfDrive(tp,id,b);
+  },true);
+})();
+</script>
 </body>
 </html>
