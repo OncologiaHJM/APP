@@ -327,7 +327,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="8.15">
+<meta name="application-version" content="8.17">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2652,6 +2652,14 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
 .ads-mismatch-group{margin:10px 0;border:1px solid var(--line,#d5dfeb);border-radius:12px;overflow:hidden}.ads-mismatch-group>summary{display:flex;justify-content:space-between;gap:12px;cursor:pointer;padding:12px;background:var(--hj-soft,#eef3fa);font-size:12px}.ads-mismatch-group>summary::before{content:"▸"}.ads-mismatch-group[open]>summary::before{content:"▾"}.ads-mismatch-patient{display:grid;grid-template-columns:minmax(0,1fr) minmax(210px,38%);gap:14px;padding:14px;border-top:1px solid var(--line,#d5dfeb);font-size:12px}.ads-mismatch-patient p{margin:6px 0;overflow-wrap:anywhere}.ads-mismatch-controls{display:grid;align-content:start;gap:10px}.ads-mismatch-controls label{display:grid;gap:6px}.ads-mismatch-controls select{width:100%;min-width:0}@media(max-width:650px){.ads-mismatch-patient{grid-template-columns:minmax(0,1fr)}}
 .hjm-auth-line{display:block;font-size:inherit;line-height:1.5;overflow-wrap:anywhere}.hjm-auth-line b{font-weight:600}.ar-author{min-width:0}</style></head>
 <body>
+<style id="hjm-boot-view">@media screen{body:not(.pp-browse)>*:not(dialog):not(script):not(style):not(#hjmBootSplash){visibility:hidden!important}#hjmBootSplash{position:fixed;inset:0;z-index:2147480000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#F4F6F9;font:600 15px system-ui,-apple-system,"Segoe UI",sans-serif;color:#1f3a5f}#hjmBootSplash i{width:34px;height:34px;border-radius:50%;border:3px solid #cfd8e3;border-top-color:#1f3a5f;animation:hjmBootSpin .8s linear infinite}@keyframes hjmBootSpin{to{transform:rotate(360deg)}}}@media print{#hjmBootSplash{display:none}}</style>
+<div id="hjmBootSplash" aria-live="polite"><i></i><div>Oncología HJM · Cargando…</div></div>
+<script id="hjm-boot-view-js">(function(){var done=0;function end(){if(done)return;done=1;try{mo.disconnect();}catch(e){}var a=document.getElementById("hjm-boot-view"),b=document.getElementById("hjmBootSplash");if(a)a.remove();if(b)b.remove();}
+var mo=new MutationObserver(function(){var bc=document.body&&document.body.classList;if(!bc)return;if(bc.contains("pp-browse")||bc.contains("showing-format")||bc.contains("showing-clinical")||bc.contains("showing-archive")||(document.getElementById("expediente")&&String(document.getElementById("expediente").value||"").trim()))end();});
+function start(){try{mo.observe(document.body,{attributes:true,attributeFilter:["class"],subtree:false});}catch(e){}}
+if(document.body)start();else document.addEventListener("DOMContentLoaded",start);
+document.addEventListener("click",function(e){if(e.target&&e.target.closest&&e.target.closest("dialog"))setTimeout(function(){var bc=document.body.classList;if(!bc.contains("pp-browse"))setTimeout(end,4000);},0);},true);
+window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end,30000);window.__hjmBootEnd=end;})();</script>
 
 <header class="top">
   <img class="seal" data-logo="hjm" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Hospital Juárez de México">
@@ -2833,7 +2841,7 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 8.15 · Fecha de publicación: 11.11.26</div>
+  <div class="app-footer-version">Versión 8.17 · Fecha de publicación: 11.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -9311,7 +9319,14 @@ function cenRevisaHTML(per,cen){
   const btns=(x,i)=>{ const b=[]; if(!w||!x.r) return "";
     if(x.qa){ const lb={alta:"Registrar alta",ce:"Liberar cama (CE)",rip:"Liberar cama (RIP)"}[x.qa], armed=CENRV.arm===cenRvKey(x), dn=CENRV.done&&CENRV.done.has(cenRvKey(x)); b.push(`<button type="button" class="cen-rv-btn cen-rv-q${armed?" cen-rv-arm":""}" data-rvqa="${i}"${dn?" disabled":""}>${dn?"Guardando…":armed?"¿Seguro? toca otra vez":lb}</button>`); }
     if(x.r.k) b.push(`<button type="button" class="cen-rv-btn" data-rvedit="${i}">${esc(CEN_RV_BTN[x.cat]||"Corregir")}</button>`); return b.join(""); };
-  const items=show.map(x=>{ const i=L.indexOf(x); return `<li class="cen-rv${x.lv}"><div class="cen-rv-tx"><em>${esc(x.cat)}</em><span>${esc(x.txt)}</span>${x.act?`<small>${esc(x.act)}</small>`:""}</div><div class="cen-rv-b">${btns(x,i)}</div></li>`; }).join("");
+  /* v8.16 · un renglón por paciente: todos sus problemas juntos y un botón por cada cosa que le falta */
+  const G=[], byK=new Map(); show.forEach(x=>{ const k=x.r&&x.r.k; if(k&&byK.has(k)) byK.get(k).push(x); else { const a=[x]; G.push(a); if(k) byK.set(k,a); } });
+  const head=r=>(r.cama?r.cama+" · ":"")+(r.nombre||"Sin nombre")+(r.exp?" · Exp. "+r.exp:"");
+  const strip=(x)=>{ const h=x.r?head(x.r)+": ":""; return h&&x.txt.indexOf(h)===0?x.txt.slice(h.length):x.txt; };
+  const items=G.map(a=>{ const lv=Math.max(...a.map(x=>x.lv)), x0=a[0];
+    if(a.length===1&&!x0.r) return `<li class="cen-rv${lv}"><div class="cen-rv-tx"><em>${esc(x0.cat)}</em><span>${esc(x0.txt)}</span>${x0.act?`<small>${esc(x0.act)}</small>`:""}</div><div class="cen-rv-b">${btns(x0,L.indexOf(x0))}</div></li>`;
+    const seen=new Set(), bt=a.map(x=>{ const h=btns(x,L.indexOf(x)); return h.split(/(?=<button)/).filter(b=>{ const t=b.replace(/<[^>]+>/g,"").trim(); if(!t||seen.has(t)) return false; seen.add(t); return true; }).join(""); }).join("");
+    return `<li class="cen-rv${lv}"><div class="cen-rv-tx"><b class="cen-rv-pt">${esc(head(x0.r))}</b><ul class="cen-rv-pl">${a.map(x=>`<li><em class="${x.lv===3?"cen-rv-e3":""}">${esc(x.cat)}</em><span>${esc(strip(x))}</span></li>`).join("")}</ul></div><div class="cen-rv-b">${bt}</div></li>`; }).join("");
   return `<details class="cen-rv" data-rvbox${CEN._rvOpen?" open":""}><summary><b>Revisar datos del censo</b><span class="cen-rv-sum">${chip(3,n3,"por corregir")}${chip(2,n2,"incompletos")}</span></summary><ul class="cen-rv-l">${items}</ul></details>`;
 }
 (function(){
@@ -18119,6 +18134,15 @@ html body .cen-rv-btn.cen-rv-arm{background:#B5473A!important;border-color:#B547
 @media (max-width:600px){html body .cen-rv-b{margin-left:0;width:100%}html body .cen-rv-btn{flex:1 1 auto}}
 [data-theme="dark"] .cen-rv{background:#1F2328!important;border-color:#353B42!important;color:#E6E8EB!important}
 [data-theme="dark"] .cen-rv-l li{background:#262B31!important;border-color:#353B42}[data-theme="dark"] .cen-rv-tx span,[data-theme="dark"] .cen-rv-tx em{color:#E6E8EB}[data-theme="dark"] .cen-rv-tx em{background:#1F2328;border-color:#353B42}[data-theme="dark"] .cen-rv-c{background:#262B31!important;color:#E6E8EB!important;border-color:#353B42!important}
+}</style>
+<style id="hjm-v816">@media screen{
+html body .cen-rv-pt{flex-basis:100%;font-size:14px;color:#2B2F33}
+html body .cen-rv-pl{list-style:none;margin:2px 0 0;padding:0;display:grid;gap:4px;flex-basis:100%}
+html body .cen-rv-pl li{display:flex!important;flex-wrap:wrap;gap:4px 8px;align-items:baseline;padding:0!important;background:none!important;border:0!important;border-radius:0!important}
+html body .cen-rv-pl em{font-style:normal;font-weight:800;font-size:11.5px;padding:2px 8px;border-radius:8px;background:#fff;border:1px solid #DDE1E5;color:#2B2F33;white-space:nowrap}
+html body .cen-rv-pl em.cen-rv-e3{color:#B5473A;border-color:#E9C4BF}
+html body .cen-rv-pl span{color:#2B2F33;overflow-wrap:anywhere}
+[data-theme="dark"] .cen-rv-pt,[data-theme="dark"] .cen-rv-pl span{color:#E6E8EB}[data-theme="dark"] .cen-rv-pl em{background:#1F2328;border-color:#353B42;color:#E6E8EB}
 }</style>
 </body>
 </html>
