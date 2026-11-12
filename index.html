@@ -36,7 +36,7 @@ B.mine=function(it){try{const ed=it&&it.meta&&it.meta.ed;return !ed||ukey(ed)===
 function status(t,st){try{gateStatus(t,st);}catch(_){}}
 function okOrigin(){return location.protocol==='https:'||/^(localhost|127\.0\.0\.1)$/.test(location.hostname);}
 B.gis=function(){if(B.gisP)return B.gisP;B.gisP=new Promise((res,rej)=>{const t0=Date.now();(function w(){if(window.google&&google.accounts&&google.accounts.id)return res(google.accounts.id);if(Date.now()-t0>20000){B.gisP=null;return rej(Error('gis'));}setTimeout(w,150);})();});return B.gisP;};
-B.init=async function(){const id=await B.gis();if(B.inited)return id;id.initialize({client_id:CID,callback:r=>B.onCred(r&&r.credential),auto_select:true,cancel_on_tap_outside:false,context:'signin',ux_mode:'popup',use_fedcm_for_prompt:true,use_fedcm_for_button:true,button_auto_select:false,itp_support:true,prompt_parent_id:'betaOneTap',login_hint:(function(){try{return localStorage.getItem('hjm-beta-out-mail')||undefined;}catch(_){return undefined;}})()});B.inited=true;return id;};
+B.init=async function(){const id=await B.gis();if(B.inited)return id;id.initialize({client_id:CID,callback:r=>B.onCred(r&&r.credential),auto_select:true,cancel_on_tap_outside:false,context:'signin',ux_mode:'popup',use_fedcm_for_prompt:true,use_fedcm_for_button:true,button_auto_select:false,itp_support:true,prompt_parent_id:'betaOneTap'});B.inited=true;return id;};
 B.renderBtn=async function(){const box=$('betaGBtn');if(!box)return;if(!okOrigin()){box.innerHTML='';status('Esta versión solo funciona desde la página publicada (https). No se puede abrir desde un archivo local.');return;}
  try{const id=await B.init();box.innerHTML='';id.renderButton(box,{theme:'filled_blue',size:'large',text:'signin_with',shape:'pill',locale:'es-419',logo_alignment:'left',width:Math.min(300,(box.clientWidth||300))});}
  catch(_){box.innerHTML='';status('No se pudo cargar el inicio de sesión de Google. Revisa tu conexión y recarga la página.');}};
@@ -318,7 +318,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="7.33">
+<meta name="application-version" content="7.34">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2842,7 +2842,7 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 7.33 · Fecha de publicación: 11.11.26</div>
+  <div class="app-footer-version">Versión 7.34 · Fecha de publicación: 11.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
