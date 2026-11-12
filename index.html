@@ -66,11 +66,11 @@ B.denied=function(msg,pend,grupal){const em=B.email;B.ses=null;const dd=$('dlgRe
   $('betaReqSug').onpointerdown=e=>e.preventDefault();
   $('betaReqSug').onclick=e=>{const b=e.target.closest('[data-u]');if(!b)return;$('betaReqQ').value=b.dataset.n;elegido=b.dataset.u;$('betaReqSug').hidden=true;$('betaReqMsg').textContent='';};
   const go=async()=>{const q=elegido||$('betaReqQ').value.trim(),m=$('betaReqMsg');if(q.length<3){m.textContent='Escribe tu nombre completo.';return;}$('betaReqGo').disabled=true;m.textContent='Enviando…';
-   try{await call('hjmSolicitar',q);$('betaReq').innerHTML='<p class="beta-req-ok">Tu solicitud quedó registrada. La aplicación está en espera de autorización; una vez que se cuente con ella, se te admitirá el acceso.</p>';}
+   try{await call('hjmSolicitar',q);$('betaReq').innerHTML='<p class="beta-req-ok">Tu solicitud quedó registrada.</p><p class="beta-req-closed">Lo sentimos, actualmente la versión de prueba se encuentra cerrada hasta contar con autorización.</p>';}
    catch(e){$('betaReqGo').disabled=false;m.textContent=e.message||'No se pudo enviar.';if(e.code==='noalta')try{alert(e.message);}catch(_){}}};
   $('betaReqGo').onclick=go;$('betaReqQ').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();const f=$('betaReqSug').querySelector('[data-u]');if(!elegido&&f&&!$('betaReqSug').hidden){f.click();return;}go();}};
   $('betaFinalOut').onclick=()=>{B.clear();B.out();dlg.classList.remove('beta-denied');B.gate({});};}
- $('betaFinalWho').textContent=em?'Cuenta: '+em:'';$('betaReqOpen').hidden=!!grupal;$('betaReq').hidden=true;if(grupal)$('betaFinalWho').textContent='Entra con tu correo personal.';if(pend&&!grupal){$('betaReqOpen').hidden=true;$('betaReq').hidden=false;$('betaReq').innerHTML='<p class="beta-req-ok">Tu solicitud quedó registrada. La aplicación está en espera de autorización; una vez que se cuente con ella, se te admitirá el acceso.</p>';}dlg.classList.add('beta-denied');if(!dlg.open)dlg.showModal();};
+ $('betaFinalWho').textContent=em?'Cuenta: '+em:'';$('betaReqOpen').hidden=!!grupal;$('betaReq').hidden=true;if(grupal)$('betaFinalWho').textContent='Entra con tu correo personal.';if(pend&&!grupal){$('betaReqOpen').hidden=true;$('betaReq').hidden=false;$('betaReq').innerHTML='<p class="beta-req-ok">Tu solicitud quedó registrada.</p><p class="beta-req-closed">Lo sentimos, actualmente la versión de prueba se encuentra cerrada hasta contar con autorización.</p>';}dlg.classList.add('beta-denied');if(!dlg.open)dlg.showModal();};
 B.authError=function(e){if(child()||B.entering||B.blocked)return;if(e.code==='noautorizado')B.denied(e.message,e.pendiente,e.grupal);else if(e.code==='token'){B.clear();}};
 function inject(s){return (s.usuarios||[]).map(u=>Object.assign({},u));}
 B.apply=function(s,ident){B.ses=s;const us=inject(s);if(!applyUsers(us)){HJM_USERS=[];}
@@ -318,7 +318,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="7.34">
+<meta name="application-version" content="7.35">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2842,7 +2842,7 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 7.34 · Fecha de publicación: 11.11.26</div>
+  <div class="app-footer-version">Versión 7.35 · Fecha de publicación: 11.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -17538,5 +17538,6 @@ for(const original of pending){const live=document.createElement('script');for(c
   const sync=()=>{ try{ document.body.classList.toggle('hjm-personal', !!(B.ses&&B.ses.usuario)&&!(B.shared&&B.shared())); }catch(_){} };
   sync(); setInterval(sync,800); })();
 </script>
+<style id="hjm-v735">#dlgResidentGate .beta-req-closed{color:#b3261e;font-weight:600;text-align:center;margin:6px 0 0;font-size:14px;line-height:1.4}</style>
 </body>
 </html>
