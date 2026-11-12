@@ -318,7 +318,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="7.41">
+<meta name="application-version" content="7.43">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2842,7 +2842,7 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 7.41 · Fecha de publicación: 11.11.26</div>
+  <div class="app-footer-version">Versión 7.43 · Fecha de publicación: 11.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -17483,7 +17483,7 @@ for(const original of pending){const live=document.createElement('script');for(c
     if(tp==="notas"){
       let table=true; try{ table=clinicalNoteUsesTable(p.tipo); }catch(_){}
       let content=""; try{ content=clinicalRichHTML(p.contenido); }catch(_){ content=E(p.contenido); }
-      if(!table) return `<p style="${T}margin:8pt 0">${E(title)}</p><p style="font-family:'Times New Roman',serif;font-size:12pt;font-weight:bold;margin:0">${E(p.fecha)}</p><p style="font-family:'Times New Roman',serif;font-size:12pt;font-weight:bold;margin:0 0 12pt 0">${E(p.hora)}</p>${rich(content)}${firmas(p,"right")}`;
+      if(!table) return `<table style="width:100%;border-collapse:collapse;border:none"><tr><td style="border:none;padding:0;vertical-align:top"><p style="${T}margin:8pt 0">${E(title)}</p><p style="font-family:'Times New Roman',serif;font-size:12pt;font-weight:bold;margin:0">${E(p.fecha)}</p><p style="font-family:'Times New Roman',serif;font-size:12pt;font-weight:bold;margin:0 0 12pt 0">${E(p.hora)}</p>${rich(content)}${firmas(p,"right")}</td></tr></table>`;
       let vit=""; try{ const s=p.signos||{}; vit=NOTE_VITAL_FIELDS.map(f=>{ let v=String(s[f.key]??"").trim(); if(!v) return ""; if(f.unit&&/^\d+(?:[.,]\d+)?$/.test(v)) v=v.replace(",",".")+" "+f.unit; return `<p style="${F}font-size:10pt;margin:0 0 12pt 0">${E(f.print)}: ${E(v)}</p>`; }).join(""); }catch(_){}
       const B="border:1pt solid #000;";
       return `<table style="width:100%;border-collapse:collapse;${B}margin-top:6pt"><tr><th style="${B}width:15.5%;padding:7pt 4pt;text-align:center;vertical-align:middle;${F}font-size:9pt;font-weight:bold">FECHA, HORA Y<br>SIGNOS VITALES</th><th style="${B}padding:7pt 4pt;text-align:center;vertical-align:middle;${T}">${E(title)}</th></tr>`+
@@ -17513,9 +17513,10 @@ for(const original of pending){const live=document.createElement('script');for(c
     try{
       const hjm=document.querySelector(".home-logo .seal")?.src||document.querySelector(".top .seal")?.src||"", crab=document.querySelector(".top > .seal.crab")?.src||"";
       const fecha=String(p.fecha||"").trim(), hora=String(p.hora||"").trim().replace(":",".");
+      let conTabla=true; try{ if(tp==="notas") conTabla=clinicalNoteUsesTable(p.tipo); }catch(_){}
       const o={ rid:String(r.id), exp, name:`${exp} ${tipoCorto(tp,p)} ${fecha}`.trim(), alt:`${exp} ${tipoCorto(tp,p)} ${fecha} ${hora}`.trim(),
         header:encabezado(d), body:cuerpo(tp,p), imgs:[await png(hjm),await png(crab)],
-        anchos:{ header:[[15,70,15],[75,25],[34,32,34]], body:tp==="notas"?[[15.5,84.5]]:[[17,83]] }, llenar:tp==="notas" };
+        anchos:{ header:[[15,70,15],[75,25],[34,32,34]], body:tp==="notas"?(conTabla?[[15.5,84.5]]:[[100]]):[[17,83]] }, llenar:tp==="notas"&&conTabla };
       job.step("Creando el documento en Drive…",40);
       const res=await window.hjmLongCall("hjmDocDrive",o,job);
       if(!res||!res.url) throw new Error("Sin respuesta del servidor");
@@ -17694,16 +17695,20 @@ function hjmClinViewDoc(html){
   window.hjmLongCall=async function(fn,o,job){
     let H=window; try{ if(window.parent&&window.parent!==window&&typeof window.parent.call1==="function"&&window.parent.eval("typeof apiUrl")==="function") H=window.parent; }catch(_){}
     const U=H.eval("typeof apiUrl==='function'?apiUrl():''"); if(!U) throw new Error("Sin conexión con el servidor");
-    let last=null;
+    const body=()=>JSON.stringify({t:H.eval("apiKey()"),u:H.HJM_BETA.who(),v:(H.document.querySelector('meta[name="application-version"]')||{}).content||"",fn,args:[o]});
+    let last="";
     for(let i=0;i<3;i++){
-      try{ return await H.call1(U,fn,[o],180000); }
-      catch(e){ last=e; const m=String(e&&e.message); if(!(m==="red"||m==="respuesta"||m==="tiempo"||(e&&e.code==="ocupado"))||i===2) break;
-        if(job) job.step("Se cortó la conexión con el servidor; reintentando ("+(i+2)+" de 3)…"); await new Promise(r=>setTimeout(r,2500*(i+1))); }
+      const ctl=new AbortController(), to=setTimeout(()=>ctl.abort(),180000);
+      try{
+        let r; try{ r=await fetch(U,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:body(),credentials:"omit",redirect:"follow",signal:ctl.signal}); }
+        catch(e){ last=ctl.signal.aborted?"el servidor tardó más de 3 minutos":"no hubo respuesta del servidor ("+String(e&&e.message||e)+")"; throw 0; }
+        const txt=await r.text(); let j=null; try{ j=JSON.parse(txt); }catch(_){ last="respuesta no válida del servidor (HTTP "+r.status+"): "+txt.replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim().slice(0,220); throw 0; }
+        if(!j.ok){ const er=new Error(j.error||"error"); er.code=j.code; throw er; }
+        return j.data;
+      }catch(e){ if(e!==0) throw e; if(i<2){ if(job) job.step("Se cortó la conexión con el servidor; reintentando ("+(i+2)+" de 3)…"); await new Promise(r=>setTimeout(r,2500*(i+1))); } }
+      finally{ clearTimeout(to); }
     }
-    const m=String(last&&last.message);
-    if(m==="red"||m==="respuesta") { const e=new Error("se perdió la conexión con el servidor. Revisa tu internet e intenta de nuevo."); e.code=last.code; throw e; }
-    if(m==="tiempo") throw new Error("el servidor tardó demasiado. Intenta de nuevo en un momento.");
-    throw last;
+    throw new Error(last||"se perdió la conexión con el servidor");
   };
   try{ if(window.__hjmChildFormat&&window.parent!==window&&window.parent.hjmJob){ window.hjmJob=window.parent.hjmJob; return; } }catch(_){}
   const E=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
