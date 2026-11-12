@@ -327,7 +327,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="8.04">
+<meta name="application-version" content="8.06">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2833,7 +2833,7 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 8.04 · Fecha de publicación: 11.11.26</div>
+  <div class="app-footer-version">Versión 8.06 · Fecha de publicación: 11.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -7229,7 +7229,7 @@ async function unificarPaciente(id,opt){
 /* v5.27 · Duplicados automáticos: al cargar la lista de pacientes, cada expediente con más de un archivo se unifica solo (en segundo plano, uno tras otro).
    No toca al paciente abierto en pantalla (ese se unifica al guardarlo). */
 const UNIFY_LOG=[]; let UNIFY_AUTO_RUN=false, UNIFY_AUTO_AT=0;
-function dupGruposTodos(){ const g=new Map(); (DRIVE_FILES||[]).forEach(f=>{ if(!f||/^_/.test(String(f.name||""))) return; const k=expKey(expOf(f)); if(!k) return; if(!g.has(k)) g.set(k,[]); g.get(k).push(f); }); return [...g.values()].filter(a=>a.length>1); }
+function dupGruposTodos(){ const g=new Map(); (DRIVE_FILES||[]).forEach(f=>{ if(!f||/^_/.test(String(f.name||""))) return; const k=dupKey(expOf(f)); if(!k) return; if(!g.has(k)) g.set(k,[]); g.get(k).push(f); }); return [...g.values()].filter(a=>a.length>1); }
 async function unificarDuplicadosAuto(opt){
   opt=opt||{};
   if(UNIFY_AUTO_RUN) return {n:0,busy:true}; if(!opt.force&&Date.now()-UNIFY_AUTO_AT<3*60000) return {n:0};
@@ -7239,11 +7239,13 @@ async function unificarDuplicadosAuto(opt){
   try{
     const abierto=(()=>{ try{ return hasSelectedPatient()?expKey(($("expediente")||{}).value||""):""; }catch(_){ return ""; } })();
     for(const g of gs){
-      const k=expKey(expOf(g[0])); if(k&&k===abierto){ omit++; continue; }
-      const antes=DRIVE_FILES.filter(f=>expKey(expOf(f))===k).length; if(antes<2) continue;
+      const k=dupKey(expOf(g[0])); if(k&&k===dupKey(abierto)){ omit++; continue; }
+      const antes=DRIVE_FILES.filter(f=>dupKey(expOf(f))===k).length; if(antes<2) continue;
       if(typeof opt.onTick==="function") try{ opt.onTick(n+1,gs.length,g[0]); }catch(_){}
-      await unificarPaciente(g[0].id,{quiet:true});
-      const despues=DRIVE_FILES.filter(f=>expKey(expOf(f))===k).length; if(despues<antes||UNIFY_NODEL){ n++; arch+=antes; }
+      const tw=DRIVE_FILES.filter(f=>dupKey(expOf(f))===k);
+      if(new Set(tw.map(f=>expKey(expOf(f)))).size>1){ const keep=[...tw].sort((a,b)=>fileTime(b)-fileTime(a))[0]; await unificarConExp(tw.map(f=>f.id),keep.id,{quiet:true}); }
+      else await unificarPaciente(g[0].id,{quiet:true});
+      const despues=DRIVE_FILES.filter(f=>dupKey(expOf(f))===k).length; if(despues<antes||UNIFY_NODEL){ n++; arch+=antes; }
     }
   }finally{ UNIFY_AUTO_RUN=false; }
   if(n&&!opt.silent) try{ notify(`Pacientes duplicados unificados solos: ${n} expediente(s) (${arch} archivos reunidos; se sumaron sus registros y se complementaron sus datos).`+(UNIFY_NODEL?" Los repetidos siguen en Drive: falta actualizar Codigo.gs para poder borrarlos.":""),"info",{ms:8000}); }catch(_){}
@@ -7251,6 +7253,45 @@ async function unificarDuplicadosAuto(opt){
   return {n,arch,omit,total:gs.length};
 }
 window.unificarDuplicadosAuto=unificarDuplicadosAuto;
+/* v8.05 · Reglas de pacientes duplicados (todo termina en un solo JSON):
+   Regla 1 (sola): mismo expediente → unificarPaciente (ya existía).
+   Regla 2 (sola): mismo expediente salvo ceros a la izquierda o signos (0123456 = 123456 = 123-456) → se unifican con el expediente del archivo más reciente.
+   Regla 3 (con confirmación del administrador): mismo nombre completo y misma fecha de nacimiento con expedientes distintos, o mismo nombre cuando uno no tiene expediente → «Posibles duplicados» en Panel › Pacientes; el administrador elige qué expediente se queda.
+   Al unificar se suman todos los registros (notas, indicaciones, solicitudes, altas…), los datos vacíos se completan con los del otro y, si ambos difieren, manda el más reciente. Los archivos sobrantes van a la papelera de Drive. */
+function dupKey(v){ return expKey(v).replace(/^0+(?=[0-9])/,""); }
+const dupNom=f=>{ const m=(f&&f.meta)||{}; return String(m.nombre||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toUpperCase().replace(/[^A-ZÑ ]+/g," ").replace(/\s+/g," ").trim(); };
+const dupFn=f=>{ try{ const pc=window.__hjmPC?window.__hjmPC():{}, c=pc[f.id]; return (window.hjmDMY||(x=>x))(String((c&&c.fn)||"").trim()); }catch(_){ return ""; } };
+function dupProbables(){
+  const fs=(DRIVE_FILES||[]).filter(f=>f&&f.meta&&!/^_/.test(String(f.name||""))&&dupNom(f).split(" ").length>=3), by=new Map();
+  fs.forEach(f=>{ const k=dupNom(f); (by.get(k)||by.set(k,[]).get(k)).push(f); });
+  const out=[]; by.forEach((a,nom)=>{ const ks=new Set(a.map(f=>dupKey(expOf(f)))); if(ks.size<2) return;
+    const fns=new Set(a.map(dupFn).filter(Boolean)), sinExp=a.some(f=>!dupKey(expOf(f)));
+    if(fns.size>1) return; if(fns.size===0&&!sinExp) return;   /* mismo nombre y misma fecha de nacimiento, o uno sin expediente */
+    const ign=(()=>{ try{ return JSON.parse(localStorage.getItem("hjm-dup-no")||"[]"); }catch(_){ return []; } })(), sig=nom+"|"+[...ks].sort().join(",");
+    if(ign.includes(sig)) return; out.push({nom,files:a,fn:[...fns][0]||"",sig}); });
+  return out;
+}
+async function unificarConExp(ids,keepId,opt){
+  opt=opt||{}; if(UNIFYING) return keepId; const twins=ids.map(id=>DRIVE_FILES.find(f=>f.id===id)).filter(Boolean); const main=twins.find(f=>f.id===keepId); if(!main||twins.length<2) return keepId;
+  UNIFYING=true;
+  try{ const viejos=[...twins].sort((a,b)=>fileTime(a)-fileTime(b)), extras=twins.filter(f=>f.id!==main.id);
+    let payload=null, base="";
+    for(const f of viejos){ const r=await readRemoteFull(f.id); if(!r.obj) throw new Error("No se pudo leer un archivo"); payload=payload?mergePatient(r.obj,payload,null):r.obj; if(f.id===main.id) base=r.modified||""; }
+    const keepExp=String(expOf(main)||((payload.datos||{}).expediente)||"").trim(); if(!keepExp) throw new Error("El archivo elegido no tiene expediente");
+    payload.datos=Object.assign({},payload.datos,{expediente:keepExp}); payload.guardado=new Date().toISOString();
+    const meta=Object.assign({},...viejos.map(f=>f.meta||{}),main.meta||{},{app:"solicitudes-hjm",exp:keepExp.slice(0,60)});
+    const res=await gcall("hjmSave",FOLDER.id,main.name,JSON.stringify(payload),JSON.stringify(meta),JSON.stringify({forzar:true,base}));
+    if(!res||res.conflicto) throw new Error("Lo editaron mientras tanto; intenta de nuevo");
+    if(res.id&&res.modified) try{ upsertDriveFile(res); }catch(_){}
+    for(const f of extras){ try{ const r=await readRemoteFull(f.id); if(r.obj){ r.obj.datos=Object.assign({},r.obj.datos,{expediente:keepExp}); const m2=Object.assign({},f.meta||{},{exp:keepExp.slice(0,60)}); await gcall("hjmSave",FOLDER.id,f.name,JSON.stringify(r.obj),JSON.stringify(m2),JSON.stringify({forzar:true,base:r.modified||""})); f.meta=m2; } }catch(_){} }
+    await trashExtras(extras);
+    UNIFY_LOG.unshift({ts:Date.now(),exp:keepExp,nombre:String(meta.nombre||""),n:twins.length,name:main.name}); UNIFY_LOG.length=Math.min(UNIFY_LOG.length,20);
+    if(!opt.quiet) notify(`Se unificaron ${twins.length} archivos en el Exp. ${keepExp}.`,"ok",{ms:6000});
+    try{ renderPP(); }catch(_){} return main.id;
+  } finally{ UNIFYING=false; }
+}
+window.dupProbables=dupProbables; window.unificarConExp=unificarConExp;
+
 function renderDriveList(){
   const s=$("dlgSearch").value.trim().toUpperCase();
   const items=uniqueFiles(DRIVE_FILES).filter(f=>{const p=f.meta||{}; return !s||(p.nombre||"").toUpperCase().includes(s)||(expOf(f)).toUpperCase().includes(s)||String(f.name||"").toUpperCase().includes(s)||("CAMA "+(p.cama||"")).toUpperCase().includes(s)||(p.cama||"").toUpperCase()===s||(p.dx||"").toUpperCase().includes(s);});
@@ -9240,7 +9281,7 @@ function cenRevisa(per,cen){
   const cm=new Map(); H.forEach(r=>{ const c=String(r.cama||"").trim().toUpperCase(); if(c&&/^\d{3}$|^UCI|^URG|^CORON/i.test(c)) (cm.get(c)||cm.set(c,[]).get(c)).push(r); });
   cm.forEach((a,c)=>{ if(a.length>1) add(3,"Cama repetida",`La cama ${c} la tienen ${a.length} pacientes: ${a.map(r=>r.nombre||r.exp).join(" y ")}.`,"Corrige la cama de quien ya no está ahí.",a[0]); a.slice(1).forEach(r=>add(3,"Cama repetida",`La cama ${c} también la tiene ${r.nombre||r.exp}.`,"Corrige la cama de quien ya no está ahí.",r)); });
   const em=new Map(); rows.forEach(r=>{ const e=String(r.exp||"").trim(); if(e) (em.get(e)||em.set(e,[]).get(e)).push(r); });
-  em.forEach((a,e)=>{ if(a.length>1) add(3,"Paciente repetido",`El expediente ${e} (${a[0].nombre||""}) aparece ${a.length} veces en el censo.`,"Revisa si hay dos archivos del mismo paciente.",a[0]); });
+  em.forEach((a,e)=>{ if(a.length>1) add(3,"Paciente repetido",`El expediente ${e} (${a[0].nombre||""}) aparece ${a.length} veces en el censo.`,"Se unifican solos en un archivo; si sigue, revisa Panel › Pacientes.",a[0]); });
   H.forEach(r=>{ if(!r.ok) return; const tok=cenEstToks(r.est), ing=cenIngDay(r.ing), dias=Number.isFinite(ing)&&Number.isFinite(hoy)?Math.round((hoy-ing)/864e5):null, f=byId.get(r.k), m=(f&&f.meta)||{};
     if(!String(r.cama||"").trim()) add(3,"Sin cama",who(r)+": está hospitalizado pero no tiene cama.","Captura la cama.",r);
     if(String(m.def||"").trim()) add(3,"Defunción sin egreso",who(r)+": tiene defunción registrada pero sigue en hospitalizados.","Si falleció, pasa su cama a RIP; si no, borra la defunción.",r,"rip");
@@ -11858,7 +11899,7 @@ let svTab="res";
 const arC=(exp,id)=>`<span class="on-arw">${arB(exp,id)}</span>`, arHd=h=>canPerm("ver_archivo")?[""].concat(h):h, arCl=(exp,c)=>canPerm("ver_archivo")?[arC(exp)].concat(c):c;
 /* ===== v5.16 · Estadísticas por apartados (Resumen · Actividad · Censo · Oncología) y Oncología por región / tipo de cáncer / estadio ===== */
 const ONC=window.HJM_ONCO;
-const SV_TABS=[["res","Resumen"],["hos","Hospitalización","Hospital"],["cen","Movimientos diarios","Movim."],["qx","Quirófano"],["ic","Interconsultas","Intercons."],["onc","Perfil oncológico","Onco"],["act","Uso de la app","Uso app"]];
+const SV_TABS=[["res","Resumen"],["hos","Hospitalización","Hospital"],["cen","Censos"],["qx","Quirófano"],["onc","Perfil oncológico","Onco"],["act","Uso de la app","Uso app"]];
 const ONC_FLD='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v1M3 7v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H3z"/></svg>';
 const ONC_STAGES=[["0","Estadio 0 / in situ","#8FB8A8"],["I","Estadio I","#6FA8DC"],["II","Estadio II","#4F7FBF"],["III","Estadio III","#D9822B"],["IV","Estadio IV","#B5473A"],["","Sin estadio identificado","#B8BEC6"]];
 const ONC_REF={ing:"Fecha de ingreso",reg:"Fecha de alta en la app",mod:"Última modificación"};
@@ -12081,7 +12122,7 @@ function resumenView(P){
   const {rows}=oncData(), A=oncAgg(rows), gs=gItems(A,true), {rs}=censoRs(remoteCache), asc=rs.slice().sort((a,b)=>a.k.localeCompare(b.k)).slice(-30), L=asc.map(r=>r.k.slice(8)+"."+r.k.slice(5,7)), sv=(o,r)=>SRVL.reduce((n,s)=>n+(((r||{})[o]||{})[s]||0),0);
   return keyIndicators(P.A)+`<div class="st-card"><h3>Uso de la app <small>· ${esc(perLabel())}</small></h3>${P.kpis}<div class="on-go"><button type="button" class="st-btn st-sm" data-sv="act">Ver uso de la app →</button></div></div><div class="st-grid2">
    <div class="st-card"><h3>Pacientes oncológicos por región <small>· ${A.cancer} en el periodo</small></h3><div class="on-dn">${donutSVG(gs.map(i=>Object.assign({},i)),{title:"Pacientes por región",center:"oncológicos"})}${legendHTML(gs,A.cancer)}</div><div class="on-go"><button type="button" class="st-btn st-sm" data-sv="onc">Ver perfil oncológico →</button></div></div>
-   <div class="st-card"><h3>Ingresos y egresos <small>· según los censos finales</small></h3>${rs.length?chartSVG(L,[{name:"Ingresos",v:asc.map(r=>sv("ing",r)),c:"#2F6FA7"},{name:"Egresos",v:asc.map(r=>sv("egr",r)),c:"#D9822B"}],{line:true,title:"Ingresos contra egresos",xName:"Censo"}):'<div class="st-msg">Aún no hay censos finales en este periodo.</div>'}<div class="on-go"><button type="button" class="st-btn st-sm" data-sv="cen">Ver movimientos diarios →</button></div></div></div>
+   <div class="st-card"><h3>Ingresos y egresos <small>· según los censos finales</small></h3>${rs.length?chartSVG(L,[{name:"Ingresos",v:asc.map(r=>sv("ing",r)),c:"#2F6FA7"},{name:"Egresos",v:asc.map(r=>sv("egr",r)),c:"#D9822B"}],{line:true,title:"Ingresos contra egresos",xName:"Censo"}):'<div class="st-msg">Aún no hay censos finales en este periodo.</div>'}<div class="on-go"><button type="button" class="st-btn st-sm" data-sv="cen">Ver censos →</button></div></div></div>
    <div class="st-card"><h3>Actividad diaria <small>· últimos 14 días</small></h3>${dailyActivity(P.A,14)}<div class="on-go"><button type="button" class="st-btn st-sm" data-sv="act">Ver uso de la app →</button></div></div>`;
 }
 function svNav(){ return `<div class="sv-nav" role="tablist" aria-label="Apartados de estadísticas">${SV_TABS.map(([k,l,sh])=>`<button type="button" role="tab" data-sv="${k}" aria-selected="${svTab===k}"${sh?` title="${l}"`:""}>${sh?`<span class="sv-l">${l}</span><span class="sv-s" aria-hidden="true">${sh}</span>`:l}</button>`).join("")}</div>`; }
@@ -12112,7 +12153,6 @@ async function renderStats(body){
   else if(svTab==="act") main=KPIS+ACT+`<div class="st-card"><h3>Actividad diaria <small style="font-weight:500;color:#7B7E81">· últimos 30 días, apilada por tipo</small></h3>${dailyActivity(A,30)}</div>`+GRID+D14;
   else if(svTab==="cen") main=movView(remote);
   else if(svTab==="qx") main=qxView(remote);
-  else if(svTab==="ic") main=icView(remote);
   else if(svTab==="hos") main=hosView();
   else main=oncView();
   body.innerHTML=PER+svNav()+`<div class="sv-main">${main}</div>`;
@@ -12221,7 +12261,7 @@ function movView(remote){
    <div class="st-grid2"><div class="st-card"><h3>Ingresos contra egresos <small>· por día de censo</small></h3>${chartSVG(L,[{name:"Ingresos",v:A45.map(r=>sv("ing",r)),c:"#2F6FA7"},{name:"Egresos",v:A45.map(r=>sv("egr",r)),c:"#D9822B"}],{line:true,title:"Ingresos contra egresos",xName:"Censo"})}</div>
     <div class="st-card"><h3>Pacientes hospitalizados por día <small>· ${C?"de la clínica":"por clínica"}</small></h3>${chartSVG(L,serP,{stacked:true,title:"Pacientes por censo",avg:avgOf(A45.map(pd).filter(x=>x>0)),avgLabel:"Promedio",xName:"Censo"})}</div></div>
    <div class="st-card"><h3>Estado de los pacientes <small>· según el estatus escrito en el censo · toca una fila para verlo por día</small></h3>${noEc?'<div class="st-msg">Algunos censos aún no traen el estado separado por clínica; se completan solos en la próxima actualización automática.</div>':""}<div class="st-scroll"><table class="st-act mv-est"><thead><tr><th>Estado</th><th>Último censo<br><small>${esc(rs[0].f||rs[0].k)}</small></th><th>Promedio por día</th><th>Máximo en un día</th></tr></thead><tbody>${grp}</tbody></table></div><div class="st-msg" style="margin-top:6px">Un paciente cuenta una vez por cada censo en que tuvo ese estado; por eso se muestra el promedio diario y no la suma.</div></div>
-   ${byClin}${movLists(rs,C)}${movHist(rs,S,C,pd,dfnN)}${movAdmin()}`;
+   ${byClin}${movLists(rs,C)}${icView(remote,true)}${movHist(rs,S,C,pd,dfnN)}${movAdmin()}`;
 }
 function movLists(rs,C){
   const I=[], E=[]; rs.forEach(r=>{ (Array.isArray(r.il)?r.il:[]).filter(x=>!C||x.s===C).forEach(x=>I.push(detTr(arCl(x.e,[esc(r.f||r.k),esc(x.c||"—"),esc(x.n||"—"),esc(x.s==="OTRO"?"—":x.s),esc(x.e||"—"),esc(x.x||"")])))); (Array.isArray(r.el)?r.el:[]).filter(x=>!C||x.s===C).forEach(x=>E.push(detTr(arCl(x.e,[esc(r.f||r.k),x.t==="D"?"<b>Defunción</b>":"Alta",esc(x.c||"—"),esc(x.n||"—"),esc(x.s==="OTRO"?"—":x.s),esc(x.e||"—")])))); });
@@ -12268,8 +12308,8 @@ function qxView(remote){
    <div class="st-grid2">${[["cr","Cirugías realizadas"],["cs","Cirugías suspendidas o diferidas"]].map(([k,t])=>{ const rows=[]; rs.forEach(r=>cxItems(r,k).forEach(x=>rows.push(detTr(arCl(x.x||"",[esc(r.f||r.k),esc(x.t||""),esc(x.e||""),esc(x.s?(x.s==="OTRO"?"Otra":x.s):"—"),cxCell(x)]))))); return `<div class="st-card"><h3>${t} <small>· ${rows.length} · tal como se escribieron en el censo</small></h3>${rows.length?`<div class="mv-lim">${detTbl(arHd(["Censo","Paciente / cirugía","Dato","Clínica","Expediente"]),rows.slice(0,12))}</div><div class="on-go"><button type="button" class="st-btn st-sm" data-det="${k}">Ver todas y buscar →</button></div>`:'<div class="st-msg">Sin registros.</div>'}</div>`; }).join("")}</div>
    <div class="st-msg">Tasa de suspensión = suspendidas entre (realizadas + suspendidas); se marca en ámbar desde 20 %. La clínica de cada cirugía se toma del paciente del censo que coincide con la cama, el expediente o los dos apellidos escritos.</div>`;
 }
-function icView(remote){
-  const {rs,lab}=censoRs(remote); if(!rs.length) return cenSrcNote(lab)+'<div class="st-card"><div class="st-msg">Aún no hay censos finales en este periodo.</div></div>';
+function icView(remote,inCen){
+  const {rs,lab}=censoRs(remote); if(!rs.length) return inCen?"":cenSrcNote(lab)+'<div class="st-card"><div class="st-msg">Aún no hay censos finales en este periodo.</div></div>';
   const asc=rs.slice().sort((a,b)=>a.k.localeCompare(b.k)), A45=asc.slice(-45), L=A45.map(r=>r.k.slice(8)+"."+r.k.slice(5,7)), n=rs.length;
   const N=[["ce","Consulta externa"],["ho","Hospitalización"],["ur","Urgencias"],["te","Terapia"],["qx","Quirófano"]], it=N.map(([k,l],i)=>({n:l,v:rs.reduce((s,r)=>s+((r.ic||{})[k]||0),0),c:CH_COL[i]}));
   const at=rs.reduce((s,r)=>s+icTot(r),0), so=rs.reduce((s,r)=>s+cenCnt(r.iso),0), top=it.slice().sort((a,b)=>b.v-a.v)[0];
@@ -12278,7 +12318,7 @@ function icView(remote){
    +kpi(fmtN(at/n,1),"Atendidas por día",`${n} censo(s)`,'data-det="ic"')
    +kpi(top&&top.v?top.n:"—","Origen más frecuente",top&&top.v?`${top.v} (${pc(top.v,at)}%)`:"",'data-det="ic"')
    +kpi(so,"Solicitadas a otros servicios","que Oncología pidió",'data-det="iso"');
-  return cenSrcNote(lab)+`<div class="st-msg" style="margin:0 0 6px">Trabajo de interconsulta según el censo final: las que Oncología atendió (por dónde estaba el paciente) y las que pidió a otros servicios.</div><div class="st-kpis">${K}</div>
+  return (inCen?`<h3 class="mv-sec">Interconsultas <small>· ${esc(lab)}${MOVF.clin?" · el censo no las separa por clínica":""}</small></h3>`:cenSrcNote(lab))+`<div class="st-msg" style="margin:0 0 6px">Trabajo de interconsulta según el censo final: las que Oncología atendió (por dónde estaba el paciente) y las que pidió a otros servicios.</div><div class="st-kpis">${K}</div>
    <div class="st-grid2"><div class="st-card"><h3>Atendidas por origen</h3><div class="on-dn">${donutSVG(it,{title:"Interconsultas por origen",center:"atendidas"})}${legendHTML(it,at)}</div></div>
     <div class="st-card"><h3>Atendidas por día de censo</h3>${chartSVG(L,N.map(([k,l],i)=>({name:l,c:CH_COL[i],v:A45.map(r=>(r.ic||{})[k]||0)})),{stacked:true,title:"Interconsultas por censo",xName:"Censo"})}</div></div>
    <div class="st-card"><h3>Solicitadas a otros servicios <small>· por día de censo</small></h3>${chartSVG(L,[{name:"Solicitadas",v:A45.map(r=>cenCnt(r.iso)),c:"#7A5AA6"}],{title:"Interconsultas solicitadas",xName:"Censo"})}${(()=>{ const rows=[]; rs.forEach(r=>splitTxt(r.iso).forEach(t=>rows.push(detTr([esc(r.f||r.k),esc(t)])))); return rows.length?`<h4 class="det-h">Últimas solicitadas</h4><div class="mv-lim">${detTbl(["Censo","Interconsulta solicitada"],rows.slice(0,10))}</div><div class="on-go"><button type="button" class="st-btn st-sm" data-det="iso">Ver todas →</button></div>`:""; })()}</div>
@@ -12445,7 +12485,7 @@ function keyIndicators(A){
    +kpi(cur.egr.length,"Egresos",`${cur.def.length} defunción(es)`,'data-sv="hos"',dlt(cur.egr.length,prev&&prev.egr.length,{neutral:true}))
    +kpi(cur.losAvg==null?"—":fmtN(cur.losAvg,1)+" d","Estancia media","al egreso",'data-sv="hos"',dlt(cur.losAvg,prev&&prev.losAvg,{dec:1,inv:true,u:" d"}))
    +kpi(sum(cs,cx),"Cirugías realizadas","según censo final",'data-sv="qx"',csP?dlt(sum(cs,cx),sum(csP,cx),{neutral:true}):"")
-   +kpi(sum(cs,r=>Object.values(r.ic||{}).reduce((a,v)=>a+(+v||0),0)),"Interconsultas atendidas","",'data-sv="ic"',csP?dlt(sum(cs,r=>Object.values(r.ic||{}).reduce((a,v)=>a+(+v||0),0)),sum(csP,r=>Object.values(r.ic||{}).reduce((a,v)=>a+(+v||0),0)),{neutral:true}):"")
+   +kpi(sum(cs,r=>Object.values(r.ic||{}).reduce((a,v)=>a+(+v||0),0)),"Interconsultas atendidas","",'data-sv="cen"',csP?dlt(sum(cs,r=>Object.values(r.ic||{}).reduce((a,v)=>a+(+v||0),0)),sum(csP,r=>Object.values(r.ic||{}).reduce((a,v)=>a+(+v||0),0)),{neutral:true}):"")
    +kpi(cur.mort==null?"—":fmtN(cur.mort,1)+"%","Mortalidad hospitalaria",`${cur.def.length} de ${cur.egr.length} egresos`,'data-sv="hos"',dlt(cur.mort,prev&&prev.mort,{dec:1,inv:true,u:" pts"}))
    +kpi(cur.ing.length-cur.egr.length>0?"+"+(cur.ing.length-cur.egr.length):cur.ing.length-cur.egr.length,"Balance ingresos − egresos",cur.ing.length-cur.egr.length>0?"el servicio crece":cur.ing.length-cur.egr.length<0?"el servicio disminuye":"estable",'data-sv="hos"')
    +`</div></div>`;
@@ -12619,6 +12659,7 @@ async function loadDet(f){ if(DET[f.id]) return DET[f.id]; const r=await G("hjmR
 
 /* ---------- Análisis de pacientes (se guarda en caché: solo se vuelven a leer los archivos que cambiaron) ---------- */
 let PCACHE={}; try{ PCACHE=JSON.parse(LS.get("hjm-pac-cache-v2")||"{}")||{}; }catch(_){ PCACHE={}; }
+try{ window.__hjmPC=()=>PCACHE; }catch(_){}
 const pcSave=()=>{ try{ LS.set("hjm-pac-cache-v2",JSON.stringify(PCACHE)); }catch(_){} };
 function adsOf(v){ const out=[]; String(v||"").split("/").map(x=>x.trim()).filter(Boolean).forEach(x=>{ let a=null; try{ a=staffAdscritoLoose(x.toLocaleUpperCase("es-MX")); }catch(_){} if(a) out.push({n:a.nombre,c:a.clinica}); }); return out; }
 const INFL={}, READFAIL={};
@@ -12686,8 +12727,19 @@ async function drawDup(){
       const f=DRIVE_FILES.find(x=>x.id===b.dataset.ddel); if(!f) return;
       eqAdd("d"+f.id,"Eliminar duplicado Exp. "+fexp(f),async()=>{ await G("hjmBorrarDuplicado",f.id); DRIVE_FILES=DRIVE_FILES.filter(x=>x.id!==f.id); await syncRemote({borrados:[{ts:Date.now(),by:userName(),exp:fexp(f),nombre:"(duplicado) "+String((f.meta&&f.meta.nombre)||"")}]}); },()=>{ try{ renderPP(); }catch(_){} draw(); if($s("stPacTbl")) pacRows(); });
       draw(); }); };
-  draw();
+  draw(); dupProbDraw();
   const fs=gs.flat().filter(f=>!DET[f.id]); let i=0; const w=async()=>{ while(i<fs.length){ const f=fs[i++]; try{ await loadDet(f); }catch(_){ DET[f.id]={size:0,ed:"",edTs:0}; } draw(); } }; await Promise.all([w(),w(),w()]);
+}
+function dupProbDraw(){
+  const h=$s("stDup"); if(!h||typeof window.dupProbables!=="function") return; let box=h.querySelector("#stDupProb"); if(!box){ box=document.createElement("div"); box.id="stDupProb"; h.appendChild(box); }
+  const L=window.dupProbables(); if(!L.length){ box.innerHTML=""; return; } const adm=isAdmin();
+  box.innerHTML=`<h3 style="margin-top:14px">Posibles duplicados <small style="font-weight:500;color:#7B7E81">· ${L.length} · mismo nombre${L.some(x=>x.fn)?" y fecha de nacimiento":""} con expediente distinto</small></h3><div class="st-msg" style="margin:0 0 6px">No se unifican solos porque el expediente no coincide. Elige qué expediente se queda: se juntan todos los registros en ese archivo y el otro va a la papelera de Drive.</div>`+L.map((g,gi)=>`<div class="st-card" style="margin-top:8px;padding:8px 10px"><b style="font-size:12.5px">${esc(g.nom)}</b>${g.fn?` <small>· F. nac. ${esc(g.fn)}</small>`:""}<div class="st-scroll"><table class="st-act"><thead><tr><th>Expediente</th><th>Cama</th><th>Última modificación</th><th></th></tr></thead><tbody>${g.files.map(f=>`<tr><td class="nm">${esc(expOf(f)||"(sin expediente)")}</td><td>${esc((f.meta&&f.meta.cama)||"")}</td><td>${new Date(fileTime(f)).toLocaleString("es-MX",{dateStyle:"short",timeStyle:"short"})}</td><td>${adm&&expOf(f)?`<button type="button" class="st-btn st-sm" data-dpkeep="${gi}|${f.id}">Unificar en este expediente</button>`:""}</td></tr>`).join("")}</tbody></table></div>${adm?`<button type="button" class="st-btn st-sm" data-dpno="${gi}" style="margin-top:6px">No son la misma persona</button>`:""}</div>`).join("")+`<div class="st-msg" id="stDupProbMsg" aria-live="polite"></div>`;
+  box.querySelectorAll("[data-dpkeep]").forEach(b=>b.onclick=async()=>{ if(!isAdmin()) return; const [gi,id]=b.dataset.dpkeep.split("|"), g=L[+gi];
+    if(!b.dataset.ok){ b.dataset.ok="1"; b.textContent="¿Seguro? toca otra vez"; b.classList.add("st-danger"); setTimeout(()=>{ if(b.isConnected){ delete b.dataset.ok; b.textContent="Unificar en este expediente"; b.classList.remove("st-danger"); } },6000); return; }
+    b.disabled=true; const m=$s("stDupProbMsg"); if(m) m.textContent="Unificando…";
+    try{ await bg(()=>window.unificarConExp(g.files.map(f=>f.id),id,{quiet:true})); if(m) m.textContent="Listo: quedó un solo archivo."; }catch(e){ if(m) m.textContent="No se pudo unificar: "+friendly(e); }
+    dupProbDraw(); try{ drawDup(); }catch(_){} });
+  box.querySelectorAll("[data-dpno]").forEach(b=>b.onclick=()=>{ const g=L[+b.dataset.dpno]; try{ const a=JSON.parse(localStorage.getItem("hjm-dup-no")||"[]"); a.push(g.sig); localStorage.setItem("hjm-dup-no",JSON.stringify(a.slice(-200))); }catch(_){} dupProbDraw(); });
 }
 function renderPac(body){
  if(!accessRequire("ver_estadisticas"))return;
@@ -17174,8 +17226,9 @@ html:root body #dlgStats .sv-nav{grid-template-columns:repeat(5,minmax(0,1fr))!i
 [data-theme="dark"] .cen-rv{background:#2E271C;border-color:#5E4A2A;color:#F1DFC2}[data-theme="dark"] .cen-rv-g{background:#251F17;border-color:#4A3B25}[data-theme="dark"] .cen-rv-g li em{background:#3A2F20}[data-theme="dark"] .cen-rv-ok{background:#1C2A21;border-color:#2F5A3E;color:#A8DDB9}
 
 @media screen{
-html:root body #dlgStats .sv-nav{grid-template-columns:repeat(7,minmax(0,1fr))!important}
-@media (max-width:900px){html:root body #dlgStats .sv-nav{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+html:root body #dlgStats .sv-nav{grid-template-columns:repeat(6,minmax(0,1fr))!important}
+@media (max-width:900px){html:root body #dlgStats .sv-nav{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+#dlgStats h3.mv-sec{margin:18px 0 8px;padding-top:12px;border-top:2px solid #E3E5E8;font-size:16px}#dlgStats h3.mv-sec small{font-weight:500;color:#7B7E81;font-size:12px}
 #dlgStats .mv-fl{margin:0 0 8px}
 #dlgStats .cx-pend{border-left:4px solid #D9822B}
 .cx-lk{white-space:nowrap}
