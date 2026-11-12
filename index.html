@@ -327,7 +327,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="8.26">
+<meta name="application-version" content="8.29">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2841,7 +2841,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 8.26 · Fecha de publicación: 11.11.26</div>
+  <div class="app-footer-version">Versión 8.29 · Fecha de publicación: 11.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -11853,6 +11853,7 @@ const cenVacio=t=>{ const v=String(t||"").replace(/\s+/g," ").trim(); return !v|
 function cenChainFix(o){
   try{ const C0=(o&&o.censos)||{}; Object.values(C0).forEach(r=>{ if(!r) return; ["cr","cp","cs"].forEach(k=>{ if(Array.isArray(r[k])) r[k]=r[k].filter(x=>x&&!(cenVacio(x.t)&&cenVacio(x.e))); }); ["cpe","pr","tr","gr"].forEach(k=>{ if(Array.isArray(r[k])) r[k]=r[k].filter(x=>!cenVacio(x)); });
     /* v8.25 · renglones vacíos o de relleno («0», «NINGUNO», en blanco) en ALTAS/DEFUNCIONES/INGRESOS no son pacientes */
+    if(Array.isArray(r.hx)&&r.ps&&typeof r.ps==="object"){ const ot=r.hx.filter(x=>x[1]==="OTRO").length; if((+r.ps.OTRO||0)>ot) r.ps=Object.assign({},r.ps,{OTRO:ot}); }
     ["el","il"].forEach(k=>{ if(Array.isArray(r[k])) r[k]=r[k].filter(x=>x&&(String(x.e||"").trim()||!cenVacio(x.n))); }); }); }catch(_){}
   try{ const C=(o&&o.censos)||{}, ks=Object.keys(C).filter(k=>C[k]&&/^\d{4}-\d\d-\d\d$/.test(k)).sort(), dk=(k,n)=>{ const d=new Date(k+"T12:00:00Z"); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); };
     const setOf=r=>new Set((r&&Array.isArray(r.hx)?r.hx:[]).map(x=>x[0])), egSet=r=>new Set((r&&Array.isArray(r.el)?r.el:[]).map(x=>String(x.e||"").trim()).filter(Boolean));
@@ -11861,15 +11862,16 @@ function cenChainFix(o){
       const P=C[dk(k,-1)], P2=C[dk(k,-2)], N=C[dk(k,1)], hasP=P&&Array.isArray(P.hx), hasN=N&&Array.isArray(N.hx);
       const hoyH=setOf(r), hoyE=egSet(r), prevH=setOf(P), prev2H=setOf(P2), nextH=setOf(N), nextE=egSet(N);
       const ing={}, egr={}, add=(m,s)=>{ m[s]=(m[s]||0)+1; }, faltan=[], sinReg=[], nuevos=[];
+      const incompleto=(hoyH.size<0.7*prevH.size)||(hasN&&nextH.size<0.7*hoyH.size);
       if(hasP){
         r.hx.forEach(x=>{ if(!prevH.has(x[0])&&!prev2H.has(x[0])){ add(ing,x[1]); nuevos.push({e:x[0],n:x[2],s:x[1]}); } });
         (r.el||[]).forEach(x=>{ const e=String(x.e||"").trim(); if(e&&!prevH.has(e)&&!hoyH.has(e)) add(ing,x.s||"OTRO"); });
         (r.el||[]).forEach(x=>add(egr,x.s||"OTRO"));
-        (P.hx||[]).forEach(x=>{ const e=x[0]; if(hoyH.has(e)||hoyE.has(e)) return; if(hasN&&nextH.has(e)){ faltan.push({e,n:x[2],s:x[1]}); return; } if(hasN&&nextE.has(e)) return; if(!hasN) return; add(egr,x[1]); sinReg.push({e,n:x[2],s:x[1],c:x[3]}); });
+        (P.hx||[]).forEach(x=>{ const e=x[0]; if(hoyH.has(e)||hoyE.has(e)) return; if(hasN&&nextH.has(e)){ faltan.push({e,n:x[2],s:x[1]}); return; } if(hasN&&nextE.has(e)) return; if(!hasN) return; if(incompleto){ faltan.push({e,n:x[2],s:x[1]}); return; } add(egr,x[1]); sinReg.push({e,n:x[2],s:x[1],c:x[3]}); });
       } else { SRVL.forEach(s=>{ ing[s]=(r.ingRev||{})[s]||0; egr[s]=(r.egrRev||{})[s]||0; }); }
       const tot=m=>SRVL.reduce((a,s)=>a+(+m[s]||0),0); SRVL.forEach(s=>{ ing[s]=ing[s]||0; egr[s]=egr[s]||0; });
       r.ing=ing; r.egr=egr; const dfnC=(r.el||[]).filter(x=>x.t==="D").length, dfnR=cenCnt(r.dfn);
-      r.chk=hasP?{ingR:tot(r.ingRev),ingC:tot(ing),egrR:tot(r.egrRev),egrC:tot(egr),dfnR,dfnC,faltan,sinReg,nuevos}:null; });
+      r.chk=hasP?{incompleto,ingR:tot(r.ingRev),ingC:tot(ing),egrR:tot(r.egrRev),egrC:tot(egr),dfnR,dfnC,faltan,sinReg,nuevos}:null; });
   }catch(_){} return o;
 }
 
@@ -12007,12 +12009,15 @@ function hjmDataSig(){ let h=0; const fs=DRIVE_FILES||[]; for(let i=0;i<fs.lengt
 let _oncMemo={k:"",v:null};
 function oncRows(){ const k=hjmDataSig()+"|"+OF.ref+"|"+(remoteCache?Object.keys(remoteCache.dev||{}).length+":"+(remoteCache.upd||0):"0"); if(_oncMemo.k===k&&_oncMemo.v) return _oncMemo.v; const v=oncRows0(); _oncMemo={k,v}; return v; }
 function oncRows0(){
-  const crt=oncCrt(), out=[];
-  uniqueFiles(DRIVE_FILES).forEach(f=>{
+  /* v8.29 · conteo afinado: un paciente por expediente (0123 = 123), diagnósticos de relleno no cuentan como diagnóstico, edades imposibles se descartan */
+  const crt=oncCrt(), out=[], ek=v=>String(v||"").toUpperCase().replace(/[^0-9A-Z]/g,"").replace(/^0+(?=\d)/,""), best=new Map();
+  uniqueFiles(DRIVE_FILES).forEach(f=>{ const m=f.meta||{}, c=PCACHE[f.id]&&PCACHE[f.id].ok?PCACHE[f.id]:null, k=ek(m.exp||(c&&c.patientExp)||fexp(f))||("N:"+String(m.nombre||"").toUpperCase().replace(/\s+/g," ").trim()); if(k==="N:") return;
+    const o=best.get(k); if(!o||(!!c&&!(PCACHE[o.id]&&PCACHE[o.id].ok))||((!!c===!!(PCACHE[o.id]&&PCACHE[o.id].ok))&&fileTime(f)>fileTime(o))) best.set(k,f); });
+  [...best.values()].forEach(f=>{
     const m=f.meta||{}, c=PCACHE[f.id]&&PCACHE[f.id].ok?PCACHE[f.id]:null;
     const exp=String(m.exp||(c&&c.patientExp)||fexp(f)||"").trim(); if(!exp&&!m.nombre) return;
-    const dx=String(c?c.patientDx:(m.dx||"")).trim(), cls=oncClass(dx);
-    let ed=""; try{ if(c&&c.fn) ed=String(edad(c.fn,todayStr())); }catch(_){}
+    let dx=String(c?c.patientDx:(m.dx||"")).trim(); if(cenVacio(dx)||/^(PENDIENTE|POR DEFINIR|SIN DX|\?+)$/i.test(dx)) dx=""; const cls=oncClass(dx);
+    let ed=""; try{ if(c&&c.fn){ const e=parseInt(edad(c.fn,todayStr()),10); if(Number.isFinite(e)&&e>=0&&e<=110) ed=String(e); } }catch(_){}
     const gen=String((c&&c.gen)||"").toUpperCase(), sex=/^F/.test(gen)?"F":/^M/.test(gen)?"M":"";
     let clin=String(m.clinica||"").trim(), ads=String(m.adscrito||"").trim(); const a=adsOf(c?c.med:m.adscrito);
     if(a.length){ clin=a[0].c||clin; ads=a.map(x=>x.n.replace(/^DRA?\.\s*/,"")).join(" / "); }
@@ -12291,7 +12296,7 @@ function camasMount(body){
     mb.disabled=true; const m=$s("stMedMsg"); const r=await bg(()=>liberar(sel,m||{textContent:""},36)); await render(); MEDMSG=`Se cambiaron ${r.done.length} paciente(s) a CE.`+(r.skip.length?"\nOmitidos: "+r.skip.join("; "):""); const m2=$s("stMedMsg"); if(m2) m2.textContent=MEDMSG; };
 }
 /* v3.42 · Estadísticas que vienen del censo final */
-const cenCnt=t=>String(t||"").split(/\n|;/).map(x=>x.trim()).filter(x=>x&&!/^(NINGUN[AO]S?|N\/?A|NO HAY|0|-+|SIN\s.*)$/i.test(x)).length;
+const cenCnt=t=>String(t||"").split(/\n|;/).map(x=>x.trim()).filter(x=>!cenVacio(x)).length;
 function censoCard(remote){
   const all=(remote&&remote.censos&&typeof remote.censos==="object")?Object.values(remote.censos):[];
   const cut=period>0?dayKey(Date.now()-Math.max(period,3)*864e5):(period===-1?(rangeA||dayKey(Date.now())):""), hi=period===-1?(rangeB||rangeA||dayKey(Date.now())):"9999-99-99", rs=all.filter(r=>r&&r.k&&(!cut||r.k>=cut)&&r.k<=hi).sort((a,b)=>b.k.localeCompare(a.k));
@@ -12644,7 +12649,7 @@ function censoRs(remote){
   return {rs,lab:[[1,"últimos 3 días"],[7,"últimos 7 días"],[30,"últimos 30 días"],[0,"todo el historial"],[-1,rngLabel()]].find(x=>x[0]===period)[1]};
 }
 function scroller(el){ for(let p=el;p;p=p.parentElement){ if(p.scrollHeight>p.clientHeight+4&&/auto|scroll/.test(getComputedStyle(p).overflowY)) return p; } return document.scrollingElement; }
-const splitTxt=t=>String(t||"").split(/\n|;/).map(x=>x.trim()).filter(x=>x&&!/^(NINGUN[AO]S?|N\/?A|NO HAY|0|-+|SIN\s.*)$/i.test(x));
+const splitTxt=t=>String(t||"").split(/\n|;/).map(x=>x.trim()).filter(x=>!cenVacio(x));
 function renderDet(host){
   const D=DETV, {rs,lab}=censoRs(remoteCache), asc=rs.slice().sort((a,b)=>a.k.localeCompare(b.k)).slice(-45), dl=r=>r.k.slice(8)+"."+r.k.slice(5,7), L=asc.map(dl);
   const isEst=D.k.indexOf("est:")===0, title=isEst?"Estado del paciente: "+D.k.slice(4).toLowerCase():DETT[D.k]||D.k;
@@ -18331,7 +18336,9 @@ html body .cen-rv-pl span{color:#2B2F33;overflow-wrap:anywhere}
 #dlgStats .st-col.st-open>h3{margin-bottom:10px}
 #dlgStats .st-col:not(.st-open)>*:not(h3){display:none!important}</style>
 <script id="hjm-v823-js">(function(){ const T=["Liberación automática de camas","Archivos de pacientes en Drive"], OPEN=new Set();
- function fix(root){ (root||document).querySelectorAll("#dlgStats .st-card>h3").forEach(h=>{ const t=T.find(x=>h.textContent.trim().indexOf(x)===0); if(!t) return; const c=h.parentElement; if(c.classList.contains("st-col")) return;
+ function fix(root){ (root||document).querySelectorAll("#dlgStats .st-card>h3").forEach(h=>{ const c=h.parentElement; if(c.classList.contains("st-col")) return;
+   /* v8.27 · además, en Estadísticas toda tarjeta con tabla se pliega (cerrada por defecto) */
+   const base=((h.firstChild&&h.firstChild.nodeType===3?h.firstChild.textContent:h.textContent)||"").trim(), t=T.find(x=>h.textContent.trim().indexOf(x)===0)||(c.closest(".sv-main")&&[...c.querySelectorAll("table")].some(tb=>!tb.closest(".ch-tbl,.ch-wrap,figure,svg"))?base:""); if(!t) return;
    c.classList.add("st-col"); if(OPEN.has(t)) c.classList.add("st-open"); h.setAttribute("role","button"); h.tabIndex=0;
    const tg=()=>{ c.classList.toggle("st-open"); if(c.classList.contains("st-open")) OPEN.add(t); else OPEN.delete(t); };
    h.addEventListener("click",tg); h.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); tg(); } }); }); }
