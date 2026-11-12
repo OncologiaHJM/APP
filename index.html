@@ -318,7 +318,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="7.40">
+<meta name="application-version" content="7.41">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2842,7 +2842,7 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 7.40 · Fecha de publicación: 11.11.26</div>
+  <div class="app-footer-version">Versión 7.41 · Fecha de publicación: 11.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -8481,8 +8481,9 @@ function clinicalMissing(tp,p){
   const required=tp==="notas"?["fecha","hora","contenido"]:["fecha","hora","dieta","soluciones","medicamentos","cuidados"];
   return required.filter(k=>k==="hora"?!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(p[k]):k==="fecha"?!p[k]:!clinicalRichHasText(p[k]));
 }
+function hjmSameTipo(a,b){const n=v=>{let t=String(v||"Nota de Evolución");try{t=normalizedNoteType(t)||t;}catch(_){}return t.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase().trim();};return n(a)===n(b);}
 function upsertClinicalRecord(tp,p){
-  const text=p.fecha+" · "+p.tipo,sameIndex=HIST[tp].findIndex(x=>x&&x.p&&x.p.fecha===p.fecha&&x.p.hora===p.hora);
+  const text=p.fecha+" · "+p.tipo,sameIndex=HIST[tp].findIndex(x=>x&&x.p&&x.p.fecha===p.fecha&&x.p.hora===p.hora&&(tp!=="notas"||hjmSameTipo(x.p.tipo,p.tipo)));
   if(sameIndex<0)return histAdd(tp,text,p);
   const saved=HIST[tp].splice(sameIndex,1)[0],__auth=hjmRecordBefore(saved),__changed=JSON.stringify(saved.p)!==JSON.stringify(p);saved.t=text;saved.p=p;delete saved.cx;saved.by=currentResidentName();saved.byRole=currentAuthorRole();saved.ts=Math.max(Date.now(),HIST[tp].reduce((m,x)=>Math.max(m,x.ts||0),0)+1);hjmMarkEdited(saved,__auth,__changed);HIST[tp].unshift(saved);return saved;
 }
@@ -8498,7 +8499,7 @@ function saveClinicalRecord(tp,printAfter=false,force=false,mode="save"){
   /* Imprimir desde la captura guarda el registro cargado como Editar, incluso sin cambios. */
   const enc={nombreCompleto:d.nombreCompleto||"",expediente:d.expediente||"",fnac:d.fnac||"",servicio:d.servicio||"",cama:d.cama||"",alergias:d.alergias||""};
   payloads.forEach(p=>p.enc=enc);
-  const matches=payloads.map((p,i)=>(HIST[tp]||[]).find(x=>x&&x.p&&x.p.fecha===p.fecha&&x.p.hora===p.hora&&!(mode==="edit"&&original&&original.postop)&&!(mode==="edit"&&x.id===editingIds[i])));
+  const matches=payloads.map((p,i)=>(HIST[tp]||[]).find(x=>x&&x.p&&x.p.fecha===p.fecha&&x.p.hora===p.hora&&(tp!=="notas"||hjmSameTipo(x.p.tipo,p.tipo))&&!(mode==="edit"&&original&&original.postop)&&!(mode==="edit"&&x.id===editingIds[i])));
   const hit=matches.find(Boolean);
   if(hit&&mode!=="save"){
     notify(mode==="new"?"Ya existe un registro con esa fecha y hora. Cambia la fecha o la hora para Guardar Nuevo; usa Editar para actualizar el registro cargado.":"La fecha y hora elegidas coinciden con otro registro. Cambia la fecha o la hora para editar el registro cargado sin reemplazar otro.","warn");return;
@@ -17610,14 +17611,20 @@ function hjmClinViewDoc(html){
   async function pageCanvas(page,css,scale){
     const W=page.offsetWidth, H=page.offsetHeight, d=page.ownerDocument;
     const box=d.createElement("div"); box.setAttribute("style",`width:${W}px;height:${H}px;background:#fff;overflow:hidden`);
-    const st=d.createElement("style"); st.textContent=css; box.appendChild(st); box.appendChild(page.cloneNode(true));
+    const st=d.createElement("style"); st.textContent=css; box.appendChild(st); const cl=page.cloneNode(true); cl.style.setProperty("display","block","important"); box.appendChild(cl);
     const xml=new XMLSerializer().serializeToString(box);
     const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W*scale}" height="${H*scale}" viewBox="0 0 ${W} ${H}"><foreignObject x="0" y="0" width="${W}" height="${H}">${xml}</foreignObject></svg>`;
     const img=new Image(); img.decoding="sync";
     await new Promise((ok,ko)=>{ img.onload=ok; img.onerror=()=>ko(new Error("No se pudo dibujar la página.")); img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg); });
-    await new Promise(r=>setTimeout(r,60));
-    const cv=document.createElement("canvas"); cv.width=W*scale; cv.height=H*scale; const g=cv.getContext("2d");
-    g.fillStyle="#fff"; g.fillRect(0,0,cv.width,cv.height); g.drawImage(img,0,0,cv.width,cv.height); return cv;
+    try{ await img.decode(); }catch(_){}
+    const cv=document.createElement("canvas"); cv.width=W*scale; cv.height=H*scale; const g=cv.getContext("2d",{willReadFrequently:true});
+    const blank=()=>{ const t=document.createElement("canvas"); t.width=60; t.height=78; const x=t.getContext("2d"); x.drawImage(cv,0,0,60,78); const d=x.getImageData(0,0,60,78).data; for(let i=0;i<d.length;i+=4){ if(d[i]<235||d[i+1]<235||d[i+2]<235) return false; } return true; };
+    for(let k=0;k<8;k++){
+      await new Promise(r=>setTimeout(r,k?250*k:80));
+      g.fillStyle="#fff"; g.fillRect(0,0,cv.width,cv.height); g.drawImage(img,0,0,cv.width,cv.height);
+      if(!blank()) break;
+    }
+    return cv;
   }
   window.hjmPdfDrive=async function(tp,id,btn){
     if(!(tp==="repCx"||tp==="altas")) return;
@@ -17633,13 +17640,13 @@ function hjmClinViewDoc(html){
       const h=await arFmtSnap(tp,id); if(!h) throw new Error("No se pudo cargar el documento."); job.step("Preparando las páginas…",12);
       fr=document.createElement("iframe"); fr.setAttribute("aria-hidden","true");
       fr.style.cssText="position:fixed;left:-10000px;top:0;width:9in;height:12in;border:0;opacity:0;pointer-events:none";
-      await new Promise(ok=>{ fr.addEventListener("load",ok,{once:true}); fr.srcdoc=arFmtDocHTML(h).replace('</head>','<style>.papers{transform:none!important}.stage{padding:0!important}.paper{margin:0!important;box-shadow:none!important}</style></head>'); document.body.appendChild(fr); });
+      await new Promise(ok=>{ fr.addEventListener("load",ok,{once:true}); fr.srcdoc=arFmtDocHTML(h).replace('</head>','<style>.papers{transform:none!important}.stage{padding:0!important}.paper{margin:0!important;box-shadow:none!important}html body #paper .paper.print-copy,html body #paper .paper.print-supplement,html body #paper .print-supplement{display:block!important}</style></head>'); document.body.appendChild(fr); });
       const doc=fr.contentDocument; try{ await doc.fonts.ready; }catch(_){} await new Promise(r=>setTimeout(r,250));
-      const pages=[...doc.querySelectorAll("#paper .paper")].filter(p=>p.offsetWidth&&p.offsetHeight);
+      const pages=[...doc.querySelectorAll("#paper .paper, #paper .print-supplement")].filter((p,i,a)=>p.offsetWidth&&p.offsetHeight&&!a.some(q=>q!==p&&q.contains(p)));
       if(!pages.length) throw new Error("El documento no tiene páginas.");
       const pdf=new window.jspdf.jsPDF({unit:"in",format:"letter",orientation:"portrait",compress:true});
       let css=""; doc.querySelectorAll("style").forEach(st=>{ css+=st.textContent+"\n"; });
-      css+="\nhtml,body{margin:0;padding:0;background:#fff}.paper{margin:0!important;box-shadow:none!important;transform:none!important}.sheet .c > span{background:transparent!important}\n";
+      css+="\nhtml,body{margin:0;padding:0;background:#fff}.paper{margin:0!important;box-shadow:none!important;transform:none!important}.sheet .c > span{background:transparent!important}html .print-copy,html .print-supplement,html .paper.print-copy{display:block!important}\n";
       for(let i=0;i<pages.length;i++){
         job.step(`Generando PDF… página ${i+1} de ${pages.length}`, 15+Math.round(60*i/pages.length));
         const cv=await pageCanvas(pages[i],css,3);
