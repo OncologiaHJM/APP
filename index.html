@@ -327,7 +327,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="8.03">
+<meta name="application-version" content="8.04">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2833,7 +2833,7 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 8.03 · Fecha de publicación: 11.11.26</div>
+  <div class="app-footer-version">Versión 8.04 · Fecha de publicación: 11.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -9859,16 +9859,17 @@ function cenStatRec(cen,fname){
   const ps={}, il=[], el=[]; (cen.pac||[]).forEach(r=>{ const s=cenSrvOf(r.clin)||"OTRO"; if(r.sec==="H"&&!r.exc) ps[s]=(ps[s]||0)+1; if(r.nu) il.push({c:r.cama||"",n:r.nombre||"",s,e:r.exp||"",x:r.est||""}); if(r.sec==="E"||r.sec==="D") el.push({c:r.cama||"",n:r.nombre||"",s,e:r.exp||"",t:r.sec,x:r.est||""}); });
   const H0=(cen.pac||[]).filter(r=>!r.exc), nz=t=>String(t||"").toLocaleUpperCase("es-MX").normalize("NFD").replace(/[\u0300-\u036f]/g,""), liga=x=>{ const t=nz((x.t||"")+" "+(x.e||"")); let p=null;
     const ex=t.match(/\b\d{5,9}\b/g)||[]; p=H0.find(r=>r.exp&&ex.includes(String(r.exp).trim()));
-    if(!p){ const cm=t.match(/\b(1[5-9]\d)\b/); if(cm) p=H0.find(r=>String(r.cama||"").trim()===cm[1]); }
+    if(!p){ const cm=t.match(/\b(1[5-9]\d)\b/); if(cm){ const c=H0.filter(r=>String(r.cama||"").trim()===cm[1]); p=c.find(r=>(r.sec||"H")==="H")||c[0]||null; } }
+    if(!p){ const c=H0.filter(r=>{ const cm=nz(r.cama).trim(); return cm&&!/^\d{3}$/.test(cm)&&new RegExp("(^|[^0-9A-Z])"+cm.replace(/[.*+?^${}()|[\]\\]/g,"\\$&").replace(/\s+/g,"\\s*")+"($|[^0-9])").test(t); }); if(c.length===1) p=c[0]; }
     if(!p){ const ws=new Set(t.split(/[^A-ZÑ]+/).filter(w=>w.length>=4)); const c=H0.filter(r=>{ const a=nz(r.nombre).split(/\s+/).filter(w=>w.length>=4); return a.length>=2&&ws.has(a[0])&&ws.has(a[1]); }); if(c.length===1) p=c[0]; }
-    return p?Object.assign({},x,{x:String(p.exp||""),s:cenSrvOf(p.clin)||"OTRO",n:p.nombre||""}):x; };
+    return p?Object.assign({},x,{x:String(p.exp||""),s:cenSrvOf(p.clin)||"OTRO",n:p.nombre||"",c:String(p.cama||"")}):x; };
   return {v:4,ps,il,el,k:key,f:cen.fecha,est,estc,g:cen.guardia||"",res:cen.res||"",por:cen.por||"",ts:Date.now(),ing,egr,nt,nttot:V("nt.TOT"),
     cr:lst("cr",5,1).map(liga),cp:lst("cp",5,1).map(liga),cs:lst("cs",2,1).map(liga),cpe:lst("cpe",3),pr:lst("pr",2),tr:lst("tr",5),gr:lst("gr",5),
     ic:{ce:n("ic.ce"),ho:n("ic.ho"),ur:n("ic.ur"),te:n("ic.te"),qx:n("ic.qx")},iso:V("iso"),dfn:V("dfn"),ev:V("ev"),tot:n("tot")||((cen.pac||[]).filter(r=>!r.exc).length),pac:(cen.pac||[]).length};
 }
 const CEN_STAT_T={};
 function cenStatPush(cen,now){
-  if(!cen||!cen.fecha) return; const rec=cenStatRec(cen,cen._fname); if(!rec.k) return;
+  if(!cen||!cen.fecha) return; const rec=cenStatRec(cen,cen._fname); if(!rec.k) return; try{ const h=window.__hjmStatsCensos&&window.__hjmStatsCensos()[rec.k]; if(h&&h.lig) rec.lig=h.lig; }catch(_){}
   const go=async()=>{ try{ if(typeof window.__statSync==="function") await window.__statSync({censos:{[rec.k]:rec}}); }catch(_){} };
   if(now) return go(); clearTimeout(CEN_STAT_T[rec.k]); CEN_STAT_T[rec.k]=setTimeout(go,4000);
 }
@@ -9878,7 +9879,7 @@ async function cenStatBackfill(onTick,have){
   /* v3.44 · solo se leen los censos nuevos o modificados después de su última importación */
   const list=all.filter(x=>{ const o=cenFromName(x.name), k=o?o.y+"-"+String(o.m+1).padStart(2,"0")+"-"+String(o.d).padStart(2,"0"):"", h=k&&have[k], mt=Date.parse(x.modified||"")||0; if(h&&h.ts&&mt&&h.ts>mt&&h.v>=4){ omit++; return false; } return true; });
   if(onTick) onTick(0,list.length);
-  await ppPool(list,4,async x=>{ try{ const r=await cenReadEntry(x), o=r&&r.obj; if(o&&Array.isArray(o.pac||[])){ leidos++; const rec=cenStatRec(Object.assign({},o,{pac:o.pac||[]}),x.name); if(rec.k) recs[rec.k]=rec; } }catch(_){} i++; if(onTick) onTick(i,list.length); });   /* v5.26 · 4 censos a la vez */
+  await ppPool(list,4,async x=>{ try{ const r=await cenReadEntry(x), o=r&&r.obj; if(o&&Array.isArray(o.pac||[])){ leidos++; const rec=cenStatRec(Object.assign({},o,{pac:o.pac||[]}),x.name); if(rec.k){ if(have[rec.k]&&have[rec.k].lig) rec.lig=have[rec.k].lig; recs[rec.k]=rec; } } }catch(_){} i++; if(onTick) onTick(i,list.length); });   /* v5.26 · 4 censos a la vez */
   const n=Object.keys(recs).length;
   if(n){ if(typeof window.__statSync!=="function") throw new Error("Las estadísticas aún no están listas"); const ok=await window.__statSync({censos:recs,keep:false}); if(!ok) throw new Error("No se pudieron guardar en el archivo de estadísticas de Drive; intenta de nuevo"); }
   return {n,total:all.length,nuevos:list.length,omit,leidos,recs};
@@ -11745,7 +11746,7 @@ async function syncRemote(extra){
     syncMsg="Otro equipo estaba guardando las estadísticas; se reintentará."; return false;
   }catch(e){ syncMsg="No se pudieron sincronizar las estadísticas: "+friendly(e); return false; }
 }
-window.__statSync=x=>syncRemote(x);
+window.__statSync=x=>syncRemote(x); window.__hjmStatsCensos=()=>(remoteCache&&remoteCache.censos)||{};
 async function loadRemote(){ if(!driveOK()) return null; try{ const r=await readStats(); remoteCache=r.obj; return r.obj; }catch(e){ syncMsg="No se pudieron leer las estadísticas: "+friendly(e); return remoteCache; } }
 
 /* ---------- Agregación ---------- */
@@ -12258,11 +12259,13 @@ function qxView(remote){
   const wc=Array(7).fill(0), wn=Array(7).fill(0); rs.forEach(r=>{ const w=wdOf(r.k); wn[w]++; wc[w]+=(r.cr||[]).length; });
   return cenSrcNote(lab)+`<div class="st-msg" style="margin:0 0 6px">Productividad quirúrgica del servicio según lo anotado en cada censo final. Toca una tarjeta para ver el texto de cada cirugía.</div><div class="st-kpis">${K}</div>
    <div class="st-card"><h3>Cirugías por día de censo</h3>${chartSVG(L,[{name:"Realizadas",v:A45.map(r=>(r.cr||[]).length),c:"#3C8D5A"},{name:"Programadas",v:A45.map(r=>(r.cp||[]).length),c:"#7A5AA6"},{name:"Suspendidas",v:A45.map(r=>(r.cs||[]).length),c:"#B5473A"}],{title:"Cirugías por censo",xName:"Censo"})}</div>
-   ${(()=>{ const by={}, nol=[]; rs.forEach(r=>(r.cr||[]).forEach(x=>{ if(x.s) by[x.s]=(by[x.s]||0)+1; else nol.push(1); })); const it=SRVL.concat(["OTRO"]).filter(k=>by[k]).map((k,i)=>({n:k==="OTRO"?"Otras clínicas":SRVN[k],v:by[k],c:CH_COL[i%CH_COL.length]})); const tl=it.reduce((a,b)=>a+b.v,0);
-     return `<div class="st-card"><h3>Cirugías realizadas por clínica <small>· ${tl} de ${cr} ligadas a un paciente del censo</small></h3>${it.length?`<div class="on-dn">${donutSVG(it,{title:"Cirugías por clínica",center:"cirugías"})}${legendHTML(it,tl)}</div>`:'<div class="st-msg">Aún no hay cirugías ligadas a un paciente; se ligan solas por cama, expediente o apellidos en el texto del censo.</div>'}${nol.length?`<div class="st-msg" style="margin-top:6px">${nol.length} cirugía(s) no se pudieron ligar: escribe la cama o los dos apellidos en el texto de la cirugía.</div>`:""}</div>`; })()}
+   ${(()=>{ const by={}, nol=[]; rs.forEach(r=>cxItems(r,"cr").forEach(x=>{ if(x.s) by[x.s]=(by[x.s]||0)+1; else nol.push(x); })); const it=SRVL.concat(["OTRO"]).filter(k=>by[k]).map((k,i)=>({n:k==="OTRO"?"Otras clínicas":SRVN[k],v:by[k],c:CH_COL[i%CH_COL.length]})); const tl=it.reduce((a,b)=>a+b.v,0);
+     return `<div class="st-card"><h3>Cirugías realizadas por clínica <small>· ${tl} de ${cr} ligadas a un paciente del censo</small></h3>${it.length?`<div class="on-dn">${donutSVG(it,{title:"Cirugías por clínica",center:"cirugías"})}${legendHTML(it,tl)}</div>`:'<div class="st-msg">Aún no hay cirugías ligadas a un paciente; se ligan solas por cama, expediente o apellidos en el texto del censo.</div>'}</div>`; })()}
+   ${(()=>{ const pend=[]; rs.forEach(r=>["cr","cp","cs"].forEach(key=>cxItems(r,key).forEach(x=>{ if(!x.x) pend.push({r,x,key}); }))); if(!pend.length) return "";
+     return `<div class="st-card cx-pend"><h3>Cirugías sin paciente ligado <small>· ${pend.length} · no cuentan por clínica hasta ligarlas</small></h3><div class="mv-lim">${detTbl(["Censo","Tipo","Texto del censo","Dato","Paciente"],pend.map(({r,x,key})=>detTr([esc(r.f||r.k),{cr:"Realizada",cp:"Programada",cs:"Suspendida"}[key],esc(x.t||""),esc(x.e||""),cxCell(x)])))}</div><div class="st-msg" style="margin-top:6px">Se ligan solas cuando el texto trae la cama, el expediente o los dos apellidos de un paciente de ese mismo censo. ${cxCanLink()?"Usa «Ligar paciente» para las demás.":""}</div></div>`; })()}
    <div class="st-grid2"><div class="st-card"><h3>Cirugías realizadas por día de la semana <small>· promedio</small></h3>${chartSVG(WD,[{name:"Realizadas",v:wc.map((v,i)=>wn[i]?+(v/wn[i]).toFixed(1):0),c:"#3C8D5A"}],{title:"Por día de la semana",dec:1})}</div>
     <div class="st-card"><h3>Procedimientos y transfusiones <small>· por día de censo</small></h3>${chartSVG(L,[{name:"Procedimientos",v:A45.map(r=>(r.pr||[]).length),c:"#2A9D9D"},{name:"Transfusiones",v:A45.map(r=>(r.tr||[]).length),c:"#D9822B"}],{title:"Procedimientos y transfusiones",xName:"Censo"})}</div></div>
-   <div class="st-grid2">${[["cr","Cirugías realizadas"],["cs","Cirugías suspendidas o diferidas"]].map(([k,t])=>{ const rows=[]; rs.forEach(r=>(r[k]||[]).forEach(x=>rows.push(detTr(arCl(x.x||"",[esc(r.f||r.k),esc(x.t||""),esc(x.e||""),esc(x.s?(x.s==="OTRO"?"Otra":x.s):"—"),esc(x.x||"—")]))))); return `<div class="st-card"><h3>${t} <small>· ${rows.length} · tal como se escribieron en el censo</small></h3>${rows.length?`<div class="mv-lim">${detTbl(arHd(["Censo","Paciente / cirugía","Dato","Clínica","Expediente"]),rows.slice(0,12))}</div><div class="on-go"><button type="button" class="st-btn st-sm" data-det="${k}">Ver todas y buscar →</button></div>`:'<div class="st-msg">Sin registros.</div>'}</div>`; }).join("")}</div>
+   <div class="st-grid2">${[["cr","Cirugías realizadas"],["cs","Cirugías suspendidas o diferidas"]].map(([k,t])=>{ const rows=[]; rs.forEach(r=>cxItems(r,k).forEach(x=>rows.push(detTr(arCl(x.x||"",[esc(r.f||r.k),esc(x.t||""),esc(x.e||""),esc(x.s?(x.s==="OTRO"?"Otra":x.s):"—"),cxCell(x)]))))); return `<div class="st-card"><h3>${t} <small>· ${rows.length} · tal como se escribieron en el censo</small></h3>${rows.length?`<div class="mv-lim">${detTbl(arHd(["Censo","Paciente / cirugía","Dato","Clínica","Expediente"]),rows.slice(0,12))}</div><div class="on-go"><button type="button" class="st-btn st-sm" data-det="${k}">Ver todas y buscar →</button></div>`:'<div class="st-msg">Sin registros.</div>'}</div>`; }).join("")}</div>
    <div class="st-msg">Tasa de suspensión = suspendidas entre (realizadas + suspendidas); se marca en ámbar desde 20 %. La clínica de cada cirugía se toma del paciente del censo que coincide con la cama, el expediente o los dos apellidos escritos.</div>`;
 }
 function icView(remote){
@@ -12281,6 +12284,34 @@ function icView(remote){
    <div class="st-card"><h3>Solicitadas a otros servicios <small>· por día de censo</small></h3>${chartSVG(L,[{name:"Solicitadas",v:A45.map(r=>cenCnt(r.iso)),c:"#7A5AA6"}],{title:"Interconsultas solicitadas",xName:"Censo"})}${(()=>{ const rows=[]; rs.forEach(r=>splitTxt(r.iso).forEach(t=>rows.push(detTr([esc(r.f||r.k),esc(t)])))); return rows.length?`<h4 class="det-h">Últimas solicitadas</h4><div class="mv-lim">${detTbl(["Censo","Interconsulta solicitada"],rows.slice(0,10))}</div><div class="on-go"><button type="button" class="st-btn st-sm" data-det="iso">Ver todas →</button></div>`:""; })()}</div>
    <div class="st-card"><h3>Atendidas por censo <small>· toca para ver el detalle</small></h3><div class="mv-lim">${detTbl(["Censo"].concat(N.map(x=>x[1]),["Total"]),rs.slice(0,14).map(r=>detTr([esc(r.f||r.k)].concat(N.map(([k])=>(r.ic||{})[k]||0),[`<b>${icTot(r)}</b>`]))))}</div><div class="on-go"><button type="button" class="st-btn st-sm" data-det="ic">Ver todo el periodo →</button></div></div>`;
 }
+
+/* v8.04 · Cirugías del censo ligadas a un paciente; las que no se ligan solas se ligan a mano desde Estadísticas (se guarda en el resumen de ese censo) */
+const cxNz=t=>String(t||"").toLocaleUpperCase("es-MX").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/\s+/g," ").trim();
+function cxItems(r,key){ const L=r.lig||{}; return (Array.isArray(r[key])?r[key]:[]).map((x,i)=>{ const m=L[key+"|"+cxNz(x.t)+"|"+cxNz(x.e)]; return Object.assign({},x,m||{},{_k:r.k,_key:key,_i:i,_man:!!m}); }); }
+const cxCanLink=()=>isAdmin()||canPerm("editar_censo")||canPerm("editar_censos_archivados");
+function cxCell(x){ if(x.x) return esc(x.x)+(x._man?' <small title="Ligado a mano">✎</small>':""); return cxCanLink()?`<button type="button" class="st-btn st-sm cx-lk" data-cxlink="${esc(x._k)}|${esc(x._key)}|${x._i}">Ligar paciente</button>`:'<span class="st-sub">Sin ligar</span>'; }
+function cxLinkOpen(k,key,i){
+  const r=(remoteCache&&remoteCache.censos||{})[k]; if(!r) return; const it=cxItems(r,key)[+i]; if(!it) return;
+  let d=document.getElementById("dlgCxLink"); if(d) d.remove(); d=document.createElement("dialog"); d.id="dlgCxLink"; d.className="on-dlg"; document.body.appendChild(d);
+  const files=uniqueFiles(DRIVE_FILES||[]).filter(f=>f&&f.meta&&!/^_/.test(String(f.name||"")));
+  d.innerHTML=`<div class="on-h"><div class="on-bc"><b>Ligar cirugía a un paciente</b></div><button type="button" class="on-x" data-x aria-label="Cerrar">×</button></div><div class="on-b">
+   <div class="st-msg">Censo <b>${esc(r.f||r.k)}</b> · ${esc({cr:"Cirugía realizada",cp:"Cirugía programada",cs:"Cirugía suspendida"}[key]||"")}:<br><b>${esc(it.t||"")}</b>${it.e?" · "+esc(it.e):""}</div>
+   <div class="on-tb"><input type="search" class="st-in" data-cxq placeholder="Busca por nombre, expediente o cama…" autocomplete="off"></div><div data-cxres></div>
+   <details class="cx-man"><summary>No está en la app: escribir el expediente a mano</summary><div class="on-tb"><input class="st-in" data-cxexp placeholder="Expediente" inputmode="numeric"><input class="st-in" data-cxnom placeholder="Nombre (opcional)"><select class="st-in" data-cxcl><option value="">Clínica…</option>${SRVL.map(s=>`<option value="${s}">${esc(SRVN[s])}</option>`).join("")}<option value="OTRO">Otra</option></select><button type="button" class="st-btn st-sm" data-cxman>Ligar</button></div><small class="st-sub">Si el paciente aún no existe, créalo con «Nuevo Paciente» y después lígalo aquí.</small></details>
+   ${it._man?`<div style="margin-top:10px"><button type="button" class="st-btn st-sm" data-cxun>Quitar liga manual</button></div>`:""}<div class="st-msg" data-cxmsg aria-live="polite"></div></div>`;
+  const q=d.querySelector("[data-cxq]"), res=d.querySelector("[data-cxres]"), msg=d.querySelector("[data-cxmsg]");
+  const guess=cxNz(it.t+" "+it.e).split(/[^A-Z0-9Ñ]+/).filter(w=>w.length>=4||/^\d{3,}$/.test(w));
+  const paint=()=>{ const v=cxNz(q.value), ws=v?v.split(" "):[]; let l=files.map(f=>{ const m=f.meta, h=cxNz((m.nombre||"")+" "+(m.exp||"")+" "+(m.cama||"")); return {f,h,sc:ws.length?(ws.every(w=>h.includes(w))?2:0):guess.reduce((a,w)=>a+(h.includes(w)?1:0),0)}; }).filter(z=>z.sc>0).sort((a,b)=>b.sc-a.sc).slice(0,15);
+    res.innerHTML=l.length?`<div class="st-scroll"><table class="st-act"><thead><tr><th>Paciente</th><th>Expediente</th><th>Cama</th><th>Clínica</th><th></th></tr></thead><tbody>${l.map(({f},j)=>`<tr><td class="nm">${esc(f.meta.nombre||"")}</td><td>${esc(f.meta.exp||"")}</td><td>${esc(f.meta.cama||"")}</td><td>${esc(hosClin(f))}</td><td><button type="button" class="st-btn st-sm" data-cxpick="${j}">Ligar</button></td></tr>`).join("")}</tbody></table></div>`:`<div class="st-msg">${ws.length?"Ningún paciente coincide.":"Escribe para buscar; aquí aparecen sugerencias según el texto de la cirugía."}</div>`;
+    res.querySelectorAll("[data-cxpick]").forEach(b=>b.onclick=()=>{ const f=l[+b.dataset.cxpick].f; save({x:String(f.meta.exp||""),n:String(f.meta.nombre||""),s:cenSrvOf(hosClin(f))||"OTRO",c:String(f.meta.cama||"")}); }); };
+  const save=async v=>{ msg.textContent="Guardando…"; try{ const rec=Object.assign({},(remoteCache.censos||{})[k]), kk=key+"|"+cxNz(it.t)+"|"+cxNz(it.e); rec.lig=Object.assign({},rec.lig||{}); if(v) rec.lig[kk]=Object.assign(v,{por:userName(),en:Date.now()}); else delete rec.lig[kk];
+      const ok=await window.__statSync({censos:{[k]:rec}}); if(ok===false) throw new Error("no se pudo guardar"); await loadRemote(); d.close(); try{ notify(v?"Cirugía ligada a "+(v.n||v.x)+".":"Liga quitada.","ok"); }catch(_){} render(); }catch(e){ msg.textContent="No se pudo guardar: "+friendly(e); } };
+  let tm=0; q.oninput=()=>{ clearTimeout(tm); tm=setTimeout(paint,200); };
+  d.querySelector("[data-cxman]").onclick=()=>{ const x=d.querySelector("[data-cxexp]").value.trim(); if(!x){ msg.textContent="Escribe el expediente."; return; } save({x,n:d.querySelector("[data-cxnom]").value.trim().toUpperCase(),s:d.querySelector("[data-cxcl]").value||"OTRO",c:""}); };
+  const un=d.querySelector("[data-cxun]"); if(un) un.onclick=()=>save(null);
+  d.querySelector("[data-x]").onclick=()=>d.close(); d.addEventListener("click",e=>{ if(e.target===d) d.close(); }); d.addEventListener("close",()=>d.remove()); d.showModal(); paint(); q.focus();
+}
+document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest("[data-cxlink]"); if(!b) return; e.preventDefault(); e.stopPropagation(); if(!cxCanLink()) return; const [k,key,i]=b.dataset.cxlink.split("|"); cxLinkOpen(k,key,i); },true);
 /* Importación automática e incremental de censos finales (solo lee lo nuevo o modificado); sigue aunque se cierre el panel o se cambie de pestaña */
 async function cenAutoImport(force){
   if(window.__hjmChildFormat||CENAUTO.on||CENIMP.on) return; if(!driveOK()||!userName()||typeof window.__statSync!=="function") return;
@@ -12532,7 +12563,7 @@ function renderDet(host){
     ctl=search; const two=["cr","cp","cs"].includes(D.k), get=r=>(Array.isArray(r[D.k])?r[D.k]:[]);
     const ser=[{name:title,v:asc.map(r=>get(r).length),c:D.k==="gr"?"#B5473A":undefined}]; if(D.k==="gr") ser.push({name:"Estatus GRAVE",v:asc.map(r=>(r.est||{}).GRAVE||0),c:"#D9822B"});
     body=chartSVG(L,ser,{title});
-    const rows=[]; rs.forEach(r=>get(r).forEach(x=>rows.push(two?detTr(arCl(x.x||"",[esc(r.f||r.k),esc(x.t),esc(x.e),esc(x.s?(x.s==="OTRO"?"Otra":x.s):"—"),esc(x.x||"—")])):detTr([esc(r.f||r.k),esc(x)]))));
+    const rows=[]; rs.forEach(r=>(two?cxItems(r,D.k):get(r)).forEach(x=>rows.push(two?detTr(arCl(x.x||"",[esc(r.f||r.k),esc(x.t),esc(x.e),esc(x.s?(x.s==="OTRO"?"Otra":x.s):"—"),cxCell(x)])):detTr([esc(r.f||r.k),esc(x)]))));
     body+=`<h4 class="det-h">Detalle (${rows.length}) · texto tal como se capturó en el censo</h4>`+(rows.length?detTbl(two?arHd(["Censo","Texto del censo (paciente / cama / cirugía)","Dato","Clínica","Expediente"]):["Censo","Texto del censo"],rows):'<div class="st-msg">Sin registros en este periodo.</div>');
   }
   host.innerHTML=`<div class="st-card"><div class="det-top"><button type="button" class="st-btn" data-detback>← Volver a estadísticas</button><h3 style="margin:0">${esc(title)} <small style="font-weight:500;color:#7B7E81">· ${esc(lab)}</small></h3></div>${ctl?`<div class="det-ctl">${ctl}</div>`:""}${body}</div>`;
@@ -17146,6 +17177,9 @@ html:root body #dlgStats .sv-nav{grid-template-columns:repeat(5,minmax(0,1fr))!i
 html:root body #dlgStats .sv-nav{grid-template-columns:repeat(7,minmax(0,1fr))!important}
 @media (max-width:900px){html:root body #dlgStats .sv-nav{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
 #dlgStats .mv-fl{margin:0 0 8px}
+#dlgStats .cx-pend{border-left:4px solid #D9822B}
+.cx-lk{white-space:nowrap}
+#dlgCxLink .cx-man{margin-top:10px}#dlgCxLink .cx-man summary{cursor:pointer;font-weight:700;font-size:12.5px}#dlgCxLink .on-tb{display:flex;gap:8px;flex-wrap:wrap}#dlgCxLink .on-tb .st-in{flex:1 1 160px;min-width:0}
 #dlgStats .mv-lim .st-scroll{max-height:340px}
 #dlgStats tr[data-cenview]:hover td{background:rgba(47,111,167,.07)}
 #dlgStats .mv-est tr.mv-g td{background:#F1F2F4;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#53565A;text-align:left}
