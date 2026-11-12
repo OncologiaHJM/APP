@@ -327,7 +327,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="8.18">
+<meta name="application-version" content="8.19">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2841,7 +2841,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 8.18 · Fecha de publicación: 11.11.26</div>
+  <div class="app-footer-version">Versión 8.19 · Fecha de publicación: 11.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -9914,9 +9914,10 @@ function cenRenderHist(w){
 
 
 /* ===== v3.42 · Estadísticas del censo: cada censo final (y sus ediciones) se registra en el archivo de estadísticas ===== */
+const CEN_VACIO=/^(NINGUN[AO]S?|NADA|N\/?A|NO|NO HAY|NO APLICA|SIN\b.*|0|-+|\.+|X)$/i, cenVacio=t=>{ const v=String(t||"").replace(/\s+/g," ").trim(); return !v||CEN_VACIO.test(v); };
 function cenStatRec(cen,fname){
   const A=cenRevAuto(cen), V=k=>String(cenRevVal(cen,k,A)||"").trim(), n=k=>cenNum(V(k));
-  const lst=(key,cnt,two)=>[...Array(cnt)].map((_,i)=>two?{t:V(key+"."+i+".t"),e:V(key+"."+i+".e")}:V(key+"."+i)).filter(x=>two?(x.t||x.e):x);
+  const lst=(key,cnt,two)=>[...Array(cnt)].map((_,i)=>two?{t:V(key+"."+i+".t"),e:V(key+"."+i+".e")}:V(key+"."+i)).filter(x=>two?!(cenVacio(x.t)&&cenVacio(x.e)):!cenVacio(x));
   const ing={},egr={},nt={}; CEN_SRV.forEach(s=>{ ing[s]=n("ing."+s); egr[s]=n("egr."+s); nt[s]=V("nt."+s); });
   const o=cenFromName(fname)||cenFromDot(cen.fecha), key=o?o.y+"-"+String(o.m+1).padStart(2,"0")+"-"+String(o.d).padStart(2,"0"):"";
   const est={}, estc={}; (cen.pac||[]).filter(r=>!r.exc&&(r.sec||"H")==="H").forEach(r=>{ const sc=cenSrvOf(r.clin)||"OTRO"; String(r.est||"").split(/\s*[\/,;]\s*/).map(x=>x.toLocaleUpperCase("es-MX").replace(/\s+/g," ").trim()).filter(Boolean).forEach(t=>{ const k=CEN_EST.includes(t)?t:"OTROS"; est[k]=(est[k]||0)+1; const ec=estc[sc]=estc[sc]||{}; ec[k]=(ec[k]||0)+1; }); });
@@ -11831,6 +11832,7 @@ window.__statSync=x=>syncRemote(x); window.__hjmStatsCensos=()=>(remoteCache&&re
    - Si alguien falta un día y reaparece al siguiente, no se cuenta como egreso ni como ingreso (se marca «falta en el censo»).
    - Sin censo del día anterior, se usa lo escrito en el reverso. La cifra del reverso se conserva (ingRev/egrRev) para compararla. */
 function cenChainFix(o){
+  try{ const C0=(o&&o.censos)||{}; Object.values(C0).forEach(r=>{ if(!r) return; ["cr","cp","cs"].forEach(k=>{ if(Array.isArray(r[k])) r[k]=r[k].filter(x=>x&&!(cenVacio(x.t)&&cenVacio(x.e))); }); ["cpe","pr","tr","gr"].forEach(k=>{ if(Array.isArray(r[k])) r[k]=r[k].filter(x=>!cenVacio(x)); }); }); }catch(_){}
   try{ const C=(o&&o.censos)||{}, ks=Object.keys(C).filter(k=>C[k]&&/^\d{4}-\d\d-\d\d$/.test(k)).sort(), dk=(k,n)=>{ const d=new Date(k+"T12:00:00Z"); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); };
     const setOf=r=>new Set((r&&Array.isArray(r.hx)?r.hx:[]).map(x=>x[0])), egSet=r=>new Set((r&&Array.isArray(r.el)?r.el:[]).map(x=>String(x.e||"").trim()).filter(Boolean));
     ks.forEach(k=>{ const r=C[k]; if(!r.ingRev) r.ingRev=Object.assign({},r.ing||{}); if(!r.egrRev) r.egrRev=Object.assign({},r.egr||{});
