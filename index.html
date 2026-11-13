@@ -339,7 +339,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.00">
+<meta name="application-version" content="9.02">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2854,7 +2854,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.00 · Fecha de publicación: 13.11.26</div>
+  <div class="app-footer-version">Versión 9.02 · Fecha de publicación: 13.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -7967,7 +7967,7 @@ function renderPP(){
   try{ ppCensusSync(!!camaMode); }catch(_){}
   try{ ppRowFill(!!(camaMode||feMode||simple),items.slice(0,ppShown)); }catch(_){}
   try{ ppPendFitAll($("ppList")); }catch(_){}
-  try{ if(ppHome&&!s&&PP_VIEW==="recientes"&&typeof isTechnicalAdmin==="function"&&isTechnicalAdmin()) $("ppList").insertAdjacentHTML("afterbegin",ppNoJsonHTML()); }catch(_){}
+  try{ if(ppHome&&!s&&PP_VIEW==="recientes"&&typeof isTechnicalAdmin==="function"&&isTechnicalAdmin()&&!(window.HJM_BETA&&HJM_BETA.ses&&(HJM_BETA.ses.compartida||HJM_BETA.ses.suplanta||HJM_BETA.ses.tecnico!==true))) $("ppList").insertAdjacentHTML("afterbegin",ppNoJsonHTML()); }catch(_){}
   ppMarkCurrent();
   if(_keep){ try{ const c=document.querySelector('#ppList [data-pend="'+_keep.id+'"]'); if(c){ ppPendSet(c,_keep.rows); const t=c.children[_keep.i]&&c.children[_keep.i].querySelector(".pp-pt"); if(t){ t.focus({preventScroll:true}); t.setSelectionRange(_keep.s,_keep.e); } } }catch(_){} }
 }
@@ -13894,7 +13894,11 @@ document.addEventListener("click",e=>{ if(e.target.closest&&e.target.closest("#b
 let CFG_ONLY=false, cfgPer=7, cfgLoadAt=0;
 const CFG_COLS=[["acc","Accesos"],["opn","Pacientes abiertos"],["crt","Pacientes creados"],["upd","Pacientes actualizados"],["nts","Notas realizadas"],["ind","Indicaciones realizadas"],["prt","Impresiones"]];
 function cfgRec(){ try{ return userRecord(sessionUserName()); }catch(_){ return null; } }
-function homePref(){ const r=cfgRec(); if(r&&r.tipo==="administrativo") return "censo"; return r&&["todos","nuevo","censo","quirofano","comite"].includes(r.inicio)?r.inicio:"hospitalizados"; }
+const HOME_PERM={hospitalizados:["ver_hospitalizados"],todos:["ver_expedientes"],censo:["ver_censo","ver_censos_archivados"],quirofano:["ver_quirofano"],comite:["ver_comite"],nuevo:["crear_pacientes"]};
+function homeAllowed(u,v){ try{ if(!u) return true; const e=accessEffective(u); return (HOME_PERM[v]||[]).some(k=>e[k]===true); }catch(_){ return true; } }
+function homeFor(u){ if(u&&u.tipo==="administrativo") return "censo"; const want=u&&["todos","nuevo","censo","quirofano","comite","hospitalizados"].includes(u.inicio)?u.inicio:"hospitalizados"; if(!u||homeAllowed(u,want)) return want; return ["censo","hospitalizados","todos","quirofano","comite"].find(v=>homeAllowed(u,v))||want; }
+window.hjmHomeFor=homeFor; window.hjmHomeAllowed=homeAllowed;
+function homePref(){ return homeFor(cfgRec()); }
 window.__hjmHomePref=homePref;
 /* Página de inicio de cada usuario: Hospitalizados (de fábrica) · Todos · Nuevo Paciente. Se aplica al ingresar (y al volver al inicio con «Pacientes»/«Inicio» en las tablas). */
 /* v3.13 · Filtro predeterminado (Clínica / Adscrito) de las vistas Hospitalizados y Todos. Al ingresar solo se aplica si el usuario eligió alguno; al guardarlo en Configuración (force) se aplica de inmediato. */
@@ -18848,12 +18852,15 @@ dialog.qx-dlg.wide{width:min(96vw,760px)}
 .qd-sug button{display:grid;text-align:left;padding:9px 12px;border:0;background:#fff;cursor:pointer;font:600 13px var(--rd-sans,system-ui);color:#1C2B42}
 .qd-sug button small{font-weight:500;color:#7A8492;font-size:11.5px}
 .qd-sug button:hover,.qd-sug button.on{background:#F1F5FA}
-.qx-revside{display:grid;align-content:start;gap:10px;width:260px;padding:14px;border:1px dashed #C9D5E4;border-radius:16px;background:#F8FAFD}
+.qx-revside{position:static!important;width:0;height:0;overflow:visible;pointer-events:none}
+#cenWrap .cen-rev.qx-revpos{position:relative}
+.qx-rvg{position:absolute!important;left:0;z-index:2;display:flex;flex-direction:column;align-items:flex-start;gap:6px;pointer-events:auto}
+.qx-rvg .qx-btn{background:#F4F7FB;border-color:#C9D5E4;color:#1F3864;white-space:nowrap}
+.qx-rvg .qx-btn:hover{background:#E9EFF7}
+.qx-revside.stack{width:auto;height:auto;display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;pointer-events:auto}
+.qx-revside.stack .qx-rvg{position:static!important;flex-direction:row;flex-wrap:wrap}
 .qx-revside h5{margin:0;font:700 12px/1.3 var(--rd-sans,system-ui);letter-spacing:.06em;text-transform:uppercase;color:#6B7684}
 .qx-revside p{margin:0;font-size:12px;color:#7A8492;line-height:1.4}
-.qx-revside .qx-btn{width:100%;justify-content:flex-start}
-#cenWrap .cen-rev.qx-revflex{display:flex;flex-wrap:wrap;align-items:flex-start;gap:20px}
-#cenWrap .cen-rev.qx-revflex>h4{flex:1 1 100%}
 .qx-rc-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;padding-top:6px;border-top:1px dashed #E1E6ED}
 .qx-rc-row button{display:inline-flex;align-items:center;gap:6px;border:1px solid #C9D5E4;background:#F4F7FB;color:#1F3864;border-radius:999px;padding:5px 12px;font:650 12px var(--rd-sans,system-ui);cursor:pointer}
 .qx-rc-row button:hover{background:#E9EFF7}
@@ -18886,11 +18893,11 @@ dialog.qx-dlg.wide{width:min(96vw,760px)}
  .qc-d{height:44px}
  .qx-bar{grid-template-columns:96px minmax(0,1fr) 34px}
  dialog.qx-dlg{width:100vw;max-width:100vw;max-height:94dvh;margin:auto 0 0;border-radius:20px 20px 0 0}
- .qx-revside{width:100%}
 }
 }
 @media screen{#clComite label,#clComite .clinical-label{text-align:left!important;justify-self:start!important;display:block}#clComite .clinical-others-field>label{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline}}
 @media screen{#dlgUsr .access-editor .usr-chk{display:flex!important;flex-direction:row!important;justify-content:flex-start!important;align-items:center!important;gap:10px!important;text-align:left!important;padding:8px 10px;border:1px solid #E1E6ED;border-radius:12px;background:#FAFBFD}#dlgUsr .access-editor .usr-chk>span{flex:1;text-align:left!important;margin:0!important;font-size:13px;font-weight:500;color:#33445E}#dlgUsr .access-editor .usr-chk>span b{font-weight:700;color:#1C2B42}#dlgUsr .access-editor .usr-chk input{width:20px!important;height:20px!important;flex:none;margin:0!important;accent-color:#1F3864}}
+@media screen and (max-width:700px){html body .band #cenNavBtn.cen-nav-band{display:inline-flex!important;align-items:center;gap:6px;height:34px!important;min-height:0!important;padding:0 10px!important;margin:0 6px 0 0!important;border-radius:999px!important;font-size:11.5px!important;line-height:1.05!important;flex:none;width:auto!important;order:0}html body .band #cenNavBtn.cen-nav-band svg{width:15px!important;height:15px!important}html body .band #cenNavBtn.cen-nav-band .nb2{display:inline-flex;flex-direction:column;text-align:left}html body .band #cenNavBtn.cen-nav-band[hidden]{display:none!important}}
 </style>
 <script id="hjm-v900-js">
 /* v9.00 · Navegación superior (Quirófano · Comité · Censo · Hospitalizados · Archivo), menú flotante en móvil / Fold,
@@ -19483,11 +19490,51 @@ if(typeof window.cenRevAuto==='function'){
   const oRA=window.cenRevAuto;
   window.cenRevAuto=function(cen){ const a=oRA.apply(this,arguments); try{ if(cen&&cen.fecha&&!cen.final){ const es=list('quirofano').filter(e=>e.fecha===normDMY(cen.fecha)&&e.aut&&!e.np).sort((x,y)=>String(x.turno||'Z').localeCompare(String(y.turno||'Z'))).slice(0,5); es.forEach((e,i)=>{ a['cp.'+i+'.t']=up(e.cx||e.dx)+(e.turno?' ('+(e.turno==='M'?'MAT':'VESP')+')':''); a['cp.'+i+'.e']=String(e.exp||''); }); } }catch(_){} return a; };
 }
+const RV_GROUPS=[
+  {k:'cr',btns:[['prog','Cirugía programada',IC.cal],['cx','Cirugía no programada',IC.qx]]},
+  {k:'cpe',btns:[['pend','Agregar cirugía pendiente',IC.plus]]},
+  {k:'pr',btns:[['proc','Agregar procedimiento',IC.plus]]},
+  {k:'tr',btns:[['tr','Hemotransfusión','<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c3 4 5.5 7 5.5 10a5.5 5.5 0 0 1-11 0c0-3 2.5-6 5.5-10z"/></svg>']]}];
+function revGd(){ try{ const f=normDMY(CEN.cur&&CEN.cur.fecha); if(f) return addDays(f,-1); }catch(_){} try{ const T0=cenPeriod().next; return dDMY(new Date(T0.y,T0.m,T0.d-1,12)); }catch(_){ return addDays(hoy(),-1); } }
 function revSide(){ const rv=document.querySelector('#cenWrap .cen-rev'); if(!rv) return; const live=(()=>{ try{ return CEN.mode==='live'&&accessCensusWrite(); }catch(_){ return false; } })(); let s=rv.querySelector('.qx-revside');
-  if(!live){ if(s) s.remove(); rv.classList.remove('qx-revflex'); return; }
-  rv.classList.add('qx-revflex'); if(s) return; s=document.createElement('aside'); s.className='qx-revside'; s.setAttribute('aria-label','Agregar al reverso (no se imprime)');
-  s.innerHTML=`<h5>Agregar al reverso</h5><button type="button" class="qx-btn" data-rv="cx">${IC.qx}Cirugía no programada</button><button type="button" class="qx-btn" data-rv="tr"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c3 4 5.5 7 5.5 10a5.5 5.5 0 0 1-11 0c0-3 2.5-6 5.5-10z"/></svg>Hemotransfusión</button><p>Se llenan los renglones libres de «Cirugías realizadas» y «Transfusiones». Este panel no se imprime.</p>`;
-  rv.appendChild(s); s.onclick=ev=>{ const b=ev.target.closest('[data-rv]'); if(b) b.dataset.rv==='cx'?revCx():revTr(); }; }
+  if(!live){ if(s) s.remove(); rv.classList.remove('qx-revpos'); return; }
+  const tbl=rv.querySelector('table.rev'); if(!tbl) return;
+  if(!s){ s=document.createElement('aside'); s.className='qx-revside'; s.setAttribute('aria-label','Agregar al reverso (no se imprime)');
+    s.innerHTML=RV_GROUPS.map(g=>`<div class="qx-rvg" data-g="${g.k}">${g.btns.map(([a,l,ic])=>`<button type="button" class="qx-btn sm" data-rv="${a}">${ic}${l}</button>`).join('')}</div>`).join('');
+    rv.appendChild(s); s.onclick=ev=>{ const b=ev.target.closest('[data-rv]'); if(!b) return; ({prog:revProg,cx:revCx,pend:revPend,proc:revProc,tr:revTr})[b.dataset.rv](); }; }
+  rv.classList.add('qx-revpos');
+  const R=rv.getBoundingClientRect(), TR=tbl.getBoundingClientRect(), room=R.right-TR.right;
+  const side=room>=250; s.classList.toggle('stack',!side);
+  if(side){ const left=Math.round(TR.right-R.left+16);
+    s.querySelectorAll('.qx-rvg').forEach(g=>{ const inp=tbl.querySelector('[data-rk^="'+g.dataset.g+'.0"]'), tr=inp&&inp.closest('tr'); if(!tr) return; const top=Math.round(tr.getBoundingClientRect().top-R.top); if(g.style.top!==top+'px') g.style.top=top+'px'; if(g.style.left!==left+'px') g.style.left=left+'px'; }); }
+  else { s.querySelectorAll('.qx-rvg').forEach(g=>{ g.style.top=''; g.style.left=''; }); } }
+function revProg(){ const d=dlg('dlgQxRevProg','wide'); let day=revGd(); const MOT=['Falta de tiempo quirúrgico','Falta de hemoderivados','Condición clínica del paciente','Falta de material o equipo','Paciente no acudió','Falta de anestesiología'];
+  const st={};
+  const draw=()=>{ const es=list('quirofano').filter(e=>e.fecha===day&&!e.np).sort((a,b)=>(a.aut?0:1)-(b.aut?0:1)||String(a.turno||'Z').localeCompare(String(b.turno||'Z')));
+    const body=`<div class="qd-grid"><label class="qd-l"><span>Día de la cirugía (guardia)</span><input id="rpD" class="nu" inputmode="numeric" maxlength="8" value="${H(day)}"></label></div>`+(es.length?es.map(e=>{ const o=st[e.id]||{}; const done=e.res?(e.res.v==='operado'?'<span class="qx-chip ok">Registrada como realizada</span>':'<span class="qx-chip warn">Registrada como diferida'+(e.res.motivo?' · '+H(e.res.motivo):'')+'</span>'):'';
+      return `<div class="qd-step" data-e="${H(e.id)}" style="grid-template-columns:minmax(0,1fr)"><div style="grid-column:1"><h4>${H(e.nombre)} <small style="font-weight:500;color:#66717F">· Exp. ${H(e.exp)}${e.turno?' · '+TURNO[e.turno]:''}${e.aut?'':' · no autorizada'}</small></h4><p>${H(e.cx||'')}</p>${done}
+      <div class="row"><button type="button" class="qx-btn sm ${o.m==='r'?'ok':''}" data-a="r">${IC.check}Cirugía realizada</button><button type="button" class="qx-btn sm ${o.m==='d'?'gold':''}" data-a="d">Cirugía diferida</button></div>
+      ${o.m==='r'?`<label class="qd-l" style="margin-top:8px"><span>Cirugía realizada</span><input data-t value="${H(o.t!=null?o.t:up(e.cx||''))}"></label><div class="row"><button type="button" class="qx-btn pri sm" data-a="rok">Agregar a «Cirugías realizadas»</button></div>`:''}
+      ${o.m==='d'?`<label class="qd-l" style="margin-top:8px"><span>Motivo del diferimiento</span><input data-m value="${H(o.mo||'')}"></label><div class="qd-chipsel">${MOT.map(m=>`<button type="button" data-mm="${H(m)}">${H(m)}</button>`).join('')}</div><div class="row"><button type="button" class="qx-btn gold sm" data-a="dok">Agregar a «Suspendidas / diferidas»</button></div>`:''}</div></div>`; }).join(''):`<p class="qd-note">No hay cirugías en la programación de Quirófano para el ${H(day)}. Usa «Cirugía no programada» o cambia el día.</p>`)+'<p class="qd-msg" id="rpM" role="alert"></p>';
+    d.innerHTML=dlgShell('Cirugías programadas','Marca cada una como realizada (se escribe en «Cirugías realizadas») o diferida (en «Suspendidas / diferidas»).',body,`<span class="sp"></span><button type="button" class="qx-btn pri" data-qd-x>Listo</button>`); show(d);
+    const di=d.querySelector('#rpD'); di.addEventListener('input',()=>{ fmtDigits(di); const n=normDMY(di.value); if(n&&n!==day){ day=n; draw(); setTimeout(()=>{ const x=d.querySelector('#rpD'); x.focus(); x.setSelectionRange(8,8); },0); } }); };
+  d.onclick=ev=>{ const c=ev.target.closest('[data-e]'); if(!c) return; const id=c.dataset.e, e=AG.quirofano.items[id]; if(!e) return; const o=st[id]||(st[id]={}); const msg=d.querySelector('#rpM');
+    const mm=ev.target.closest('[data-mm]'); if(mm){ o.mo=up(mm.dataset.mm); const i=c.querySelector('[data-m]'); if(i) i.value=o.mo; return; }
+    const b=ev.target.closest('[data-a]'); if(!b) return; const a=b.dataset.a;
+    if(a==='r'||a==='d'){ const t=c.querySelector('[data-t]'); if(t) o.t=t.value; const m=c.querySelector('[data-m]'); if(m) o.mo=m.value; o.m=a; draw(); return; }
+    if(a==='rok'){ const t=up((c.querySelector('[data-t]')||{}).value); if(!t){ msg.textContent='Escribe la cirugía realizada.'; return; } if(revHas('cr',5,e.exp,true)){ msg.textContent='Este expediente ya está en «Cirugías realizadas».'; return; } if(!revPut('cr',5,t,e.exp)){ msg.textContent='Ya no hay renglones libres en «Cirugías realizadas».'; return; }
+      agChange('quirofano',id,{res:{v:'operado',motivo:'',cx:t}},'Se operó (reverso del censo): '+t); delete st[id]; draw(); say('Agregada a «Cirugías realizadas».','ok'); return; }
+    if(a==='dok'){ const m=up((c.querySelector('[data-m]')||{}).value); if(!m){ msg.textContent='Escribe el motivo del diferimiento.'; return; } if(revHas('cs',2,e.exp,true)){ msg.textContent='Este expediente ya está en «Suspendidas / diferidas».'; return; } if(!revPut('cs',2,(e.cx||'')+' · '+m,e.exp)){ msg.textContent='Ya no hay renglones libres en «Suspendidas / diferidas».'; return; }
+      agChange('quirofano',id,{res:{v:'diferido',motivo:m}},'Se difirió (reverso del censo): '+m); delete st[id]; draw(); say('Agregada a «Suspendidas / diferidas».','ok'); return; } };
+  d.oninput=ev=>{ const c=ev.target.closest('[data-e]'); if(!c) return; const o=st[c.dataset.e]||(st[c.dataset.e]={}); if(ev.target.matches('[data-t]')) o.t=ev.target.value; if(ev.target.matches('[data-m]')) o.mo=ev.target.value; };
+  draw(); }
+function revSimple(id,title,sub,label,prefix,n,full){ const d=dlg(id); let pick=null;
+  d.innerHTML=dlgShell(title,sub,pickPatientHTML(id+'Q')+`<label class="qd-l req"><span>${label}</span><input id="${id}T" autocomplete="off"></label><p class="qd-msg" id="${id}M" role="alert"></p>`,`<button type="button" class="qx-btn" data-qd-x>Cancelar</button><button type="button" class="qx-btn pri" id="${id}Ok">Agregar al reverso</button>`); show(d);
+  pickWire(d,id+'Q',x=>{ pick=x; d.querySelector('#'+id+'T').focus(); });
+  d.querySelector('#'+id+'Ok').onclick=()=>{ const t=up(d.querySelector('#'+id+'T').value), m=d.querySelector('#'+id+'M'); if(!pick){ m.textContent='Elige al paciente.'; return; } if(!t){ m.textContent='Escribe '+label.toLowerCase()+'.'; return; }
+    const txt=up(pick.nombre)+' ('+pick.exp+') - '+t; if(!revPut(prefix,n,txt)){ m.textContent='Ya no hay renglones libres en «'+full+'».'; return; } d.close(); say('Agregado a «'+full+'».','ok'); }; }
+function revPend(){ revSimple('dlgQxRevPe','Cirugía pendiente','Se agrega a «Cirugías pendientes» del reverso.','Cirugía pendiente','cpe',3,'Cirugías pendientes'); }
+function revProc(){ revSimple('dlgQxRevPr','Procedimiento realizado','Se agrega a «Procedimientos realizados» del reverso.','Procedimiento realizado','pr',2,'Procedimientos realizados'); }
 function pickPatientHTML(id){ return `<div class="qd-search"><input id="${id}" type="search" placeholder="Expediente, nombre o cama…" autocomplete="off"><div class="qd-res" id="${id}-r" style="max-height:220px"></div></div>`; }
 function pickWire(d,id,onPick){ const q=d.querySelector('#'+id), r=d.querySelector('#'+id+'-r'); const cen=()=>{ try{ return (CEN.cur&&CEN.cur.pac)||[]; }catch(_){ return []; } };
   const draw=()=>{ const s=up(q.value); let L=cen().filter(x=>!s||up(x.nombre).includes(s)||up(x.exp).includes(s)||up(x.cama)===s).slice(0,8).map(x=>({exp:x.exp,nombre:x.nombre,cama:x.cama,dx:x.dx}));
@@ -19499,7 +19546,7 @@ function revCx(){ const d=dlg('dlgQxRevCx'); let pick=null;
   pickWire(d,'rcQ',x=>{ pick=x; const dx=d.querySelector('#rcDx'); if(!dx.value) dx.value=x.dx||''; d.querySelector('#rcCx').focus(); });
   d.querySelector('#rcOk').onclick=()=>{ const cx=up(d.querySelector('#rcCx').value), dx=up(d.querySelector('#rcDx').value), m=d.querySelector('#rcM'); if(!pick){ m.textContent='Elige al paciente.'; return; } if(!cx){ m.textContent='Escribe la cirugía realizada.'; return; }
     if(!revPut('cr',5,cx+(dx?' · '+dx:''),pick.exp)){ m.textContent='Ya no hay renglones libres en «Cirugías realizadas».'; return; }
-    const gd=(()=>{ try{ const T0=cenPeriod().next; return dDMY(new Date(T0.y,T0.m,T0.d-1,12)); }catch(_){ return addDays(hoy(),-1); } })();
+    const gd=revGd();
     if(can('editar_quirofano')) agChange('quirofano',newId('q'),{exp:pick.exp,nombre:up(pick.nombre),dx:dx||up(pick.dx||''),cx,ads:'',clin:(()=>{ const f=fileByExp(pick.exp); try{ return f?(ppFileClins(f)[0]||''):''; }catch(_){ return ''; } })(),fecha:gd,np:1,res:{v:'operado',motivo:''}},'Cirugía no programada (reverso del censo)');
     d.close(); say('Cirugía agregada al reverso.','ok'); }; }
 function revTr(){ const d=dlg('dlgQxRevTr'); let pick=null; const HD=[['CE','Concentrado eritrocitario'],['PFC','Plasma fresco congelado'],['CP','Concentrado plaquetario'],['CRIO','Crioprecipitados']];
@@ -19520,15 +19567,31 @@ window.accessEditorMount=function(dlgU,cur){
   let root=false; try{ root=accessRoot(cur); }catch(_){}
   if(root){ [A,Tq,Q].forEach(x=>x.disabled=true); try{ dlgU.querySelector('#usrfU').readOnly=true; dlgU.querySelector('#usrfN').readOnly=true; }catch(_){} }
   [A,Tq,Q].forEach(x=>x.addEventListener('change',sync)); sync(); if(root){ [A,Tq,Q].forEach(x=>x.disabled=true); }
+  try{ homeRoleWire(dlgU,cur,A,Tq); }catch(_){}
   dlgU.__accessValues=()=>({tecnico:Tq.checked,admin:Tq.checked||A.checked,quirofano:Tq.checked||Q.checked,permisos:undefined});
   const reset=dlgU.querySelector('#usrfR'); if(reset) reset.addEventListener('click',()=>{ try{ const b=BASE_MAP.get(ukey(cur.usuario)); Tq.checked=isTechAdminRecord(b); A.checked=admRec(b); Q.checked=!!(b&&b.quirofano); sync(); }catch(_){} });
 };
+
+function homeRoleWire(dlgU,cur,A,Tq){ const T=dlgU.querySelector('#usrfT'), seg=dlgU.querySelector('#usrfI')&&dlgU.querySelector('#usrfI').closest('.hm-seg'); if(!T||!seg||!window.hjmHomeAllowed) return;
+  let note=seg.parentNode.querySelector('.hm-role-note'); if(!note){ note=document.createElement('small'); note.className='hm-role-note'; note.style.cssText='display:block;margin-top:6px;font-weight:500;color:#7A4E00'; seg.after(note); }
+  const sync=()=>{ const u=Object.assign({},cur||{},{tipo:T.value,admin:!!(A&&A.checked),tecnico:!!(Tq&&Tq.checked)}); const inp=dlgU.querySelector('#usrfI'); const off=[];
+    seg.querySelectorAll('[data-hv]').forEach(b=>{ const ok=hjmHomeAllowed(u,b.dataset.hv); b.disabled=!ok; b.title=ok?'':'Este tipo de usuario no tiene permiso para ver esta pestaña'; b.style.opacity=ok?'':'.4'; if(!ok) off.push(b.textContent.trim()); });
+    if(!hjmHomeAllowed(u,inp.value)){ const was=(seg.querySelector('[data-hv="'+inp.value+'"]')||{}).textContent||inp.value; inp.value=hjmHomeFor(Object.assign({},u,{inicio:''})); try{ homeSegSync(seg.parentNode); }catch(_){} note.textContent=was.trim()+' está desactivado para este tipo de usuario: iniciará en '+((seg.querySelector('[data-hv="'+inp.value+'"]')||{}).textContent||'').trim()+'. Presiona Guardar para dejarlo así.'; inp.dispatchEvent(new Event('change',{bubbles:true})); }
+    else note.textContent=off.length?'Sin permiso para este tipo: '+off.join(', ')+'.':''; };
+  T.addEventListener('change',sync); [A,Tq].forEach(x=>x&&x.addEventListener('change',sync)); setTimeout(sync,0); }
+
+/* Móvil: «Archivo Censos» a la izquierda de «Conectado» en la barra */
+function cenNavPlace(){ const nb=$i('cenNavBtn'), st=$i('syncSt'); if(!nb||!st) return; let cen=false; try{ cen=document.body.classList.contains('pp-browse')&&!V.view&&(PP_VIEW==='censoActual'||PP_VIEW==='censos'); }catch(_){}
+  const mob=matchMedia('(max-width:700px)').matches;
+  if(mob&&cen){ if(nb.nextElementSibling!==st) st.before(nb); nb.classList.add('cen-nav-band'); }
+  else if(nb.classList.contains('cen-nav-band')){ nb.classList.remove('cen-nav-band'); const sb=$i('cenSendBtn'), p=$i('cenPrint'); if(sb&&sb.parentNode) sb.after(nb); else if(p) p.before(nb); } }
+addEventListener('resize',()=>{ try{ cenNavPlace(); }catch(_){} try{ revSide(); }catch(_){} });
 
 /* ---------- Ciclo ---------- */
 function renderAll(){ try{ if(V.view&&document.body.classList.contains('pp-browse')) renderView(); }catch(e){ try{ console.error(e); }catch(_){} } try{ navSync(); }catch(_){} try{ solButtons(); }catch(_){} }
 window.HJM_QX={noteSaved,askFromSol,openAdd,openEntry,solEntry,navGo,agenda:AG,reload:()=>{ agLoad('quirofano',true); agLoad('comite',true); }};
 navBuild();
-let fr=0; new MutationObserver(()=>{ if(fr) return; fr=requestAnimationFrame(()=>{ fr=0; try{ bedColors(); }catch(_){} try{ solButtons(); }catch(_){} try{ revSide(); }catch(_){} try{ navSync(); }catch(_){} }); }).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+let fr=0; new MutationObserver(()=>{ if(fr) return; fr=requestAnimationFrame(()=>{ fr=0; try{ bedColors(); }catch(_){} try{ solButtons(); }catch(_){} try{ revSide(); }catch(_){} try{ cenNavPlace(); }catch(_){} try{ navSync(); }catch(_){} }); }).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
 let lastLog=false;
 setInterval(()=>{ const on=logged(); if(on&&!lastLog){ agLoad('quirofano'); agLoad('comite'); ['quirofano','comite'].forEach(agFlush); } lastLog=on; navSync(); },1500);
 setInterval(()=>{ if(!logged()||document.hidden) return; const vis=V.view&&document.body.classList.contains('pp-browse'); ['quirofano','comite'].forEach(t=>{ if(AG[t].q.length) agFlush(t); if(vis||Date.now()-AG[t].at>180000) agLoad(t); }); },45000);
