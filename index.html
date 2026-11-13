@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<!--
+  REGLA PARA QUIEN EDITE ESTE ARCHIVO (personas o IA):
+  Cada formato, nota, indicación, receta, archivo clínico, etc. existe en DOS modos: PANTALLA COMPLETA y VENTANA
+  (la ventana es un iframe que carga esta misma página: window.__hjmChildFormat / PPIW / dlgPatientFormat).
+  Los dos modos deben ser IDÉNTICOS en funciones, botones, opciones, textos y comportamiento. Todo cambio se hace en el
+  código compartido y se verifica en ambos modos; nunca se agrega, quita ni corrige algo solo en uno de ellos.
+  Si un cambio necesita código propio de un modo (p. ej. cerrar la ventana), el otro modo debe recibir el equivalente.
+  Otras reglas fijas: subir la versión (meta application-version y pie «Versión X · Fecha de publicación: DD.MM.AA»)
+  en cada cambio; fechas DD.MM.AA; no tocar los formatos de impresión incrustados ni sus márgenes; guardar en segundo
+  plano con la pantalla actualizada al instante.
+-->
 <script id="hjm-v803-timers">
 (function(){ try{ const si=window.setInterval.bind(window); window.setInterval=function(fn,ms){ const a=[].slice.call(arguments,2); if(typeof fn!=="function"||!(+ms<60000)) return si.apply(window,arguments); let last=0;
   return si(function(){ if(document.hidden){ const n=Date.now(); if(n-last<60000) return; last=n; } else last=Date.now(); return fn.apply(this,a); },ms); }; }catch(_){} })();
@@ -327,7 +338,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="8.38">
+<meta name="application-version" content="8.41">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2650,7 +2661,7 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
 
 .own-files-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}.own-files-head h3{margin:0 0 4px}.own-file-record{display:grid;grid-template-columns:minmax(140px,1fr) minmax(160px,1.3fr) auto;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line,#dce4ee)}.own-file-record strong,.own-file-record b,.own-file-record span,.own-file-record small{display:block;overflow-wrap:anywhere}.own-file-record small{color:var(--rd-mute,#758393);margin-top:5px}.own-file-actions{display:flex;flex-wrap:wrap;gap:6px}.own-file-actions .rb{display:inline-flex!important;flex-direction:row!important;align-items:center;justify-content:center;gap:6px;min-height:36px;margin:0;padding:8px 11px;border:1px solid var(--hj-line,#ccd9e7);border-radius:11px;background:#eef4fb;color:#26486e;font:600 12px/1.2 var(--rd-sans,Arial,sans-serif);cursor:pointer}.own-file-actions .rb svg{display:block;width:15px;height:15px;flex:0 0 15px}.own-file-actions .rb-edit{background:#eaf5f1;color:#356e62;border-color:#c4ddd4}.own-file-actions .rb-print{background:#26486e;color:#fff;border-color:#26486e}.own-file-actions .rb-l{font:inherit}.own-file-actions button:disabled{opacity:.4;cursor:not-allowed}.hjm-child.child-own-preview #dlgArView{position:fixed!important;inset:0!important;margin:0!important;width:100%!important;max-width:none!important;height:100dvh!important;max-height:100dvh!important;border:0!important;border-radius:0!important}.hjm-child.child-own-preview #dlgArView .av-x{display:none!important}@media(max-width:650px){.own-file-record{grid-template-columns:minmax(0,1fr);gap:8px}.own-file-actions{justify-content:flex-end}.own-files-head{align-items:flex-start}}
 .ads-mismatch-group{margin:10px 0;border:1px solid var(--line,#d5dfeb);border-radius:12px;overflow:hidden}.ads-mismatch-group>summary{display:flex;justify-content:space-between;gap:12px;cursor:pointer;padding:12px;background:var(--hj-soft,#eef3fa);font-size:12px}.ads-mismatch-group>summary::before{content:"▸"}.ads-mismatch-group[open]>summary::before{content:"▾"}.ads-mismatch-patient{display:grid;grid-template-columns:minmax(0,1fr) minmax(210px,38%);gap:14px;padding:14px;border-top:1px solid var(--line,#d5dfeb);font-size:12px}.ads-mismatch-patient p{margin:6px 0;overflow-wrap:anywhere}.ads-mismatch-controls{display:grid;align-content:start;gap:10px}.ads-mismatch-controls label{display:grid;gap:6px}.ads-mismatch-controls select{width:100%;min-width:0}@media(max-width:650px){.ads-mismatch-patient{grid-template-columns:minmax(0,1fr)}}
-.hjm-auth-line{display:block;font-size:inherit;line-height:1.5;overflow-wrap:anywhere}.hjm-auth-line b{font-weight:600}.ar-author{min-width:0}</style><style id="hjm-v833-css">/* v8.38 · Hospitalizados: nombre, expediente y FN con separación fija; el alto extra de la fila (pendientes largos) queda debajo */html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed{grid-template-rows:auto minmax(0,1fr)!important}html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed>.pinfo>.nmw,html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed .nmw{align-self:start!important}html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed .tags{align-self:start!important;align-content:flex-start!important}@media screen and (max-width:600px){#view-clinical .clinical-cl-contenido .rich-tools{flex-wrap:wrap;row-gap:4px;height:auto}}#view-clinical .note-type{position:relative}#view-clinical .clinical-grid label.note-type:has(.note-tabla){display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;column-gap:10px;row-gap:4px;align-items:center}#view-clinical .clinical-grid label.note-type:has(.note-tabla)>select{min-width:0;width:100%}#view-clinical .note-type:has(.note-tabla)>.clinical-type-label{grid-column:1/-1}#view-clinical .note-type .note-tabla{display:inline-flex;align-items:center;gap:6px;min-height:36px;font-size:12px;font-weight:600;color:var(--navy);white-space:nowrap;cursor:pointer;user-select:none}#view-clinical .note-type .note-tabla input{width:17px;height:17px;min-height:0;margin:0;accent-color:var(--navy);cursor:pointer}@media screen and (max-width:420px){#view-clinical .note-type .note-tabla{font-size:11px;white-space:normal}}</style>
+.hjm-auth-line{display:block;font-size:inherit;line-height:1.5;overflow-wrap:anywhere}.hjm-auth-line b{font-weight:600}.ar-author{min-width:0}</style><style id="hjm-v833-css">#clinicalRecentList .cl-dbl-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:0 0 8px;padding:4px 10px;min-height:0;border:1px solid #DDE3EA;border-radius:9px;background:#F7F9FB;font-size:12px}#clinicalRecentList .cl-dbl-bar label{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:var(--navy);cursor:pointer;line-height:1.2}#clinicalRecentList .cl-dbl-bar input,#clinicalRecentList .cl-dbl-chk input{width:16px;height:16px;min-height:0;margin:0;accent-color:var(--navy);cursor:pointer}#clinicalRecentList .cl-dbl-bar small{color:#64676B;font-size:11px}#clinicalRecentList .cl-dbl-bar .rb{margin-left:auto;padding-top:4px;padding-bottom:4px;min-height:0}#clinicalRecentList .cl-dbl-bar .rb[disabled]{opacity:.45;cursor:default}#clinicalRecentList .cl-dbl-chk{display:inline-flex;margin:0 7px 0 0;vertical-align:-2px;cursor:pointer}#clinicalRecentList tr.cl-dbl-sel td{background:#EEF4FB}/* v8.38 · Hospitalizados: nombre, expediente y FN con separación fija; el alto extra de la fila (pendientes largos) queda debajo */html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed{grid-template-rows:auto minmax(0,1fr)!important}html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed>.pinfo>.nmw,html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed .nmw{align-self:start!important}html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed .tags{align-self:start!important;align-content:flex-start!important}@media screen and (max-width:600px){#view-clinical .clinical-cl-contenido .rich-tools{flex-wrap:wrap;row-gap:4px;height:auto}}#view-clinical .note-type{position:relative}#view-clinical .clinical-grid label.note-type:has(.note-tabla){display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;column-gap:10px;row-gap:4px;align-items:center}#view-clinical .clinical-grid label.note-type:has(.note-tabla)>select{min-width:0;width:100%}#view-clinical .note-type:has(.note-tabla)>.clinical-type-label{grid-column:1/-1}#view-clinical .note-type .note-tabla{display:inline-flex;align-items:center;gap:6px;min-height:36px;font-size:12px;font-weight:600;color:var(--navy);white-space:nowrap;cursor:pointer;user-select:none}#view-clinical .note-type .note-tabla input{width:17px;height:17px;min-height:0;margin:0;accent-color:var(--navy);cursor:pointer}@media screen and (max-width:420px){#view-clinical .note-type .note-tabla{font-size:11px;white-space:normal}}</style>
 </head>
 <body>
 <style id="hjm-boot-view">@media screen{body:not(.pp-browse)>*:not(dialog):not(script):not(style):not(#hjmBootSplash){visibility:hidden!important}#hjmBootSplash{position:fixed;inset:0;z-index:2147480000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#F4F6F9;font:600 15px system-ui,-apple-system,"Segoe UI",sans-serif;color:#1f3a5f}#hjmBootSplash i{width:34px;height:34px;border-radius:50%;border:3px solid #cfd8e3;border-top-color:#1f3a5f;animation:hjmBootSpin .8s linear infinite}@keyframes hjmBootSpin{to{transform:rotate(360deg)}}}@media print{#hjmBootSplash{display:none}}</style>
@@ -2842,7 +2853,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 8.38 · Fecha de publicación: 12.11.26</div>
+  <div class="app-footer-version">Versión 8.41 · Fecha de publicación: 12.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -5276,7 +5287,7 @@ function buildFormat(key){
 /* ---------- Distribución de media hoja (Laboratorios Urgencias, Receta, Pase) ---------- */
 const HALF_OPTS={
   labsUrg:[["solo","Una copia"],["copia","Dos copias"]],
-  receta:[["solo","Una Receta"],["copia","Dos Recetas"],["otro","Receta + Pase"]],
+  receta:[["solo","Una Receta"],["espejo","Dos Copias"],["copia","Dos Recetas"],["otro","Receta + Pase"]],
   pase:[["solo","Un Pase"],["copia","Dos Pases"],["otro","Pase + Receta"]],
 };
 const HALF_DEF={labsUrg:"solo",receta:"solo",pase:"solo"}, HALF_OTHER={receta:"pase",pase:"receta"};
@@ -5284,7 +5295,9 @@ const HALF_COL={labsUrg:"#2E75B6",receta:"#0E4086",pase:"#7C3AED"};
 let HALF={}, HALF_AUTO={};
 const halfMode=k=>HALF[k]||HALF_DEF[k];
 function halfIcon(key,mode){
+  if(key==="receta"&&(mode==="espejo"||mode==="copia")) mode=mode==="espejo"?"copia":"espejo";   /* v8.41 · iconos intercambiados a petición: Dos Copias = dos mitades llenas, Dos Recetas = con símbolo de copia */
   const a=HALF_COL[key], b=mode==="otro"?HALF_COL[HALF_OTHER[key]]:a;
+  if(mode==="espejo") return `<svg class="hico" viewBox="0 0 18 22" aria-hidden="true"><rect x=".75" y=".75" width="16.5" height="20.5" rx="2" fill="#fff" stroke="currentColor" stroke-width="1.2"/><rect x="2" y="2" width="14" height="8" rx="1" fill="${a}"/><rect x="2" y="12" width="14" height="8" rx="1" fill="${a}" opacity=".35"/><rect x="6" y="14" width="6" height="4.4" rx=".7" fill="none" stroke="#fff" stroke-width="1"/><rect x="7.6" y="13" width="6" height="4.4" rx=".7" fill="${a}" stroke="#fff" stroke-width="1"/></svg>`;   /* v8.40 · Dos Copias: abajo es copia de arriba */
   const low=mode==="solo"?`<rect x="2.5" y="12.5" width="13" height="7" rx="1" fill="none" stroke="currentColor" stroke-dasharray="2 1.5" opacity=".55"/>`:`<rect x="2" y="12" width="14" height="8" rx="1" fill="${b}"/>`;
   return `<svg class="hico" viewBox="0 0 18 22" aria-hidden="true"><rect x=".75" y=".75" width="16.5" height="20.5" rx="2" fill="#fff" stroke="currentColor" stroke-width="1.2"/><rect x="2" y="2" width="14" height="8" rx="1" fill="${a}"/>${low}</svg>`;
 }
@@ -5309,8 +5322,14 @@ function applyHalf(key){
   const page=BUILT[key].querySelector(".paper"), sheet=page.querySelector(".sheetpos:not(.emb) .sheet"), mode=halfMode(key);
   sheet.querySelectorAll(":scope > .hf-cover, :scope > .hf-mirror").forEach(e=>e.remove());
   let emb=page.querySelector(".emb");
-  if(mode==="solo"||mode==="otro"){
+  if(mode==="solo"||mode==="otro"||mode==="espejo"){
     const cv=document.createElement("div"); cv.className="hf-cover"; cv.style.cssText=`top:${F.half.split}pt;height:${F.pages[0].H-F.half.split+4}pt;width:${F.W+8}pt`; sheet.appendChild(cv);
+  }
+  if(mode==="espejo"){   /* v8.40 · Dos Copias: la mitad de abajo muestra (e imprime) una copia exacta de la de arriba; se actualiza con cada cambio */
+    const bigs=[...sheet.querySelectorAll(":scope > .c.big")].map(e=>parseFloat(e.style.top)).filter(n=>!isNaN(n)).sort((x,y)=>x-y);
+    const off=bigs.length>1&&bigs[1]-bigs[0]>F.half.split*0.5?bigs[1]-bigs[0]:F.half.split;
+    const mr=document.createElement("div"); mr.className="hf-mirror"; mr.dataset.off=String(off);
+    mr.style.cssText=`top:0;height:${F.pages[0].H}pt;width:${F.W}pt;clip-path:inset(${F.half.split}pt -2pt -2pt -2pt)`; sheet.appendChild(mr);
   }
   if(mode==="otro"){ if(!emb){ emb=buildEmbed(key,HALF_OTHER[key]); page.appendChild(emb); } emb.style.display=""; }
   else if(emb) emb.style.display="none";
@@ -5329,7 +5348,7 @@ function refreshMirror(key){
       c.querySelectorAll("[data-i]").forEach(e=>e.removeAttribute("data-i"));
       if(c.dataset){ delete c.dataset.x; delete c.dataset.cell; } c.querySelectorAll("[data-x],[data-cell]").forEach(e=>{ e.removeAttribute("data-x"); e.removeAttribute("data-cell"); });
       frag.appendChild(c); });
-    mr.replaceChildren(frag);
+    if(mr.dataset.off){ const w=document.createElement("div"); w.style.cssText=`position:absolute;left:0;top:${mr.dataset.off}pt;width:100%;height:100%`; w.appendChild(frag); mr.replaceChildren(w); } else mr.replaceChildren(frag);
   });
 }
 function setHalf(key,mode,auto){ HALF[key]=mode; HALF_AUTO[key]=!!auto; applyHalf(key); renderFormat(key); renderRel(key); }
@@ -5460,7 +5479,7 @@ function setAltaAttach(fmt,on){
   ensureAltaAttachments();renderFormat("alta");renderRel("alta");fitPaper();
 }
 function setAltaHalf(fmt,mode,auto=false){ALTA_COMPOSE[fmt+"Mode"]=mode;ALTA_AUTO[fmt]=!!auto;ensureAltaAttachments();applyAltaHalf(fmt);renderFormat("alta");renderRel("alta");fitPaper();}
-function altaHalfHTML(fmt){return `<span class="lbl">Hoja completa</span><div class="halfseg" role="radiogroup">${HALF_OPTS[fmt].map(([v,l])=>`<button type="button" role="radio" aria-checked="${altaMode(fmt)===v}" data-alta-half="${fmt}:${v}">${halfIcon(fmt,v)}${esc(l)}</button>`).join("")}</div>`;}
+function altaHalfHTML(fmt){return `<span class="lbl">Hoja completa</span><div class="halfseg" role="radiogroup">${HALF_OPTS[fmt].filter(([v])=>v!=="espejo").map(([v,l])=>`<button type="button" role="radio" aria-checked="${altaMode(fmt)===v}" data-alta-half="${fmt}:${v}">${halfIcon(fmt,v)}${esc(l)}</button>`).join("")}</div>`;}
 function altaToggleHTML(fmt,label,help,extra=""){const on=!!ALTA_COMPOSE[fmt];return `<button type="button" class="alta-check ${extra}" role="checkbox" aria-checked="${on}" data-alta-toggle="${fmt}"><span class="alta-box">${on?"✓":""}</span><span>${esc(label)}<small>${esc(help)}</small></span></button>`;}
 function altaSuppToggleHTML(key,label,ready=true){const on=!!ALTA_COMPOSE[key];return `<button type="button" class="alta-check" role="checkbox" aria-checked="${on}" data-alta-supp="${key}" ${ready?"":"disabled"}><span class="alta-box">${on?"✓":""}</span><span>${esc(label)}${ready?"":'<small class="soon">Formato pendiente</small>'}</span></button>`;}
 function altaDatesHTML(){return `<div class="alta-dates"><label class="alta-date-field">Fecha de Ingreso<input data-alta-date="ingreso" data-date inputmode="numeric" placeholder="DD.MM.AA" value="${esc(ALTA_DATES.ingreso||"")}"></label><label class="alta-date-field">Fecha de Egreso<input data-alta-date="egreso" data-date inputmode="numeric" placeholder="DD.MM.AA" value="${esc(ALTA_DATES.egreso||"")}"></label></div>`;}
@@ -8606,14 +8625,18 @@ function saveClinicalRecord(tp,printAfter=false,force=false,mode="save"){
   if(!(STORE==="drive"&&CAN_DRIVE)) notify(mode==="edit"?"Registro cargado actualizado.":saved.length===2?"Las dos indicaciones se guardaron por separado.":tp==="notas"?"Nota guardada con el paciente.":"Indicaciones guardadas con el paciente.","ok");
   doSave();if(printAfter)setTimeout(()=>printClinicalSet(tp,saved.map(x=>x.id)),80);return saved.length===1?saved[0]:saved;
 }
-function renderClinicalRecents(tp){
+/* v8.41 · Indicaciones dobles de registros guardados: casilla «Imprimir doble» bajo «Últimas indicaciones» → casillas en cada indicación; con dos marcadas, «Imprimir doble» las imprime en una hoja (la más antigua primero). */
+let CL_DBL=null, CL_DBL_SEL=[];
+function renderClinicalRecents(tp){ if(tp!=="indicaciones"){ CL_DBL=null; CL_DBL_SEL=[]; }
   $("clinicalRecentTitle").textContent=tp==="notas"?"Últimas notas":"Últimas indicaciones";
   const list=arCollectLive([tp]); // Fecha y hora del documento, de más nueva a más antigua.
-  $("clinicalRecentList").innerHTML=list.length?`<table class="clinical-table"><thead><tr><th>Fecha</th><th>Tipo</th><th>Acciones</th></tr></thead><tbody>${list.map(e=>{const r=e.r,own=e.tp===tp;
+  const nOwn=list.filter(x=>x.tp===tp).length; if(tp==="indicaciones"&&nOwn<2){ CL_DBL=null; CL_DBL_SEL=[]; }
+  const dblBar=tp==="indicaciones"&&nOwn>1?`<div class="cl-dbl-bar"><label><input type="checkbox" data-cl-dbltoggle${CL_DBL?" checked":""}><span>Imprimir doble</span></label>${CL_DBL?`<small>${CL_DBL_SEL.length<2?"Marca dos indicaciones ("+CL_DBL_SEL.length+" de 2)":"Listas para imprimir"}</small><button type="button" class="rb rb-print" data-cl-dblgo${CL_DBL_SEL.length===2?"":" disabled"}>${RB_IC.print}<span class="rb-l">Imprimir doble</span></button>`:""}</div>`:"";
+  $("clinicalRecentList").innerHTML=list.length?dblBar+`<table class="clinical-table"><thead><tr><th>Fecha</th><th>Tipo</th><th>Acciones</th></tr></thead><tbody>${list.map(e=>{const r=e.r,own=e.tp===tp;
     const acts=own?`${rbBtn("edit","Editar",`data-cl-edit="${esc(r.id)}"`)}${rbBtn("view","Ver",`data-ar-ver="${tp}|${esc(r.id)}"`)}${rbBtn("print","Imprimir",`data-cl-print="${esc(r.id)}"`)}${window.hjmDriveBtn?hjmDriveBtn(`data-doc-drive="${tp}|${esc(r.id)}"`):""}`:arActions(e);
-    return `<tr data-src="${esc(e.tp)}"><td><strong>${esc(e.fecha||"")}</strong><small>${esc(e.hora||"")}</small></td><td>${esc(own?((r.p&&r.p.tipo)||(tp==="notas"?"Nota":"Indicaciones")):e.tipo)}${!own&&e.detail?`<small class="clinical-detail">${esc(e.detail)}</small>`:""}<small class="clinical-saved-by">${hjmAuthorshipHTML(r)}</small></td><td>${acts}</td></tr>`;}).join("")}</tbody></table>`:`<div class="clinical-empty">Todavía no hay registros para este paciente.</div>`;
+    const dblOn=tp==="indicaciones"&&CL_DBL&&own;return `<tr data-src="${esc(e.tp)}"${dblOn&&CL_DBL_SEL.includes(r.id)?' class="cl-dbl-sel"':""}><td>${dblOn?`<label class="cl-dbl-chk" title="Marcar para imprimir doble"><input type="checkbox" data-cl-dblsel="${esc(r.id)}"${CL_DBL_SEL.includes(r.id)?" checked":""}${!CL_DBL_SEL.includes(r.id)&&CL_DBL_SEL.length>=2?" disabled":""}></label>`:""}<strong>${esc(e.fecha||"")}</strong><small>${esc(e.hora||"")}</small></td><td>${esc(own?((r.p&&r.p.tipo)||(tp==="notas"?"Nota":"Indicaciones")):e.tipo)}${!own&&e.detail?`<small class="clinical-detail">${esc(e.detail)}</small>`:""}<small class="clinical-saved-by">${hjmAuthorshipHTML(r)}</small></td><td>${acts}</td></tr>`;}).join("")}</tbody></table>`:`<div class="clinical-empty">Todavía no hay registros para este paciente.</div>`;
 }
-function openClinical(tp){
+function openClinical(tp){CL_DBL=null;
  if(!canPerm("crear_notas")&&!canPerm("editar_documentos")){accessRequire("crear_notas");return;}
 
   current=null;currentClinical=tp;indicationsDouble=false;document.body.classList.remove("showing-format","rec-side","showing-archive");document.body.classList.add("showing-clinical");$("recPanel").hidden=true;$("bandIdx").hidden=true;$("bandBack").hidden=false;$("clinicalTitle").textContent=tp==="notas"?"Notas Médicas":"Indicaciones";syncSectionSwitcher(tp);clinicalEditing[tp]=null;clinicalEditingSecond[tp]=null;clinicalSnap[tp]="";renderClinicalForm(tp);renderClinicalRecents(tp);window.scrollTo(0,0);
@@ -8873,7 +8896,8 @@ $("clinicalDoubleTop").onclick=()=>{
 $("clinicalSaveTop").onclick=()=>{if(currentClinical)saveClinicalRecord(currentClinical,false,false,clinicalEditing[currentClinical]?"new":"save");};
 $("clinicalEditTop").onclick=()=>{if(currentClinical)saveClinicalRecord(currentClinical,false,false,"edit");};
 $("clinicalPrintTop").onclick=()=>{if(currentClinical)saveClinicalRecord(currentClinical,true,false,clinicalEditing[currentClinical]?"edit":"save");};
-$("clinicalRecentList").onclick=e=>{const edit=e.target.closest("[data-cl-edit]"),print=e.target.closest("[data-cl-print]");if(edit)editClinical(currentClinical,edit.dataset.clEdit);if(print)printClinical(currentClinical,print.dataset.clPrint);};
+$("clinicalRecentList").onchange=e=>{const t=e.target;if(t.matches("[data-cl-dbltoggle]")){CL_DBL=t.checked;CL_DBL_SEL=[];renderClinicalRecents(currentClinical);return;}if(t.matches("[data-cl-dblsel]")){const id=t.dataset.clDblsel;CL_DBL_SEL=t.checked?[...CL_DBL_SEL.filter(x=>x!==id),id].slice(-2):CL_DBL_SEL.filter(x=>x!==id);renderClinicalRecents(currentClinical);}};
+$("clinicalRecentList").onclick=e=>{if(e.target.closest("[data-cl-dblgo]")){const rs=CL_DBL_SEL.map(id=>(HIST.indicaciones||[]).find(x=>x.id===id)).filter(r=>r&&r.p);if(rs.length!==2)return;const k=r=>{const f=String(r.p.fecha||"").split(".");return (f[2]||"")+(f[1]||"")+(f[0]||"")+String(r.p.hora||"");};rs.sort((a,b)=>k(a)<k(b)?-1:1);if(accessRequire("imprimir_documentos"))printClinicalSet("indicaciones",rs.map(r=>r.id));return;}const edit=e.target.closest("[data-cl-edit]"),print=e.target.closest("[data-cl-print]");if(edit)editClinical(currentClinical,edit.dataset.clEdit);if(print)printClinical(currentClinical,print.dataset.clPrint);};
 function captureRecent(tp,owner=current){
  if(!canPerm(accessFormatCreateCap(owner)))return;
   if(!RECENT_CFG[tp]||!(owner===current||(current==="alta"&&owner.startsWith("alta-")))) return;
