@@ -327,7 +327,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="8.30">
+<meta name="application-version" content="8.32">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2841,7 +2841,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 8.30 · Fecha de publicación: 11.11.26</div>
+  <div class="app-footer-version">Versión 8.32 · Fecha de publicación: 12.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -6159,7 +6159,7 @@ async function goHome(){
           const ok=await driveSaveNow({silent:true}).catch(()=>false);
           if(!ok){ notify("No se pudo guardar al paciente. Los datos se conservaron para no perderlos.","warn"); return; }
         } else {
-          const meta={app:"solicitudes-hjm",nombre:(d.nombreCompleto||"").slice(0,100),exp:d.expediente.slice(0,60),cama:(d.cama||"").trim().slice(0,20),hosp:String(d.hospOnco||"").slice(0,4),dx:(d.diagnostico||"").slice(0,100),adscrito:String(d.medico||"").trim().slice(0,80),...(d.clinica!==undefined?{clinica:String(d.clinica).trim().slice(0,80)}:{}),...(d.pendientes!==undefined?{pendientes:String(d.pendientes).slice(0,400)}:{})};
+          const meta={app:"solicitudes-hjm",nombre:(d.nombreCompleto||"").slice(0,100),exp:d.expediente.slice(0,60),cama:(d.cama||"").trim().slice(0,20),hosp:String(d.hospOnco||"").slice(0,4),srv:String(d.servicio||"").trim().slice(0,40),dx:(d.diagnostico||"").slice(0,100),adscrito:String(d.medico||"").trim().slice(0,80),...(d.clinica!==undefined?{clinica:String(d.clinica).trim().slice(0,80)}:{}),...(d.pendientes!==undefined?{pendientes:String(d.pendientes).slice(0,400)}:{})};
           const baseSnap=LOADED_BASE&&LOADED_BASE.k===key?jclone(LOADED_BASE):null;
           outboxAdd(name,collect(),meta,baseSnap); bg=true;
         }
@@ -7123,7 +7123,7 @@ async function driveSaveRun(opt={}){
   const d=opt.__d;
   SAVING=true; renderSync();                                         // v2.52 · el estado se ve en la cinta del paciente (sin aviso emergente)
   const name=fileName(d), key=expKey(d.expediente), baseSnap=opt.__base; window.__savingKey=key;
-  const meta={app:"solicitudes-hjm",nombre:(d.nombreCompleto||"").slice(0,100),exp:d.expediente.slice(0,60),cama:(d.cama||"").trim().slice(0,20),hosp:String(d.hospOnco||"").slice(0,4),dx:(d.diagnostico||"").slice(0,100),adscrito:String(d.medico||"").trim().slice(0,80),...(d.clinica!==undefined?{clinica:String(d.clinica).trim().slice(0,80)}:{}),...(d.pendientes!==undefined?{pendientes:String(d.pendientes).slice(0,400)}:{})};
+  const meta={app:"solicitudes-hjm",nombre:(d.nombreCompleto||"").slice(0,100),exp:d.expediente.slice(0,60),cama:(d.cama||"").trim().slice(0,20),hosp:String(d.hospOnco||"").slice(0,4),srv:String(d.servicio||"").trim().slice(0,40),dx:(d.diagnostico||"").slice(0,100),adscrito:String(d.medico||"").trim().slice(0,80),...(d.clinica!==undefined?{clinica:String(d.clinica).trim().slice(0,80)}:{}),...(d.pendientes!==undefined?{pendientes:String(d.pendientes).slice(0,400)}:{})};
   let payload=null;
   try{
     if(outboxCount()) await flushOutbox({quiet:true});                 // primero lo pendiente de este navegador, para no perderlo
@@ -7506,7 +7506,7 @@ async function openDriveFile(id){
     if(stale()) return;
     if(obj&&hasSelectedPatient()&&DIRTY&&STORE==="drive"&&CAN_DRIVE){          // lo que quedó sin guardar del paciente anterior se va a la cola
       try{ const d0=data(), k0=expKey(d0.expediente); if(d0.expediente&&d0.nombreCompleto&&k0!==expKey((obj.datos||{}).expediente)&&!(DSN_N>0&&DSN_LAST.k===k0&&LAST_INPUT<=DSN_LAST.in)){
-        const meta={app:"solicitudes-hjm",nombre:(d0.nombreCompleto||"").slice(0,100),exp:d0.expediente.slice(0,60),cama:(d0.cama||"").trim().slice(0,20),hosp:String(d0.hospOnco||"").slice(0,4),dx:(d0.diagnostico||"").slice(0,100),adscrito:String(d0.medico||"").trim().slice(0,80),...(d0.clinica!==undefined?{clinica:String(d0.clinica).trim().slice(0,80)}:{}),...(d0.pendientes!==undefined?{pendientes:String(d0.pendientes).slice(0,400)}:{})};
+        const meta={app:"solicitudes-hjm",nombre:(d0.nombreCompleto||"").slice(0,100),exp:d0.expediente.slice(0,60),cama:(d0.cama||"").trim().slice(0,20),hosp:String(d0.hospOnco||"").slice(0,4),srv:String(d0.servicio||"").trim().slice(0,40),dx:(d0.diagnostico||"").slice(0,100),adscrito:String(d0.medico||"").trim().slice(0,80),...(d0.clinica!==undefined?{clinica:String(d0.clinica).trim().slice(0,80)}:{}),...(d0.pendientes!==undefined?{pendientes:String(d0.pendientes).slice(0,400)}:{})};
         outboxAdd(fileName(d0),collect(),meta,LOADED_BASE&&LOADED_BASE.k===k0?jclone(LOADED_BASE):null); flushOutbox({quiet:true}); } }catch(_){}
     }
     if(obj&&restore(obj)){
@@ -7531,7 +7531,9 @@ function camaValida(c){ return /^(?:\d{3}|(?:UCI|URG|CORONARIOS?)(?![A-Za-zÁÉ�
 function camaFuera(c){ return /^(?:CE|RIP)$/i.test(String(c==null?"":c).trim()); }
 function camaConsulta(c){ return /^(?:CE|C\.?\s*E\.?|C\s*\/\s*E|C\.?\s*EX\.?|C\.?\s*EXT\w*\.?|EXT(?:ERNA)?\.?|CONS(?:ULTA)?\.?(?:\s*EXT\w*\.?)?|CONSULTA\s+EXTERNA)$/i.test(String(c==null?"":c).trim().replace(/\s+/g," ")); }
 function camaHosp(cama,flag){ const t=String(cama==null?"":cama).trim(); return camaValida(t)||(String(flag==null?"":flag)==="1"&&t!==""&&!camaFuera(t)&&!camaConsulta(t)); }
-function metaHosp(m){ return camaHosp(m&&m.cama,m&&m.hosp); }
+/* v8.32 · Servicio distinto de Oncología (interconsultas): nunca cuenta como hospitalizado aunque la cama sea de hospitalización. Vacío = Oncología (archivos antiguos). */
+function srvOnco(v){ const t=String(v==null?"":v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toUpperCase(); return !t||/ONCO/.test(t); }
+function metaHosp(m){ return camaHosp(m&&m.cama,m&&m.hosp)&&srvOnco(m&&m.srv); }
 function fieldEmpty(el){ if(el&&el.id==="clinica") return false; return el&&el.id==="cama"?!(camaHosp(el.value,($("hospOnco")||{}).value)||camaFuera(el.value)):!String((el&&el.value)||"").trim(); }
 /* v5.23 · Un paciente con cama de hospitalización (3 cifras, UCI, URG, Coronarios o casilla «Hospitalizado en Oncología») se queda en Hospitalizados y en el Censo hasta que se le da de alta o defunción; ya no depende de cuándo se editó. */
 const PP_RECENT_MS=Infinity;
@@ -8360,7 +8362,7 @@ function resetClinicalCare(id){
   editor.dispatchEvent(new Event("input",{bubbles:true}));editor.focus();
 }
 function normalizedNoteType(value){
-  return ({"Evolución":"Nota de Evolución","Agregada":"Nota Agregada","Gravedad":"Nota de Gravedad","Prequirúrgica":"Nota Preoperatoria","Nota Prequirúrgica":"Nota Preoperatoria","Postquirúrgica":"Nota Postoperatoria"})[value]||value||"Nota de Evolución";
+  return ({"Evolución":"Nota de Evolución","Agregada":"Nota Agregada","Gravedad":"Nota de Gravedad","Prequirúrgica":"Nota Preoperatoria","Nota Prequirúrgica":"Nota Preoperatoria","Postquirúrgica":"Nota Postoperatoria","Interconsulta":"Nota de Interconsulta","Valoración":"Nota de Interconsulta"})[value]||value||"Nota de Evolución";
 }
 /* v2.87 · Plantillas editables en el mismo cuadro; el espacio tras cada subtítulo no lleva negritas. */
 const CLINICAL_NOTE_TEMPLATES={"Nota Preoperatoria": "<div><strong>Diagnostico Preoperatorio:</strong> </div><div><strong>Procedimiento Planeado:</strong> </div><div><strong>Cirujano:</strong> </div><div><strong>Ayudantes:</strong> </div><div><strong>Anestesiologo:</strong> </div><div><strong>Antibiotico Profilactico:</strong> </div><div><strong>Tiempo Quirurgico Estimado:</strong> </div><div><strong>Tipo de Anestesia Planeada:</strong> </div><div><strong>Tipo de Procedimiento:</strong> Urgencia</div><div><strong>Sangrado Estimado:</strong> </div><div><br></div><div><strong>Riesgo Quirúrgico</strong> </div><div>Paciente no exento de complicaciones generales como: hemorragia, infección de sitio quirúrgico, sepsis, trombosis venosa profunda, tromboembolia pulmonar, complicaciones anestésicas, paro cardiorrespiratorio y muerte.</div><div><br></div><div><strong>Plan Preoperatorio</strong> </div><div>Consentimiento informado firmado y agregado al expediente clínico, ayuno, profilaxis antibiótica intravenosa, marcaje de sitio quirúrgico , tromboprofilaxis mecánica y farmacológica según escala de Caprini, valoración preanestésica, colocación de sonda nasogástrica a derivación para descompresión gastrointestinal y sonda vesical para monitorización estricta de uresis.</div>", "Nota Postoperatoria": "<div><strong>Diagnóstico de Ingreso:</strong> </div><div><strong>Diagnóstico de Egreso:</strong> </div><div><strong>Cirugía programada:</strong> </div><div><strong>Cirugía realizada:</strong> </div><div><strong>Cirujano:</strong> </div><div><strong>Ayudantes:</strong> </div><div><strong>Anestesiología:</strong> </div><div><strong>Anestesia:</strong> </div><div><strong>Instrumentista:</strong> </div><div><strong>Circulante:</strong> </div><div><strong>Tiempo Quirúrgico:</strong> </div><div><strong>Tiempo Anestésico:</strong> </div><div><strong>Antibiótico profiláctico:</strong> </div><div><strong>Sangrado estimado:</strong> </div><div><strong>Tipo de cirugía:</strong> Limpia-contaminada</div><div><strong>Cuenta textil:</strong> </div><div><strong>Envío de muestras a patología:</strong> </div><div><strong>HALLAZGOS TRANSOPERATORIOS:</strong> </div><div><strong>TÉCNICA QUIRÚRGICA:</strong> </div><div><strong>INCIDENTES Y ACCIDENTES:</strong> </div><div>Ninguno</div><div><strong>PLAN DE MANEJO, TRATAMIENTO POSTOPERATORIO Y PRONÓSTICO:</strong> </div><div>Ayuno hasta nueva orden, con inicio de vía oral progresiva según tolerancia y presencia de peristalsis.</div><div>Líquidos parenterales a requerimiento basal.</div><div>Antibioticoterapia: Continuar esquema.</div><div>Analgesia Multimodal.</div><div>Profilaxis Antitrombótica (según Score de Caprini).</div><div>Vigilancia estrecha: Monitorización de signos vitales, diuresis horaria</div><div>Protocolo ERAS: Movilización temprana asistida y fisioterapia pulmonar incentiva.</div><div>Pronóstico reservado a evolución postquirúrgica inmediata.</div>"};
@@ -8381,7 +8383,7 @@ const NOTE_VITAL_FIELDS=[
   {key:"so2",label:"SO2 (%)",print:"SO2",placeholder:"97",mode:"numeric",unit:"%"},
   {key:"uresis",label:"Uresis",print:"Uresis",placeholder:"",mode:"text"}
 ];
-function clinicalNoteUsesTable(tipo){return !["Nota de Ingreso","Sesión Multidisciplinaria","Nota de Defunción","Nota Preoperatoria","Nota Prequirúrgica","Nota Postoperatoria","Nota Postquirúrgica"].includes(normalizedNoteType(tipo));}
+function clinicalNoteUsesTable(tipo){return !["Nota de Ingreso","Nota de Interconsulta","Sesión Multidisciplinaria","Nota de Defunción","Nota Preoperatoria","Nota Prequirúrgica","Nota Postoperatoria","Nota Postquirúrgica"].includes(normalizedNoteType(tipo));}
 function syncClinicalNoteVitals(){const vitals=$("clinicalForm").querySelector(".clinical-note-vitals");if(vitals)vitals.hidden=!clinicalNoteUsesTable($("cl-tipo").value);const bb=$("clinicalForm").querySelector("[data-base-note]");if(bb&&$("cl-tipo"))bb.hidden=!clinicalNoteTemplate($("cl-tipo").value)||!/^Nota (Pre|Post)operatoria$/.test(normalizedNoteType($("cl-tipo").value));}
 function clinicalNoteVitals(v){
   const signs=v.signos||{};
@@ -8438,7 +8440,7 @@ function clinicalFields(tp,v,opt={}){
   const slot=opt.slot===2?2:1,prefix=slot===2?"cl2":"cl",noteType=normalizedNoteType(v.tipo);
   if(tp==="notas") return `<div class="clinical-grid" data-kind="notas">
     ${clinicalDateTimeFields("cl",v)}
-    <label class="note-type"><span class="clinical-type-label">Tipo de nota</span><select id="cl-tipo">${["Consulta Externa","Nota de Evolución","Nota Agregada","Nota de Gravedad","Nota Preoperatoria","Nota Postoperatoria","Nota de Ingreso","Sesión Multidisciplinaria","Reingreso a piso","Nota de Diferimiento","Nota de Defunción"].map(x=>`<option${x===noteType?" selected":""}>${x}</option>`).join("")}</select></label>
+    <label class="note-type"><span class="clinical-type-label">Tipo de nota</span><select id="cl-tipo">${["Consulta Externa","Nota de Evolución","Nota Agregada","Nota de Gravedad","Nota Preoperatoria","Nota Postoperatoria","Nota de Ingreso","Nota de Interconsulta","Sesión Multidisciplinaria","Reingreso a piso","Nota de Diferimiento","Nota de Defunción"].map(x=>`<option${x===noteType?" selected":""}>${x}</option>`).join("")}</select></label>
     ${clinicalNoteVitals(v)}
     ${clinicalRichField("cl-contenido","Contenido",v.contenido||clinicalNoteTemplate(v.tipo),{content:true})}
     ${clinicalResponsibleFields("cl",v)}
@@ -8599,9 +8601,9 @@ function editClinical(tp,id){
  if(!accessRequire("editar_documentos"))return;
 const r=(HIST[tp]||[]).find(x=>x.id===id);if(!r||!r.p)return;indicationsDouble=false;clinicalEditing[tp]=id;clinicalEditingSecond[tp]=null;renderClinicalForm(tp,r.p);clinicalSnap[tp]=JSON.stringify(clinicalPayload(tp,1));}
 function notePrintTitle(tipo){const t=String(tipo||"Nota de Evolución").trim();if(/^nota\b/i.test(t))return t.toUpperCase();return t==="Agregada"?"NOTA AGREGADA":"NOTA DE "+t.toUpperCase();}
-function patientPrintHeader(d){
+function patientPrintHeader(d,o){ o=o||{};
   const hjm=document.querySelector(".home-logo .seal")?.src||document.querySelector(".top .seal")?.src||"", crab=document.querySelector(".top > .seal.crab")?.src||"";
-  return `<div class="cp-head"><img class="cp-logo" src="${hjm}"><div class="cp-hospital">HOSPITAL JUÁREZ DE MÉXICO<br>ONCOLOGÍA</div><img class="cp-logo" src="${crab}"></div><div class="cp-patient cp-patient-v88"><div class="cp-name"><span>NOMBRE DEL PACIENTE:</span><strong>${esc(d.nombreCompleto||"")}</strong><div class="cp-allergies"><span>ALERGIAS:</span> <strong>${esc(d.alergias||"")}</strong></div></div><div class="cp-identifiers"><div><span>No. de Expediente:</span><strong>${esc(d.expediente||"")}</strong></div><div><span>Cama:</span><strong>${esc(d.cama||"")}</strong></div><div><span>Fecha de Nacimiento:</span><strong>${esc(d.fnac||"")}</strong></div></div></div>`;
+  return `<div class="cp-head"><img class="cp-logo" src="${hjm}"><div class="cp-hospital">HOSPITAL JUÁREZ DE MÉXICO<br>${o.ic?"VALORACIÓN<br>":""}ONCOLOGÍA</div><img class="cp-logo" src="${crab}"></div><div class="cp-patient cp-patient-v88"><div class="cp-name"><span>NOMBRE DEL PACIENTE:</span><strong>${esc(d.nombreCompleto||"")}</strong>${o.ic?`<div class="cp-allergies"><span>SERVICIO:</span> <strong>${esc(d.servicio||"")}</strong></div>`:`<div class="cp-allergies"><span>ALERGIAS:</span> <strong>${esc(d.alergias||"")}</strong></div>`}</div><div class="cp-identifiers"><div><span>No. de Expediente:</span><strong>${esc(d.expediente||"")}</strong></div><div><span>Cama:</span><strong>${esc(d.cama||"")}</strong></div><div><span>Fecha de Nacimiento:</span><strong>${esc(d.fnac||"")}</strong></div></div></div>`;
 }
 /* v2.170 · Cédula profesional: solo Notas Médicas, Indicaciones y Nota de Alta; "CP 12345678" en letra más chica, después del nombre */
 function cpOf(name){ const t=String(name||"").replace(/^RESIDENTE:\s*/i,"").trim(); if(!t) return ""; let r=userRecord(t); if(!r){ try{ const a=staffAdscritoLoose(t.toLocaleUpperCase("es-MX")); r=a?userRecord(a.nombre):null; }catch(_){} } return r&&r.cp?r.cp:""; }
@@ -8662,7 +8664,7 @@ function clinEncMerge(d,p){
 }
 function clinicalPrintHTML(tp,p,d){
   p=clinStaffFixV(p); d=clinEncMerge(d,p);
-  if(tp==="notas"&&!clinicalNoteUsesTable(p.tipo))return `<div class="cp-page cp-note cp-note-free${["Nota de Ingreso","Sesión Multidisciplinaria"].includes(normalizedNoteType(p.tipo))?" cp-note-admission":""}">${patientPrintHeader(d)}<h1 class="cp-title">${esc(notePrintTitle(p.tipo))}</h1><div class="cp-free-date"><div>${esc(p.fecha)}</div><div>${esc(p.hora)}</div></div><div class="cp-content">${clinicalRichHTML(p.contenido)}</div>${clinicalSignatures(p)}</div>`;
+  if(tp==="notas"&&!clinicalNoteUsesTable(p.tipo))return `<div class="cp-page cp-note cp-note-free${["Nota de Ingreso","Nota de Interconsulta","Sesión Multidisciplinaria"].includes(normalizedNoteType(p.tipo))?" cp-note-admission":""}">${patientPrintHeader(d,{ic:normalizedNoteType(p.tipo)==="Nota de Interconsulta"})}<h1 class="cp-title">${esc(notePrintTitle(p.tipo))}</h1><div class="cp-free-date"><div>${esc(p.fecha)}</div><div>${esc(p.hora)}</div></div><div class="cp-content">${clinicalRichHTML(p.contenido)}</div>${clinicalSignatures(p)}</div>`;
   if(tp==="notas")return `<div class="cp-page cp-note${normalizedNoteType(p.tipo)==="Nota de Evolución"?" cp-evolution":""}">${patientPrintHeader(d)}<table class="cp-note-table"><colgroup><col class="cp-note-meta-col"><col></colgroup><thead><tr><th scope="col">FECHA, HORA Y<br>SIGNOS VITALES</th><th scope="col"><h1 class="cp-title">${esc(notePrintTitle(p.tipo))}</h1></th></tr></thead><tbody><tr><td class="cp-note-meta"><div class="cp-note-meta-row cp-note-date-time">${esc(p.fecha)}</div><div class="cp-note-meta-row cp-note-date-time">${esc(p.hora)}</div>${clinicalNoteVitalRows(p)}</td><td class="cp-note-text"><div class="cp-content">${clinicalRichHTML(p.contenido)}</div>${clinicalSignatures(p)}</td></tr></tbody></table></div>`;
   return `<div class="cp-page cp-indications">${patientPrintHeader(d)}<h1 class="cp-title">INDICACIONES MÉDICAS</h1><div class="cp-body"><div class="cp-date"><b>FECHA</b><br>${esc(p.fecha)}<br>${esc(p.hora)} HRS</div><ul class="cp-sections">${clinicalIndicationSections(p)}</ul></div>${clinicalSignatures(p)}</div>`;
 }
@@ -15885,6 +15887,7 @@ function ppIsolatedReveal(token){
    Si ese guardado falla, la ventana se vuelve a abrir con los cambios intactos para no perderlos. */
 async function ppIsolatedClose(){
   if(!PPIW.active)return;
+  if(PPIW.forceNext){ PPIW.forceNext=false; PPIW.active=false; ++PPIW.token; try{ $('dlgPatientFormat').close(); }catch(_){} if(PPIW.frame){ try{ PPIW.frame.remove(); }catch(_){} PPIW.frame=null; } return; }   /* v8.31 · segundo toque: cerrar sin guardar */
   const d=$('dlgPatientFormat'), win=PPIW.frame&&PPIW.frame.contentWindow, tok=++PPIW.token, title=$('ppFormatWindowTitle').textContent;
   PPIW.active=false; try{ d.close(); }catch(_){}
   if(!(win&&win.__hjmChildReady&&win.__hjmChildCanClose)){ if(PPIW.frame)PPIW.frame.style.visibility='hidden'; return; }
@@ -15893,7 +15896,7 @@ async function ppIsolatedClose(){
   if(ok){ if(!PPIW.active&&PPIW.token===tok&&PPIW.frame)PPIW.frame.style.visibility='hidden'; return; }
   if(PPIW.active||PPIW.token!==tok){ try{ notify("No se pudo guardar "+title+". Ábrelo de nuevo para revisarlo.","err"); }catch(_){} return; }
   PPIW.active=true; PPIW.token=tok; try{ d.showModal(); }catch(_){} if(PPIW.frame)PPIW.frame.style.visibility='visible';
-  $('ppFormatWindowStatus').textContent='No se pudo guardar. La ventana se volvió a abrir para conservar los cambios.';
+  PPIW.forceNext=true; $('ppFormatWindowStatus').textContent='No se pudo guardar. La ventana se volvió a abrir para conservar los cambios: guarda de nuevo, o toca × otra vez para cerrar sin guardar.';
 }
 addEventListener('message',e=>{
   if(!PPIW.frame||e.source!==PPIW.frame.contentWindow||!e.data||e.data.token!==PPIW.token)return;
