@@ -339,7 +339,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.19">
+<meta name="application-version" content="9.20">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2854,7 +2854,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.19 · Fecha de publicación: 14.11.26</div>
+  <div class="app-footer-version">Versión 9.20 · Fecha de publicación: 15.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -10369,6 +10369,7 @@ async function cenPrintDocs(items){
   const fr=document.createElement("iframe"); fr.setAttribute("aria-hidden","true"); fr.style.cssText="position:fixed;left:-3000px;top:0;width:1003px;height:760px;border:0;visibility:hidden";
   document.body.appendChild(fr); const doc=fr.contentDocument; doc.open();
   doc.write(`<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Censo ${esc(items[0].cen.fecha)}</title><style>${cenFontsCSS()}\n${CEN_PRINT_CSS}</style></head><body>${items.map(it=>`<section class="pg tb">${cenPrintTable(it.cen,it.rows)}</section><section class="pg"><div class="revw">${cenRevHTML(Object.assign({},it.cen,{rev:it.cen.rev}),false)}</div></section>`).join("")}</body></html>`); doc.close();
+  try{ const sd=window.__cenSide; if(sd==="r") doc.querySelectorAll("section.pg.tb").forEach(x=>x.remove()); else if(sd==="a") doc.querySelectorAll("section.pg:not(.tb)").forEach(x=>x.remove()); }catch(_){}
   try{ await (doc.fonts&&doc.fonts.ready?doc.fonts.ready:Promise.resolve()); }catch(_){}
   await cenWait(150);
   const LIM=748;   // alto útil de una hoja carta horizontal (px a 96 dpi) con márgenes de 7 mm
@@ -12279,7 +12280,7 @@ function oncBodyHTML(){
    <div class="st-grid2"><div class="st-card"><h3>Distribución por región</h3><div class="on-dn">${donutSVG(gs.map(i=>Object.assign({},i)),{title:"Pacientes por región",center:"oncológicos"})}${legendHTML(gs,A.cancer)}</div></div>
     <div class="st-card"><h3>Tipos de cáncer más frecuentes <small>· top 12</small></h3>${barsHTML(tl,A.cancer)}</div></div>
    <div class="st-card"><h3>Tendencia por región</h3>${trendChart(rows.filter(r=>ONC.group[r.cls.g].cancer))}</div>
-   <div class="st-grid2"><div class="st-card"><h3>Estadio al diagnóstico <small>· según lo escrito en el diagnóstico · toca una barra para filtrar</small></h3>${barsHTML(stageItems(A,true),A.cancer)}</div>
+   <div class="st-grid2"><div class="st-card"><h3>Estadio clínico <small>· según lo escrito en el diagnóstico · toca una barra para filtrar</small></h3>${barsHTML(stageItems(A,true),A.cancer)}</div>
     <div class="st-card"><h3>Edad y sexo <small>· oncológicos</small></h3>${ageChart(A)}</div></div>
    <div class="st-grid2"><div class="st-card"><h3>Por clínica</h3>${cl.length?donutSVG(cl,{title:"Pacientes por clínica",center:"pacientes"})+legendHTML(cl,A.n):'<div class="st-msg">Sin datos de clínica.</div>'}</div>
     <div class="st-card"><h3>Histología mencionada</h3>${barsHTML(hs,A.cancer)}</div></div>${oncReviewHTML(all)}`;
@@ -12750,9 +12751,16 @@ function hosPeople0(){
       diasHoy:hosp&&ik&&ik<=today?kNum(today)-kNum(ik):null};
   });
 }
+let HOS_ADM=null;
+function hosAdmissions(){ const t=Date.now(); if(HOS_ADM&&t-HOS_ADM.t<8000) return HOS_ADM.v; let v=[]; try{ v=ingAllAdmissions(); }catch(_){} HOS_ADM={t,v}; return v; }
+function hosIng(P,inR){ const by=new Map(); P.forEach(p=>{ const k=ingEk(p.exp); if(k&&!by.has(k)) by.set(k,p); }); const out=[], seen=new Set();
+  hosAdmissions().forEach(a=>{ const d=new Date(a.ms), k=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); if(!inR(k)) return; const ek=ingEk(a.e), p=by.get(ek), key=ek+"|"+k; if(seen.has(key)) return; seen.add(key);
+    out.push(p?Object.assign({},p,{ik:k,reing:a.i>1}):{f:null,id:"",exp:a.e,nom:String(a.n||"").toUpperCase(),cama:"",dx:"",clin:a.s||"Sin clínica",ads:"",hosp:false,piso:false,ik:k,ek:"",dk:"",diasHoy:null,reing:a.i>1}); });
+  P.forEach(p=>{ const ek=ingEk(p.exp); if(inR(p.ik)&&!seen.has(ek+"|"+p.ik)&&!out.some(x=>ingEk(x.exp)===ek&&Math.abs(kNum(x.ik)-kNum(p.ik))<2)){ seen.add(ek+"|"+p.ik); out.push(p); } });
+  return out; }
 function hosAgg(P,b){
   if(!b) return null; const inR=k=>!!k&&k>=b.cutoff&&k<=b.upper;
-  const ing=P.filter(p=>inR(p.ik)), egr=[];
+  let ing; try{ ing=hosIng(P,inR); }catch(_){ ing=P.filter(p=>inR(p.ik)); } const egr=[];
   P.forEach(p=>{ const fin=inR(p.dk)?p.dk:inR(p.ek)?p.ek:""; if(!fin) return; egr.push(Object.assign({},p,{tipo:inR(p.dk)?"Defunción":"Alta",fin,los:p.ik&&p.ik<=fin?kNum(fin)-kNum(p.ik):null})); });
   const def=egr.filter(p=>p.tipo==="Defunción"), los=egr.map(p=>p.los).filter(x=>x!=null&&x<400);
   return {ing,egr,def,alt:egr.length-def.length,losAvg:avgOf(los),losMed:medOf(los),los,mort:egr.length?def.length/egr.length*100:null};
@@ -12817,7 +12825,7 @@ function hosView(){
    <div class="st-grid2"><div class="st-card"><h3>Ingresos y egresos por día de la semana <small>· promedio por censo</small></h3>${cs.length?chartSVG(WD,[{name:"Ingresos",v:wdI.map((v,i)=>wdN[i]?+(v/wdN[i]).toFixed(1):0),c:"#2F6FA7"},{name:"Egresos",v:wdE.map((v,i)=>wdN[i]?+(v/wdN[i]).toFixed(1):0),c:"#D9822B"}],{title:"Por día de la semana",dec:1}):'<div class="st-msg">Sin censos en este periodo.</div>'}</div>
     <div class="st-card"><h3>Estancia media al egreso por clínica <small>· días</small></h3>${losCl.length?barsHTML(losCl.map((x,i)=>({n:x.n+" ("+x.k+")",v:x.v,c:CH_COL[i%CH_COL.length]})),0).replace(/<small>\d+%<\/small>/g,"<small>días</small>"):'<div class="st-msg">Sin egresos con fecha de ingreso en este periodo.</div>'}</div></div>
    <div class="st-card"><h3>Estancia prolongada <small>· más de ${LONG_STAY} días hospitalizados · ${long.length} paciente(s)</small></h3>${long20.length?detTbl(arHd(["Cama","Paciente","Clínica","Ingreso","Días"]),long20.map(p=>detTr(arCl(p.exp,[esc(p.cama),esc(p.nom),esc(p.clin),kFmt(p.ik),`<b>${p.diasHoy}</b>`]))))+(long.length>15?`<div class="on-go"><button type="button" class="st-btn st-sm" data-hl="long">Ver los ${long.length} →</button></div>`:""):'<div class="st-msg">Ningún paciente lleva más de '+LONG_STAY+' días hospitalizado.</div>'}</div>
-   <div class="st-msg">Ocupación = camas 150–197 ocupadas entre ${BEDS_PISO}. Ingresos, egresos y estancia se calculan con la fecha de ingreso y la fecha de alta o defunción de cada expediente; un reingreso cuenta con su última fecha de ingreso. Mortalidad hospitalaria = defunciones entre egresos (altas + defunciones) del periodo.</div>`;
+   <div class="st-msg">Ocupación = camas 150–197 ocupadas entre ${BEDS_PISO}. Ingresos, egresos y estancia se calculan con la fecha de ingreso y la fecha de alta o defunción de cada expediente. Cada reingreso cuenta como un ingreso nuevo en su propia fecha (se toma de los censos y de las fechas de ingreso guardadas en el expediente). Mortalidad hospitalaria = defunciones entre egresos (altas + defunciones) del periodo.</div>`;
 }
 
 /* ---- Resumen: indicadores clave ---- */
@@ -19118,6 +19126,54 @@ body.hjm-sheet #hjmFab{z-index:2550!important}
 body.hjm-sheet #view-data .app-footer{display:none}
 }
 @media (max-width:700px){#hjmSheetBar{display:none!important}}
+.qw .qw-t{display:inline-flex;align-items:center;gap:6px}.qw .qw-t svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.qx-calp.in{max-width:none;margin:0;box-shadow:0 8px 28px rgba(20,34,60,.09)}
+body.cen-av #cenWrap .cen-rev{display:none!important}
+body.cen-rv #cenWrap .cen-scroll,body.cen-rv #cenWrap .cen-exbar,body.cen-rv #cenWrap .cen-cont{display:none!important}
+#cenRow{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;margin:0 0 12px;padding:10px 12px;background:#fff;border:1px solid var(--hn-line,#DDE3EC);border-radius:14px}
+#cenRow[hidden]{display:none}
+#cenRow .cr-seg{display:inline-flex;padding:3px;border-radius:12px;background:#EEF2F8;gap:2px}
+#cenRow .cr-seg button{min-height:38px;padding:0 18px;border:0;border-radius:9px;background:none;font:700 13.5px var(--rd-sans,system-ui);color:#44536A;cursor:pointer}
+#cenRow .cr-seg button[aria-pressed="true"]{background:#1F3864;color:#fff;box-shadow:0 1px 4px rgba(20,34,60,.25)}
+html:root body #cenRow #cenNavBtn.cen-nav-in{position:static!important;transform:none!important;margin:0!important;background:#2158A8!important;border:1px solid #2158A8!important;color:#fff!important;border-radius:12px!important;min-height:40px!important;padding:6px 16px!important;box-shadow:none!important;display:inline-flex!important;align-items:center;gap:6px}
+html:root body #cenRow #cenPrint{margin:0!important;min-height:40px!important;display:inline-flex!important;align-items:center;gap:6px}
+@media (max-width:700px){#cenRow{gap:8px;padding:8px}#cenRow .cr-seg{order:-1;flex:0 0 100%}#cenRow .cr-seg button{flex:1}html:root body #cenRow #cenNavBtn.cen-nav-in,html:root body #cenRow #cenPrint{flex:1 1 0;justify-content:center;min-width:0;padding:6px 8px!important;font-size:13px!important}}
+html:root body #cenRow #cenPrint svg{width:18px!important;height:18px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.qx-list.rows>.qx-row{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+.qx-list.rows>.qx-row .qx-rsel{overflow:hidden}
+html:root body #cenRow #cenNavBtn.cen-nav-in,html:root body #cenRow #cenPrint{white-space:nowrap!important}
+html:root body #cenRow #cenNavBtn.cen-nav-in br{display:none}
+#cenRow{display:inline-flex!important;flex-wrap:nowrap;align-items:center;justify-content:flex-end;gap:8px;margin:0!important;padding:0!important;background:none!important;border:0!important;border-radius:0!important}
+#cenRow[hidden]{display:none!important}
+#cenRow .cr-seg{padding:2px;border-radius:10px}
+#cenRow .cr-seg button{min-height:30px;padding:0 12px;font-size:12.5px;border-radius:8px}
+html:root body #cenRow #cenNavBtn.cen-nav-in{min-height:34px!important;padding:4px 12px!important;font-size:12.5px!important;border-radius:10px!important}
+html:root body #ppHeaderNav:has(#cenRow:not([hidden])){display:flex!important;align-items:center;gap:8px;width:auto!important;max-width:none!important}
+html:root body #ppHeaderMast:has(#cenRow:not([hidden])){grid-template-columns:minmax(0,1fr) auto auto!important}
+@media (max-width:1100px){html:root body #ppHeaderMast:has(#cenRow:not([hidden])){grid-template-columns:minmax(0,1fr) auto!important}html:root body #ppHeaderMast:has(#cenRow:not([hidden])) #cenAlert{grid-column:1/-1;grid-row:2;justify-self:center}}
+@media (max-width:700px){#cenRow{flex:1 1 auto;min-width:0}#cenRow .cr-seg{order:0!important;flex:0 0 auto!important}#cenRow .cr-seg button{flex:0 0 auto;padding:0 10px}html:root body #cenRow #cenNavBtn.cen-nav-in{flex:0 1 auto!important;padding:4px 10px!important}
+ html:root body #ppHeaderMast:has(#cenRow:not([hidden])){grid-template-columns:minmax(0,1fr)!important}html:root body #ppHeaderMast:has(#cenRow:not([hidden])) #ppHeaderNav{grid-column:1;grid-row:1;flex-wrap:wrap;justify-content:center}html:root body #ppHeaderMast:has(#cenRow:not([hidden])) #ppHeaderTitle{grid-row:2;grid-column:1}html:root body #ppHeaderMast:has(#cenRow:not([hidden])) #cenAlert{grid-row:3}}
+html:root body #pPanel #cenRow .cr-seg button{width:auto!important;height:30px!important;min-width:0!important;display:inline-flex!important;align-items:center;justify-content:center;white-space:nowrap}
+html:root body #pPanel #cenRow #cenNavBtn.cen-nav-in{width:auto!important;min-width:0!important;grid-area:auto!important;justify-self:auto!important;height:34px!important;flex-direction:row!important}
+html:root body #pPanel #cenRow #cenNavBtn.cen-nav-in>span{display:inline!important;white-space:nowrap}
+html:root body #pPanel #cenRow #cenNavBtn.cen-nav-in .nb2{display:inline!important;margin-left:.25em}
+html:root body #pPanel #cenRow #cenNavBtn.cen-nav-in span span{display:inline!important}
+html:root body #pPanel #cenRow{display:grid!important;grid-template-columns:repeat(2,minmax(0,170px));grid-auto-rows:36px;gap:8px;align-items:stretch;justify-content:end}
+html:root body #pPanel #cenRow.has-send{grid-template-columns:repeat(3,minmax(0,170px))}
+html:root body #pPanel #cenRow>*{width:100%!important;min-width:0!important;height:36px!important;min-height:0!important;margin:0!important;box-sizing:border-box!important;order:0!important;align-self:stretch!important}
+html:root body #pPanel #cenRow .cr-seg{display:grid!important;grid-template-columns:1fr 1fr;padding:3px!important;gap:3px}
+html:root body #pPanel #cenRow .cr-seg button{width:100%!important;height:100%!important;padding:0 6px!important;font-size:12.5px!important;overflow:hidden;text-overflow:ellipsis}
+html:root body #pPanel #cenRow #cenNavBtn.cen-nav-in,html:root body #pPanel #cenRow #cenSendBtn{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;padding:0 10px!important;border-radius:10px!important;font:700 12.5px/1.1 var(--rd-sans,system-ui)!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis;grid-area:auto!important;justify-self:stretch!important}
+html:root body #pPanel #cenRow #cenSendBtn[hidden]{display:none!important}
+html:root body #pPanel #cenRow #cenNavBtn.cen-nav-in svg,html:root body #pPanel #cenRow #cenSendBtn svg{width:16px!important;height:16px!important;flex:0 0 16px}
+html:root body #pPanel #cenRow #cenNavBtn.cen-nav-in>*:not(svg){display:inline!important;overflow:hidden;text-overflow:ellipsis}
+html:root body #pPanel #cenRow #cenNavBtn.cen-nav-in .nb1::after{content:" "}
+html:root body #pPanel #cenRow #cenNavBtn.cen-nav-in .nb2{margin-left:0!important}
+@media (max-width:1100px){html:root body #pPanel #cenRow{justify-content:center}}
+@media (max-width:700px){html:root body #pPanel #cenRow,html:root body #pPanel #cenRow.has-send{grid-template-columns:repeat(2,minmax(0,1fr))!important;width:100%!important;justify-content:stretch}html:root body #pPanel #cenRow.has-send .cr-seg{grid-column:1/-1}html:root body #ppHeaderMast:has(#cenRow:not([hidden])) #ppHeaderNav{display:block!important;width:100%!important}}
+html:root body #pPanel #cenRow #cenNavBtn.cen-nav-in{height:36px!important;min-height:0!important}
+html:root body #pPanel #cenRow #cenNavBtn.cen-nav-in .nb2{display:inline-flex!important;flex-direction:row!important;gap:.3em;align-items:center}
+html:root body #pPanel #cenRow #cenNavBtn.cen-nav-in .nb2 b{display:inline!important;font:inherit!important}
 </style>
 <script id="hjm-v900-js">
 /* v9.00 · Navegación superior (Quirófano · Comité · Censo · Hospitalizados · Archivo), menú flotante en móvil / Fold,
@@ -19524,7 +19580,7 @@ function renderView(){ const v=$i('qxView'); if(!v||!V.view) return; const k=V.v
   const pend=A.q.length?`<span class="qx-sync">Guardando ${A.q.length} cambio${A.q.length>1?'s':''}…</span>`:(A.loaded?'':'<span class="qx-sync">Cargando agenda…</span>');
   if(k==='qx'){
     const canEd=can('editar_quirofano');
-    html=`<div class="qx-head"><div class="qx-ttl"><div class="qx-seg" role="group" aria-label="Apartado"><button type="button" data-qtab="agenda" aria-pressed="${st.tab==='agenda'}">Agenda</button><button type="button" data-qtab="stats" aria-pressed="${st.tab==='stats'}">Resultados</button></div>${pend?`<p>${pend}</p>`:''}</div><div class="qx-acts">${canEd?`<button type="button" class="qx-btn pri" data-qa="add">${IC.plus}Agregar paciente</button>`:''}${can('imprimir_programacion')&&st.tab==='agenda'?`<button type="button" class="qx-btn" data-qa="print">${IC.print}Imprimir programación</button>`:''}</div></div>${err}`+(st.tab==='stats'?qxStatsHTML():qxAgendaHTML());
+    html=`<div class="qx-head"><div class="qx-ttl"><div class="qx-seg" role="group" aria-label="Apartado"><button type="button" data-qtab="agenda" aria-pressed="${st.tab==='agenda'}">Agenda</button><button type="button" data-qtab="stats" aria-pressed="${st.tab==='stats'}">Estadísticas</button></div>${pend?`<p>${pend}</p>`:''}</div><div class="qx-acts">${canEd?`<button type="button" class="qx-btn pri" data-qa="add">${IC.plus}Agregar paciente</button>`:''}${can('imprimir_programacion')&&st.tab==='agenda'?`<button type="button" class="qx-btn" data-qa="print">${IC.print}Imprimir programación</button>`:''}</div></div>${err}`+(st.tab==='stats'?qxStatsHTML():qxAgendaHTML());
   } else {
     const canEd=can('editar_comite');
     html=`<div class="qx-head"><div class="qx-ttl"><div class="qx-seg" role="group" aria-label="Apartado"><button type="button" data-qtab="agenda" aria-pressed="${st.tab==='agenda'}">Agenda</button><button type="button" data-qtab="notas" aria-pressed="${st.tab==='notas'}">Notas</button><button type="button" data-qtab="stats" aria-pressed="${st.tab==='stats'}">Estadísticas</button></div>${pend?`<p>${pend}</p>`:''}</div><div class="qx-acts">${canEd?`<button type="button" class="qx-btn pri" data-qa="add">${IC.plus}Agregar paciente</button>`:''}${can('imprimir_comite')&&st.tab==='agenda'?`<button type="button" class="qx-btn" data-qa="print">${IC.print}Imprimir lista</button>`:''}</div></div>${err}`+(st.tab==='stats'?cmStatsHTML():st.tab==='notas'?cmNotesHTML():cmAgendaHTML());
@@ -19563,13 +19619,13 @@ function daySummary(es,t){ es=es.filter(e=>!offE(e)); if(t==='quirofano'){ const
 const isWide=()=>{ try{ return matchMedia('(min-width:701px)').matches; }catch(_){ return true; } };
 function weekHTML(k){ const st=V[k], t=T(k), d0=pDMY(st.sel)||new Date(), mon=new Date(d0.getFullYear(),d0.getMonth(),d0.getDate()-((d0.getDay()+6)%7),12), h=hoy(); let ds='';
   for(let i=0;i<7;i++){ const d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i,12), x=dDMY(d), n=byDay(t,x).filter(e=>!offE(e)).length; ds+=`<button type="button" class="qw-d${x===st.sel?' on':''}${x===h?' today':''}" data-qday="${x}" aria-pressed="${x===st.sel}" aria-label="${H(largo(x))}${n?', '+n+' paciente'+(n>1?'s':''):''}"><small>${'LMMJVSD'[i]}</small><b>${d.getDate()}</b>${n?`<i>${n}</i>`:''}</button>`; }
-  return `<div class="qw"><button type="button" data-qwk="-1" aria-label="Semana anterior">‹</button><div class="qw-days">${ds}</div><button type="button" data-qwk="1" aria-label="Semana siguiente">›</button><button type="button" class="qw-t" data-qcal="0">Hoy</button><button type="button" class="qw-t" data-qmes aria-pressed="${!!st.cal}">Mes</button></div>`; }
+  return `<div class="qw"><button type="button" data-qwk="-1" aria-label="Semana anterior">‹</button><div class="qw-days">${ds}</div><button type="button" data-qwk="1" aria-label="Semana siguiente">›</button><button type="button" class="qw-t" data-qcal="0">Hoy</button><button type="button" class="qw-t" data-qmes aria-pressed="${!!st.cal}">${IC.cal}Mes</button></div>`; }
 function rowHTML(e,t){ const st=V[t==='quirofano'?'qx':'cm'], ci=clinOf(e.clin), age=ageOf(e.fnac,e.fecha), off=offE(e), s=t==='quirofano'?qxState(e):cmState(e), cls=off?'':t==='quirofano'?(e.res?(e.res.v==='operado'?'ok':'warn'):e.aut?'gold':e.comp?'warn':''):(e.nota?'ok':'');
   return `<div class="qx-row${st.cur===e.id?' sel':''}${off?' off':''}"><button type="button" class="qx-rsel" data-qsel="${H(e.id)}" aria-pressed="${st.cur===e.id}"><i style="--c:${off?'#B5BCC4':ci.c}"></i><span class="nm"><b>${H(e.nombre||'Sin nombre')}</b><small>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''}</small></span><span class="cx">${t==='quirofano'?`<b>${H(e.cx||'—')}</b><small>${H(e.dx||'')}</small>`:H(e.dx||'')}</span><span class="ad">${H(e.ads||'')}${t==='quirofano'&&(e.sala||e.tq||e.turno)?`<small>${H([salaTxt(e),TQ[e.tq]||'',TURNO[e.turno]||''].filter(Boolean).join(' · '))}</small>`:''}</span><em class="${cls}">${H(s)}</em></button>${fileBtn(e,t==='quirofano'?'qe':'ce')}</div>`; }
 function item(e,t){ return isWide()?rowHTML(e,t):(t==='quirofano'?qxCard(e):cmCard(e)); }
 function curFix(st,pool){ if(!pool.some(e=>e.id===st.cur)) st.cur=pool.length?pool[0].id:null; }
 function shell(k,t,es,off,all,body){ const st=V[k], wide=isWide(), cur=wide?es.concat(off).find(e=>e.id===st.cur):null;
-  return `<div class="qx-topbar">${weekHTML(k)}${daySummary(es,t)}</div>${st.cal?`<div class="qx-panel qx-calp">${calHTML(k)}</div>`:''}<div class="qx-two${wide?'':' one'}"><section><div class="qx-dayh"><b>${H(largo(st.sel))}</b><span>${es.length?es.length+' paciente'+(es.length>1?'s':''):''}</span></div>${fcHTML(st,all)}<div class="qx-list${wide?' rows':''}">${body}</div></section>${wide?`<aside class="qx-det" aria-label="Detalle del paciente">${cur?(t==='quirofano'?qxCard(cur):cmCard(cur)):'<div class="qx-empty"><b>Sin paciente seleccionado</b>Elige un paciente de la lista para ver su detalle.</div>'}</aside>`:''}</div>`; }
+  return `<div class="qx-topbar">${weekHTML(k)}${daySummary(es,t)}</div>${st.cal&&!wide?`<div class="qx-panel qx-calp">${calHTML(k)}</div>`:''}<div class="qx-two${wide?'':' one'}"><section><div class="qx-dayh"><b>${H(largo(st.sel))}</b><span>${es.length?es.length+' paciente'+(es.length>1?'s':''):''}</span></div>${fcHTML(st,all)}<div class="qx-list${wide?' rows':''}">${body}</div></section>${wide?`<aside class="qx-det" aria-label="${st.cal?'Calendario del mes':'Detalle del paciente'}">${st.cal?`<div class="qx-panel qx-calp in">${calHTML(k)}</div>`:cur?(t==='quirofano'?qxCard(cur):cmCard(cur)):'<div class="qx-empty"><b>Sin paciente seleccionado</b>Elige un paciente de la lista para ver su detalle.</div>'}</aside>`:''}</div>`; }
 function qxAgendaHTML(){ const st=V.qx, all=byDay('quirofano',st.sel), off=all.filter(offE), es=fcF(st,all.filter(e=>!offE(e))).sort((a,b)=>(a.aut?0:1)-(b.aut?0:1)||qxOrd(a,b));
   curFix(st,es.concat(off)); const groups=[['M','Matutino'],['V','Vespertino'],['','Turno por definir']].map(([tk,l])=>[l,es.filter(e=>(e.turno||'')===tk)]).filter(g=>g[1].length);
   const empty=`<div class="qx-empty"><b>Sin pacientes para este día</b>Elige otra fecha en el calendario${can('editar_quirofano')?' o usa «Agregar paciente». También puedes agregar desde una Solicitud de cirugía.':'.'}</div>`;
@@ -19630,14 +19686,14 @@ function openList(key){ const L=V.L&&V.L[key]; if(!L) return; const k=V.view, d=
 try{ const mqW=matchMedia('(min-width:701px)'); const rr=()=>{ try{ renderView(); }catch(_){} }; if(mqW.addEventListener) mqW.addEventListener('change',rr); else mqW.addListener(rr); }catch(_){}
 function viewChange(e){ const s=e.target.closest('[data-qper]'); if(s){ V[V.view].per=s.value; renderView(); } }
 function viewClick(e){ const t=e.target.closest('button'); if(!t) return; const k=V.view, st=V[k];
-  if(t.dataset.qsel){ st.cur=t.dataset.qsel; renderView(); return; }
+  if(t.dataset.qsel){ st.cur=t.dataset.qsel; st.cal=false; renderView(); return; }
   if(t.dataset.qwk){ const d=pDMY(st.sel)||new Date(); const n=new Date(d.getFullYear(),d.getMonth(),d.getDate()+7*(+t.dataset.qwk),12); st.sel=dDMY(n); st.m={y:n.getFullYear(),m:n.getMonth()}; renderView(); return; }
   if('qmes' in t.dataset){ st.cal=!st.cal; renderView(); return; }
   if(t.dataset.qtog){ const id=t.dataset.qtog; if(V.open.has(id)) V.open.delete(id); else V.open.add(id); renderView(); return; }
   if('qfc' in t.dataset){ st.fc=t.dataset.qfc; renderView(); return; }
   if(t.dataset.qlist){ openList(t.dataset.qlist); return; }
   if(t.dataset.qst){ statExport(k,t.dataset.qst); return; }
-  if(t.dataset.qday){ st.sel=t.dataset.qday; const d=pDMY(st.sel); if(d&&(d.getMonth()!==st.m.m||d.getFullYear()!==st.m.y)) st.m={y:d.getFullYear(),m:d.getMonth()}; renderView(); if(matchMedia('(max-width:760px)').matches){ const h=document.querySelector('#qxView .qx-dayh'); if(h) setTimeout(()=>{ try{ h.scrollIntoView({behavior:'smooth',block:'start'}); }catch(_){} },60); } return; }
+  if(t.dataset.qday){ st.sel=t.dataset.qday; const d=pDMY(st.sel), M0=monthOf(st); if(d&&(d.getMonth()!==M0.m||d.getFullYear()!==M0.y)) st.m={y:d.getFullYear(),m:d.getMonth()}; renderView(); if(matchMedia('(max-width:760px)').matches){ const h=document.querySelector('#qxView .qx-dayh'); if(h) setTimeout(()=>{ try{ h.scrollIntoView({behavior:'smooth',block:'start'}); }catch(_){} },60); } return; }
   if(t.dataset.qcal){ const n=+t.dataset.qcal; if(n===0){ st.sel=hoy(); st.m=null; } else { const M=monthOf(st); const d=new Date(M.y,M.m+n,1); st.m={y:d.getFullYear(),m:d.getMonth()}; } renderView(); return; }
   if(t.dataset.qtab){ st.tab=t.dataset.qtab; renderView(); return; }
   if(t.dataset.qa==='add'){ openAdd(T(k),{fecha:st.sel}); return; }
@@ -19964,14 +20020,21 @@ function homeRoleWire(dlgU,cur,A,Tq){ const T=dlgU.querySelector('#usrfT'), seg=
   T.addEventListener('change',sync); [A,Tq].forEach(x=>x&&x.addEventListener('change',sync)); setTimeout(sync,0); }
 
 /* Móvil: «Archivo Censos» a la izquierda de «Conectado» en la barra */
-function cenNavPlace(){ const nb=$i('cenNavBtn'), st=$i('syncSt'); if(!nb||!st) return; let cen=false; try{ cen=document.body.classList.contains('pp-browse')&&!V.view&&(PP_VIEW==='censoActual'||PP_VIEW==='censos'); }catch(_){}
-  const mob=matchMedia('(max-width:700px)').matches;
-  const ch=$i('cenChips');
-  const bd=ch&&(ch.closest('.band')||(document.querySelector('.band-id')||{}).parentElement);
-  if(!mob&&cen&&bd){ nb.classList.remove('cen-nav-band'); if(nb.parentNode!==bd) bd.appendChild(nb); nb.classList.add('cen-nav-row'); return; }
-  if(nb.classList.contains('cen-nav-row')){ nb.classList.remove('cen-nav-row'); const sb=$i('cenSendBtn'), p=$i('cenPrint'); if(sb&&sb.parentNode) sb.after(nb); else if(p) p.before(nb); }
-  if(mob&&cen){ if(nb.nextElementSibling!==st) st.before(nb); nb.classList.add('cen-nav-band'); }
-  else if(nb.classList.contains('cen-nav-band')){ nb.classList.remove('cen-nav-band'); const sb=$i('cenSendBtn'), p=$i('cenPrint'); if(sb&&sb.parentNode) sb.after(nb); else if(p) p.before(nb); } }
+const CS={side:'a'};
+function cenNavPlace(){ const nb=$i('cenNavBtn'), pb=$i('cenPrint'); if(!nb) return; let cen=false; try{ cen=PP_VIEW==='censoActual'&&!V.view&&document.body.classList.contains('pp-browse'); }catch(_){}
+  document.body.classList.toggle('cen-rv',cen&&CS.side==='r'); document.body.classList.toggle('cen-av',cen&&CS.side!=='r');
+  let row=$i('cenRow');
+  const sb=$i('cenSendBtn');
+  if(!cen){ if(row){ row.hidden=true; const tb=$i('cenToolbar'); if(tb){ if(sb&&sb.parentNode===row) tb.appendChild(sb); if(nb.parentNode===row){ tb.appendChild(nb); nb.classList.remove('cen-nav-in'); } } } return; }
+  const host=$i('ppHeaderNav'); if(!host) return;
+  if(!row){ row=document.createElement('div'); row.id='cenRow'; row.innerHTML='<div class="cr-seg" role="group" aria-label="Cara del censo"><button type="button" data-cside="a">Anverso</button><button type="button" data-cside="r">Reverso</button></div>';
+    row.addEventListener('click',e=>{ const b=e.target.closest('[data-cside]'); if(!b) return; CS.side=b.dataset.cside; cenNavPlace(); try{ revSide(); }catch(_){} }); }
+  if(row.parentNode!==host||host.firstElementChild!==row) host.prepend(row); row.hidden=false;
+  row.querySelectorAll('[data-cside]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.cside===CS.side)));
+  if(nb.parentNode!==row||row.children[1]!==nb) row.children[0].after(nb); if(sb&&(sb.parentNode!==row||nb.nextElementSibling!==sb)) nb.after(sb); row.classList.toggle('has-send',!!sb&&!sb.hidden); nb.classList.remove('cen-nav-band','cen-nav-row'); nb.classList.add('cen-nav-in');
+  if(pb){ const want=CS.side==='r'?'Imprimir Reverso':'Imprimir Censo'; if(!pb.disabled&&pb.dataset.side!==want){ const sv=pb.querySelector('svg'); pb.textContent=''; if(sv) pb.appendChild(sv); pb.appendChild(document.createTextNode(' '+want)); pb.dataset.side=want; pb.title=CS.side==='r'?'Imprime solo el reverso, en hoja vertical':'Imprime el censo en hoja horizontal (1 a 2 hojas)'; } }
+}
+document.addEventListener('click',e=>{ try{ const t=e.target.closest&&e.target.closest('#cenPrint'); window.__cenSide=t?CS.side:null; }catch(_){} },true);
 addEventListener('resize',()=>{ try{ cenNavPlace(); }catch(_){} try{ revSide(); }catch(_){} });
 
 /* ---------- Ciclo ---------- */
