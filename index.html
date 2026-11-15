@@ -339,7 +339,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.17">
+<meta name="application-version" content="9.19">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2854,7 +2854,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.17 · Fecha de publicación: 14.11.26</div>
+  <div class="app-footer-version">Versión 9.19 · Fecha de publicación: 14.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -11677,17 +11677,17 @@ const DEF=[
 ]],
 ["gi","Tracto digestivo","#C27A2C",1,[
  ["esofago","Esófago y unión esofagogástrica",[[3,R`esofag|union esofagogastrica|ueg\b|u eg\b|cardias|barrett|siewert|esofagectom`]]],
- ["estomago","Estómago",[[3,R`estomago|gastric|gastrectom|piloro|curvatura (mayor|menor)|fondo gastrico|ca gastrico|cancer gastrico`],[2,R`anillo de sello|linitis`],[1.5,R`antro\b|gastroyeyuno`]]],
+ ["estomago","Cáncer gástrico",[[3,R`estomago|gastric|gastrectom|piloro|curvatura (mayor|menor)|fondo gastrico|ca gastrico|cancer gastrico`],[2,R`anillo de sello|linitis`],[1.5,R`antro\b|gastroyeyuno`]]],
  ["delgado","Intestino delgado y duodeno",[[3,R`intestino delgado|yeyun|duoden|ileon\b|ileal\b|meckel|ca de delgado|adenocarcinoma de delgado`]]],
  ["apendice","Apéndice",[[4,R`apendice cecal|apendicular|neoplasia apendicular|neoplasia mucinosa apendicular|lamn\b|tumor de apendice|ca de apendice|cancer de apendice|adenocarcinoma de apendice|mucocele`],[3,R`apendice\b`]]],
  ["colon","Colon",[[3,R`colon\b|colonic[oa]|sigmoid|ciego\b|cecal\b|colectom|hemicolectom|valvula ileocecal|ileocecal|poliposis (adenomatosa )?familiar|fap\b|lynch|colon (derecho|izquierdo|ascendente|descendente|transverso)`],[4,R`angulo (hepatico|esplenico)|colon sigmoides`],[2,R`transverso\b`]]],
  ["colorrectal","Colorrectal (sin especificar el sitio)",[[2,R`colorrectal|ccr\b|crc\b|colonrectal|colon y recto`]]],
  ["recto","Recto y unión rectosigmoidea",[[3,R`recto\b|rectal\b|mesorrecto|proctectom|amputacion abdominoperineal|resecc?ion anterior (baja|ultrabaja)|tme\b`],[4,R`rectosigmoid`]]],
- ["ano","Ano y canal anal",[[3,R`canal anal|anal\b|ano\b|margen anal|ca anal|cancer anal|carcinoma anal|ain\b|condiloma anal`]]]
+ ["ano","Carcinoma anal",[[3,R`canal anal|anal\b|ano\b|margen anal|ca anal|cancer anal|carcinoma anal|ain\b|condiloma anal`]]]
 ]],
 ["hp","Hepatopancreatobiliar","#2E8B6E",1,[
- ["higado","Hígado (hepatocarcinoma y tumores hepáticos)",[[4,R`hepatocarcinoma|carcinoma hepatocelular|chc\b|hcc\b|hepatoblastoma|hepatocelular`],[3,R`tumor (de |del )?higado|tumor hepatico|neoplasia hepatica|ca (de )?higado|cancer (de )?higado|hepatectom|higado\b|adenoma hepatico|lesion hepatica|loe hepatica|masa hepatica|nodulo hepatico`],[1.5,R`hepatic[oa]s?\b`]]],
- ["viaBiliar","Vía biliar y colangiocarcinoma",[[4,R`colangiocarcinoma|klatskin|ca de via biliar`],[3,R`vias? biliar(es)?|conducto biliar|coledoc(?!olit)|hiliar|colangi(?!tis|opancreatograf|ografia)|hepatico comun|biliodigest`]]],
+ ["higado","Carcinoma hepatocelular y tumores hepáticos",[[4,R`hepatocarcinoma|carcinoma hepatocelular|chc\b|hcc\b|hepatoblastoma|hepatocelular`],[3,R`tumor (de |del )?higado|tumor hepatico|neoplasia hepatica|ca (de )?higado|cancer (de )?higado|hepatectom|higado\b|adenoma hepatico|lesion hepatica|loe hepatica|masa hepatica|nodulo hepatico`],[1.5,R`hepatic[oa]s?\b`]]],
+ ["viaBiliar","Vías biliares (colangiocarcinoma)",[[4,R`colangiocarcinoma|klatskin|ca de via biliar`],[3,R`vias? biliar(es)?|conducto biliar|coledoc(?!olit)|hiliar|colangi(?!tis|opancreatograf|ografia)|hepatico comun|biliodigest`]]],
  ["vesicula","Vesícula biliar",[[4,R`vesicula biliar (cancer|ca|tumor|neoplasia)|(cancer|carcinoma|adenocarcinoma|tumor|neoplasia|ca) (de |en |la )*vesicula( biliar)?|carcinoma vesicular|ca vesicular|colecistectomia radical`],[1.5,R`colecist|vesicula biliar|polipo vesicular`]]],
  ["pancreas","Páncreas",[[3,R`pancrea(?!titis)|whipple|ipmn|neoplasia (quistica|mucinosa papilar)|tumor solido pseudopapilar|tsp\b`]]],
  ["ampolla","Ampolla de Vater y periampular",[[4,R`ampolla de vater|ampuloma|ampular|periampular`]]]
@@ -11698,15 +11698,15 @@ const DEF=[
  ["filoides","Mama: tumor filoides y lesiones benignas",[[4.5,R`filoides|phyllodes|filodes`],[3.5,R`fibroadenoma|ginecomastia|mastopatia|papiloma intraductal|quiste mamario|quiste de mama|lesion mamaria benigna|tumor benigno de mama|mastitis|absceso mamario`]]]
 ]],
 ["gy","Ginecológico","#B0457F",1,[
- ["cervix","Cérvix (cervicouterino)",[[4,R`cervicouterino|cervico uterino|cacu\b|ca cu\b|cuello uterino|cervix|carcinoma cervical|cancer cervical|ca cervical|nic ?(1|2|3|i|ii|iii)\b|hsil\b|lsil\b|lieag\b|liebg\b|lesion intraepitelial (escamosa )?de (alto|bajo) grado|traquelectom|wertheim|conizacion`]]],
- ["endometrio","Útero y endometrio",[[3,R`endometri|utero\b|uterin[oa]|cuerpo uterino`],[2,R`histerectomia`],[5,R`sarcoma uterino|leiomiosarcoma uterino|carcinosarcoma uterino|sarcoma del estroma endometrial|mixto mulleriano`],[4,R`carcinosarcoma`]]],
- ["ovario","Ovario, trompa y peritoneo primario",[[3,R`ovari|anexial|anexo uterino|trompa|salping|krukenberg|granulosa|disgerminoma|brenner|sertoli|tecoma|fibrotecoma|cistadenocarcinoma|peritoneal primario|borderline|limitrofe|ooforectom|cistadenoma`],[4,R`tumor germinal de ovario|teratoma ovarico|seroso de alto grado|cancer de ovario|ca de ovario|ca ovario`],[2,R`masa pelvica|tumor pelvico`]]],
+ ["cervix","Cáncer cervicouterino",[[4,R`cervicouterino|cervico uterino|cacu\b|ca cu\b|cuello uterino|cervix|carcinoma cervical|cancer cervical|ca cervical|nic ?(1|2|3|i|ii|iii)\b|hsil\b|lsil\b|lieag\b|liebg\b|lesion intraepitelial (escamosa )?de (alto|bajo) grado|traquelectom|wertheim|conizacion`]]],
+ ["endometrio","Neoplasias uterinas (endometrio y sarcoma uterino)",[[3,R`endometri|utero\b|uterin[oa]|cuerpo uterino`],[2,R`histerectomia`],[5,R`sarcoma uterino|leiomiosarcoma uterino|carcinosarcoma uterino|sarcoma del estroma endometrial|mixto mulleriano`],[4,R`carcinosarcoma`]]],
+ ["ovario","Ovario, trompa de Falopio y peritoneal primario",[[3,R`ovari|anexial|anexo uterino|trompa|salping|krukenberg|granulosa|disgerminoma|brenner|sertoli|tecoma|fibrotecoma|cistadenocarcinoma|peritoneal primario|borderline|limitrofe|ooforectom|cistadenoma`],[4,R`tumor germinal de ovario|teratoma ovarico|seroso de alto grado|cancer de ovario|ca de ovario|ca ovario`],[2,R`masa pelvica|tumor pelvico`]]],
  ["vulva","Vulva",[[3,R`vulva|vulvar|vulvectom|clitor|labios mayores`]]],
  ["vagina","Vagina",[[4,R`(cancer|carcinoma|tumor|neoplasia|ca|melanoma) (de |en |la )*vagina|vain\b|neoplasia intraepitelial vaginal`],[1,R`vagina|vaginal`]]],
  ["trofoblastica","Enfermedad trofoblástica gestacional",[[4,R`trofoblast|mola hidatid|mola (completa|invasora|parcial)|mola\b|coriocarcinoma|neoplasia trofoblastica`]]]
 ]],
 ["gu","Genitourinario","#3A7CA5",1,[
- ["rinon","Riñón",[[3,R`carcinoma renal|ca renal|cancer renal|tumor renal|masa renal|neoplasia renal|nefrectom|hipernefroma|carcinoma de celulas renales|wilms|oncocitoma|angiomiolipoma|rinon`],[2,R`carcinoma de celulas claras|ca de celulas claras`],[1,R`renal\b`]]],
+ ["rinon","Cáncer renal",[[3,R`carcinoma renal|ca renal|cancer renal|tumor renal|masa renal|neoplasia renal|nefrectom|hipernefroma|carcinoma de celulas renales|wilms|oncocitoma|angiomiolipoma|rinon`],[2,R`carcinoma de celulas claras|ca de celulas claras`],[1,R`renal\b`]]],
  ["vejiga","Vejiga",[[3,R`vejiga|vesical|urotelial|cistectom|rtuv?\b|transicional`]]],
  ["viaAlta","Pelvis renal y uréter (vía urinaria alta)",[[4,R`pelvis renal|ureter|pielocaliceal|nefroureterectom|via urinaria alta|upper tract|urotelial (de |del |en )*(pelvis|ureter)`]]],
  ["uretra","Uretra",[[3,R`uretra|uretral`]]],
@@ -11717,7 +11717,7 @@ const DEF=[
 ["pm","Piel y melanoma","#7A4E2D",1,[
  ["melanoma","Melanoma",[[5,R`melanoma|breslow|lentigo maligno|nevo (atipico|displasico)|clark (i|ii|iii|iv|v)\b`]]],
  ["basocelular","Carcinoma basocelular",[[4,R`basocelular|carcinoma basal|cbc\b|epitelioma basocelular`]]],
- ["espinocelular","Carcinoma espinocelular (epidermoide cutáneo)",[[4,R`espinocelular|(carcinoma|ca|cancer) epidermoide (cutaneo|de (la )?piel)|epidermoide de (la )?piel|escamoso (cutaneo|de (la )?piel)|marjolin|queratoacantoma|queratosis actinica|enfermedad de bowen|bowen|cec\b`]]],
+ ["espinocelular","Carcinoma espinocelular cutáneo",[[4,R`espinocelular|(carcinoma|ca|cancer) epidermoide (cutaneo|de (la )?piel)|epidermoide de (la )?piel|escamoso (cutaneo|de (la )?piel)|marjolin|queratoacantoma|queratosis actinica|enfermedad de bowen|bowen|cec\b`]]],
  ["merkel","Carcinoma de células de Merkel",[[5,R`merkel`]]],
  ["pielOtros","Piel: otros o sin especificar",[[4,R`triquilem|tricolem|carcinoma triquilemico|carcinoma anexial`],[3,R`cancer de piel|ca de piel|tumor (de piel|cutaneo)|lesion cutanea|neoplasia (de piel|cutanea)|carcinoma cutaneo|paget extramamario|carcinoma sebaceo|hidradenocarcinoma|carcinoma anexial|linfoma cutaneo|micosis fungoide`],[1.5,R`piel\b|cutane`]]]
 ]],
@@ -11726,16 +11726,16 @@ const DEF=[
  ["retro","Sarcoma retroperitoneal",[[5,R`sarcoma retroperitoneal|liposarcoma retroperitoneal|leiomiosarcoma retroperitoneal`],[2.5,R`retroperiton`]]],
  ["blandos","Sarcoma de tejidos blandos (extremidades y tronco)",[[4,R`sarcoma|liposarcoma|leiomiosarcoma|fibrosarcoma|rabdomiosarcoma|angiosarcoma|histiocitoma fibroso|pleomorfico indiferenciado|mpnst|schwannoma maligno|kaposi|dermatofibrosarcoma|dfsp|mixofibrosarcoma`],[3,R`tejidos? blandos?|partes blandas`]]],
  ["desmoide","Tumor desmoide",[[4,R`desmoide|fibromatosis`]]],
- ["hueso","Hueso (osteosarcoma, Ewing, condrosarcoma)",[[5,R`osteosarcoma|ewing|condrosarcoma`],[4,R`cordoma|tumor de celulas gigantes|sarcoma oseo|tumor oseo|tumor de hueso|fractura patologica|osteoblastoma`],[1.5,R`hueso\b|oseo\b`]]]
+ ["hueso","Cáncer óseo (osteosarcoma, Ewing, condrosarcoma)",[[5,R`osteosarcoma|ewing|condrosarcoma`],[4,R`cordoma|tumor de celulas gigantes|sarcoma oseo|tumor oseo|tumor de hueso|fractura patologica|osteoblastoma`],[1.5,R`hueso\b|oseo\b`]]]
 ]],
 ["th","Tórax y mediastino","#4F7C8A",1,[
  ["pulmon","Pulmón",[[3,R`pulmon|cpcnp|cpcp|nsclc\b|sclc\b|bronquio|bronquial|broncogenic|lobectom|neumonectom|nodulo pulmonar|tumor pulmonar|masa pulmonar|alk\b|egfr\b`],[1.5,R`pulmonar`]]],
  ["tfs","Tumor fibroso solitario (pleural y extrapleural)",[[5,R`tumor fibroso solitario|tfs\b|tfsp\b|hemangiopericitoma`]]],
  ["mesotelioma","Mesotelioma pleural",[[5,R`mesotelioma( pleural)?|pleural maligno|derrame pleural neoplasico`]]],
- ["timo","Timo y mediastino",[[5,R`timoma|timo\b|timic[oa]`],[4,R`tumor mediastinal|masa mediastinal|tumor germinal mediastinal`],[2,R`mediastin`]]]
+ ["timo","Timomas, carcinomas tímicos y mediastino",[[5,R`timoma|timo\b|timic[oa]`],[4,R`tumor mediastinal|masa mediastinal|tumor germinal mediastinal`],[2,R`mediastin`]]]
 ]],
 ["sn","Sistema nervioso central","#6E5A9E",1,[
- ["snc","Cerebro, médula y meninges",[[3,R`glioma|glioblastoma|astrocitoma|oligodendroglioma|meningioma|tumor cerebral|tumor de snc|craneofaringioma|neurinoma|hemangioblastoma|ependimoma|meduloblastoma|adenoma hipofisario|hipofis|tumor intracraneal|encefalo`],[1.5,R`cerebr(o|al|ales)\b`]]]
+ ["snc","Sistema nervioso central",[[3,R`glioma|glioblastoma|astrocitoma|oligodendroglioma|meningioma|tumor cerebral|tumor de snc|craneofaringioma|neurinoma|hemangioblastoma|ependimoma|meduloblastoma|adenoma hipofisario|hipofis|tumor intracraneal|encefalo`],[1.5,R`cerebr(o|al|ales)\b`]]]
 ]],
 ["hl","Hematolinfoide","#B5473A",1,[
  ["hodgkin","Linfoma de Hodgkin",[[5,R`hodgkin|lh\b`]]],
@@ -11749,7 +11749,7 @@ const DEF=[
  ["carcinomatosis","Carcinomatosis peritoneal (primario no especificado)",[[2,R`carcinomatosis|siembra peritoneal|implantes? peritoneales?|enfermedad peritoneal|hipec|citorreduct|citorreduccion|pci\b`]]]
 ]],
 ["ot","Otros oncológicos","#7F8B99",1,[
- ["cup","Primario desconocido",[[4,R`primario (desconocido|oculto|no identificado)|origen desconocido|sitio primario desconocido|cup\b|sin primario`]]],
+ ["cup","Primario oculto (desconocido)",[[4,R`primario (desconocido|oculto|no identificado)|origen desconocido|sitio primario desconocido|cup\b|sin primario`]]],
  ["met","Enfermedad metastásica sin primario especificado",[]]
 ]],
 ["bn","Benigno y no oncológico","#9AA3AD",0,[
@@ -12263,10 +12263,10 @@ function oncBodyHTML(){
   if(!all.length) return prog+'<div class="st-card"><div class="st-msg">Aún no hay pacientes cargados desde Drive para clasificar.</div></div>';
   const gs=gItems(A,true), top=Object.entries(A.t).filter(([t])=>ONC.group[ONC.leaf[t].g].cancer).sort((a,b)=>b[1]-a[1]), c0=top[0];
   const withSt=A.cancer-(A.stage[""]||0), iv=A.stage.IV||0;
-  const K=[[A.n,"Pacientes en el periodo",""],[A.cancer,"Con diagnóstico oncológico",`${pc(A.cancer,A.n)}% del total`],[gs.length,"Regiones con pacientes","toca para ver la más frecuente",gs[0]?gs[0].a:""],
-    [c0?c0[1]:0,"Tipo más frecuente",c0?leafName(c0[0]):"—",c0?`data-ot="${c0[0]}"`:""],[iv,"Estadio IV",withSt?`${pc(iv,withSt)}% de los que tienen estadio`:"",`data-ostage="IV"`],
-    [withSt?pc((A.stage.III||0)+iv,withSt)+"%":"—","Estadios avanzados (III–IV)",withSt?`${(A.stage.III||0)+iv} de ${withSt} con estadio · toca para ver estadio IV`:"sin estadios escritos",`data-ostage="IV"`],[(()=>{ const e=rows.filter(r=>ONC.group[r.cls.g].cancer&&r.edn>=0&&r.edn<125).map(r=>r.edn); return e.length?fmtN(medOf(e))+" años":"—"; })(),"Edad mediana","pacientes oncológicos"],
-    [A.stage[""]||0,"Sin estadio identificado","en el diagnóstico escrito",`data-ostage="?"`],[A.ben,"Benignos / no oncológicos","",`data-og="bn"`],[A.unk,"Sin clasificar","revisar en la lista",`data-og="sc"`]];
+  const K=[[A.n,"Pacientes en el periodo",""],[A.cancer,"Con diagnóstico de cáncer",`${pc(A.cancer,A.n)}% del total`],[gs.length,"Regiones anatómicas con pacientes","el detalle de cada una está en la lista de abajo"],
+    [c0?c0[1]:0,"Pacientes con el tumor más frecuente",c0?leafName(c0[0]):"—",c0?`data-ot="${c0[0]}"`:""],[iv,"Estadio IV",withSt?`${pc(iv,withSt)}% de los que tienen estadio escrito · toca para ver la lista`:"",`data-ostage="IV"`],
+    [withSt?pc((A.stage.III||0)+iv,withSt)+"%":"—","Estadios avanzados (III–IV)",withSt?`${(A.stage.III||0)+iv} de ${withSt} pacientes con estadio escrito`:"sin estadios escritos"],[(()=>{ const e=rows.filter(r=>ONC.group[r.cls.g].cancer&&r.edn>=0&&r.edn<125).map(r=>r.edn); return e.length?fmtN(medOf(e))+" años":"—"; })(),"Edad mediana","pacientes oncológicos"],
+    [A.stage[""]||0,"Sin estadio escrito","el diagnóstico no menciona estadio · toca para ver la lista",`data-ostage="?"`],[A.ben,"Benignos o no oncológicos","toca para ver la lista",`data-og="bn"`],[A.unk,"Diagnóstico sin clasificar","el texto no permitió identificar el tumor · toca para revisarlos",`data-og="sc"`]];
   const kp=K.map(([n,l,s,a])=>`<div class="st-kpi${a?" st-click":""}"${a?` ${a} role="button" tabindex="0"`:""}><b>${n}</b><span>${l}</span>${s?`<small class="st-sub">${esc(s)}</small>`:""}</div>`).join("");
   const regCards=gs.map(i=>{ const gid=i.a.replace(/.*"(\w+)"/,"$1"), g=ONC.group[gid], ag=A.g[gid], ls=Object.entries(ag.t).sort((a,b)=>b[1]-a[1]);
     return `<div class="on-gc st-click" data-og="${gid}" role="button" tabindex="0" style="--gc:${g.c}"><div class="on-gh"><i></i><b>${esc(g.n)}</b><em>${ag.n}</em></div><small>${pc(ag.n,A.cancer)}% de los oncológicos</small>${ls.slice(0,3).map(([t,n])=>`<div class="on-gl"><span>${esc(leafName(t))}</span><b>${n}</b></div>`).join("")}${ls.length>3?`<div class="on-gm">+ ${ls.length-3} tipo(s) más</div>`:""}</div>`; }).join("");
@@ -19087,6 +19087,37 @@ input[data-slk]{background:#F3F5F8!important;color:#44536A!important;cursor:not-
 .cfg-grp{display:flex;gap:8px;align-items:flex-start;margin:12px 0 0;padding:12px;border:1px solid #D8DEE8;border-radius:12px;background:#F8FAFD;cursor:pointer}
 .cfg-grp input{width:18px;height:18px;margin:2px 0 0;flex:none;accent-color:#1F3864}.cfg-grp b{font-size:13px;font-weight:600}.cfg-grp small{font-size:12px;color:#5B6675;line-height:1.4}
 .usr-gmark{font-style:normal;font:700 11px var(--rd-sans,system-ui);padding:2px 8px;border-radius:999px;background:#DDF1E6;color:#17603C;margin-left:6px}
+html:root body #ppFrequentPop{border-radius:18px!important;padding:16px!important;border:1px solid #D5DCE8!important;box-shadow:0 18px 48px rgba(20,34,60,.22)!important;background:#fff!important}
+html:root body #ppFrequentPop .pff-title{display:flex;align-items:center;justify-content:space-between;margin:0 0 12px!important;padding:0 0 10px!important;border-bottom:1px solid #E6EAF1}
+html:root body #ppFrequentPop .pff-title b{font:700 16px/1.2 var(--rd-sans,system-ui)!important;color:#14223C!important}
+html:root body #ppFrequentPop .pff-title button{width:36px!important;height:36px!important;border-radius:10px!important;border:1px solid #D5DCE8!important;background:#fff!important;font-size:18px!important;color:#44536A!important;cursor:pointer}
+html:root body #ppFrequentPop .pff-primary{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+html:root body #ppFrequentPop .pff-primary button{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;gap:10px!important;min-height:54px!important;padding:8px 12px!important;border-radius:12px!important;border:1px solid #D5DCE8!important;background:#fff!important;text-align:left!important;box-shadow:none!important}
+html:root body #ppFrequentPop .pff-primary button span{font:700 13.5px/1.2 var(--rd-sans,system-ui)!important;color:#14223C!important}
+html:root body #ppFrequentPop .pff-primary button svg{width:22px!important;height:22px!important;flex:0 0 22px;padding:7px;box-sizing:content-box;border-radius:10px;background:#EAF0F8}
+html:root body #ppFrequentPop button:hover{background:#F4F7FB!important;border-color:#B9C4D6!important}
+html:root body #ppFrequentPop .pff-section{margin:14px 0 6px!important;font:700 11px/1 var(--rd-sans,system-ui)!important;letter-spacing:.07em;text-transform:uppercase;color:#5B6880!important}
+html:root body #ppFrequentPop .pff-groups{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:0!important;border:1px solid #D5DCE8;border-radius:12px;overflow:hidden}
+html:root body #ppFrequentPop .pff-groups button{display:flex!important;align-items:center!important;gap:10px!important;min-height:46px!important;padding:6px 12px!important;border:0!important;border-top:1px solid #EDF0F5!important;border-radius:0!important;background:#fff!important;box-shadow:none!important;text-align:left!important}
+html:root body #ppFrequentPop .pff-groups button:first-child{border-top:0!important}
+html:root body #ppFrequentPop .pff-groups button span:not(.pff-arrow){flex:1;font:600 13.5px/1.2 var(--rd-sans,system-ui)!important;color:#1E2F44!important}
+html:root body #ppFrequentPop .pff-groups button svg{width:20px!important;height:20px!important;flex:0 0 20px}
+html:root body #ppFrequentPop .pff-arrow{color:#8A95A3!important;font-size:18px!important}
+@media (min-width:701px){
+body.hjm-sheet{overflow:hidden!important}
+body.hjm-sheet::before{content:"";position:fixed;inset:0;z-index:2500;background:rgba(18,30,54,.5);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+html:root body.hjm-sheet #view-data{position:fixed!important;z-index:2501;top:27px;bottom:27px;left:0;right:0;margin:0 auto!important;width:min(1240px,calc(100vw - 32px))!important;max-width:none!important;height:auto!important;overflow:auto!important;background:#F4F6FA!important;border-radius:20px;box-shadow:0 24px 70px rgba(10,20,40,.38);padding:0 0 12px!important}
+body.hjm-sheet:has(#dlgPatientFormat[open]) #view-data{visibility:hidden}
+body.hjm-sheet #popHost{z-index:2600!important}
+body.hjm-sheet #hjmFab{z-index:2550!important}
+#hjmSheetBar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;padding:14px 20px;margin:0 0 14px;background:#fff;border-bottom:1px solid #DDE3EC;border-radius:20px 20px 0 0}
+#hjmSheetBar[hidden]{display:none}
+#hjmSheetBar .hs-t{flex:1;min-width:0}#hjmSheetBar .hs-t b{display:block;font:700 18px/1.2 var(--rd-sans,system-ui);color:#14223C;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#hjmSheetBar .hs-t span{font-size:12.5px;color:#5B6675}
+#hjmSheetBar .hs-x{width:40px;height:40px;flex:0 0 40px;border-radius:50%;border:1px solid #D5DCE8;background:#fff;font-size:20px;line-height:1;color:#34435E;cursor:pointer}
+#hjmSheetBar .hs-x:hover{background:#F1F5FA}
+body.hjm-sheet #view-data .app-footer{display:none}
+}
+@media (max-width:700px){#hjmSheetBar{display:none!important}}
 </style>
 <script id="hjm-v900-js">
 /* v9.00 · Navegación superior (Quirófano · Comité · Censo · Hospitalizados · Archivo), menú flotante en móvil / Fold,
@@ -19432,7 +19463,7 @@ document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closes
 try{ if(typeof HM_OPTS!=='undefined'&&Array.isArray(HM_OPTS)&&!HM_OPTS.some(x=>x[0]==='quirofano')){ HM_OPTS.splice(0,0,['quirofano','Quirófano',IC.qx],['comite','Comité',IC.cm]); } }catch(_){}
 
 /* ---------- Colores de cama por clínica (Hospitalizados) ---------- */
-document.addEventListener('click',async e=>{ try{ if(window.__hjmChildFormat||window.__hjmInlineFormat||!e.target.closest) return; const b=e.target.closest('#formatos [data-fmt]'); if(!b) return; const k=b.dataset.fmt;
+document.addEventListener('click',async e=>{ try{ if(window.__hjmChildFormat||window.__hjmInlineFormat||!e.target.closest) return; const b=e.target.closest('#view-data [data-fmt],#view-data [data-clinical],#view-data #archiveOpen'); if(!b||b.getAttribute('aria-disabled')==='true') return; const k=b.id==='archiveOpen'?'archive':(b.dataset.fmt||b.dataset.clinical);
     try{ if(DIRECT_SUPP[k]||PRINT_ONLY_FORMATS.has(k)) return; }catch(_){}
     if(typeof ppIsolatedOpen!=='function'||!hasSelectedPatient()) return; const f=fileByExp(($i('expediente')||{}).value); if(!f) return;
     e.preventDefault(); e.stopImmediatePropagation();
@@ -19448,6 +19479,16 @@ function cfgGrupal(){ const f=$i('cfgForm'), st=$i('cfgState'); if(!f||!st||$i('
     d.innerHTML=dlgShell('Acceso desde cuenta grupal','Lee esto antes de activarlo',`<p class="qd-note" style="font-size:14px;line-height:1.5">Al activarlo, <b>cualquier persona con acceso al correo grupal</b>, o que use una computadora donde esa cuenta esté abierta, podrá entrar con tu nombre y <b>guardar notas, indicaciones y datos a tu nombre</b>.<br><br>Lo que se guarde así queda registrado como hecho por ti y es tu responsabilidad.</p>`,`<button type="button" class="qx-btn" data-qd-x>Cancelar</button><button type="button" class="qx-btn pri" id="cgOk">Entiendo, activar</button>`); show(d);
     d.querySelector('#cgOk').onclick=()=>{ d.close(); G.checked=true; send(true); }; }); }
 try{ new MutationObserver(()=>{ try{ cfgGrupal(); }catch(_){} }).observe(document.documentElement,{childList:true,subtree:true}); }catch(_){}
+function sheetSync(){ if(window.__hjmChildFormat) return; const m=$i('view-data'), b=document.body; let on=false;
+  try{ on=!!m&&isWide()&&!b.classList.contains('pp-browse')&&!V.view&&logged()&&!m.hidden&&getComputedStyle(m).display!=='none'; }catch(_){}
+  try{ if(!on&&m&&b.classList.contains('hjm-sheet')&&!b.classList.contains('pp-browse')&&!V.view&&logged()&&isWide()&&!m.hidden) on=getComputedStyle(m).display!=='none'; }catch(_){}
+  if(b.classList.contains('hjm-sheet')!==on) b.classList.toggle('hjm-sheet',on);
+  let bar=$i('hjmSheetBar'); if(!on){ if(bar) bar.hidden=true; return; }
+  if(!bar){ bar=document.createElement('div'); bar.id='hjmSheetBar'; bar.innerHTML='<div class="hs-t"><b></b><span></span></div><button type="button" class="hs-x" aria-label="Cerrar la hoja de datos y volver a la lista">×</button>'; bar.querySelector('.hs-x').onclick=()=>{ const k=$i('bandBack'); if(k) k.click(); }; }
+  if(bar.parentNode!==m||m.firstElementChild!==bar) m.prepend(bar); bar.hidden=false;
+  const q=id=>String(($i(id)||{}).value||'').trim(), nm=q('nombreCompleto')||[q('apPaterno'),q('apMaterno'),q('nombres')].filter(Boolean).join(' ')||'Paciente nuevo', sub=[q('expediente')?'Exp. '+q('expediente'):'',q('cama')?'Cama '+q('cama'):''].filter(Boolean).join(' · ')||'Hoja de datos';
+  const tb=bar.querySelector('b'), ts=bar.querySelector('span'); if(tb.textContent!==nm) tb.textContent=nm; if(ts.textContent!==sub) ts.textContent=sub; }
+try{ new MutationObserver(()=>{ clearTimeout(sheetSync._t); sheetSync._t=setTimeout(()=>{ try{ sheetSync(); }catch(_){} },80); }).observe(document.body,{attributes:true,attributeFilter:['class'],childList:true}); document.addEventListener('input',()=>{ clearTimeout(sheetSync._t); sheetSync._t=setTimeout(()=>{ try{ sheetSync(); }catch(_){} },150); },true); }catch(_){}
 const HX={cur:null};
 function hxSync(){ const l=$i('ppList'); if(!l) return; const on=false; if(l.classList.contains('hx')!==on) l.classList.toggle('hx',on);
   const rows=[...l.children].filter(r=>r.classList.contains('dlg-item')&&r.dataset.id&&!r.hidden&&r.style.display!=='none'); let ph=[...l.children].find(c=>c.classList.contains('hx-ph'));
@@ -19937,7 +19978,7 @@ addEventListener('resize',()=>{ try{ cenNavPlace(); }catch(_){} try{ revSide(); 
 function renderAll(){ try{ if(V.view&&document.body.classList.contains('pp-browse')) renderView(); }catch(e){ try{ console.error(e); }catch(_){} } try{ navSync(); }catch(_){} try{ solButtons(); }catch(_){} }
 window.HJM_QX={noteSaved,askFromSol,openAdd,openEntry,solEntry,navGo,agenda:AG,reload:()=>{ agLoad('quirofano',true); agLoad('comite',true); }};
 navBuild();
-let fr=0; new MutationObserver(()=>{ if(fr) return; fr=requestAnimationFrame(()=>{ fr=0; try{ bedColors(); }catch(_){} try{ hxSync(); }catch(_){} try{ solButtons(); }catch(_){} try{ revSide(); }catch(_){} try{ cenNavPlace(); }catch(_){} try{ navSync(); }catch(_){} }); }).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+let fr=0; new MutationObserver(()=>{ if(fr) return; fr=requestAnimationFrame(()=>{ fr=0; try{ bedColors(); }catch(_){} try{ hxSync(); }catch(_){} try{ sheetSync(); }catch(_){} try{ solButtons(); }catch(_){} try{ revSide(); }catch(_){} try{ cenNavPlace(); }catch(_){} try{ navSync(); }catch(_){} }); }).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
 let lastLog=false;
 setInterval(()=>{ const on=logged(); if(on&&!lastLog){ agLoad('quirofano'); agLoad('comite'); ['quirofano','comite'].forEach(agFlush); } lastLog=on; navSync(); },1500);
 setInterval(()=>{ if(!logged()||document.hidden) return; const vis=V.view&&document.body.classList.contains('pp-browse'); ['quirofano','comite'].forEach(t=>{ if(AG[t].q.length) agFlush(t); if(vis||Date.now()-AG[t].at>180000) agLoad(t); }); },45000);
