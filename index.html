@@ -51,7 +51,7 @@ B.pick=function(s){const dlg=shell();if(!dlg)return;B.ses=s;applyUsers(inject(s)
  let o=$('betaSharedOut');if(!o){o=document.createElement('button');o.type='button';o.id='betaSharedOut';o.className='beta-out';o.textContent='Cerrar sesión';o.onclick=()=>{B.clear();B.out();wipe();location.reload();};const bt=document.querySelector('#dlgResidentGate .resident-gate-buttons');bt.after(o);}
  const n=$('residentGateName');if(n){n.value='';n.required=true;}status('Cuenta del servicio: '+s.email+'. Escribe tu usuario para continuar.','info');if(!dlg.open)dlg.showModal();setTimeout(()=>{try{n.focus();}catch(_){}},80);};
 document.addEventListener('submit',e=>{if(!e.target||e.target.id!=='residentGateForm')return;e.preventDefault();e.stopImmediatePropagation();const dlg=$('dlgResidentGate');if(!dlg||!dlg.classList.contains('beta-shared'))return;if(B.exiting){status('Guardando los cambios del usuario anterior… intenta en un momento.','info');return;}
- let name='';try{name=resolveGateUser();}catch(_){}if(!name)return;const rec=userRecord(name);if(!rec){status('Ese usuario no existe. Elige uno de la lista.');return;}B.setU(rec.usuario);B.enter();},true);
+ let name='';try{name=resolveGateUser();}catch(_){}if(!name)return;const rec=userRecord(name);if(!rec){status('Ese usuario no existe o no permite el acceso desde la cuenta grupal.');return;}B.setU(rec.usuario);B.enter();},true);
 B.mine=function(it){try{const ed=it&&it.meta&&it.meta.ed;return !ed||ukey(ed)===ukey(sessionUserName());}catch(_){return true;}};
 function status(t,st){try{gateStatus(t,st);}catch(_){}}
 function okOrigin(){return location.protocol==='https:'||/^(localhost|127\.0\.0\.1)$/.test(location.hostname);}
@@ -135,7 +135,7 @@ document.addEventListener('click',async ev=>{const b=ev.target.closest('.beta-ma
 function wrap(){if(B.wrapped)return;B.wrapped=true;let q=false;new MutationObserver(()=>{if(q)return;q=true;requestAnimationFrame(()=>{q=false;try{const h=document.getElementById('stTab');if(h&&isTechnicalAdmin()&&B.ses){const tabs=h.querySelector('.usr-tabs');if(tabs){const np=Object.keys(B.ses.solicitudes||{}).length,cur=h.querySelector('#stUsrList #betaAcc')?B.kind:'';
  [['acc','Accesos'+(np?' <span class="st-cnt st-bad">'+np+'</span>':'')]].forEach(([k,lbl])=>{let t=tabs.querySelector('[data-beta-tab="'+k+'"]');
   if(!t){t=document.createElement('button');t.type='button';t.className='usr-tab';t.dataset.betaTab=k;t.setAttribute('role','tab');tabs.appendChild(t);t.onclick=()=>{tabs.querySelectorAll('.usr-tab').forEach(x=>{x.classList.remove('on');x.setAttribute('aria-selected','false');});t.classList.add('on');t.setAttribute('aria-selected','true');['stUsrQ','stUsrAdd'].forEach(id=>{const e=document.getElementById(id);if(e)e.hidden=true;});const l=h.querySelector('#stUsrList');l.innerHTML='';B.usrCard(l,k);};}
-  if(t.innerHTML!==lbl)t.innerHTML=lbl;const on=cur===k;if(t.classList.contains('on')!==on){t.classList.toggle('on',on);t.setAttribute('aria-selected',on?'true':'false');}});}}if(h&&h.querySelector('#stUsrList'))B.decorate(h);if(h&&!isTechnicalAdmin())h.querySelectorAll('.usr-item [data-del]').forEach(x=>x.remove());const uf=document.querySelector('#dlgUsr[open] #usrfU');if(uf&&!isTechnicalAdmin()&&uf.value&&!uf.readOnly){uf.readOnly=true;uf.title='Solo el Administrador Técnico cambia el nombre de usuario';}}catch(_){}});}).observe(document.body,{childList:true,subtree:true});}
+  if(t.innerHTML!==lbl)t.innerHTML=lbl;const on=cur===k;if(t.classList.contains('on')!==on){t.classList.toggle('on',on);t.setAttribute('aria-selected',on?'true':'false');}});}}if(h&&h.querySelector('#stUsrList'))B.decorate(h);if(h&&!isTechnicalAdmin())h.querySelectorAll('.usr-item [data-del]').forEach(x=>x.remove());const uf=document.querySelector('#dlgUsr[open] #usrfU');if(uf&&!isTechnicalAdmin()&&uf.value&&!uf.readOnly){uf.readOnly=true;uf.title='Solo el Técnico cambia el nombre de usuario';}}catch(_){}});}).observe(document.body,{childList:true,subtree:true});}
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 B.usrCard=function(host,kind){if(!host||!isTechnicalAdmin()||!B.ses)return;kind=kind||B.kind||'acc';B.kind=kind;let c=host.querySelector('#betaAcc');if(!c){c=document.createElement('section');c.id='betaAcc';host.innerHTML='';host.appendChild(c);}
  const s=B.ses,us=[...HJM_USERS].sort((a,b)=>String(a.nombre).localeCompare(String(b.nombre),'es')),
@@ -247,7 +247,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
 {
   "version": 1,
   "actualizado": "31.10.2026",
-  "origen": "Requisitos explícitos del Administrador Técnico para mantenimiento de esta aplicación HJM.",
+  "origen": "Requisitos explícitos del Técnico para mantenimiento de esta aplicación HJM.",
   "sinonimos": {
     "grupo_ingreso": {
       "nombre_visible": "Ingreso",
@@ -327,8 +327,8 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
     "Impresión del censo: preferir una hoja carta horizontal, máximo dos para la tabla; reverso en una hoja carta vertical. Conservar toda la información y el formato original, ajustar columnas y texto sin deformar la tipografía.",
     "Abrir Reporte de cirugía inicia un reporte nuevo, sin cargar automáticamente el anterior. Solo se recupera un reporte guardado al elegirlo expresamente en Reportes previos o Archivo clínico.",
     "v9.00: la navegación principal es la barra superior Quirófano · Comité · Censo · Hospitalizados · Archivo (en móvil y Fold, botón flotante de menú con Comentarios). La hoja de datos solo se abre desde un paciente o Nuevo Paciente. Quirófano y Comité guardan su agenda en la carpeta de Drive de Quirófano y Comité (Codigo.gs v25); las notas siguen en el JSON del paciente.",
-    "Descargar todo es exclusivo del Administrador Técnico; incluye todos los archivos, binarios y subcarpetas del respaldo HJM con estructura de carpetas. No entregar un ZIP parcial como completo.",
-    "El Administrador Técnico se identifica en el servidor por su cuenta de Google; Usuarios y Administrar no piden clave. Aplicar el catálogo central ACCESS_GROUPS en todas las vistas y acciones.",
+    "Descargar todo es exclusivo del Técnico; incluye todos los archivos, binarios y subcarpetas del respaldo HJM con estructura de carpetas. No entregar un ZIP parcial como completo.",
+    "El Técnico se identifica en el servidor por su cuenta de Google; Usuarios y Administrar no piden clave. Aplicar el catálogo central ACCESS_GROUPS en todas las vistas y acciones.",
     "Quitar/Borrar del censo solo retira la fila. Deshacer y Rehacer deben incluir ese borrado y restaurar todos sus campos. Agregar de nuevo elimina la exclusión del día sin duplicar ni borrar el expediente.",
     "En las ventanas de notas médicas, indicaciones, reporte de cirugía y alta, el indicador Nuevo/Guardado se muestra a la derecha del título en la misma fila, con tamaño legible.",
     "Las ventanas de formatos, notas, indicaciones y archivo clínico heredan la sesión activa principal. No deben pedir usuario ni mantener un bloqueo por inactividad independiente. El cierre de sesión y los 10 minutos de inactividad se controlan en la página principal.",
@@ -339,7 +339,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.14">
+<meta name="application-version" content="9.17">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2854,7 +2854,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.14 · Fecha de publicación: 14.11.26</div>
+  <div class="app-footer-version">Versión 9.17 · Fecha de publicación: 14.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -3932,7 +3932,7 @@ const ACCESS_ADMIN_GROUPS=[
  ['Documentos',[['restaurar_documentos','Restaurar documentos cancelados','']]],
  ['Censo (adicional para administradores)',[['ver_censo','Ver censo actual','Aunque su rol base no lo tenga.'],['editar_censo','Editar el Censo actual y el reverso',''],['agregar_censo','Agregar pacientes al censo',''],['guardar_censo','Guardar el Censo final',''],['imprimir_censo','Imprimir el censo',''],['ver_censos_archivados','Ver censos anteriores',''],['editar_censos_archivados','Editar censos anteriores','']]]
 ];
-const ACCESS_TECH_GROUP=['Solo Administrador Técnico',[['gestionar_usuarios','Usuarios y permisos','Pestaña Usuarios (también el Administrador Médico). Ligar correos de Google es exclusivo del Administrador Técnico.'],['administrar_sistema','Administrar y mantenimiento','Pestaña Administrar.'],['descargar_todo','Descargar toda la carpeta y subcarpetas',''],['borrar_documentos','Borrar definitivamente documentos',''],['borrar_comentarios','Borrar mensajes y conversaciones','']]];
+const ACCESS_TECH_GROUP=['Solo Técnico',[['gestionar_usuarios','Usuarios y permisos','Pestaña Usuarios (también el Administrador Médico). Ligar correos de Google es exclusivo del Técnico.'],['administrar_sistema','Administrar y mantenimiento','Pestaña Administrar.'],['descargar_todo','Descargar toda la carpeta y subcarpetas',''],['borrar_documentos','Borrar definitivamente documentos',''],['borrar_comentarios','Borrar mensajes y conversaciones','']]];
 const ACCESS_GROUPS=ACCESS_BASE_GROUPS.map(g=>[g[0],g[1],g[2]]).concat(ACCESS_ADMIN_GROUPS.map(g=>[g[0],'',g[1]]),[[ACCESS_TECH_GROUP[0],'',ACCESS_TECH_GROUP[1]],['Siempre disponibles','',ACCESS_ALWAYS.map(k=>[k,k,''])]]);
 const ACCESS_LABELS=Object.fromEntries(ACCESS_GROUPS.flatMap(g=>g[2].map(x=>[x[0],x[1]])));
 const ACCESS_KEYS=[...new Set(ACCESS_GROUPS.flatMap(g=>g[2].map(x=>x[0])))],ACCESS_TECH_ONLY=new Set(ACCESS_TECH_GROUP[1].map(x=>x[0]));
@@ -3992,7 +3992,7 @@ function cleanUsers(list){
     /* v3.13 · filtros predeterminados de inicio (Hospitalizados / Todos): clínicas y adscritos elegidos; vacío = todos */
     const uniq=(a,n)=>Array.isArray(a)?[...new Set(a.map(v=>String(v==null?"":v).trim()).filter(Boolean))].slice(0,n):[];
     const fclin=uniq(x.fclin,12), fads=uniq(x.fads,60);
-    out.push({usuario,nombre,tipo,servicio,...(typeof x.admin==="boolean"?{admin:x.admin}:{}),...(x.tecnico===true?{tecnico:true}:{}),...(x.quirofano===true?{quirofano:true}:{}),...(x.permisos&&typeof x.permisos==="object"?{permisos:accessCleanMap(x.permisos)}:{}),...(x.raiz===true?{raiz:true}:{}),...(x.raiz===true&&x.perfiles?{perfiles:accessCleanProfiles(x.perfiles)}:{}),...(cp?{cp}:{}),...(anio?{anio}:{}),...(esp?{esp}:{}),...(inicio?{inicio}:{}),...(fclin.length?{fclin}:{}),...(fads.length?{fads}:{}),...(String(x.ntab||"")==="0"?{ntab:"0"}:{})});
+    out.push({usuario,nombre,tipo,servicio,...(typeof x.admin==="boolean"?{admin:x.admin}:{}),...(x.tecnico===true?{tecnico:true}:{}),...(typeof x.quirofano==="boolean"?{quirofano:x.quirofano}:{}),...(x.grupal===true?{grupal:true,grupalPor:x.grupalPor==="usuario"?"usuario":"tecnico"}:{}),...(x.permisos&&typeof x.permisos==="object"?{permisos:accessCleanMap(x.permisos)}:{}),...(x.raiz===true?{raiz:true}:{}),...(x.raiz===true&&x.perfiles?{perfiles:accessCleanProfiles(x.perfiles)}:{}),...(cp?{cp}:{}),...(anio?{anio}:{}),...(esp?{esp}:{}),...(inicio?{inicio}:{}),...(fclin.length?{fclin}:{}),...(fads.length?{fads}:{}),...(String(x.ntab||"")==="0"?{ntab:"0"}:{})});
   });
   return out;
 }
@@ -4053,7 +4053,7 @@ const admRec=u=>!(window.HJM_BETA&&HJM_BETA.sinPriv())&&!!u&&(isTechAdminRecord(
 let TECH_ADMIN_SESSION="",TECH_ADMIN_REQUEST=null;
 function isTechAdminRecord(u){return !(window.HJM_BETA&&HJM_BETA.sinPriv())&&!!u&&u.tecnico===true;}
 function isTechnicalAdmin(){if(window.__hjmChildFormat)return parent!==window&&parent.sessionUserName()===sessionUserName()&&parent.isTechnicalAdmin();const r=userRecord(sessionUserName());return isTechAdminRecord(r)&&TECH_ADMIN_SESSION===ukey(r.usuario);}
-function adminRank(u){return isTechAdminRecord(u)?"Administrador Técnico":admRec(u)?(u.tipo==="administrativo"?"Administrador Administrativo":"Administrador Médico"):"";}
+function adminRank(u){return isTechAdminRecord(u)?"Técnico":admRec(u)?(u.tipo==="administrativo"?"Administrador Administrativo":"Administrador Médico"):"";}
 const isSuperAdm=()=>isTechnicalAdmin();
 function resetTechnicalAdmin(){
   ["dlgStats","dlgUsr","dlgTechAdmin"].forEach(id=>{const d=document.getElementById(id);if(d&&d.open)d.close();});
@@ -4076,11 +4076,11 @@ function usersChange(changes){
  USERS_DENY='';if(USERS_DISCARDING){USERS_DENY='Espera a que termine el descarte de cambios.';return false;}
  const own=ownUserKey(),self=userRecord(sessionUserName()),protectedEqual=u=>!!u&&u.tipo===self?.tipo&&admRec(u)===admRec(self)&&!!u.tecnico===!!self?.tecnico&&JSON.stringify(u.permisos||{})===JSON.stringify(self?.permisos||{})&&JSON.stringify(u.perfiles||{})===JSON.stringify(self?.perfiles||{})&&isTechAdminRecord(u)===isTechAdminRecord(self);
  const personalChange=!!self&&canPerm('editar_perfil')&&changes.length<=2&&changes.filter(c=>c.op==='set').length===1&&changes.every(c=>c.op==='del'?c.k===own:c.op==='set'&&(c.k===own||!HJM_USERS.some(u=>ukey(u.usuario)===c.k))&&protectedEqual(c.u));
- if(!isTechnicalAdmin()&&!canPerm('gestionar_usuarios')&&!personalChange){USERS_DENY='Solo un Administrador Técnico autorizado puede cambiar roles o privilegios.';return false;}
+ if(!isTechnicalAdmin()&&!canPerm('gestionar_usuarios')&&!personalChange){USERS_DENY='Solo un Técnico autorizado puede cambiar roles o privilegios.';return false;}
  for(const c of changes){const ex=HJM_USERS.find(u=>ukey(u.usuario)===c.k);if(accessRoot(ex)&&(c.op!=='set'||!accessRoot(c.u))){USERS_DENY='Debe conservarse la cuenta principal.';return false;}}
   let list=HJM_USERS.slice();
  changes.forEach(c=>{list=list.filter(u=>ukey(u.usuario)!==c.k);if(c.op==="set"){const u=cleanUsers([c.u])[0];if(u)list.push(u);}});
- if((isTechnicalAdmin()||canPerm("gestionar_usuarios"))&&!list.some(isTechAdminRecord)){USERS_DENY="Debe haber al menos un Administrador Técnico.";return false;}
+ if((isTechnicalAdmin()||canPerm("gestionar_usuarios"))&&!list.some(isTechAdminRecord)){USERS_DENY="Debe haber al menos un Técnico.";return false;}
  applyUsers(list);HJM_OPS_DIRTY=true;USERS_ERR="";usersStateDraw();
  HJM_BETA.pushUsers(changes.map(c=>({k:c.k,op:c.op,u:c.op==="set"?(cleanUsers([c.u])[0]||c.u):null})));
  return true;
@@ -7973,7 +7973,7 @@ function renderPP(){
   if(_keep){ try{ const c=document.querySelector('#ppList [data-pend="'+_keep.id+'"]'); if(c){ ppPendSet(c,_keep.rows); const t=c.children[_keep.i]&&c.children[_keep.i].querySelector(".pp-pt"); if(t){ t.focus({preventScroll:true}); t.setSelectionRange(_keep.s,_keep.e); } } }catch(_){} }
 }
 
-/* ---------- v8.46 · Solo Administrador técnico, pestaña Todos: pacientes que aparecen en censos pero no tienen archivo JSON en la app ---------- */
+/* ---------- v8.46 · Solo Técnico, pestaña Todos: pacientes que aparecen en censos pero no tienen archivo JSON en la app ---------- */
 let PP_NJ_OPEN=false;
 function ppNoJsonList(){ let C={}; try{ C=(window.__hjmStatsCensos&&window.__hjmStatsCensos())||{}; }catch(_){}
   const have=new Set(); uniqueFiles(DRIVE_FILES||[]).forEach(f=>{ const e=String(expOf(f)||"").trim().replace(/^0+/,""); if(e) have.add(e); });
@@ -9498,7 +9498,7 @@ function cenRevisaHTML(per,cen){
 })();
 function cenContHTML(per,cen){
   const S=cenSinPrevioHTML(per,cen)+cenRevisaHTML(per,cen);
-  const L=cenContinuidad(per,cen); CEN._cont=L; if(!L.length) return S;
+  const L=cenContinuidad(per,cen); CEN._cont=L; if(!L.length||(typeof isTechnicalAdmin==="function"&&!isTechnicalAdmin())) return S;
   const pv=cenDay(per.next.y,per.next.m,per.next.d,-1);
   return `<div class="cen-cont" role="alert"><b>Revisar: ${L.length} paciente(s) del censo anterior (${cenDot(pv)}) ya no aparecen en este censo y no tienen alta ni defunción registrada.</b><ul>${L.map((x,i)=>`<li><span>${esc((x.p.cama?x.p.cama+" · ":"")+x.p.nombre)} · Exp. ${esc(x.p.exp)}${x.f?" · cama actual: "+esc(String((x.f.meta&&x.f.meta.cama)||"vacía"))+(((ppRowS(x.f)||{}).camaLiberada)?" (cama liberada a CE, sin alta)":""):" · sin expediente en la app"}</span>${x.f&&accessCensusWrite()?`<button type="button" class="cen-btn" data-contalta="${i}">Registrar alta</button>`:""}${!x.f&&x.p.exp&&x.p.nombre&&accessCensusWrite()?`<button type="button" class="cen-btn" data-contnew="${i}">Crear paciente</button>`:""}</li>`).join("")}</ul><small>Si salieron del servicio, registra el alta para que aparezcan en ALTAS. Si siguen hospitalizados, corrige su cama en Hospitalizados. Si no tienen expediente en la app, «Crear paciente» abre Agregar Paciente con los datos del censo anterior.</small></div>`+S;
 }
@@ -12622,7 +12622,7 @@ function dataAuditHTML(remote){ if(!isAdmin()) return ""; try{
    ${dt("periodos sin censo (para cargar con la skill cargar-censo)",mis.length,tbl(["Último censo antes","Siguiente censo","Días faltantes"],mis.slice().reverse().map(m=>[kf(m[0]),kf(m[1]),m[2]]),80))}
    ${dt("censos con reverso distinto de la tabla",revDif.length,tbl(["Censo","Ingresos reverso / tabla","Egresos reverso / tabla"],revDif.slice().reverse().map(k=>{ const c=C[k].chk; return [kf(k),c.ingR+" / "+c.ingC,c.egrR+" / "+c.egrC]; })))}
   </div>`; }catch(e){ return `<div class="st-card"><div class="st-msg">No se pudo calcular la auditoría: ${esc(e&&e.message||e)}</div></div>`; } }
-function movAdmin(){ return isAdmin()&&isTechnicalAdmin()?`<div class="st-card"><h3>Mantenimiento <small>· solo Administrador Técnico</small></h3><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button type="button" class="st-btn st-sm" data-cenbf>Importar censos ya guardados</button><span class="st-msg" id="stCenMsg" style="margin:0" aria-live="polite">Los censos nuevos o modificados se integran solos en segundo plano. Este botón además pasa el último censo cargado desde fuera al Censo actual.</span></div></div>`:""; }
+function movAdmin(){ return isAdmin()&&isTechnicalAdmin()?`<div class="st-card"><h3>Mantenimiento <small>· solo Técnico</small></h3><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button type="button" class="st-btn st-sm" data-cenbf>Importar censos ya guardados</button><span class="st-msg" id="stCenMsg" style="margin:0" aria-live="polite">Los censos nuevos o modificados se integran solos en segundo plano. Este botón además pasa el último censo cargado desde fuera al Censo actual.</span></div></div>`:""; }
 function movWire(root){
   root.querySelectorAll("[data-mv]").forEach(el=>{ const k=el.dataset.mv; if(el.tagName==="INPUT"){ let tm=0; el.oninput=()=>{ clearTimeout(tm); tm=setTimeout(()=>{ MOVF.q=el.value; const pos=el.selectionStart; render().then(()=>{ const n=document.querySelector('[data-mv="q"]'); if(n){ n.focus(); try{ n.setSelectionRange(pos,pos); }catch(_){} } }); },300); }; } else el.onchange=()=>{ MOVF[k]=el.value; render(); }; });
   root.querySelectorAll("[data-mvps]").forEach(b=>b.onclick=e=>{ e.stopPropagation(); movPsOpen(); });
@@ -13397,7 +13397,7 @@ function usrEditor(key,tipoNuevo){
   let dlg=document.getElementById("dlgUsr"); if(!dlg){ dlg=document.createElement("dialog"); dlg.id="dlgUsr"; document.body.appendChild(dlg); }
   const tipo=cur?cur.tipo:(tipoNuevo||"residente");
   dlg.innerHTML=`<form class="usr-form" id="usrForm" autocomplete="off" novalidate>
-    <h3>${cur?"Editar usuario":"Agregar usuario"}</h3>${cur&&isTechAdminRecord(cur)?'<p class="st-msg">Administrador Técnico: acceso total. Usuarios y Administrar requieren la clave de sesión.</p>':""}
+    <h3>${cur?"Editar usuario":"Agregar usuario"}</h3>${cur&&isTechAdminRecord(cur)?'<p class="st-msg">Técnico: mantenimiento de la app. Usuarios y Administrar requieren la clave de sesión.</p>':""}
     <label><span>Usuario <small>(lo que se escribe al ingresar)</small></span><input id="usrfU" value="${esc(cur?cur.usuario:"")}" autocomplete="off" spellcheck="false"></label>
     <label><span>Nombre completo <small>(el que se llena e imprime en los formatos)</small></span><input id="usrfN" value="${esc(cur?cur.nombre:"")}" autocomplete="off" spellcheck="false"></label>
     <label><span>Tipo</span><select id="usrfT"><option value="residente"${tipo==="residente"?" selected":""}>Residente</option><option value="adscrito"${tipo==="adscrito"?" selected":""}>Adscrito</option><option value="administrativo"${tipo==="administrativo"?" selected":""}>Administrativo</option></select></label>
@@ -16888,15 +16888,15 @@ function accessBaseHTML(values,base){
  return ACCESS_BASE_GROUPS.map(([title,desc,items])=>'<fieldset class="acc-group"><legend>'+esc(title)+'</legend>'+(desc?'<p class="acc-desc">'+esc(desc)+'</p>':'')+items.filter(x=>!kid.has(x[0])).map(x=>row(x[0],true)).join('')+'</fieldset>').join('');
 }
 function accessAdminHTML(values){
- const row=(key,label,hint,tech)=>'<tr><td class="acc-nm"><b>'+esc(label)+'</b>'+(hint?'<em>'+esc(hint)+'</em>':'')+'</td><td class="acc-ck"><input type="checkbox" data-permission="'+key+'" aria-label="'+esc(label)+' · Administrador"'+(!tech&&values[key]?' checked':'')+(tech?' disabled':'')+'></td><td class="acc-ck"><input type="checkbox" checked disabled aria-label="'+esc(label)+' · Administrador técnico"></td></tr>';
+ const row=(key,label,hint,tech)=>'<tr><td class="acc-nm"><b>'+esc(label)+'</b>'+(hint?'<em>'+esc(hint)+'</em>':'')+'</td><td class="acc-ck"><input type="checkbox" data-permission="'+key+'" aria-label="'+esc(label)+' · Administrador"'+(!tech&&values[key]?' checked':'')+(tech?' disabled':'')+'></td><td class="acc-ck"><input type="checkbox" checked disabled aria-label="'+esc(label)+' · Técnico"></td></tr>';
  const head=t=>'<tr class="acc-sub"><th colspan="3">'+esc(t)+'</th></tr>';
- return '<div class="acc-table-wrap"><table class="acc-table"><thead><tr><th>Permiso</th><th class="acc-ck">Administrador</th><th class="acc-ck">Administrador técnico</th></tr></thead><tbody>'+ACCESS_ADMIN_GROUPS.map(([t,items])=>head(t)+items.map(([k,l,h])=>row(k,l,h,false)).join('')).join('')+head(ACCESS_TECH_GROUP[0])+ACCESS_TECH_GROUP[1].map(([k,l,h])=>row(k,l,h,true)).join('')+'</tbody></table></div>';
+ return '<div class="acc-table-wrap"><table class="acc-table"><thead><tr><th>Permiso</th><th class="acc-ck">Administrador</th><th class="acc-ck">Técnico</th></tr></thead><tbody>'+ACCESS_ADMIN_GROUPS.map(([t,items])=>head(t)+items.map(([k,l,h])=>row(k,l,h,false)).join('')).join('')+head(ACCESS_TECH_GROUP[0])+ACCESS_TECH_GROUP[1].map(([k,l,h])=>row(k,l,h,true)).join('')+'</tbody></table></div>';
 }
 function accessReadChecks(host){return Object.fromEntries([...host.querySelectorAll('[data-permission]')].map(i=>[i.dataset.permission,i.checked]));}
 function accessWireChecks(host){host.addEventListener('change',e=>{const key=e.target.dataset.permission;if(!key)return;const fold=()=>{host.querySelectorAll('.acc-kids').forEach(k=>{const par=host.querySelector('[data-permission="'+k.dataset.parent+'"]'),on=!!par&&par.checked&&!par.disabled;k.hidden=!on;if(!on)k.querySelectorAll('[data-permission]').forEach(i=>{i.checked=false;});});};const nodes=Object.fromEntries([...host.querySelectorAll('[data-permission]')].map(i=>[i.dataset.permission,i]));if(e.target.checked){const ensure=k=>{for(const dep of ACCESS_REQUIRES[k]||[])if(nodes[dep]&&!nodes[dep].disabled){nodes[dep].checked=true;ensure(dep);}};ensure(key);}else{for(let j=0;j<3;j++)for(const [k,deps]of Object.entries(ACCESS_REQUIRES))if(deps.some(d=>nodes[d]&&!nodes[d].checked)&&nodes[k]&&!nodes[k].disabled)nodes[k].checked=false;}fold();});}
 function accessEditorMount(dlg,cur){
  const admin=dlg.querySelector('#usrfA'),type=dlg.querySelector('#usrfT');admin.closest('label').hidden=true;
- const section=document.createElement('section');section.className='access-editor';section.innerHTML='<h4>Rol y administración</h4><label>Asignación<select id="usrfRank"><option value="normal">Usuario</option><option value="admin">Administrador Médico / Administrativo</option><option value="tecnico">Administrador Técnico · Acceso total</option></select></label><p class="access-hint">El rol (Adscrito, Residente o Administrativo) se elige en Tipo. Los permisos de cada rol se definen en la pestaña Permisos.</p>';
+ const section=document.createElement('section');section.className='access-editor';section.innerHTML='<h4>Rol y administración</h4><label>Asignación<select id="usrfRank"><option value="normal">Usuario</option><option value="admin">Administrador Médico / Administrativo</option><option value="tecnico">Técnico</option></select></label><p class="access-hint">El rol (Adscrito, Residente o Administrativo) se elige en Tipo. Los permisos de cada rol se definen en la pestaña Permisos.</p>';
  dlg.querySelector('#usrfE').before(section);const rank=section.querySelector('#usrfRank');rank.value=isTechAdminRecord(cur)?'tecnico':admRec(cur)?'admin':'normal';if(accessRoot(cur)){rank.disabled=true;dlg.querySelector('#usrfU').readOnly=true;dlg.querySelector('#usrfN').readOnly=true;}
  const sync=()=>{admin.checked=rank.value!=='normal';};sync();rank.addEventListener('change',sync);
  dlg.__accessValues=()=>({tecnico:rank.value==='tecnico',admin:rank.value!=='normal',permisos:undefined});
@@ -17031,7 +17031,7 @@ html body #cenBandPeriod .cen-chip small{font-size:9px!important}
 </style><script id="hjm411-full-export" type="text/hjm-init">
 /* ZIP íntegro: datos binarios, subcarpetas, carpetas vacías y ZIP64 cuando corresponde. */
 const HJM_FULL_EXPORT={busy:false,cancel:false,message:'',files:0,folders:0};
-function hjmExportCard(){return canPerm('descargar_todo')?'<section class="st-card full-export-card"><p>Descargar todo conserva la estructura completa de Pacientes HJM, usuarios, estadísticas, censos, pendientes y respaldos. Requiere el acceso de Administrador Técnico.</p><div class="full-export-actions"><button type="button" class="st-btn" id="hjmFullCancel" hidden>Cancelar descarga</button></div><div id="hjmFullStatus" class="st-msg" role="status"></div></section>':'';}
+function hjmExportCard(){return canPerm('descargar_todo')?'<section class="st-card full-export-card"><p>Descargar todo conserva la estructura completa de Pacientes HJM, usuarios, estadísticas, censos, pendientes y respaldos. Requiere el acceso de Técnico.</p><div class="full-export-actions"><button type="button" class="st-btn" id="hjmFullCancel" hidden>Cancelar descarga</button></div><div id="hjmFullStatus" class="st-msg" role="status"></div></section>':'';}
 function hjmExportPaint(){const s=HJM_FULL_EXPORT,b=document.getElementById('hjmFullDownload'),c=document.getElementById('hjmFullCancel'),m=document.getElementById('hjmFullStatus');if(b)b.disabled=s.busy;if(c)c.hidden=!s.busy;if(m)m.textContent=s.message;}
 const HJM_EXPORT_CRC=Array.from({length:256},(_,n)=>{let c=n;for(let i=0;i<8;i++)c=c&1?0xEDB88320^(c>>>1):c>>>1;return c>>>0;});
 function hjmExportCRC(bytes,initial=0xFFFFFFFF){let c=initial;for(const v of bytes)c=HJM_EXPORT_CRC[(c^v)&255]^(c>>>8);return c>>>0;}
@@ -17051,7 +17051,7 @@ function hjmExportZip(entries){
  const end=new DataView(new ArrayBuffer(22));end.setUint32(0,0x06054b50,true);end.setUint16(8,zip64?65535:entries.length,true);end.setUint16(10,zip64?65535:entries.length,true);end.setUint32(12,zip64?0xFFFFFFFF:Number(cdSize),true);end.setUint32(16,zip64?0xFFFFFFFF:Number(offset),true);return new Blob([...parts,...central,...tail,end.buffer],{type:'application/zip'});
 }
 async function hjmExportAll(){
- if(!accessRequire('descargar_todo')||HJM_FULL_EXPORT.busy)return;const s=HJM_FULL_EXPORT;s.busy=true;s.cancel=false;s.message='Confirmando acceso de Administrador Técnico…';hjmExportPaint();
+ if(!accessRequire('descargar_todo')||HJM_FULL_EXPORT.busy)return;const s=HJM_FULL_EXPORT;s.busy=true;s.cancel=false;s.message='Confirmando acceso de Técnico…';hjmExportPaint();
  try{if(!await unlockTechnicalAdmin()||!canPerm('descargar_todo')||!isTechnicalAdmin()||s.cancel){s.busy=false;s.message='Descarga cancelada.';hjmExportPaint();return;}}catch(e){s.busy=false;s.message=String(e.message||e);hjmExportPaint();return;}
  const actor=sessionUserName();Object.assign(s,{busy:true,cancel:false,files:0,folders:0,message:'Leyendo la estructura de carpetas…'});hjmExportPaint();
  const check=()=>{if(s.cancel||!canPerm('descargar_todo')||!isTechnicalAdmin()||sessionUserName()!==actor){const e=new Error('Descarga cancelada.');e.cancelled=true;throw e;}};
@@ -17822,15 +17822,15 @@ const PM_ROLE_META={
  adscrito:{t:'Adscritos',d:'Médicos adscritos del servicio.',ic:'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0'},
  residente:{t:'Residentes',d:'Médicos residentes.',ic:'M4 9l8-4 8 4-8 4-8-4Zm4 2v4c0 1.7 1.8 3 4 3s4-1.3 4-3v-4'},
  administrativo:{t:'Administrativos',d:'Personal administrativo: consulta el Archivo clínico y los Censos; lo demás se decide aquí.',ic:'M5 4h10l4 4v12H5V4Zm9 0v5h5M8 13h8M8 17h6'},
- admin:{t:'Administradores',d:'Lo que se suma a cualquier usuario marcado como administrador en «Editar usuario». El Administrador Técnico siempre tiene todo.',ic:'M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6l7-3Z'},
+ admin:{t:'Administradores',d:'Lo que se suma a cualquier usuario marcado como administrador en «Editar usuario». El Técnico siempre tiene todo.',ic:'M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6l7-3Z'},
  comparar:{t:'Comparar',d:'Vista rápida de lo que tiene cada tipo de usuario (lo guardado).',ic:'M4 6h16M4 12h16M4 18h16M9 4v16M15 4v16'}
 };
-const PM_GROUP_IC={'Hospitalizados':'M3 18V8m0 6h18v4M7 11h4a3 3 0 0 1 3 3H3m14-3h2a2 2 0 0 1 2 2v1','Pacientes':'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0','Censo':'M6 4h12v16H6zM9 8h6M9 12h6M9 16h4','Censos anteriores':'M4 7h16v13H4zM3 4h18v3H3zM10 11h4','Archivo clínico':'M3 6h7l2 2h9v11H3z','Documentos clínicos':'M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h5','Impresión':'M7 9V4h10v5M7 17H5v-6h14v6h-2M8 14h8v6H8z','Búsqueda por diagnóstico':'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm5-2 5 5','Panel de control':'M4 13a8 8 0 0 1 16 0M12 13l4-4M4 17h16','Descargas':'M12 4v11m-5-5 5 5 5-5M5 20h14','Documentos':'M6 3h9l4 4v14H6zM14 3v5h5','Solo Administrador Técnico':'M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6l7-3Zm-3 9 2 2 4-4'};
+const PM_GROUP_IC={'Hospitalizados':'M3 18V8m0 6h18v4M7 11h4a3 3 0 0 1 3 3H3m14-3h2a2 2 0 0 1 2 2v1','Pacientes':'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0','Censo':'M6 4h12v16H6zM9 8h6M9 12h6M9 16h4','Censos anteriores':'M4 7h16v13H4zM3 4h18v3H3zM10 11h4','Archivo clínico':'M3 6h7l2 2h9v11H3z','Documentos clínicos':'M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h5','Impresión':'M7 9V4h10v5M7 17H5v-6h14v6h-2M8 14h8v6H8z','Búsqueda por diagnóstico':'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm5-2 5 5','Panel de control':'M4 13a8 8 0 0 1 16 0M12 13l4-4M4 17h16','Descargas':'M12 4v11m-5-5 5 5 5-5M5 20h14','Documentos':'M6 3h9l4 4v14H6zM14 3v5h5','Solo Técnico':'M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6l7-3Zm-3 9 2 2 4-4'};
 const PM_ALWAYS_LBL={editar_perfil:'Su configuración',ver_comentarios:'Ver comentarios',enviar_comentarios:'Enviar comentarios',ver_descargas:'Pestaña Descargas',descargar_aplicacion:'App sin conexión'};
 const pmSvg=(d,c)=>'<svg class="'+(c||'pm-ic')+'" viewBox="0 0 24 24" aria-hidden="true"><path d="'+d+'" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 function pmValues(role){ return role==='admin'?accessAdminSet():accessRoleDefaults(role); }
 function pmGroups(role){
- if(role==='admin') return ACCESS_ADMIN_GROUPS.map(([t,items])=>[t,'',items]).concat([[ACCESS_TECH_GROUP[0],'Siempre incluidos para el Administrador Técnico; no se pueden dar a otros.',ACCESS_TECH_GROUP[1].map(x=>x.concat([true]))]]);
+ if(role==='admin') return ACCESS_ADMIN_GROUPS.map(([t,items])=>[t,'',items]).concat([[ACCESS_TECH_GROUP[0],'Siempre incluidos para el Técnico; no se pueden dar a otros.',ACCESS_TECH_GROUP[1].map(x=>x.concat([true]))]]);
  return ACCESS_BASE_GROUPS;
 }
 function pmUsers(role){ try{ return role==='admin'?HJM_USERS.filter(u=>admRec(u)||isTechAdminRecord(u)).length:HJM_USERS.filter(u=>u.tipo===role).length; }catch(_){ return 0; } }
@@ -17857,7 +17857,7 @@ function pmCompareHTML(){
  const cell=v=>v===null?'<td class="pm-na" title="No disponible">·</td>':v?'<td class="pm-yes" title="Sí">'+pmSvg('M5 12l5 5 9-10','pm-ck')+'</td>':'<td class="pm-no" title="No">—</td>';
  let rows=''; ACCESS_BASE_GROUPS.forEach(([t,,items])=>{ rows+='<tr class="pm-sub"><th colspan="5">'+esc(t)+'</th></tr>'+items.map(([k,l])=>'<tr><td class="pm-nm">'+esc(l)+'</td>'+roles.map(r=>cell(eff(r,k))).join('')+'<td class="pm-na">·</td></tr>').join(''); });
  ACCESS_ADMIN_GROUPS.forEach(([t,items])=>{ rows+='<tr class="pm-sub"><th colspan="5">'+esc(t)+'</th></tr>'+items.map(([k,l])=>'<tr><td class="pm-nm">'+esc(l)+'</td><td class="pm-na">·</td><td class="pm-na">·</td><td class="pm-na">·</td>'+cell(!!A[k])+'</tr>').join(''); });
- return '<div class="pm-cmp-wrap"><table class="pm-cmp"><thead><tr><th>Permiso</th><th>Adscritos</th><th>Residentes</th><th>Administrativos</th><th>Administradores</th></tr></thead><tbody>'+rows+'</tbody></table></div><p class="pm-foot">«·» = no aplica a ese tipo de usuario. Los administradores conservan además los permisos de su tipo (Adscrito, Residente o Administrativo). El Administrador Técnico tiene todo.</p>';
+ return '<div class="pm-cmp-wrap"><table class="pm-cmp"><thead><tr><th>Permiso</th><th>Adscritos</th><th>Residentes</th><th>Administrativos</th><th>Administradores</th></tr></thead><tbody>'+rows+'</tbody></table></div><p class="pm-foot">«·» = no aplica a ese tipo de usuario. Los administradores conservan además los permisos de su tipo (Adscrito, Residente o Administrativo). El Técnico tiene todo.</p>';
 }
 function accessProfilesDraw(host){
  const tecnico=isTechnicalAdmin(), roles=['adscrito','residente','administrativo','admin'];
@@ -17871,7 +17871,7 @@ function accessProfilesDraw(host){
   '<div class="pm-save" role="region" aria-label="Guardar permisos"><span class="pm-state" id="pmState" role="status">Sin cambios</span><button type="button" class="st-btn" id="pmUndo" disabled>Descartar</button><button type="submit" class="st-btn usr-ok" id="pmSave" disabled>Guardar permisos de '+esc(PM_ROLE_META[pmRole].t)+'</button></div></form>';
  host.innerHTML='<section class="pm">'+
   '<header class="pm-hero"><div class="pm-hl"><h3>Permisos</h3><p>Qué puede hacer cada tipo de usuario. El tipo (Adscrito, Residente o Administrativo) y si es administrador se asignan en «Editar usuario».</p></div>'+always+'</header>'+
-  (tecnico?'':'<div class="pm-ro">'+pmSvg('M7 11V8a5 5 0 0 1 10 0v3M6 11h12v9H6z')+'Solo el Administrador Técnico puede cambiar los permisos. Aquí puedes consultarlos.</div>')+
+  (tecnico?'':'<div class="pm-ro">'+pmSvg('M7 11V8a5 5 0 0 1 10 0v3M6 11h12v9H6z')+'Solo el Técnico puede cambiar los permisos. Aquí puedes consultarlos.</div>')+
   '<nav class="pm-roles" role="tablist" aria-label="Tipo de usuario">'+nav+'</nav>'+
   (pmRole==='comparar'?'':'<p class="pm-rd">'+esc(PM_ROLE_META[pmRole].d)+'</p>')+body+'</section>';
  host.querySelectorAll('[data-pm-role]').forEach(b=>b.onclick=()=>{ const f=host.querySelector('#pmForm'); if(f&&f.dataset.dirty==='1'&&!confirm('Hay cambios sin guardar en '+PM_ROLE_META[pmRole].t+'. ¿Descartarlos?')) return; pmRole=b.dataset.pmRole; accessProfilesDraw(host); const n=host.querySelector('.pm-role.on'); if(n&&n.scrollIntoView) try{ n.scrollIntoView({block:'nearest',inline:'center'}); }catch(_){} });
@@ -17902,7 +17902,7 @@ function accessProfilesDraw(host){
   form.querySelector('.pm-empty').hidden=any; };
  if(q) q.oninput=()=>{ pmQuery=q.value; filt(); };
  form.onsubmit=e=>{ e.preventDefault(); if(!isTechnicalAdmin()) return; const st=host.querySelector('#pmState');
-  const root=HJM_USERS.find(accessRoot); if(!root){ st.textContent='No se encontró al Administrador Técnico.'; st.dataset.msg='1'; return; }
+  const root=HJM_USERS.find(accessRoot); if(!root){ st.textContent='No se encontró al Técnico.'; st.dataset.msg='1'; return; }
   const vals=accessReadChecks(form); inputs().filter(i=>i.dataset.locked).forEach(i=>delete vals[i.dataset.permission]);
   const perfiles={...(root.perfiles||{}),[role]:vals}; if(role==='admin'){ delete perfiles.medico_admin; delete perfiles.administrativo_admin; }
   const ok=usersChange([{k:ukey(root.usuario),op:'set',u:{...root,perfiles}}]);
@@ -18943,8 +18943,8 @@ html:root body .qx-card .qx-btn.qx-mini{font-size:11px!important;padding:3px 8px
 .qx-kpis>.qx-kpi:hover,button.qx-bar:hover{border-color:#B9C4D6;background:#FAFBFD}
 button.qx-bar{width:100%;border:1px solid transparent;border-radius:8px;background:none;padding:3px 4px;margin:0 -4px;text-align:left;cursor:pointer;font-family:inherit}
 .qx-stt{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
-.qd-sug{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}
-.qd-sug button{padding:6px 10px;border:1px solid #D8DEE8;border-radius:999px;background:#F6F8FB;color:#33445E;font:600 11.5px/1.2 var(--rd-sans,system-ui);cursor:pointer;text-align:left}
+.qd-pick{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}
+.qd-pick button{min-height:32px;padding:6px 12px;border:1px solid #D8DEE8;border-radius:999px;background:#F6F8FB;color:#33445E;font:600 11.5px/1.2 var(--rd-sans,system-ui);cursor:pointer;text-align:left}
 #dlgQxList .qx-tbl small{color:#7A8492}
 @media (min-width:761px){.qx-grid>.qx-panel{position:sticky;top:76px}}
 @media (min-width:701px) and (max-width:1000px){.qx-grid{grid-template-columns:250px minmax(0,1fr)!important;gap:14px}.qx-c-body{grid-template-columns:repeat(2,minmax(0,1fr))}.qx-c-body>div:nth-child(3){grid-column:1/-1}}
@@ -19045,6 +19045,48 @@ html:root body #dlgStats .sv-nav>*{padding-left:16px!important;padding-right:16p
 @media (pointer:coarse){.qx-file{width:44px;height:44px;flex-basis:44px}}
 .qx-row{cursor:default}
 .qx-rsel{flex:1;min-width:0;display:flex;align-items:center;gap:12px;min-height:38px;padding:0;border:0;background:none;text-align:left;font-family:inherit;cursor:pointer;color:inherit}
+.qx-btn svg{width:15px;height:15px;flex:0 0 15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.qd-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.qd-l select{width:100%;min-height:44px;border:1px solid #CBD3E1;border-radius:10px;padding:0 12px;font:500 14px var(--rd-sans,system-ui);background:#fff;color:#1E2F44}
+.qd-clash{margin:10px 0 0;padding:12px 14px;border-radius:12px;background:#FFF4E0;border:1px solid #F0C36D;color:#5C3E08}
+.qd-clash b{display:block;font-size:14px}.qd-clash p{margin:4px 0 10px;font-size:12.5px}.qd-clash div{display:flex;flex-wrap:wrap;gap:8px}
+.qd-fs{border:1px solid #D8DEE8;border-radius:12px;padding:10px 12px;margin:12px 0 0}.qd-fs legend{font:700 12px var(--rd-sans,system-ui);color:#44536A;padding:0 6px}
+.qd-cks{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:4px 12px}
+.qd-cks label{display:flex;align-items:center;gap:8px;min-height:36px;font-size:13.5px;cursor:pointer}.qd-cks input{width:18px;height:18px}.qd-cks i{width:9px;height:9px;border-radius:50%}
+.qx-list.rows{box-shadow:0 2px 10px rgba(20,34,60,.07);border-color:#CBD5E3}
+.qx-row{background:#fff}.qx-row .nm b{font-weight:700;color:#14223C}
+.qx-row .cx{display:block;-webkit-line-clamp:unset;color:#14223C}.qx-row .cx b{display:block;font:600 13px/1.3 var(--rd-sans,system-ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.qx-row .cx small{display:block;font-size:12px;line-height:1.3;color:#51607A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qx-row .ad{color:#34435E}.qx-row .ad small{display:block;font:700 11.5px/1.3 var(--rd-sans,system-ui);color:#7A5410;margin-top:2px}
+.qx-list.rows .qx-grp{background:#E3EAF4;color:#1F3864;font-weight:800}
+@media (max-width:700px){html:root body #pPanel #ppSharedHead{grid-template-columns:minmax(0,1fr) auto auto!important}html:root body #pPanel #ppHeaderSearch,html:root body #pPanel #ppSearch{width:100%!important;max-width:none!important;box-sizing:border-box}}
+.qp-wrap{display:block}.qp-wrap .qd-pick{margin:0 0 12px}.qp-wrap .qd-fs .qd-pick{margin:10px 0 0}
+.qd-cks label{justify-content:flex-start!important;text-align:left}
+.qd-cks input{width:18px!important;height:18px!important;flex:0 0 18px!important;min-height:0!important;padding:0!important;margin:0!important}
+.qd-cks i{flex:0 0 9px}
+@media (max-width:1100px){.qx-row .cx{display:none!important}}
+html:root body #cenNavBtn.cen-nav-row{position:absolute!important;left:50%;top:50%;transform:translate(-50%,-50%);margin:0!important;background:#2158A8!important;border:1px solid #2158A8!important;color:#fff!important;border-radius:12px!important;min-height:40px!important;padding:6px 16px!important;box-shadow:0 2px 8px rgba(33,88,168,.28)!important;z-index:2}
+html:root body #cenNavBtn.cen-nav-row:hover{background:#1A4A90!important}
+.qp-ms{position:relative;margin:12px 0 0}.qp-ms-l{display:block;font:700 12px var(--rd-sans,system-ui);color:#44536A;margin:0 0 5px}
+.qp-ms-b{display:flex;align-items:center;gap:8px;width:100%;min-height:46px;padding:0 14px;border:1px solid #CBD3E1;border-radius:12px;background:#fff;font-family:inherit;cursor:pointer;text-align:left}
+.qp-ms-b span{font-size:13.5px;color:#6B7686}.qp-ms-b b{flex:1;font:700 14.5px var(--rd-sans,system-ui);color:#1E2F44}.qp-ms-b i{font-style:normal;color:#6B7686}
+.qp-ms-pop{margin:6px 0 0;border:1px solid #D3DAE4;border-radius:12px;background:#fff;box-shadow:0 12px 30px rgba(20,34,60,.14);padding:6px;display:grid;gap:2px;max-height:260px;overflow:auto}
+.qp-ms-pop[hidden]{display:none}
+.qp-ms-pop button{display:flex;align-items:center;gap:10px;min-height:40px;padding:0 10px;border:0;border-radius:8px;background:none;font:600 13.5px var(--rd-sans,system-ui);color:#1E2F44;cursor:pointer;text-align:left}
+.qp-ms-pop button:hover{background:#F1F5FA}
+.qp-ms-pop em{width:18px;height:18px;flex:0 0 18px;border-radius:5px;border:1.5px solid #9AA6B8;box-sizing:border-box;position:relative}
+.qp-ms-pop button[aria-checked="true"] em{background:#1F3864;border-color:#1F3864}
+.qp-ms-pop button[aria-checked="true"] em::after{content:"";position:absolute;left:5px;top:1.5px;width:4px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.qp-ms-pop i{width:9px;height:9px;border-radius:50%;flex:0 0 9px}
+#clComite .cm-pl{margin-top:8px;flex-direction:column;align-items:stretch;gap:6px}
+#clComite .cm-pl span{height:auto;min-height:36px;justify-content:space-between;gap:10px;padding:4px 6px 4px 12px;border-radius:10px;font-size:13px;line-height:1.25}
+#clComite .cm-pl span button{flex:0 0 28px;width:28px;height:28px;border:0;border-radius:8px;background:rgba(31,56,100,.1);color:inherit;font:700 16px/1 var(--rd-sans,system-ui);cursor:pointer}
+#clComite .cm-pl span button:hover{background:rgba(155,44,44,.16);color:#9B2C2C}
+#clComite .cm-add{margin-top:6px;min-height:36px;padding:0 14px;border:1px solid #1F3864;border-radius:10px;background:#1F3864;color:#fff;font:700 13px var(--rd-sans,system-ui);cursor:pointer}
+#clinicalForm.no-allergy [data-cl-allergy]{display:none!important}
+input[data-slk]{background:#F3F5F8!important;color:#44536A!important;cursor:not-allowed}
+.cfg-grp{display:flex;gap:8px;align-items:flex-start;margin:12px 0 0;padding:12px;border:1px solid #D8DEE8;border-radius:12px;background:#F8FAFD;cursor:pointer}
+.cfg-grp input{width:18px;height:18px;margin:2px 0 0;flex:none;accent-color:#1F3864}.cfg-grp b{font-size:13px;font-weight:600}.cfg-grp small{font-size:12px;color:#5B6675;line-height:1.4}
+.usr-gmark{font-style:normal;font:700 11px var(--rd-sans,system-ui);padding:2px 8px;border-radius:999px;background:#DDF1E6;color:#17603C;margin-left:6px}
 </style>
 <script id="hjm-v900-js">
 /* v9.00 · Navegación superior (Quirófano · Comité · Censo · Hospitalizados · Archivo), menú flotante en móvil / Fold,
@@ -19098,7 +19140,7 @@ window.hjmClinColor=clinOf;
 /* ---------- Sesión y roles ---------- */
 function me(){ try{ const r=userRecord(sessionUserName()); return r?r.usuario:String(sessionUserName()||''); }catch(_){ return ''; } }
 function whoName(u){ if(!u) return ''; try{ const r=userRecord(u); if(r) return (window.HJM_BETA&&HJM_BETA.name)?HJM_BETA.name(r):r.nombre; }catch(_){} return String(u); }
-function isQxRole(){ try{ if(window.HJM_BETA&&HJM_BETA.ses&&HJM_BETA.ses.quirofano) return true; const r=userRecord(sessionUserName()); return !!r&&(r.quirofano===true||(typeof isTechAdminRecord==='function'&&isTechAdminRecord(r))); }catch(_){ return false; } }
+function isQxRole(){ try{ const r=userRecord(sessionUserName()); if(r&&r.quirofano===false) return false; if(window.HJM_BETA&&HJM_BETA.ses&&HJM_BETA.ses.quirofano) return true; return !!r&&(r.quirofano===true||(r.quirofano!==false&&typeof isTechAdminRecord==='function'&&isTechAdminRecord(r))); }catch(_){ return false; } }
 function logged(){ try{ return !!sessionUserName()&&!document.querySelector('#dlgResidentGate[open]'); }catch(_){ return false; } }
 
 /* =====================================================================
@@ -19114,12 +19156,30 @@ function comiteFieldsHTML(v){
   return `<div id="clComite" hidden>
     ${rf('cl-cm-resumen','Resumen clínico',res)}
     ${rf('cl-cm-dictamen','Dictamen',dic)}
-    <div class="clinical-field clinical-others-field cm-part"><label for="cl-cm-part">Participantes del comité (adscritos) <small class="clinical-others-hint">(Presiona / para agregar otro adscrito)</small></label><input id="cl-cm-part" data-cl-others autocomplete="off" role="combobox" aria-haspopup="listbox" aria-autocomplete="list" aria-controls="cl-cm-part-list" aria-expanded="false" placeholder="Agrega adscritos con /" value="${H(v.participantes||'')}"><div id="cl-cm-part-list" class="clinical-others-list" role="listbox" aria-label="Adscritos y residentes" hidden></div><div class="cm-pl" id="cl-cm-part-pv"></div></div>
-    <div class="clinical-field"><label for="cl-cm-otros">Otros servicios o adscritos <small class="cm-hint">(texto libre, separa cada uno con un guion: RADIOLOGÍA DR. PÉREZ - PATOLOGÍA DRA. LÓPEZ)</small></label><input id="cl-cm-otros" autocomplete="off" spellcheck="false" style="text-transform:uppercase" value="${H(v.otrosServ||'')}"><div class="cm-pl" id="cl-cm-otros-pv"></div></div>
+    <div class="clinical-field clinical-others-field cm-part"><label for="cl-cm-part">Participantes del comité <small class="clinical-others-hint">(elige un usuario y presiona Enter o «Agregar»; cada uno se añade abajo)</small></label><input id="cl-cm-part" data-cl-others autocomplete="off" role="combobox" aria-haspopup="listbox" aria-autocomplete="list" aria-controls="cl-cm-part-list" aria-expanded="false" placeholder="Escribe un nombre…" value="${H(v.participantes||'')}"><button type="button" class="cm-add" data-cmadd="part">Agregar</button><div id="cl-cm-part-list" class="clinical-others-list" role="listbox" aria-label="Adscritos y residentes" hidden></div><div class="cm-pl" id="cl-cm-part-pv"></div></div>
+    <div class="clinical-field"><label for="cl-cm-otros">Otros servicios o adscritos <small class="cm-hint">(texto libre, por ejemplo RADIOLOGÍA DR. PÉREZ; presiona Enter o «Agregar»)</small></label><input id="cl-cm-otros" autocomplete="off" spellcheck="false" style="text-transform:uppercase" value="${H(v.otrosServ||'')}"><button type="button" class="cm-add" data-cmadd="otros">Agregar</button><div class="cm-pl" id="cl-cm-otros-pv"></div></div>
   </div>`;
 }
-function comitePreview(){ const a=$i('cl-cm-part'), b=$i('cl-cm-otros'), pa=$i('cl-cm-part-pv'), pb=$i('cl-cm-otros-pv'); if(pa&&a) pa.innerHTML=partList(a.value).map(n=>`<span>${H(partCanon(n))}</span>`).join(''); if(pb&&b) pb.innerHTML=otrosList(b.value).map(n=>`<span class="o">${H(n)}</span>`).join(''); }
-function comiteSync(){ const f=$i('clinicalForm'), sel=$i('cl-tipo'), box=$i('clComite'); if(!f||!sel||!box) return; const on=isComite(sel.value); box.hidden=!on; f.classList.toggle('is-comite',on); if(on) comitePreview(); }
+function staffLockEl(el){ if(!el||!el.id||el.tagName!=='INPUT') return; let a='',r=''; try{ a=SESSION_ADSCRITO||''; r=SESSION_RESIDENT||''; }catch(_){ return; }
+  const isA=el.id==='medico'||/-adscrito$/.test(el.id), isR=el.id==='residente'||/-residente$/.test(el.id); if(!isA&&!isR) return;
+  const v=a&&isA?a:(!a&&r&&isR?r:''); if(!v){ if(el.dataset.slk){ delete el.dataset.slk; el.readOnly=false; el.removeAttribute('title'); } return; }
+  if(el.value!==v){ el.value=v; try{ el.dispatchEvent(new Event('input',{bubbles:true})); }catch(_){} }
+  if(!el.readOnly||!el.dataset.slk){ el.readOnly=true; el.dataset.slk='1'; el.title='Queda tu usuario activo; no se puede cambiar.'; } }
+function staffLockAll(){ try{ document.querySelectorAll('#medico,#residente,#clinicalForm input[id$="-adscrito"],#clinicalForm input[id$="-residente"]').forEach(staffLockEl); }catch(_){} }
+document.addEventListener('focusin',e=>{ try{ staffLockEl(e.target); }catch(_){} },true);
+try{ new MutationObserver(()=>{ clearTimeout(staffLockAll._t); staffLockAll._t=setTimeout(staffLockAll,120); }).observe(document.documentElement,{childList:true,subtree:true}); }catch(_){}
+const CMP={part:[],otros:[]};
+function cmpAdd(k,names){ let ch=false; names.forEach(n=>{ n=k==='part'?partCanon(String(n).trim()):up(n); if(n&&!CMP[k].some(x=>up(x)===up(n))){ CMP[k].push(n); ch=true; } }); return ch; }
+function cmpAbsorb(k,all){ const el=$i(k==='part'?'cl-cm-part':'cl-cm-otros'); if(!el) return; const v=String(el.value||'');
+  if(k==='part'){ if(all){ cmpAdd(k,partList(v)); el.value=''; } else if(v.includes('/')){ const sg=v.split('/'), last=sg.pop(); cmpAdd(k,sg); el.value=last.replace(/^\s+/,''); } }
+  else if(all){ cmpAdd(k,otrosList(v)); el.value=''; } }
+function comitePreview(){ const a=$i('cl-cm-part'), b=$i('cl-cm-otros'), pa=$i('cl-cm-part-pv'), pb=$i('cl-cm-otros-pv');
+  if(a&&a.dataset.abs!=='1'){ a.dataset.abs='1'; CMP.part=[]; cmpAdd('part',partList(a.value)); a.value=''; }
+  if(b&&b.dataset.abs!=='1'){ b.dataset.abs='1'; CMP.otros=[]; cmpAdd('otros',otrosList(b.value)); b.value=''; }
+  cmpAbsorb('part',false);
+  const chip=(k,n,i)=>`<span class="${k==='otros'?'o':''}">${H(n)}<button type="button" data-cmx="${k}" data-i="${i}" aria-label="Quitar ${H(n)}">×</button></span>`;
+  if(pa) pa.innerHTML=CMP.part.map((n,i)=>chip('part',n,i)).join(''); if(pb) pb.innerHTML=CMP.otros.map((n,i)=>chip('otros',n,i)).join(''); }
+function comiteSync(){ const f=$i('clinicalForm'), sel=$i('cl-tipo'), box=$i('clComite'); if(!f||!sel||!box) return; const on=isComite(sel.value); box.hidden=!on; f.classList.toggle('is-comite',on); f.classList.toggle('no-allergy',on||/interconsulta/i.test(sel.value)); if(on) comitePreview(); }
 if(typeof window.renderClinicalForm==='function'){
   const oR=window.renderClinicalForm;
   window.renderClinicalForm=function(tp,v,v2){
@@ -19128,7 +19188,9 @@ if(typeof window.renderClinicalForm==='function'){
         if(!f.dataset.qxw){ f.dataset.qxw='1';
         f.addEventListener('change',e=>{ if(e.target&&e.target.id==='cl-tipo') setTimeout(comiteSync,0); });
         f.addEventListener('input',e=>{ if(e.target&&(e.target.id==='cl-cm-part'||e.target.id==='cl-cm-otros')) comitePreview(); });
-        f.addEventListener('focusout',e=>{ if(e.target&&e.target.id==='cl-cm-otros'){ e.target.value=up(e.target.value); comitePreview(); } }); }
+        f.addEventListener('focusout',e=>{ const t=e.target; if(!t) return; if(t.id==='cl-cm-otros'){ cmpAbsorb('otros',true); comitePreview(); } else if(t.id==='cl-cm-part') setTimeout(()=>{ try{ if(document.activeElement!==t&&!String(t.value).trim().length) return; if(String(t.value).includes('/')||document.activeElement!==t){ if(document.activeElement!==t&&clinStaffCanon(String(t.value).trim(),false)) cmpAbsorb('part',true); comitePreview(); } }catch(_){ comitePreview(); } },250); });
+        f.addEventListener('keydown',e=>{ const t=e.target; if(!t||e.key!=='Enter'||(t.id!=='cl-cm-part'&&t.id!=='cl-cm-otros')) return; const lst=$i('cl-cm-part-list'); if(t.id==='cl-cm-part'&&lst&&!lst.hidden&&lst.querySelector('[aria-selected="true"]')) return; e.preventDefault(); cmpAbsorb(t.id==='cl-cm-part'?'part':'otros',true); comitePreview(); });
+        f.addEventListener('click',e=>{ const x=e.target.closest&&e.target.closest('[data-cmx]'); if(x){ e.preventDefault(); CMP[x.dataset.cmx].splice(+x.dataset.i,1); comitePreview(); return; } const ad=e.target.closest&&e.target.closest('[data-cmadd]'); if(ad){ e.preventDefault(); cmpAbsorb(ad.dataset.cmadd,true); comitePreview(); } }); }
       } comiteSync(); } }catch(e){ try{ console.error(e); }catch(_){} }
     return r;
   };
@@ -19139,7 +19201,7 @@ if(typeof window.clinicalPayload==='function'){
     const p=oP.apply(this,arguments);
     try{ if(tp==='notas'&&p&&isComite(p.tipo)&&$i('clComite')){
       const rv=id=>{ try{ return clinicalRichValue(id); }catch(_){ const e=$i(id); return e?e.innerHTML.trim():''; } };
-      const parts=partList(($i('cl-cm-part')||{}).value).map(partCanon), otros=otrosList(($i('cl-cm-otros')||{}).value);
+      cmpAbsorb('part',true); cmpAbsorb('otros',true); comitePreview(); const parts=CMP.part.slice(), otros=CMP.otros.slice();
       p.tipo=COMITE; p.resumen=rv('cl-cm-resumen'); p.dictamen=rv('cl-cm-dictamen'); p.participantes=parts.join(' / '); p.otrosServ=otros.join(' - ');
       p.contenido=`<div><strong>RESUMEN CLÍNICO</strong></div>${p.resumen}<div><br></div><div><strong>DICTAMEN</strong></div>${p.dictamen}`;
       p.tabla='0'; p.adscrito=parts[0]||p.adscrito||''; p.otros=parts.slice(1).concat(otros).join(' / ');
@@ -19156,17 +19218,18 @@ function comitePrintHTML(p,d){
   d=d||{}; const hjm=(document.querySelector('.home-logo .seal')||document.querySelector('.top .seal')||{}).src||'', crab=(document.querySelector('.top > .seal.crab')||document.querySelector('.top .seal.crab')||{}).src||'';
   const nombre=d.nombreCompleto||[d.apPaterno,d.apMaterno,d.nombres].filter(Boolean).join(' ');
   const age=ageOf(d.fnac,p.fecha)||d.edad||'';
-  const firmas=partList(p.participantes).map(n=>({n:partCanon(n),s:partSub(n)})).concat(otrosList(p.otrosServ).map(n=>({n,s:''})));
+  const firmas=partList(p.participantes).map(n=>({n:partCanon(n),s:''})).concat(otrosList(p.otrosServ).map(n=>({n,s:''})));
   const fs=v=>{ try{ return noteFsWrap(p,clinicalRichHTML(v||'')); }catch(_){ return String(v||''); } };
-  const td='border:1px solid #000;padding:3pt 6pt;vertical-align:middle', lab='font-size:7.5pt;font-weight:700;display:block;letter-spacing:.02em', h2='font:700 10.5pt Arial,sans-serif;margin:12pt 0 5pt;padding:0 0 2pt;border-bottom:1.4px solid #000;letter-spacing:.03em';
+  const td='border:0;padding:2pt 6pt 2pt 0;vertical-align:top', lab='font-size:7.5pt;font-weight:700;display:block;letter-spacing:.02em', h2='font:700 10.5pt Arial,sans-serif;margin:12pt 0 5pt;padding:0 0 2pt;border-bottom:1.4px solid #000;letter-spacing:.03em';
   return `<div class="cp-page cp-comite cp-paginated" style="font-family:Arial,sans-serif;color:#000">
-  <table style="width:100%;border-collapse:collapse;margin:0 0 6pt"><tr><td style="width:72pt;vertical-align:middle"><img src="${H(hjm)}" alt="" style="width:62pt;height:62pt;object-fit:contain"></td><td style="text-align:center;font-family:'Times New Roman',serif;line-height:1.25"><div style="font-size:14pt;font-weight:700">HOSPITAL JUÁREZ DE MÉXICO</div><div style="font-size:12pt;font-weight:700">SERVICIO DE ONCOLOGÍA</div><div style="font-size:12.5pt;font-weight:700;letter-spacing:.05em;margin-top:2pt">COMITÉ MULTIDISCIPLINARIO</div></td><td style="width:72pt;text-align:right;vertical-align:middle"><img src="${H(crab)}" alt="" style="width:62pt;height:62pt;object-fit:contain"></td></tr></table>
+  <table style="width:100%;border-collapse:collapse;margin:0 0 6pt"><tr><td style="width:72pt;vertical-align:middle"><img src="${H(hjm)}" alt="" style="width:62pt;height:62pt;object-fit:contain"></td><td style="text-align:center;font-family:'Times New Roman',serif;line-height:1.25"><div style="font-size:14pt;font-weight:700">HOSPITAL JUÁREZ DE MÉXICO</div><div style="font-size:12pt;font-weight:700">SERVICIO DE ONCOLOGÍA</div></td><td style="width:72pt;text-align:right;vertical-align:middle"><img src="${H(crab)}" alt="" style="width:62pt;height:62pt;object-fit:contain"></td></tr></table>
   <table style="width:100%;border-collapse:collapse;font-size:10pt;margin:0 0 4pt"><tr><td colspan="3" style="${td}"><span style="${lab}">NOMBRE DEL PACIENTE</span><b>${H(up(nombre))}</b></td><td style="${td};width:22%"><span style="${lab}">FECHA</span><b>${H(p.fecha||'')}</b>${p.hora?` · ${H(p.hora)} h`:''}</td></tr>
   <tr><td style="${td}"><span style="${lab}">No. DE EXPEDIENTE</span><b>${H(d.expediente||'')}</b></td><td style="${td}"><span style="${lab}">FECHA DE NACIMIENTO</span><b>${H(d.fnac||'')}</b></td><td style="${td}"><span style="${lab}">EDAD</span><b>${age?H(age)+' AÑOS':''}</b></td><td style="${td}"><span style="${lab}">SERVICIO</span><b>ONCOLOGÍA</b></td></tr></table>
+  <div style="text-align:center;font:700 12pt Arial,sans-serif;letter-spacing:.05em;margin:8pt 0 2pt">COMITÉ MULTIDISCIPLINARIO</div>
   <h2 style="${h2}">RESUMEN CLÍNICO</h2><div class="cp-content" style="font-size:10pt;line-height:1.15;text-align:justify">${fs(p.resumen)}</div>
   <h2 style="${h2}">DICTAMEN</h2><div class="cp-content" style="font-size:10pt;line-height:1.15;text-align:justify">${fs(p.dictamen)}</div>
-  <div style="break-inside:avoid;page-break-inside:avoid"><h2 style="${h2};margin-top:16pt">PARTICIPANTES DEL COMITÉ</h2>
-  <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:34pt 4%;padding:30pt 0 0">${firmas.map(f=>`<div style="width:30%;text-align:center;break-inside:avoid;page-break-inside:avoid"><div style="border-top:1px solid #000;padding-top:3pt;font-size:8.5pt;font-weight:700;line-height:1.2">${H(f.n)}</div>${f.s?`<div style="font-size:7.5pt;line-height:1.2">${H(up(f.s))}</div>`:''}</div>`).join('')||'<div style="font-size:9pt;color:#555">Sin participantes registrados</div>'}</div></div>
+  <div style="break-inside:avoid;page-break-inside:avoid">
+  <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:34pt 4%;padding:46pt 0 0">${firmas.map(f=>`<div style="width:30%;text-align:center;break-inside:avoid;page-break-inside:avoid"><div style="border-top:1px solid #000;padding-top:3pt;font-size:8.5pt;font-weight:700;line-height:1.2">${H(f.n)}</div>${f.s?`<div style="font-size:7.5pt;line-height:1.2">${H(up(f.s))}</div>`:''}</div>`).join('')||'<div style="font-size:9pt;color:#555">Sin participantes registrados</div>'}</div></div>
 </div>`;
 }
 window.hjmComitePrintHTML=comitePrintHTML;
@@ -19278,6 +19341,11 @@ async function createPatient(x){
    NAVEGACIÓN
    ===================================================================== */
 const IC={
+ trash:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>',
+ edit:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13 7 4 4"/></svg>',
+ cal:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+ link:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3A4 4 0 0 0 11 18.700l1-1"/></svg>',
+ no:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.500 8.500 7 7"/></svg>',
  qx:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 18.5 9-9 2 2-9 9a1.4 1.4 0 0 1-2-2Z"/><path d="m13.5 8.5 7-6c.5 3-1.5 6-5 8l-2-2Z"/></svg>',
  cm:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="2.6"/><circle cx="5.5" cy="10" r="2.1"/><circle cx="18.5" cy="10" r="2.1"/><path d="M7.5 20c.4-3 2.2-4.6 4.5-4.6s4.1 1.6 4.5 4.6M2.5 18.5c.3-2 1.4-3.2 3-3.4M21.5 18.5c-.3-2-1.4-3.2-3-3.4"/></svg>',
  censoActual:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4"/></svg>',
@@ -19371,6 +19439,15 @@ document.addEventListener('click',async e=>{ try{ if(window.__hjmChildFormat||wi
     let pend=false; try{ pend=DSN_N>0||(!!LAST_INPUT&&(!DSN_LAST||DSN_LAST.in!==LAST_INPUT)); }catch(_){}
     if(pend){ say('Guardando los cambios del paciente antes de abrir el formato…','ok'); try{ await driveSaveNow({silent:true}); }catch(_){} }
     await ppIsolatedOpen(f.id,k); }catch(err){ try{ say('No se pudo abrir el formato en ventana.','warn'); }catch(_){} } },true);
+function cfgGrupal(){ const f=$i('cfgForm'), st=$i('cfgState'); if(!f||!st||$i('cfgGrp')) return; let c=null; try{ c=userRecord(sessionUserName()); }catch(_){} if(!c) return;
+  const sh=!!(window.HJM_BETA&&HJM_BETA.ses&&HJM_BETA.ses.compartida), box=document.createElement('label'); box.id='cfgGrp'; box.className='cfg-grp';
+  box.innerHTML=`<input type="checkbox" id="cfgG"${c.grupal===true?' checked':''}${sh?' disabled':''}><span><b>Permitir acceder desde cuenta grupal</b><br><small>Si está activo, se puede entrar a tu usuario usando los correos grupales del servicio. Si no está activo, tu usuario no aparece en las cuentas grupales.${sh?' Solo se cambia desde tu cuenta personal.':''}</small></span>`;
+  st.before(box); const G=box.querySelector('#cfgG');
+  const send=async on=>{ G.disabled=true; try{ await gcall('hjmGrupalMio',on); try{ await HJM_BETA.refresh(); }catch(_){} say(on?'Acceso desde cuenta grupal activado.':'Acceso desde cuenta grupal desactivado.','ok'); }catch(err){ G.checked=!on; say('No se pudo guardar: '+((err&&err.message)||err),'warn'); } G.disabled=false; };
+  G.addEventListener('change',()=>{ if(!G.checked){ send(false); return; } G.checked=false; const d=dlg('dlgCfgGrp');
+    d.innerHTML=dlgShell('Acceso desde cuenta grupal','Lee esto antes de activarlo',`<p class="qd-note" style="font-size:14px;line-height:1.5">Al activarlo, <b>cualquier persona con acceso al correo grupal</b>, o que use una computadora donde esa cuenta esté abierta, podrá entrar con tu nombre y <b>guardar notas, indicaciones y datos a tu nombre</b>.<br><br>Lo que se guarde así queda registrado como hecho por ti y es tu responsabilidad.</p>`,`<button type="button" class="qx-btn" data-qd-x>Cancelar</button><button type="button" class="qx-btn pri" id="cgOk">Entiendo, activar</button>`); show(d);
+    d.querySelector('#cgOk').onclick=()=>{ d.close(); G.checked=true; send(true); }; }); }
+try{ new MutationObserver(()=>{ try{ cfgGrupal(); }catch(_){} }).observe(document.documentElement,{childList:true,subtree:true}); }catch(_){}
 const HX={cur:null};
 function hxSync(){ const l=$i('ppList'); if(!l) return; const on=false; if(l.classList.contains('hx')!==on) l.classList.toggle('hx',on);
   const rows=[...l.children].filter(r=>r.classList.contains('dlg-item')&&r.dataset.id&&!r.hidden&&r.style.display!=='none'); let ph=[...l.children].find(c=>c.classList.contains('hx-ph'));
@@ -19416,6 +19493,9 @@ function renderView(){ const v=$i('qxView'); if(!v||!V.view) return; const k=V.v
 function stepsQx(e){ const S=[['nota','Nota de comité'],['rev','Expediente revisado'],['comp','Completo'],['aut','Autorizado']]; return `<ol class="qx-steps">${S.map(([k,l],i)=>`<li class="${e[k]?(k==='aut'?'gold':'ok'):''}"><i>${e[k]?'':i+1}</i>${l}</li>`).join('')}</ol>`; }
 function whoLine(e,keys){ return keys.filter(([k])=>e[k]&&e[k].por).map(([k,l])=>`${l}: <b>${H(whoName(e[k].por))}</b> · ${H(tsTxt(e[k].ts))}`).join('<br>'); }
 const TURNO={M:'Matutino',V:'Vespertino'};
+const TQ={'1':'Primer turno','2':'Segundo turno','3':'Tercer turno'};
+const salaTxt=e=>e.sala?'Sala '+e.sala:'';
+const qxOrd=(a,b)=>String(a.turno||'Z').localeCompare(String(b.turno||'Z'))||(+(a.sala||99))-(+(b.sala||99))||(+(a.tq||9))-(+(b.tq||9))||String(a.nombre).localeCompare(String(b.nombre),'es');
 function fileBtn(e,k){ return `<button type="button" class="qx-file" data-${k}="file" data-id="${H(e.id)}" title="Expediente clínico" aria-label="Expediente clínico de ${H(e.nombre||'paciente')}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/></svg></button>`; }
 function offCard(e,t){ const ci=clinOf(e.clin), age=ageOf(e.fnac,e.fecha), m=e.noaut||e.can||e.nses, lab=e.noaut?'No autorizada':e.can?(t==='quirofano'?'Cancelada':'Entrada cancelada'):'No sesionado', k=t==='quirofano'?'qe':'ce';
   const canR=t==='quirofano'?(isQxRole()||(e.can&&isMine(e))):can('editar_comite');
@@ -19431,11 +19511,11 @@ function qxCard(e){ if(offE(e)) return offCard(e,'quirofano'); const ci=clinOf(e
   let act='';
   if(e.res){ act=`<span class="qx-chip ${e.res.v==='operado'?'ok':'warn'}">${e.res.v==='operado'?'Se operó':'Se difirió'}${e.res.motivo?' · '+H(e.res.motivo):''}</span>`; }
   if(!e.comp){ act+=canEd?`<button type="button" class="qx-btn pri sm" data-qe="steps" data-id="${H(e.id)}">${IC.folder}Completar expediente</button>`:`<span class="qx-chip warn">Expediente incompleto</span>`; }
-  else if(!e.aut){ act+=role?`<button type="button" class="qx-btn gold sm" data-qe="auth" data-id="${H(e.id)}">${IC.lock}Autorizar</button><button type="button" class="qx-btn sm bad" data-qe="noaut" data-id="${H(e.id)}">No autorizar</button>`:`<span class="qx-chip warn">Esperando autorización de Quirófano</span>`; act+=`<button type="button" class="qx-btn sm" data-qe="steps" data-id="${H(e.id)}">Ver pasos</button>`; }
-  else act+=`<span class="qx-chip ok">${IC.check} Autorizado${e.turno?' · '+TURNO[e.turno]:''}</span><button type="button" class="qx-btn sm" data-qe="steps" data-id="${H(e.id)}">Ver pasos</button>`;
+  else if(!e.aut){ act+=role?`<button type="button" class="qx-btn gold sm" data-qe="auth" data-id="${H(e.id)}">${IC.lock}Autorizar</button><button type="button" class="qx-btn sm bad" data-qe="noaut" data-id="${H(e.id)}">No autorizar</button>`:`<span class="qx-chip warn">Esperando autorización de Quirófano</span>`; }
+  else act+=`<span class="qx-chip ok">${IC.check} Autorizado${e.turno?' · '+TURNO[e.turno]:''}</span>${role&&!e.res?`<button type="button" class="qx-btn sm" data-qe="auth" data-id="${H(e.id)}">${IC.edit}Cambiar sala o turno</button>`:''}`;
   if(!e.aut&&isMine(e)) act+=`<button type="button" class="qx-btn sm bad" data-qe="cancel" data-id="${H(e.id)}">Cancelar</button>`;
-  const more=`<span class="sp"></span>${canEd&&(!e.aut||role)?`<button type="button" class="qx-btn ghost sm" data-qe="edit" data-id="${H(e.id)}">Editar datos</button>`:''} ${e.aut&&role&&!e.res?`<button type="button" class="qx-btn ghost sm qx-mini" data-qe="unaut" data-id="${H(e.id)}">Cancelar autorización</button>`:''}${canEd&&(!e.aut||role)&&!e.res?`<button type="button" class="qx-btn ghost sm bad" data-qe="del" data-id="${H(e.id)}">Quitar</button>`:''}`;
-  return `<article class="qx-card col${e.aut?' done':''}${V.open.has(e.id)?' open':''}" style="--c:${ci.c}"><div class="qx-c-top"><div class="qx-c-id"><b>${H(e.nombre||'Sin nombre')}</b><span>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''}${e.sol?' · Solicitud de cirugía':''}</span></div><div class="qx-chips"><span class="qx-chip clin" style="--bg:${ci.bg};--fg:${ci.fg}">${H(ci.n)}</span>${e.turno?`<span class="qx-chip">${TURNO[e.turno]}</span>`:''}${e.np?'<span class="qx-chip np">No programada</span>':''}${fileBtn(e,'qe')}</div></div>
+  const more=`<span class="sp"></span>${canEd&&(!e.aut||role)?`<button type="button" class="qx-btn ghost sm" data-qe="edit" data-id="${H(e.id)}">${IC.edit}Editar datos</button>`:''} ${e.aut&&role&&!e.res?`<button type="button" class="qx-btn ghost sm qx-mini" data-qe="unaut" data-id="${H(e.id)}">Cancelar autorización</button>`:''}${canEd&&(!e.aut||role)&&!e.res?`<button type="button" class="qx-btn ghost sm bad" data-qe="del" data-id="${H(e.id)}">${IC.trash}Borrar paciente</button>`:''}`;
+  return `<article class="qx-card col${e.aut?' done':''}${V.open.has(e.id)?' open':''}" style="--c:${ci.c}"><div class="qx-c-top"><div class="qx-c-id"><b>${H(e.nombre||'Sin nombre')}</b><span>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''}${e.sol?' · Solicitud de cirugía':''}</span></div><div class="qx-chips"><span class="qx-chip clin" style="--bg:${ci.bg};--fg:${ci.fg}">${H(ci.n)}</span>${e.turno?`<span class="qx-chip">${TURNO[e.turno]}</span>`:''}${e.sala?`<span class="qx-chip">${H(salaTxt(e))}</span>`:''}${e.tq?`<span class="qx-chip">${TQ[e.tq]}</span>`:''}${e.np?'<span class="qx-chip np">No programada</span>':''}${fileBtn(e,'qe')}</div></div>
     ${miniHTML(e,'quirofano')}<div class="qx-c-body"><div><small>Cirugía planeada</small>${H(e.cx||'—')}</div><div><small>Diagnóstico</small>${H(e.dx||'—')}</div><div><small>Adscrito</small>${H(e.ads||'—')}</div></div>
     ${e.np?'':stepsQx(e)}<div class="qx-who">${whoLine(e,[['comp','Completó']])}</div>${e.aut&&e.aut.por?`<div class="qx-autby">${IC.lock}<span>Autorizó: <b>${H(whoName(e.aut.por))}</b> · ${H(tsTxt(e.aut.ts))}</span></div>`:''}<div class="qx-c-act">${act}${more}</div></article>`; }
 function daySummary(es,t){ es=es.filter(e=>!offE(e)); if(t==='quirofano'){ const a=es.filter(e=>e.aut).length, c=es.filter(e=>e.comp&&!e.aut).length; return `<div class="qx-sum"><div><b>${es.length}</b><small>Tentativos</small></div><div><b>${c}</b><small>Completos</small></div><div><b>${a}</b><small>Autorizados</small></div></div>`; } const s=es.filter(e=>e.nota).length; return `<div class="qx-sum"><div><b>${es.length}</b><small>Agendados</small></div><div><b>${s}</b><small>Sesionados</small></div><div><b>${es.length-s}</b><small>Pendientes</small></div></div>`; }
@@ -19444,20 +19524,20 @@ function weekHTML(k){ const st=V[k], t=T(k), d0=pDMY(st.sel)||new Date(), mon=ne
   for(let i=0;i<7;i++){ const d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i,12), x=dDMY(d), n=byDay(t,x).filter(e=>!offE(e)).length; ds+=`<button type="button" class="qw-d${x===st.sel?' on':''}${x===h?' today':''}" data-qday="${x}" aria-pressed="${x===st.sel}" aria-label="${H(largo(x))}${n?', '+n+' paciente'+(n>1?'s':''):''}"><small>${'LMMJVSD'[i]}</small><b>${d.getDate()}</b>${n?`<i>${n}</i>`:''}</button>`; }
   return `<div class="qw"><button type="button" data-qwk="-1" aria-label="Semana anterior">‹</button><div class="qw-days">${ds}</div><button type="button" data-qwk="1" aria-label="Semana siguiente">›</button><button type="button" class="qw-t" data-qcal="0">Hoy</button><button type="button" class="qw-t" data-qmes aria-pressed="${!!st.cal}">Mes</button></div>`; }
 function rowHTML(e,t){ const st=V[t==='quirofano'?'qx':'cm'], ci=clinOf(e.clin), age=ageOf(e.fnac,e.fecha), off=offE(e), s=t==='quirofano'?qxState(e):cmState(e), cls=off?'':t==='quirofano'?(e.res?(e.res.v==='operado'?'ok':'warn'):e.aut?'gold':e.comp?'warn':''):(e.nota?'ok':'');
-  return `<div class="qx-row${st.cur===e.id?' sel':''}${off?' off':''}"><button type="button" class="qx-rsel" data-qsel="${H(e.id)}" aria-pressed="${st.cur===e.id}"><i style="--c:${off?'#B5BCC4':ci.c}"></i><span class="nm"><b>${H(e.nombre||'Sin nombre')}</b><small>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''}</small></span><span class="cx">${H(t==='quirofano'?(e.cx||e.dx||''):(e.dx||''))}</span><span class="ad">${H(e.ads||'')}</span><em class="${cls}">${H(s)}</em></button>${fileBtn(e,t==='quirofano'?'qe':'ce')}</div>`; }
+  return `<div class="qx-row${st.cur===e.id?' sel':''}${off?' off':''}"><button type="button" class="qx-rsel" data-qsel="${H(e.id)}" aria-pressed="${st.cur===e.id}"><i style="--c:${off?'#B5BCC4':ci.c}"></i><span class="nm"><b>${H(e.nombre||'Sin nombre')}</b><small>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''}</small></span><span class="cx">${t==='quirofano'?`<b>${H(e.cx||'—')}</b><small>${H(e.dx||'')}</small>`:H(e.dx||'')}</span><span class="ad">${H(e.ads||'')}${t==='quirofano'&&(e.sala||e.tq||e.turno)?`<small>${H([salaTxt(e),TQ[e.tq]||'',TURNO[e.turno]||''].filter(Boolean).join(' · '))}</small>`:''}</span><em class="${cls}">${H(s)}</em></button>${fileBtn(e,t==='quirofano'?'qe':'ce')}</div>`; }
 function item(e,t){ return isWide()?rowHTML(e,t):(t==='quirofano'?qxCard(e):cmCard(e)); }
 function curFix(st,pool){ if(!pool.some(e=>e.id===st.cur)) st.cur=pool.length?pool[0].id:null; }
 function shell(k,t,es,off,all,body){ const st=V[k], wide=isWide(), cur=wide?es.concat(off).find(e=>e.id===st.cur):null;
   return `<div class="qx-topbar">${weekHTML(k)}${daySummary(es,t)}</div>${st.cal?`<div class="qx-panel qx-calp">${calHTML(k)}</div>`:''}<div class="qx-two${wide?'':' one'}"><section><div class="qx-dayh"><b>${H(largo(st.sel))}</b><span>${es.length?es.length+' paciente'+(es.length>1?'s':''):''}</span></div>${fcHTML(st,all)}<div class="qx-list${wide?' rows':''}">${body}</div></section>${wide?`<aside class="qx-det" aria-label="Detalle del paciente">${cur?(t==='quirofano'?qxCard(cur):cmCard(cur)):'<div class="qx-empty"><b>Sin paciente seleccionado</b>Elige un paciente de la lista para ver su detalle.</div>'}</aside>`:''}</div>`; }
-function qxAgendaHTML(){ const st=V.qx, all=byDay('quirofano',st.sel), off=all.filter(offE), es=fcF(st,all.filter(e=>!offE(e))).sort((a,b)=>(a.aut?0:1)-(b.aut?0:1)||String(a.turno||'Z').localeCompare(String(b.turno||'Z'))||String(a.nombre).localeCompare(String(b.nombre),'es'));
+function qxAgendaHTML(){ const st=V.qx, all=byDay('quirofano',st.sel), off=all.filter(offE), es=fcF(st,all.filter(e=>!offE(e))).sort((a,b)=>(a.aut?0:1)-(b.aut?0:1)||qxOrd(a,b));
   curFix(st,es.concat(off)); const groups=[['M','Matutino'],['V','Vespertino'],['','Turno por definir']].map(([tk,l])=>[l,es.filter(e=>(e.turno||'')===tk)]).filter(g=>g[1].length);
   const empty=`<div class="qx-empty"><b>Sin pacientes para este día</b>Elige otra fecha en el calendario${can('editar_quirofano')?' o usa «Agregar paciente». También puedes agregar desde una Solicitud de cirugía.':'.'}</div>`;
   const body=(es.length?groups.map(([l,g])=>(groups.length>1||l!=='Turno por definir'?`<div class="qx-grp"><i style="--c:#1F3864"></i>${l} · ${g.length}</div>`:'')+g.map(e=>item(e,'quirofano')).join('')).join(''):empty)+(off.length?`<div class="qx-grp"><i style="--c:#B5BCC4"></i>No autorizadas o canceladas · ${off.length}</div>`+off.map(e=>item(e,'quirofano')).join(''):'');
   return shell('qx','quirofano',es,off,all,body); }
 function cmCard(e){ if(offE(e)) return offCard(e,'comite'); const ci=clinOf(e.clin), age=ageOf(e.fnac,e.fecha), canEd=can('editar_comite');
   let act=''; if(e.nota){ act=`<span class="qx-chip ok">${IC.check} Paciente sesionado</span><button type="button" class="qx-btn sm" data-ce="view" data-id="${H(e.id)}">Ver nota</button>${can('imprimir_documentos')?`<button type="button" class="qx-btn sm" data-ce="print" data-id="${H(e.id)}">${IC.print}Imprimir nota</button>`:''}${canEd?`<button type="button" class="qx-btn sm" data-ce="editnote" data-id="${H(e.id)}">Editar nota</button>`:''}`; }
-  else act=canEd?`<button type="button" class="qx-btn pri sm" data-ce="note" data-id="${H(e.id)}">${IC.note}Crear nota de comité</button><button type="button" class="qx-btn sm" data-ce="link" data-id="${H(e.id)}">Ligar nota existente</button>`:'<span class="qx-chip warn">Pendiente de sesionar</span>';
-  const more=`<span class="sp"></span>${canEd?`<button type="button" class="qx-btn ghost sm" data-ce="resched" data-id="${H(e.id)}">Reprogramar sesión</button><button type="button" class="qx-btn ghost sm" data-ce="edit" data-id="${H(e.id)}">Editar datos</button>`:''}${canEd&&!e.nota?`<button type="button" class="qx-btn ghost sm bad" data-ce="nses" data-id="${H(e.id)}">No sesionado</button><button type="button" class="qx-btn ghost sm bad" data-ce="cancel" data-id="${H(e.id)}">Cancelar entrada</button>`:''}`;
+  else act=canEd?`<button type="button" class="qx-btn pri sm" data-ce="note" data-id="${H(e.id)}">${IC.note}Crear nota de comité</button><button type="button" class="qx-btn sm" data-ce="link" data-id="${H(e.id)}">${IC.link}Seleccionar nota existente</button>`:'<span class="qx-chip warn">Pendiente de sesionar</span>';
+  const more=`<span class="sp"></span>${canEd?`<button type="button" class="qx-btn ghost sm" data-ce="edit" data-id="${H(e.id)}">${IC.edit}Editar datos</button><button type="button" class="qx-btn ghost sm" data-ce="resched" data-id="${H(e.id)}">${IC.cal}Reprogramar</button>`:''}${canEd&&!e.nota?`<button type="button" class="qx-btn ghost sm bad" data-ce="nses" data-id="${H(e.id)}">${IC.no}No sesionado</button><button type="button" class="qx-btn ghost sm bad" data-ce="del" data-id="${H(e.id)}">${IC.trash}Borrar paciente</button>`:''}`;
   const rp=(e.h||[]).filter(x=>/^Reprogramad/.test(x.a)).length;
   return `<article class="qx-card col${e.nota?' done':''}${V.open.has(e.id)?' open':''}" style="--c:${ci.c}"><div class="qx-c-top"><div class="qx-c-id"><b>${H(e.nombre||'Sin nombre')}</b><span>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''}</span></div><div class="qx-chips"><span class="qx-chip clin" style="--bg:${ci.bg};--fg:${ci.fg}">${H(ci.n)}</span>${rp?`<span class="qx-chip warn">Reprogramado ${rp}×</span>`:''}${fileBtn(e,'ce')}</div></div>
    ${miniHTML(e,'comite')}<div class="qx-c-body"><div><small>Diagnóstico</small>${H(e.dx||'—')}</div><div><small>Adscrito</small>${H(e.ads||'—')}</div><div><small>Dictamen</small>${H(e.nota&&e.nota.dic?e.nota.dic:'—')}</div></div>
@@ -19520,15 +19600,15 @@ function viewClick(e){ const t=e.target.closest('button'); if(!t) return; const 
   if(t.dataset.qcal){ const n=+t.dataset.qcal; if(n===0){ st.sel=hoy(); st.m=null; } else { const M=monthOf(st); const d=new Date(M.y,M.m+n,1); st.m={y:d.getFullYear(),m:d.getMonth()}; } renderView(); return; }
   if(t.dataset.qtab){ st.tab=t.dataset.qtab; renderView(); return; }
   if(t.dataset.qa==='add'){ openAdd(T(k),{fecha:st.sel}); return; }
-  if(t.dataset.qa==='print'){ if(k==='qx') printQx(st.sel); else printCm(st.sel); return; }
+  if(t.dataset.qa==='print'){ printAsk(k); return; }
   const id=t.dataset.id; if(t.dataset.qe){ const e=AG.quirofano.items[id]; if(!e) return; const a=t.dataset.qe; if(a==='steps') openSteps(id); else if(a==='auth') openAuth(id); else if(a==='edit') openAdd('quirofano',e,id); else if(a==='file') openFile(e.exp); else if(a==='del') delEntry('quirofano',id,t); else if(a==='noaut') reasonAsk('quirofano',id,'noaut'); else if(a==='cancel') reasonAsk('quirofano',id,'can'); else if(a==='unaut') unAuth(id,t); else if(a==='restore') agChange('quirofano',id,{noaut:null,can:null},'Restaurada (en espera de autorización)'); return; }
   if(t.dataset.ce){ const e=AG.comite.items[id]; if(!e) return; const a=t.dataset.ce; if(a==='note') createNote('comite',e); else if(a==='link') openLink('comite',id); else if(a==='view') viewNote(e.exp,e.nota&&e.nota.id); else if(a==='print') printNote(e.exp,e.nota&&e.nota.id); else if(a==='editnote') editNote(e.exp,e.nota&&e.nota.id); else if(a==='resched') resched(id); else if(a==='edit') openAdd('comite',e,id); else if(a==='file') openFile(e.exp); else if(a==='del') delEntry('comite',id,t); else if(a==='cancel') reasonAsk('comite',id,'can'); else if(a==='nses') reasonAsk('comite',id,'nses'); else if(a==='restore') agChange('comite',id,{can:null,nses:null},'Restaurada'); return; }
 }
 function unAuth(id,b){ if(!b.dataset.ok){ b.dataset.ok='1'; const lb=b.textContent; b.textContent='¿Cancelar autorización?'; setTimeout(()=>{ if(b.isConnected){ delete b.dataset.ok; b.textContent=lb; } },4000); return; } agChange('quirofano',id,{aut:null},'Autorización cancelada (en espera de autorización)'); say('Autorización cancelada: vuelve a esperar autorización.','ok'); }
-function delEntry(t,id,b){ if(!b.dataset.ok){ b.dataset.ok='1'; const lb=b.textContent; b.textContent='¿Seguro?'; setTimeout(()=>{ if(b.isConnected){ delete b.dataset.ok; b.textContent=lb; } },4000); return; } agChange(t,id,{},t==='quirofano'?'Quitado de la programación':'Quitado del comité','del'); say(t==='quirofano'?'Paciente quitado de la programación.':'Entrada borrada.','ok'); }
+function delEntry(t,id,b){ if(!b.dataset.ok){ b.dataset.ok='1'; const lb=b.innerHTML; b.textContent='¿Borrar? Toca otra vez'; setTimeout(()=>{ if(b.isConnected){ delete b.dataset.ok; b.innerHTML=lb; } },4000); return; } agChange(t,id,{},t==='quirofano'?'Quitado de la programación':'Quitado del comité','del'); say(t==='quirofano'?'Paciente quitado de la programación.':'Entrada borrada.','ok'); }
 const SUG={quirofanonoaut:['FALTA VALORACIÓN PREOPERATORIA','ESTUDIOS INCOMPLETOS','EXPEDIENTE INCOMPLETO','FALTA DE TIEMPO QUIRÚRGICO','FALTA DE MATERIAL O INSUMOS','FALTA DE HEMODERIVADOS','SIN CAMA EN TERAPIA INTENSIVA'],quirofanocan:['PACIENTE NO ACEPTA CIRUGÍA','CAMBIO DE PLAN TERAPÉUTICO','PROGRESIÓN DE LA ENFERMEDAD','REFERIDO A OTRA UNIDAD','ENTRADA DUPLICADA'],comitecan:['CAMBIO DE PLAN TERAPÉUTICO','REFERIDO A OTRA UNIDAD','PACIENTE PERDIDO EN SEGUIMIENTO','ENTRADA DUPLICADA'],comitenses:['FALTA REPORTE DE PATOLOGÍA','FALTAN ESTUDIOS DE IMAGEN','PACIENTE NO ACUDIÓ','ADSCRITO AUSENTE','FALTA DE TIEMPO EN LA SESIÓN']};
 function reasonAsk(t,id,k){ const e=AG[t].items[id]; if(!e) return; const C={noaut:['No autorizar','Motivo por el que no se autoriza','No autorizar','No autorizada: '],can:['Cancelar entrada','Motivo de la cancelación','Cancelar entrada','Entrada cancelada: '],nses:['No sesionado','Motivo por el que no se sesionó','Marcar no sesionado','No sesionado: ']}[k];
-  const d=dlg('dlgQxReason'); d.innerHTML=dlgShell(C[0],H(e.nombre)+' · Exp. '+H(e.exp),`<label class="qd-l req"><span>${C[1]}</span><textarea id="qrsT" rows="3"></textarea></label><div class="qd-sug">${(SUG[t+k]||[]).map(x=>`<button type="button" data-sug>${H(x)}</button>`).join('')}</div><p class="qd-msg" id="qrsM" role="alert"></p>`,`<button type="button" class="qx-btn" data-qd-x>Volver</button><button type="button" class="qx-btn pri" id="qrsOk">${C[2]}</button>`); show(d); setTimeout(()=>{ try{ d.querySelector('#qrsT').focus(); }catch(_){} },40);
+  const d=dlg('dlgQxReason'); d.innerHTML=dlgShell(C[0],H(e.nombre)+' · Exp. '+H(e.exp),`<label class="qd-l req"><span>${C[1]}</span><textarea id="qrsT" rows="3"></textarea></label><div class="qd-pick">${(SUG[t+k]||[]).map(x=>`<button type="button" data-sug>${H(x)}</button>`).join('')}</div><p class="qd-msg" id="qrsM" role="alert"></p>`,`<button type="button" class="qx-btn" data-qd-x>Volver</button><button type="button" class="qx-btn pri" id="qrsOk">${C[2]}</button>`); show(d); setTimeout(()=>{ try{ d.querySelector('#qrsT').focus(); }catch(_){} },40);
   d.querySelectorAll('[data-sug]').forEach(b=>b.onclick=()=>{ const x=d.querySelector('#qrsT'); x.value=b.textContent; x.focus(); });
   d.querySelector('#qrsOk').onclick=()=>{ const m=up(d.querySelector('#qrsT').value); if(!m){ d.querySelector('#qrsM').textContent='Escribe el motivo.'; return; } const set={}; set[k]={motivo:m}; agChange(t,id,set,C[3]+m); d.close(); say(C[0]+' · listo.','ok'); }; }
 async function openFile(exp){ const f=fileByExp(exp); if(!f){ say('No se encontró el expediente '+exp+' en Drive.','warn'); return; } try{ if(window.arWinOpen) arWinOpen(f.id); else openDriveFile(f.id); }catch(e){ say('No se pudo abrir: '+(typeof friendly==='function'?friendly(e):e.message),'warn'); } }
@@ -19628,9 +19708,17 @@ function openSteps(id){ const d=dlg('dlgQxSteps','wide'); const draw=()=>{ const
 }
 function openAuth(id){ const e=AG.quirofano.items[id]; if(!e) return; if(!isQxRole()){ say('Solo los usuarios con rol Quirófano pueden autorizar.','warn'); return; } if(!e.comp){ openSteps(id); return; }
   const d=dlg('dlgQxAuth'); const tur=e.turno||'';
-  d.innerHTML=dlgShell('Autorizar programación',`${H(e.nombre)} · Exp. ${H(e.exp)}`,`<p class="qd-note">${H(e.cx||'')}<br><b>${H(largo(e.fecha))}</b> · ${H(clinOf(e.clin).n)} · ${H(e.ads||'')}</p>${dateInput('qaAF',e.fecha,'Fecha de cirugía',true)}<label class="qd-l"><span>Turno</span><span class="qd-sg big" id="qaAT" role="group"><button type="button" data-v="M" aria-pressed="${tur==='M'}">Matutino</button><button type="button" data-v="V" aria-pressed="${tur==='V'}">Vespertino</button><button type="button" data-v="" aria-pressed="${!tur}">Por definir</button></span></label><p class="qd-msg" id="qaAM" role="alert"></p>`,`<button type="button" class="qx-btn" data-qd-x>Cancelar</button><button type="button" class="qx-btn gold" id="qaAOk">${IC.lock}Autorizar</button>`); show(d);
+  const sel=(id,lab,opts,val)=>`<label class="qd-l"><span>${lab}</span><select id="${id}">${opts.map(o=>`<option value="${o[0]}"${String(val)===o[0]?' selected':''}>${o[1]}</option>`).join('')}</select></label>`;
+  const salas=[['','Por definir']].concat(Array.from({length:10},(_,i)=>[String(i+1),'Sala '+(i+1)]));
+  d.innerHTML=dlgShell(e.aut?'Sala y turno quirúrgico':'Autorizar programación',`${H(e.nombre)} · Exp. ${H(e.exp)}`,`<p class="qd-note">${H(e.cx||'')}<br><b>${H(largo(e.fecha))}</b> · ${H(clinOf(e.clin).n)} · ${H(e.ads||'')}</p>${dateInput('qaAF',e.fecha,'Fecha de cirugía',true)}<label class="qd-l"><span>Turno</span><span class="qd-sg big" id="qaAT" role="group"><button type="button" data-v="M" aria-pressed="${tur==='M'}">Matutino</button><button type="button" data-v="V" aria-pressed="${tur==='V'}">Vespertino</button><button type="button" data-v="" aria-pressed="${!tur}">Por definir</button></span></label><div class="qd-2">${sel('qaAS','Sala',salas,e.aut?(e.sala||''):(e.sala||'10'))}${sel('qaAQ','Turno quirúrgico',[['1','Primer turno'],['2','Segundo turno'],['3','Tercer turno'],['','Por definir']],e.tq||'')}</div><p class="qd-msg" id="qaAM" role="alert"></p><div id="qaAC"></div>`,`<button type="button" class="qx-btn" data-qd-x>Cancelar</button><button type="button" class="qx-btn gold" id="qaAOk">${IC.lock}${e.aut?'Guardar':'Autorizar'}</button>`); show(d);
   const f=d.querySelector('#qaAF'); f.addEventListener('input',()=>fmtDigits(f)); const tg=d.querySelector('#qaAT'); tg.onclick=ev=>{ const b=ev.target.closest('button'); if(!b) return; tg.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b))); };
-  d.querySelector('#qaAOk').onclick=()=>{ const fe=normDMY(f.value); if(!fe){ d.querySelector('#qaAM').textContent='Escribe una fecha válida (DD.MM.AA).'; return; } const t=(tg.querySelector('[aria-pressed="true"]')||{dataset:{v:''}}).dataset.v; const set={aut:{},turno:t}; if(fe!==e.fecha) set.fecha=fe; agChange('quirofano',id,set,'Autorizado'+(t?' · '+TURNO[t]:'')+(fe!==e.fecha?' · fecha '+fe:'')); d.close(); say('Programación autorizada.','ok'); };
+  const commit=(fe,t,sala,tq,other)=>{ const set={turno:t,sala,tq}; if(!e.aut) set.aut={}; if(fe!==e.fecha) set.fecha=fe; if(other) agChange('quirofano',other.id,{tq:other.tq},'Turno quirúrgico: '+(TQ[other.tq]||'por definir')); agChange('quirofano',id,set,(e.aut?'Sala y turno':'Autorizado')+(t?' · '+TURNO[t]:'')+(sala?' · Sala '+sala:'')+(tq?' · '+TQ[tq]:'')+(fe!==e.fecha?' · fecha '+fe:'')); d.close(); say(e.aut?'Sala y turno actualizados.':'Programación autorizada.','ok'); };
+  d.querySelector('#qaAOk').onclick=()=>{ const fe=normDMY(f.value); if(!fe){ d.querySelector('#qaAM').textContent='Escribe una fecha válida (DD.MM.AA).'; return; } const t=(tg.querySelector('[aria-pressed="true"]')||{dataset:{v:''}}).dataset.v, sala=d.querySelector('#qaAS').value, tq=d.querySelector('#qaAQ').value;
+    const clash=tq&&sala?list('quirofano').find(x=>x.id!==id&&x.aut&&!offE(x)&&!(x.res&&x.res.v==='diferido')&&x.fecha===fe&&(x.turno||'')===t&&String(x.sala||'')===sala&&String(x.tq||'')===tq):null;
+    if(!clash){ commit(fe,t,sala,tq); return; }
+    const nx=tq==='3'?'':String(+tq+1), nxl=nx?TQ[nx].toLowerCase():'turno por definir', box=d.querySelector('#qaAC');
+    box.innerHTML=`<div class="qd-clash" role="alert"><b>Ya hay un paciente en ${H(TQ[tq].toLowerCase())}</b><p>${H(clash.nombre)} · Sala ${H(sala)}${t?' · '+TURNO[t]:''} · ${H(clash.cx||'')}</p><div><button type="button" class="qx-btn sm" data-k="a">Poner a este paciente en ${H(nxl)}</button><button type="button" class="qx-btn sm" data-k="b">Dejar a este en ${H(TQ[tq].toLowerCase())} y mover al otro a ${H(nxl)}</button></div></div>`;
+    box.onclick=ev=>{ const b=ev.target.closest('button'); if(!b) return; if(b.dataset.k==='a') commit(fe,t,sala,nx); else commit(fe,t,sala,tq,{id:clash.id,tq:nx}); }; };
 }
 /* Notas de comité: crear, editar, ver, imprimir, ligar */
 async function createNote(t,e){ const f=fileByExp(e.exp); if(!f){ say('No se encontró el expediente '+e.exp+' en Drive.','warn'); return; }
@@ -19664,22 +19752,39 @@ function noteSaved(info){ if(!info||!info.exp) return; const it=window.__qxNoteI
 
 /* ---------- Impresión de listas ---------- */
 function logos(){ return {hjm:(document.querySelector('.home-logo .seal')||document.querySelector('.top .seal')||{}).src||'',crab:(document.querySelector('.top > .seal.crab')||document.querySelector('.top .seal.crab')||{}).src||''}; }
-function printDoc(body,title,land){ const L=logos(); const css=`@page{size:letter ${land?'landscape':'portrait'};margin:.4in .45in}*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#000;font-size:9.5pt}.hd{display:grid;grid-template-columns:70px 1fr 70px;align-items:center;gap:10px;margin:0 0 8pt}.hd img{width:60px;height:60px;object-fit:contain}.hd div{text-align:center;font-family:"Times New Roman",serif;line-height:1.25}.hd b{display:block;font-size:14pt}.hd span{display:block;font-size:11.5pt;font-weight:700}.hd em{display:block;font-style:normal;font-size:10.5pt;margin-top:3pt}table{width:100%;border-collapse:collapse}th,td{border:1px solid #000;padding:3pt 5pt;vertical-align:top;text-align:left}th{background:#E9EDF2;font-size:8pt;letter-spacing:.03em}tr{break-inside:avoid}.g td{background:#F2F4F7;font-weight:700;font-size:9pt;letter-spacing:.04em}.g i{display:inline-block;width:9pt;height:9pt;border-radius:50%;margin-right:5pt;vertical-align:-1pt;-webkit-print-color-adjust:exact;print-color-adjust:exact}.c{text-align:center}.none{margin:40pt 0;text-align:center;font-size:14pt;font-weight:700}.ft{margin-top:10pt;font-size:8pt;color:#333;text-align:right}`;
+function printDoc(body,title,land){ const L=logos(); const css=`@page{size:letter ${land?'landscape':'portrait'};margin:.4in .45in}*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#000;font-size:9.5pt}.hd{display:grid;grid-template-columns:70px 1fr 70px;align-items:center;gap:10px;margin:0 0 8pt}.hd img{width:60px;height:60px;object-fit:contain}.hd div{text-align:center;font-family:"Times New Roman",serif;line-height:1.25}.hd b{display:block;font-size:14pt}.hd span{display:block;font-size:11.5pt;font-weight:700}.hd em{display:block;font-style:normal;font-size:10.5pt;margin-top:3pt}table{width:100%;border-collapse:collapse}th,td{border:1px solid #000;padding:3pt 5pt;vertical-align:top;text-align:left}th{background:#E9EDF2;font-size:8pt;letter-spacing:.03em}tr{break-inside:avoid}.g td{background:#F2F4F7;font-weight:700;font-size:9pt;letter-spacing:.04em}.g i{display:inline-block;width:9pt;height:9pt;border-radius:50%;margin-right:5pt;vertical-align:-1pt;-webkit-print-color-adjust:exact;print-color-adjust:exact}.c{text-align:center}.none{margin:40pt 0;text-align:center;font-size:14pt;font-weight:700}.ft{margin-top:10pt;font-size:8pt;color:#333;text-align:right}h2{margin:12pt 0 4pt;font-size:11.5pt;border-bottom:1.5pt solid #000;padding-bottom:2pt;break-after:avoid}h3{margin:8pt 0 3pt;font-size:9.5pt;letter-spacing:.04em;break-after:avoid}h3 i{display:inline-block;width:9pt;height:9pt;border-radius:50%;margin-right:5pt;vertical-align:-1pt;-webkit-print-color-adjust:exact;print-color-adjust:exact}thead{display:table-header-group}.sec{margin:0 0 6pt}`;
   const doc=`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>${H(title)}</title><style>${css}</style></head><body>${body.replace(/\{\{LOGOS\}\}/g,'').replace('{{HJM}}',H(L.hjm)).replace('{{CRAB}}',H(L.crab))}</body></html>`;
   const fr=document.createElement('iframe'); fr.setAttribute('aria-hidden','true'); fr.style.cssText='position:fixed;left:-9999px;top:0;width:11in;height:8.5in;border:0;opacity:0;pointer-events:none';
   fr.addEventListener('load',()=>{ setTimeout(()=>{ try{ fr.contentWindow.focus(); fr.contentWindow.print(); }catch(_){} setTimeout(()=>fr.remove(),60000); },350); },{once:true}); fr.srcdoc=doc; document.body.appendChild(fr); }
 function head(t1,t2){ return `<div class="hd"><img src="{{HJM}}" alt=""><div><b>HOSPITAL JUÁREZ DE MÉXICO</b><span>SERVICIO DE ONCOLOGÍA</span><span>${t1}</span><em>${t2}</em></div><img src="{{CRAB}}" alt=""></div>`; }
-function printQx(day){ if(!can('imprimir_programacion')){ say('Tu usuario no tiene permiso para imprimir la programación.','warn'); return; } const es=byDay('quirofano',day).filter(e=>e.aut&&!e.np).sort((a,b)=>String(a.turno||'Z').localeCompare(String(b.turno||'Z'))||clinOf(a.clin).k.localeCompare(clinOf(b.clin).k)||String(a.nombre).localeCompare(String(b.nombre),'es'));
-  let body=head('PROGRAMACIÓN QUIRÚRGICA',H(up(largo(day))));
-  if(!es.length) body+='<p class="none">NO HAY CIRUGÍAS AUTORIZADAS O PROGRAMADAS</p>';
-  else { let n=0; const grp=[['M','TURNO MATUTINO'],['V','TURNO VESPERTINO'],['','TURNO POR DEFINIR']].map(([k,l])=>[l,es.filter(e=>(e.turno||'')===k)]).filter(g=>g[1].length);
-    body+=`<table><thead><tr><th class="c" style="width:3%">No.</th><th style="width:19%">PACIENTE</th><th class="c" style="width:5%">EDAD</th><th style="width:9%">EXPEDIENTE</th><th style="width:20%">DIAGNÓSTICO</th><th style="width:21%">CIRUGÍA PLANEADA</th><th style="width:14%">ADSCRITO</th><th style="width:9%">CLÍNICA</th></tr></thead><tbody>${grp.map(([l,g])=>`<tr class="g"><td colspan="8">${l} · ${g.length}</td></tr>`+g.map(e=>{ n++; const ci=clinOf(e.clin); return `<tr><td class="c">${n}</td><td><b>${H(up(e.nombre))}</b></td><td class="c">${H(ageOf(e.fnac,e.fecha))}</td><td>${H(e.exp)}</td><td>${H(up(e.dx))}</td><td>${H(up(e.cx))}</td><td>${H(up(e.ads))}</td><td>${H(up(ci.n))}</td></tr>`; }).join('')).join('')}</tbody></table>`; }
-  body+=`<p class="ft">Solo cirugías autorizadas · Impreso ${H(tsTxt(Date.now()))}</p>`; printDoc(body,'Programación '+day,true); }
-function printCm(day){ if(!can('imprimir_comite')){ say('Tu usuario no tiene permiso para imprimir la lista.','warn'); return; } let es=byDay('comite',day); let body=head('COMITÉ MULTIDISCIPLINARIO',H(up(largo(day)))); es=es.filter(e=>!e.can);
-  if(!es.length) body+='<p class="none">NO HAY PACIENTES AGENDADOS PARA ESTA SESIÓN</p>';
-  else { const by=new Map(); es.forEach(e=>{ const k=clinOf(e.clin).k; (by.get(k)||by.set(k,[]).get(k)).push(e); }); const order=[...CLIN.map(c=>c.k),...[...by.keys()].filter(k=>!CLIN.some(c=>c.k===k))]; let n=0;
-    body+=`<table><thead><tr><th class="c" style="width:4%">No.</th><th style="width:26%">PACIENTE</th><th class="c" style="width:6%">EDAD</th><th style="width:11%">EXPEDIENTE</th><th style="width:31%">DIAGNÓSTICO</th><th style="width:22%">ADSCRITO</th></tr></thead><tbody>${order.filter(k=>by.has(k)).map(k=>{ const ci=clinOf(k), g=by.get(k).sort((a,b)=>String(a.nombre).localeCompare(String(b.nombre),'es')); return `<tr class="g"><td colspan="6"><i style="background:${ci.c}"></i>${H(up(ci.n))} · ${g.length}</td></tr>`+g.map(e=>{ n++; return `<tr><td class="c">${n}</td><td><b>${H(up(e.nombre))}</b></td><td class="c">${H(ageOf(e.fnac,e.fecha))}</td><td>${H(e.exp)}</td><td>${H(up(e.dx))}</td><td>${H(up(e.ads))}</td></tr>`; }).join(''); }).join('')}</tbody></table>`; }
-  body+=`<p class="ft">${es.length} paciente${es.length===1?'':'s'} · Impreso ${H(tsTxt(Date.now()))}</p>`; printDoc(body,'Comité '+day,false); }
+function rangeDays(a,b){ const A=pDMY(a), B=pDMY(b), out=[]; if(!A||!B) return out; for(let d=new Date(A.getFullYear(),A.getMonth(),A.getDate(),12), n=0; dkey(dDMY(d))<=dkey(dDMY(B))&&n<93; d=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1,12), n++) out.push(dDMY(d)); return out; }
+function printAsk(k){ if(!can(k==='qx'?'imprimir_programacion':'imprimir_comite')){ say('Tu usuario no tiene permiso para imprimir.','warn'); return; } const st=V[k], d=dlg('dlgQxPrint'), t0=pDMY(hoy()), day=n=>dDMY(new Date(t0.getFullYear(),t0.getMonth(),t0.getDate()+n,12)), mon=-((t0.getDay()+6)%7);
+  const P={hoy:[day(0),day(0)],man:[day(1),day(1)],sem:[day(mon),day(mon+6)],prox:[day(mon+7),day(mon+13)]};
+  d.innerHTML=dlgShell(k==='qx'?'Imprimir programación quirúrgica':'Imprimir lista del comité','Elige las fechas y las clínicas que se van a imprimir.',`<div class="qp-wrap"><div class="qd-pick" id="qpP"><button type="button" data-p="hoy">Hoy</button><button type="button" data-p="man">Mañana</button><button type="button" data-p="sem">Esta semana</button><button type="button" data-p="prox">Próxima semana</button></div><div class="qd-2">${dateInput('qpA',st.sel,'Desde',true)}${dateInput('qpB',st.sel,'Hasta',true)}</div><div class="qp-ms"><span class="qp-ms-l">Clínicas a imprimir</span><button type="button" class="qp-ms-b" id="qpMB" aria-haspopup="true" aria-expanded="false"><span>Clínica</span><b id="qpML">Todas</b><i aria-hidden="true">⌄</i></button><div class="qp-ms-pop" id="qpMP" hidden><button type="button" role="menuitemcheckbox" data-k="*" aria-checked="true"><em></em>Todas</button>${CLIN.map(c=>`<button type="button" role="menuitemcheckbox" data-k="${H(c.k)}" aria-checked="true"><em></em><i style="background:${c.c}"></i>${H(c.n)}</button>`).join('')}</div></div><p class="qd-msg" id="qpM" role="alert"></p></div>`,`<button type="button" class="qx-btn" data-qd-x>Cancelar</button><button type="button" class="qx-btn pri" id="qpOk">${IC.print}Imprimir</button>`); show(d);
+  const A=d.querySelector('#qpA'), B=d.querySelector('#qpB'); [A,B].forEach(x=>x.addEventListener('input',()=>fmtDigits(x)));
+  d.querySelector('#qpP').onclick=ev=>{ const b=ev.target.closest('button'); if(!b) return; A.value=P[b.dataset.p][0]; B.value=P[b.dataset.p][1]; };
+  const MB=d.querySelector('#qpMB'), MP=d.querySelector('#qpMP'), opts=()=>[...MP.querySelectorAll('[data-k]:not([data-k="*"])')], sel=()=>opts().filter(x=>x.getAttribute('aria-checked')==='true').map(x=>x.dataset.k);
+  const msSync=()=>{ const k=sel(), all=k.length===CLIN.length; MP.querySelector('[data-k="*"]').setAttribute('aria-checked',String(all)); d.querySelector('#qpML').textContent=all?'Todas':!k.length?'Ninguna':k.length===1?clinOf(k[0]).n:k.length+' clínicas'; };
+  MB.onclick=()=>{ MP.hidden=!MP.hidden; MB.setAttribute('aria-expanded',String(!MP.hidden)); };
+  MP.onclick=ev=>{ const b=ev.target.closest('[data-k]'); if(!b) return; if(b.dataset.k==='*'){ const on=b.getAttribute('aria-checked')!=='true'; opts().forEach(x=>x.setAttribute('aria-checked',String(on))); } else b.setAttribute('aria-checked',String(b.getAttribute('aria-checked')!=='true')); msSync(); };
+  d.addEventListener('click',ev=>{ if(!MP.hidden&&!ev.target.closest('.qp-ms')){ MP.hidden=true; MB.setAttribute('aria-expanded','false'); } });
+  d.querySelector('#qpOk').onclick=()=>{ const a=normDMY(A.value), b=normDMY(B.value), M=d.querySelector('#qpM'); if(!a||!b){ M.textContent='Escribe fechas válidas (DD.MM.AA).'; return; } if(dkey(b)<dkey(a)){ M.textContent='La fecha final no puede ser anterior a la inicial.'; return; } const ks=sel(); if(!ks.length){ M.textContent='Marca al menos una clínica.'; return; } const days=rangeDays(a,b); if(!days.length||dkey(b)-dkey(a)>92*864e5){ M.textContent='El rango máximo es de tres meses.'; return; } d.close(); (k==='qx'?printQx:printCm)(days,ks.length===CLIN.length?null:new Set(ks)); }; }
+const perTxt=days=>days.length===1?up(largo(days[0])):'DEL '+days[0]+' AL '+days[days.length-1];
+const inClin=(e,ks)=>!ks||ks.has(clinOf(e.clin).k);
+function printQx(days,ks){ if(typeof days==='string') days=[days]; let body=head('PROGRAMACIÓN QUIRÚRGICA',H(perTxt(days))), tot=0;
+  days.forEach(day=>{ const es=byDay('quirofano',day).filter(e=>e.aut&&!e.np&&!offE(e)&&inClin(e,ks)).sort(qxOrd); if(!es.length) return; tot+=es.length;
+    if(days.length>1) body+=`<h2>${H(up(largo(day)))}</h2>`;
+    [['M','TURNO MATUTINO'],['V','TURNO VESPERTINO'],['','TURNO POR DEFINIR']].map(([k,l])=>[l,es.filter(e=>(e.turno||'')===k)]).filter(g=>g[1].length).forEach(([l,g])=>{ let n=0;
+      body+=`<div class="sec"><h3>${l} · ${g.length}</h3><table><thead><tr><th class="c" style="width:4%">No.</th><th class="c" style="width:6%">SALA</th><th class="c" style="width:9%">TURNO QX</th><th style="width:20%">PACIENTE</th><th class="c" style="width:5%">EDAD</th><th style="width:9%">EXPEDIENTE</th><th style="width:17%">DIAGNÓSTICO</th><th style="width:17%">CIRUGÍA PLANEADA</th><th style="width:13%">ADSCRITO</th></tr></thead><tbody>${g.map(e=>{ n++; return `<tr><td class="c">${n}</td><td class="c">${H(e.sala||'—')}</td><td class="c">${H(e.tq?e.tq+'.º':'—')}</td><td><b>${H(up(e.nombre))}</b></td><td class="c">${H(ageOf(e.fnac,e.fecha))}</td><td>${H(e.exp)}</td><td>${H(up(e.dx))}</td><td>${H(up(e.cx))}</td><td>${H(up(e.ads))}</td></tr>`; }).join('')}</tbody></table></div>`; }); });
+  if(!tot) body+='<p class="none">NO HAY CIRUGÍAS AUTORIZADAS O PROGRAMADAS</p>';
+  body+=`<p class="ft">Solo cirugías autorizadas${ks?' · Clínicas: '+H([...ks].map(k=>clinOf(k).n).join(', ')):''} · Impreso ${H(tsTxt(Date.now()))}</p>`; printDoc(body,'Programación '+days[0],true); }
+function printCm(days,ks){ if(typeof days==='string') days=[days]; let body=head('COMITÉ MULTIDISCIPLINARIO',H(perTxt(days))), tot=0;
+  days.forEach(day=>{ const es=byDay('comite',day).filter(e=>!e.can&&inClin(e,ks)); if(!es.length) return; tot+=es.length; if(days.length>1) body+=`<h2>${H(up(largo(day)))}</h2>`;
+    const by=new Map(); es.forEach(e=>{ const k=clinOf(e.clin).k; (by.get(k)||by.set(k,[]).get(k)).push(e); }); const order=[...CLIN.map(c=>c.k),...[...by.keys()].filter(k=>!CLIN.some(c=>c.k===k))];
+    order.filter(k=>by.has(k)).forEach(k=>{ const ci=clinOf(k), g=by.get(k).sort((a,b)=>String(a.nombre).localeCompare(String(b.nombre),'es')); let n=0;
+      body+=`<div class="sec"><h3><i style="background:${ci.c}"></i>${H(up(ci.n))} · ${g.length}</h3><table><thead><tr><th class="c" style="width:4%">No.</th><th style="width:26%">PACIENTE</th><th class="c" style="width:6%">EDAD</th><th style="width:11%">EXPEDIENTE</th><th style="width:31%">DIAGNÓSTICO</th><th style="width:22%">ADSCRITO</th></tr></thead><tbody>${g.map(e=>{ n++; return `<tr><td class="c">${n}</td><td><b>${H(up(e.nombre))}</b></td><td class="c">${H(ageOf(e.fnac,e.fecha))}</td><td>${H(e.exp)}</td><td>${H(up(e.dx))}</td><td>${H(up(e.ads))}</td></tr>`; }).join('')}</tbody></table></div>`; }); });
+  if(!tot) body+='<p class="none">NO HAY PACIENTES AGENDADOS PARA ESTA SESIÓN</p>';
+  body+=`<p class="ft">${tot} paciente${tot===1?'':'s'} · Impreso ${H(tsTxt(Date.now()))}</p>`; printDoc(body,'Comité '+days[0],false); }
 
 /* ---------- Desde una Solicitud de cirugía ---------- */
 function solEntry(rid){ if(!rid) return null; return list('quirofano').find(e=>e.sol===rid)||null; }
@@ -19788,20 +19893,24 @@ function revTr(){ const d=dlg('dlgQxRevTr'); let pick=null; const HD=[['CE','Con
   d.querySelector('#rtOk').onclick=()=>{ const n=parseInt(d.querySelector('#rtN').value,10), h=(hg.querySelector('[aria-pressed="true"]')||{dataset:{v:'CE'}}).dataset.v, m=d.querySelector('#rtM'); if(!pick){ m.textContent='Elige al paciente.'; return; } if(!(n>0)){ m.textContent='Escribe el número de unidades.'; return; }
     const txt=(pick.cama?pick.cama+' ':'')+up(pick.nombre)+' ('+pick.exp+') - '+n+' '+h; if(!revPut('tr',5,txt)){ m.textContent='Ya no hay renglones libres en «Transfusiones».'; return; } d.close(); say('Transfusión agregada al reverso.','ok'); }; }
 
-/* ---------- Usuarios: roles como casillas (Administrador · Administrador técnico · Quirófano) ---------- */
+/* ---------- Usuarios: roles como casillas (Administrador · Técnico · Quirófano) ---------- */
 window.accessEditorMount=function(dlgU,cur){
   const admin=dlgU.querySelector('#usrfA'); if(admin) admin.closest('label').hidden=true;
   const sec=document.createElement('section'); sec.className='access-editor';
-  const tec=(()=>{ try{ return isTechAdminRecord(cur); }catch(_){ return !!(cur&&cur.tecnico); } })(), adm=(()=>{ try{ return admRec(cur); }catch(_){ return !!(cur&&cur.admin); } })(), qx=!!(cur&&cur.quirofano===true);
-  sec.innerHTML=`<h4>Roles</h4><div style="display:grid;gap:8px"><label class="usr-chk"><input type="checkbox" id="usrfRA"${adm||tec?' checked':''}><span><b>Administrador</b> <small>· Médico o Administrativo según su tipo</small></span></label><label class="usr-chk"><input type="checkbox" id="usrfRT"${tec?' checked':''}><span><b>Administrador técnico</b> <small>· acceso total</small></span></label><label class="usr-chk"><input type="checkbox" id="usrfRQ"${qx||tec?' checked':''}><span><b>Quirófano</b> <small>· autoriza la programación quirúrgica, paciente por paciente</small></span></label></div><p class="access-hint">El tipo (Adscrito, Residente o Administrativo) se elige arriba. Los permisos de cada tipo se definen en la pestaña Permisos.</p>`;
+  const tec=(()=>{ try{ return isTechAdminRecord(cur); }catch(_){ return !!(cur&&cur.tecnico); } })(), adm=(()=>{ try{ return admRec(cur); }catch(_){ return !!(cur&&cur.admin); } })(), qx=!!(cur&&(cur.quirofano===true||(tec&&cur.quirofano!==false))), admShow=tec?!(cur&&cur.admin===false):adm;
+  sec.innerHTML=`<h4>Roles</h4><div style="display:grid;gap:8px"><label class="usr-chk"><input type="checkbox" id="usrfRA"${admShow?' checked':''}><span><b>Administrador</b> <small>· Médico o Administrativo según su tipo</small></span></label><label class="usr-chk"><input type="checkbox" id="usrfRT"${tec?' checked':''}><span><b>Técnico</b> <small>· mantenimiento de la app</small></span></label><label class="usr-chk"><input type="checkbox" id="usrfRQ"${qx?' checked':''}><span><b>Quirófano</b> <small>· autoriza la programación quirúrgica, paciente por paciente</small></span></label></div><p class="access-hint">El tipo (Adscrito, Residente o Administrativo) se elige arriba. Los permisos de cada tipo se definen en la pestaña Permisos.</p>`;
   dlgU.querySelector('#usrfE').before(sec);
   const A=sec.querySelector('#usrfRA'), Tq=sec.querySelector('#usrfRT'), Q=sec.querySelector('#usrfRQ');
-  const sync=()=>{ if(Tq.checked){ A.checked=true; A.disabled=true; Q.checked=true; Q.disabled=true; } else { A.disabled=false; Q.disabled=false; } if(admin) admin.checked=A.checked; };
+  const sync=()=>{ A.disabled=false; Q.disabled=false; if(admin) admin.checked=A.checked||Tq.checked; }; Tq.addEventListener('change',()=>{ if(Tq.checked){ A.checked=true; Q.checked=true; } });
   let root=false; try{ root=accessRoot(cur); }catch(_){}
-  if(root){ [A,Tq,Q].forEach(x=>x.disabled=true); try{ dlgU.querySelector('#usrfU').readOnly=true; dlgU.querySelector('#usrfN').readOnly=true; }catch(_){} }
-  [A,Tq,Q].forEach(x=>x.addEventListener('change',sync)); sync(); if(root){ [A,Tq,Q].forEach(x=>x.disabled=true); }
+  if(root){ Tq.disabled=true; try{ dlgU.querySelector('#usrfU').readOnly=true; dlgU.querySelector('#usrfN').readOnly=true; }catch(_){} }
+  [A,Tq,Q].forEach(x=>x.addEventListener('change',sync)); sync(); if(root){ Tq.disabled=true; }
   try{ homeRoleWire(dlgU,cur,A,Tq); }catch(_){}
-  dlgU.__accessValues=()=>({tecnico:Tq.checked,admin:Tq.checked||A.checked,quirofano:Tq.checked||Q.checked,permisos:undefined});
+  const gOn=!!(cur&&cur.grupal===true), gUsr=gOn&&cur.grupalPor==='usuario'; const gs=document.createElement('label'); gs.className='usr-chk'; gs.style.marginTop='8px';
+  gs.innerHTML=`<input type="checkbox" id="usrfRG"${gOn?' checked':''}><span><b>Permitir acceso desde cuenta grupal</b>${gUsr?' <em class="usr-gmark">Activado por el usuario</em>':''} <small>· Si está activo, se puede entrar a este usuario con los correos grupales. Si no, no aparece en las cuentas grupales.</small></span>`;
+  sec.firstElementChild.nextElementSibling.appendChild(gs); const G=gs.querySelector('#usrfRG');
+  G.addEventListener('change',()=>{ if(!G.checked&&gUsr&&!confirm('El usuario '+(cur.nombre||cur.usuario)+' tiene activo el acceso desde cuenta grupal porque él mismo lo activó. ¿Desactivarlo de todos modos?')) G.checked=true; });
+  dlgU.__accessValues=()=>({tecnico:Tq.checked,admin:A.checked,quirofano:Q.checked,grupal:G.checked,grupalPor:G.checked?(gUsr?'usuario':'tecnico'):undefined,permisos:undefined});
   const reset=dlgU.querySelector('#usrfR'); if(reset) reset.addEventListener('click',()=>{ try{ const b=BASE_MAP.get(ukey(cur.usuario)); Tq.checked=isTechAdminRecord(b); A.checked=admRec(b); Q.checked=!!(b&&b.quirofano); sync(); }catch(_){} });
 };
 
@@ -19816,6 +19925,10 @@ function homeRoleWire(dlgU,cur,A,Tq){ const T=dlgU.querySelector('#usrfT'), seg=
 /* Móvil: «Archivo Censos» a la izquierda de «Conectado» en la barra */
 function cenNavPlace(){ const nb=$i('cenNavBtn'), st=$i('syncSt'); if(!nb||!st) return; let cen=false; try{ cen=document.body.classList.contains('pp-browse')&&!V.view&&(PP_VIEW==='censoActual'||PP_VIEW==='censos'); }catch(_){}
   const mob=matchMedia('(max-width:700px)').matches;
+  const ch=$i('cenChips');
+  const bd=ch&&(ch.closest('.band')||(document.querySelector('.band-id')||{}).parentElement);
+  if(!mob&&cen&&bd){ nb.classList.remove('cen-nav-band'); if(nb.parentNode!==bd) bd.appendChild(nb); nb.classList.add('cen-nav-row'); return; }
+  if(nb.classList.contains('cen-nav-row')){ nb.classList.remove('cen-nav-row'); const sb=$i('cenSendBtn'), p=$i('cenPrint'); if(sb&&sb.parentNode) sb.after(nb); else if(p) p.before(nb); }
   if(mob&&cen){ if(nb.nextElementSibling!==st) st.before(nb); nb.classList.add('cen-nav-band'); }
   else if(nb.classList.contains('cen-nav-band')){ nb.classList.remove('cen-nav-band'); const sb=$i('cenSendBtn'), p=$i('cenPrint'); if(sb&&sb.parentNode) sb.after(nb); else if(p) p.before(nb); } }
 addEventListener('resize',()=>{ try{ cenNavPlace(); }catch(_){} try{ revSide(); }catch(_){} });
