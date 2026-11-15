@@ -339,7 +339,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.03">
+<meta name="application-version" content="9.14">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2854,7 +2854,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.03 · Fecha de publicación: 13.11.26</div>
+  <div class="app-footer-version">Versión 9.14 · Fecha de publicación: 14.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -7583,12 +7583,13 @@ function ingDmy(ms){ const d=new Date(ms); return String(d.getDate()).padStart(2
 function ingList(str){ return String(str||"").split(/[,;\s]+/).map(x=>x.trim()).filter(x=>ingMs(x)); }
 function ingHistMerge(prev,oldIng,newIng){ const a=ingMs(oldIng), b=ingMs(newIng); const L=ingList(prev); if(!a||!b||b-a<2*864e5) return null; if(L.some(x=>Math.abs(ingMs(x)-a)<864e5)) return null; L.push(ingDmy(a)); L.sort((x,y)=>ingMs(x)-ingMs(y)); return L.slice(-12).join(", "); }
 let ING_EP_CACHE={sig:"",map:null};
+const ingEk=v=>String(v||"").toUpperCase().replace(/[^0-9A-Z]/g,"").replace(/^0+(?=\d)/,"");
 function ingCensusEpisodes(){ let C={}; try{ C=(window.__hjmStatsCensos&&window.__hjmStatsCensos())||{}; }catch(_){}
   const ks=Object.keys(C).filter(k=>C[k]&&Array.isArray(C[k].hx)).sort(), sig=ks.length+"|"+(ks[0]||"")+"|"+(ks[ks.length-1]||"")+"|"+ks.reduce((n,k)=>n+(C[k].ts||0)%997,0);
   if(ING_EP_CACHE.sig===sig&&ING_EP_CACHE.map) return ING_EP_CACHE.map;
   const map=new Map(), last=new Map(), egrAt=new Map();
-  ks.forEach((k,i)=>{ const r=C[k]; (Array.isArray(r.el)?r.el:[]).forEach(x=>{ const e=String(x.e||x.x||"").trim(); if(e) egrAt.set(e,i); });
-    const seen=new Set(); r.hx.forEach(h=>{ const e=String(h[0]||"").trim(); if(!e||seen.has(e)) return; seen.add(e);
+  ks.forEach((k,i)=>{ const r=C[k]; (Array.isArray(r.el)?r.el:[]).forEach(x=>{ const e=ingEk(x.e||x.x); if(e) egrAt.set(e,i); });
+    const seen=new Set(); r.hx.forEach(h=>{ const e=ingEk(h[0]); if(!e||seen.has(e)) return; seen.add(e);
       const p=last.get(e); let eps=map.get(e); if(!eps){ eps=[]; map.set(e,eps); }
       const egr=egrAt.get(e), nuevo=p==null||i-p>=3||(egr!=null&&egr>p&&egr<i);
       const ig=ingMs(h[4]), ep0=eps[eps.length-1];
@@ -7599,15 +7600,15 @@ function ingCensusEpisodes(){ let C={}; try{ C=(window.__hjmStatsCensos&&window.
   ING_EP_CACHE={sig,map}; return map; }
 function ingKeyMs(k){ const m=String(k||"").match(/^(\d{4})-(\d{2})-(\d{2})$/); return m?new Date(+m[1],+m[2]-1,+m[3]).getTime():0; }
 /* Lista de ingresos de un expediente: [{ms, f:"DD.MM.AA", src:"json"|"censo"|"ambos", s:clínica, n:nombre}] en orden */
-function ingAdmissions(exp,json){ exp=String(exp||"").trim(); const eps=((exp&&ingCensusEpisodes().get(exp))||[]).map(e=>({ms:e.ing&&e.ing<=ingKeyMs(e.k)+864e5?e.ing:ingKeyMs(e.k),end:ingKeyMs(e.last),s:e.s,n:e.n,first:e.first,src:"censo"}));
+function ingAdmissions(exp,json){ exp=String(exp||"").trim(); const eps=((exp&&ingCensusEpisodes().get(ingEk(exp)))||[]).map(e=>({ms:e.ing&&e.ing<=ingKeyMs(e.k)+864e5?e.ing:ingKeyMs(e.k),end:ingKeyMs(e.last),s:e.s,n:e.n,first:e.first,src:"censo"}));
   const js=[...ingList(json&&json.prev),...ingList(json&&json.cur)].map(ingMs).filter(Boolean).sort((a,b)=>a-b).filter((v,i,a)=>!i||v-a[i-1]>=2*864e5);
   const out=eps.map(e=>Object.assign({},e)); const D=864e5;
   js.forEach(ms=>{ let best=-1; out.forEach((e,i)=>{ if(e.src==="json") return; const prevEnd=i>0?out[i-1].end||out[i-1].ms:-Infinity; if(ms<=e.ms+4*D&&ms>prevEnd-D&&(e.first||ms>=e.ms-45*D)) best=i; });
     if(best>=0&&out[best].src!=="ambos"){ out[best].ms=Math.min(out[best].ms,ms); out[best].src="ambos"; } else if(!out.some(e=>Math.abs(e.ms-ms)<2*D)) out.push({ms,end:ms,s:"",n:"",src:"json"}); });
   out.sort((a,b)=>a.ms-b.ms); return out.filter(e=>e.ms).map((e,i)=>Object.assign(e,{f:ingDmy(e.ms),i:i+1})); }
-function ingAllAdmissions(){ const mp=new Map(); try{ (typeof uniqueFiles==="function"?uniqueFiles(DRIVE_FILES||[]):(DRIVE_FILES||[])).forEach(f=>{ const m=f&&f.meta; const e=m&&String(m.exp||"").trim(); if(e&&!mp.has(e)) mp.set(e,{prev:m.ingp||"",cur:m.ingreso||"",n:m.nombre||"",s:m.clinica||""}); }); }catch(_){}
+function ingAllAdmissions(){ const mp=new Map(); try{ (typeof uniqueFiles==="function"?uniqueFiles(DRIVE_FILES||[]):(DRIVE_FILES||[])).forEach(f=>{ const m=f&&f.meta; const e=m&&ingEk(m.exp); if(e&&!mp.has(e)) mp.set(e,{prev:m.ingp||"",cur:m.ingreso||"",n:m.nombre||"",s:m.clinica||"",x:String(m.exp||"").trim()}); }); }catch(_){}
   const eps=ingCensusEpisodes(), all=new Set([...eps.keys(),...mp.keys()]), out=[];
-  all.forEach(e=>{ const j=mp.get(e)||{}; ingAdmissions(e,j).forEach(a=>out.push(Object.assign({},a,{e,n:a.n||j.n||"",s:a.s||""}))); }); return out; }
+  all.forEach(e=>{ const j=mp.get(e)||{}; ingAdmissions(e,j).forEach(a=>out.push(Object.assign({},a,{e:j.x||e,n:a.n||j.n||"",s:a.s||""}))); }); return out; }
 /* v8.47 · Una celda del censo puede traer varios pacientes («CAMA 165, 195, 166» o varias líneas): cuenta cada uno */
 function stCnt(arr){ return (Array.isArray(arr)?arr:[]).reduce((n,t)=>{ const s=String(t||"").toUpperCase(); if(!s.trim()||/^(NINGUN[OA]S?|NO|NA|N\/A|SIN|-+|\.+|0)$/.test(s.trim())) return n;
   const lines=s.split(/\n+/).map(x=>x.trim()).filter(x=>x&&!/^(NINGUN[OA]S?|-+)$/.test(x)).length, beds=(s.match(/\b(?:1[0-9]\d|2\d\d|UCI|URG)\b/g)||[]).length, exps=(s.match(/\b\d{6,8}\b/g)||[]).length;
@@ -7894,7 +7895,7 @@ function ppMiniActionsHTML(){
   };
   return '<span class="pp-mini-actions" role="group" aria-label="Solicitudes del paciente">'+[["rx","Rayos X"],["folio","Folio A"],["interconsulta","Interconsulta"]].map(([key,label])=>`<button type="button" class="pp-mini-${key}" data-pqa="${key}" title="${label}" aria-label="Abrir ${label} de este paciente"><svg viewBox="0 0 24 24" aria-hidden="true">${icons[key]}</svg></button>`).join("")+'</span>';
 }
-function ppPendHTML(f){return `<div class="pp-pend" data-pendbox><div class="pp-pl" data-pend="${f.id}" role="group" aria-label="Pendientes">${ppPendBuild(ppPendParse(ppRowPend(f)))}</div></div><div class="pp-row-actions">${ppFrequentAllowed()?ppFrequentButton():''}<button type="button" data-pqa="file" class="pp-file" title="Archivo clínico" aria-label="Archivo clínico del paciente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v1M3 7v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H3z"/></svg></button></div>`;}
+function ppPendHTML(f){return `<div class="pp-pend" data-pendbox><div class="pp-pl" data-pend="${f.id}" role="group" aria-label="Pendientes">${ppPendBuild(ppPendParse(ppRowPend(f)))}</div></div><div class="pp-row-actions">${ppFrequentAllowed()?ppFrequentButton():''}<button type="button" data-pqa="file" class="pp-file" title="Expediente clínico" aria-label="Expediente clínico del paciente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v1M3 7v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H3z"/></svg></button></div>`;}
 
 function ppPendSave(c){
  if(!accessRequire("editar_pendientes"))return;
@@ -7935,7 +7936,7 @@ function ppFrequentIcon(key){
  return '<svg viewBox="0 0 24 24" aria-hidden="true">'+(paths[key]||paths.notas)+'</svg>';
 }
 function ppFrequentButton(){return '<button type="button" class="pp-frequent-launch" data-pp-formats aria-haspopup="dialog" aria-expanded="false" title="Documentos y formatos" aria-label="Abrir documentos y formatos">'+ppFrequentIcon('all')+'</button>';}
-function ppRecordActionsHTML(){return '<div class="pp-row-actions">'+(ppFrequentAllowed()?ppFrequentButton():'')+'<button type="button" data-pqa="file" class="pp-file" title="Archivo clínico" aria-label="Archivo clínico del paciente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v1M3 7v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H3z"/></svg></button></div>';}
+function ppRecordActionsHTML(){return '<div class="pp-row-actions">'+(ppFrequentAllowed()?ppFrequentButton():'')+'<button type="button" data-pqa="file" class="pp-file" title="Expediente clínico" aria-label="Expediente clínico del paciente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v1M3 7v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H3z"/></svg></button></div>';}
 function renderPP(){
  if(sessionUserName()&&!accessViewAllowed(PP_VIEW))PP_VIEW=accessFirstView();if(sessionUserName()&&!PP_VIEW){cenShow(false);$('ppList').innerHTML='<div class="pp-empty">Tu usuario no tiene páginas de pacientes habilitadas.</div>';$('ppCount').textContent='';return;}
 
@@ -10082,7 +10083,7 @@ function cenStatRec(cen,fname){
     if(!p){ const c=H0.filter(r=>{ const cm=nz(r.cama).trim(); return cm&&!/^\d{3}$/.test(cm)&&new RegExp("(^|[^0-9A-Z])"+cm.replace(/[.*+?^${}()|[\]\\]/g,"\\$&").replace(/\s+/g,"\\s*")+"($|[^0-9])").test(t); }); if(c.length===1) p=c[0]; }
     if(!p){ const ws=new Set(t.split(/[^A-ZÑ]+/).filter(w=>w.length>=4)); const c=H0.filter(r=>{ const a=nz(r.nombre).split(/\s+/).filter(w=>w.length>=4); return a.length>=2&&ws.has(a[0])&&ws.has(a[1]); }); if(c.length===1) p=c[0]; }
     return p?Object.assign({},x,{x:String(p.exp||""),s:cenSrvOf(p.clin)||"OTRO",n:p.nombre||"",d:String(p.dx||"").slice(0,160),c:String(p.cama||"")}):x; };
-  const hx=(cen.pac||[]).filter(r=>!r.exc&&(r.sec||"H")==="H"&&String(r.exp||"").trim()).map(r=>[String(r.exp).trim(),cenSrvOf(r.clin)||"OTRO",String(r.nombre||"").slice(0,80),String(r.cama||""),String(r.ing||"").trim().slice(0,10),String(r.dx||"").trim().slice(0,160)]);   /* v8.46 · + fecha de ingreso escrita en el censo (historial de ingresos) */
+  const hx=(cen.pac||[]).filter(r=>!r.exc&&(r.sec||"H")==="H"&&String(r.exp||"").trim()).map(r=>[String(r.exp).trim(),cenSrvOf(r.clin)||"OTRO",String(r.nombre||"").slice(0,80),String(r.cama||""),String(r.ing||"").trim().slice(0,10),String(r.dx||"").trim().slice(0,300)]);   /* v8.46 · + fecha de ingreso escrita en el censo (historial de ingresos) */
   return {v:8,hx,ps,il,el,k:key,f:cen.fecha,est,estc,g:cen.guardia||"",res:cen.res||"",por:cen.por||"",ts:Date.now(),ing,egr,nt,nttot:V("nt.TOT"),
     cr:lst("cr",5,1).map(liga),cp:lst("cp",5,1).map(liga),cs:lst("cs",2,1).map(liga),cpe:lst("cpe",3),pr:lst("pr",2),tr:lst("tr",5),gr:lst("gr",5),
     ic:{ce:n("ic.ce"),ho:n("ic.ho"),ur:n("ic.ur"),te:n("ic.te"),qx:n("ic.qx")},iso:V("iso"),dfn:V("dfn"),ev:V("ev"),tot:n("tot")||((cen.pac||[]).filter(r=>!r.exc).length),pac:(cen.pac||[]).length};
@@ -12145,7 +12146,34 @@ function oncCrt(){ if(_crt&&_crtRef===remoteCache) return _crt; const m=new Map(
 function hjmDataSig(){ let h=0; const fs=DRIVE_FILES||[]; for(let i=0;i<fs.length;i++){ const f=fs[i]; if(!f) continue; const m=f.meta||{}, t=(f.id||"")+(f.modified||"")+(m.cama||"")+(m.egr||"")+(m.def||"")+(m.dx||""); for(let j=0;j<t.length;j++) h=(h*31+t.charCodeAt(j))|0; } return fs.length+":"+h+":"+Object.keys(PCACHE||{}).length; }
 let _oncMemo={k:"",v:null};
 function oncRows(){ const k=hjmDataSig()+"|"+OF.ref+"|"+(()=>{ try{ const C=(window.__hjmStatsCensos&&window.__hjmStatsCensos())||{}; const ks=Object.keys(C); return ks.length+":"+ks.reduce((n,k)=>n+((C[k]&&C[k].ts)||0)%9973,0); }catch(_){ return "0"; } })()+"|"+(remoteCache?Object.keys(remoteCache.dev||{}).length+":"+(remoteCache.upd||0):"0"); if(_oncMemo.k===k&&_oncMemo.v) return _oncMemo.v; const v=oncRows0(); _oncMemo={k,v}; return v; }
-function oncRows0(){
+const oncDay=ms=>{ const d=new Date(ms); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); };
+function oncCenDx(){ const M=new Map(); try{ const C=(window.__hjmStatsCensos&&window.__hjmStatsCensos())||{}; Object.keys(C).filter(k=>C[k]&&Array.isArray(C[k].hx)).sort().forEach(k=>C[k].hx.forEach(h=>{ const e=ingEk(h[0]), dx=String(h[5]||"").trim(); if(!e||!dx||cenVacio(dx)) return; (M.get(e)||M.set(e,[]).get(e)).push({k,dx}); })); }catch(_){} return M; }
+function oncHist(r,CD){ const e=ingEk(r.exp), D=864e5; let adm=[]; try{ adm=ingAdmissions(r.exp,{prev:r._ingp||"",cur:r._ing||""}); }catch(_){}
+  r.rds=[...new Set(adm.map(a=>oncDay(a.ms)))].sort(); r.eps=[]; r.sus=[];
+  const cd=CD.get(e)||[], eps=(ingCensusEpisodes().get(e)||[]);
+  eps.forEach(ep=>{ const xs=cd.filter(x=>x.k>=ep.k&&x.k<=ep.last).map(x=>Object.assign({c:oncClass(x.dx)},x)).filter(x=>x.c.g!=="sc"); if(!xs.length) return;
+    const cnt={}; xs.forEach(x=>cnt[x.c.t]=(cnt[x.c.t]||0)+1); const tm=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]||(xs[xs.length-1].c.t===a?-1:1))[0], best=[...xs].reverse().find(x=>x.c.t===tm);
+    xs.forEach(x=>{ if(x.c.t!==tm&&cnt[x.c.t]===1&&xs.length>=3&&!best.c.alts.some(a=>a.t===x.c.t)) r.sus.push({k:x.k,dx:x.dx,t:x.c.t,why:"un solo censo con otro tipo de tumor"}); });
+    r.eps.push({a:oncDay(Math.min(ingKeyMs(ep.k),ep.ing||Infinity)-45*D),s:ep.k,z:ep.last,cls:best.c,dx:best.dx,n:cnt[tm]}); });
+  const cur=r.cls, lastEp=r.eps[r.eps.length-1];
+  if(cur.g==="sc"&&lastEp){ r.cls=lastEp.cls; r.dx=lastEp.dx; r.dxSrc="censo"; }
+  else if(lastEp&&ONC.group[lastEp.cls.g].cancer&&ONC.group[cur.g].cancer&&lastEp.cls.t!==cur.t&&!cur.alts.some(a=>a.t===lastEp.cls.t)&&!lastEp.cls.alts.some(a=>a.t===cur.t)) r.sus.push({k:lastEp.z,dx:lastEp.dx,t:lastEp.cls.t,why:"el expediente y su último censo dicen tumores distintos"});
+  const have=new Set([r.cls.t,...r.cls.alts.map(a=>a.t)]), extra=[]; r.prev=[];
+  r.eps.forEach(ep=>{ const c=ep.cls; if(!ONC.group[c.g].cancer||have.has(c.t)||ep.n<2) return; have.add(c.t); extra.push({g:c.g,t:c.t,hist:true}); r.prev.push({k:ep.s,dx:ep.dx,t:c.t}); });
+  if(extra.length){ r.cls=Object.assign({},r.cls,{alts:r.cls.alts.concat(extra)}); r.hay+=" "+ONC.nz(r.prev.map(x=>x.dx).join(" ")); }
+  return r; }
+function oncAt(r,b){ if(period===0||OF.ref!=="ing"||!r.rds) return r; const d=r.rds.find(x=>x>=b.cutoff&&x<=b.upper); if(!d) return Object.assign({},r,{rd:""});
+  const ep=[...r.eps].reverse().find(e=>d>=e.a&&d<=e.z); let o=Object.assign({},r,{rd:d});
+  if(ep&&ep.cls.t!==r.cls.t&&ONC.group[ep.cls.g].cancer){ const alts=[{g:r.cls.g,t:r.cls.t,hist:true}].concat(r.cls.alts).filter(a=>a.t!==ep.cls.t&&ONC.group[a.g]&&ONC.group[a.g].cancer); o.cls=Object.assign({},ep.cls,{alts:ep.cls.alts.concat(alts.filter(a=>!ep.cls.alts.some(z=>z.t===a.t)))}); o.dx=ep.dx; o.dxSrc="censo de esa hospitalización"; }
+  return o; }
+function oncSus(){ return oncRows().filter(r=>r.sus&&r.sus.length); }
+function oncSusOpen(){ let d=document.getElementById("dlgOncSus"); if(!d){ d=document.createElement("dialog"); d.id="dlgOncSus"; d.style.cssText="max-width:min(980px,96vw);width:100%;border:0;border-radius:16px;padding:0;box-shadow:0 20px 60px rgba(0,0,0,.3)"; document.body.appendChild(d); }
+  const rs=oncSus(), f=k=>String(k||"").split("-").reverse().map((x,i)=>i===2?x.slice(2):x).join(".");
+  d.innerHTML=`<div style="padding:16px 18px;border-bottom:1px solid #E3E8EF;display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><div><b style="font-size:16px">Diagnósticos por revisar</b><div style="font-size:12.5px;color:#5B6675;margin-top:3px">${rs.length} paciente${rs.length===1?"":"s"} con un diagnóstico distinto entre censos o entre el expediente y el censo. No cuentan como segundo primario hasta que el diagnóstico se repita o se corrija en el expediente.</div></div><button type="button" data-x style="border:0;background:none;font-size:22px;cursor:pointer" aria-label="Cerrar">×</button></div><div style="max-height:70vh;overflow:auto;padding:8px 18px 18px"><table style="width:100%;border-collapse:collapse;font-size:12.5px"><thead><tr style="text-align:left;color:#5B6675"><th style="padding:6px">Exp.</th><th style="padding:6px">Paciente</th><th style="padding:6px">Diagnóstico que se usa</th><th style="padding:6px">Diagnóstico discordante</th></tr></thead><tbody>${rs.map(r=>r.sus.map(x=>`<tr style="border-top:1px solid #EEF1F5;vertical-align:top"><td style="padding:6px;white-space:nowrap">${arB(r.exp,r.id)} ${esc(r.exp)}</td><td style="padding:6px">${esc(r.nom)}</td><td style="padding:6px">${esc(r.dx||"—")}<br><small style="color:#5B6675">${esc(leafName(r.cls.t))}</small></td><td style="padding:6px">${esc(x.dx)}<br><small style="color:#8A5A0B">${esc(leafName(x.t))} · censo ${esc(f(x.k))} · ${esc(x.why)}</small></td></tr>`).join("")).join("")||'<tr><td colspan="4" style="padding:20px;text-align:center;color:#5B6675">Sin diagnósticos discordantes.</td></tr>'}</tbody></table></div>`;
+  d.querySelector("[data-x]").onclick=()=>d.close(); if(!d.open) d.showModal(); }
+document.addEventListener("click",e=>{ const b=e.target&&e.target.closest&&e.target.closest("[data-onc-sus]"); if(b){ e.preventDefault(); oncSusOpen(); } },true);
+function oncRows0(){ const CD=oncCenDx(), rows=oncRows00(); rows.forEach(r=>{ try{ oncHist(r,CD); }catch(_){ r.rds=r.rd?[r.rd]:[]; r.eps=[]; r.sus=[]; r.prev=[]; } if(OF.ref==="ing"&&r.rds.length){ r.rd=r.rds[r.rds.length-1]; } else if(OF.ref!=="ing") r.rds=null; }); return rows; }
+function oncRows00(){
   /* v8.29 · conteo afinado: un paciente por expediente (0123 = 123), diagnósticos de relleno no cuentan como diagnóstico, edades imposibles se descartan */
   const crt=oncCrt(), out=[], ek=v=>String(v||"").toUpperCase().replace(/[^0-9A-Z]/g,"").replace(/^0+(?=\d)/,""), best=new Map();
   uniqueFiles(DRIVE_FILES).forEach(f=>{ const m=f.meta||{}, c=PCACHE[f.id]&&PCACHE[f.id].ok?PCACHE[f.id]:null, k=ek(m.exp||(c&&c.patientExp)||fexp(f))||("N:"+String(m.nombre||"").toUpperCase().replace(/\s+/g," ").trim()); if(k==="N:") return;
@@ -12161,7 +12189,7 @@ function oncRows0(){
     const ing=String((c&&c.ing)||m.ingreso||"").trim(); let rd="";
     if(OF.ref==="ing") rd=dmyKey(ing); else if(OF.ref==="mod") rd=dayKey(fileTime(f)); else { const t=crt.get(expKey(exp)); rd=t?dayKey(t):""; }
     const sit=String(m.def||"").trim()?"def":metaHosp(m)?"hosp":"fuera";
-    out.push({id:f.id,exp,nom:String(m.nombre||(c&&c.patientName)||"").toUpperCase(),ed,edn:parseInt(ed,10),sex,dx,full:!!c,cls,clin,ads,rd,sit,
+    out.push({id:f.id,exp,_ing:ing,_ingp:String(m.ingp||""),nom:String(m.nombre||(c&&c.patientName)||"").toUpperCase(),ed,edn:parseInt(ed,10),sex,dx,full:!!c,cls,clin,ads,rd,sit,
       hay:ONC.nz(exp+" "+(m.nombre||(c&&c.patientName)||"")+" "+dx)});
   });
   /* v8.47 · Pacientes que solo existen en los censos (aún sin archivo en la app): entran al perfil con el diagnóstico y la clínica del censo, para no perderlos */
@@ -12177,7 +12205,7 @@ function oncPass(r,b){ if(OF.clin&&r.clin!==OF.clin) return false; if(OF.sex&&r.
   if(OF.stage!==""&&(OF.stage==="?"?!!r.cls.stage:r.cls.stage!==OF.stage)) return false;
   if(OF.q){ const q=ONC.nz(OF.q); if(q&&!q.split(" ").every(w=>r.hay.includes(w))) return false; }
   if(period!==0&&!(r.rd&&r.rd>=b.cutoff&&r.rd<=b.upper)) return false; return true; }
-function oncData(){ const all=oncRows(), b=dfnBounds(), rows=all.filter(r=>oncPass(r,b)); const nodate=period!==0?all.filter(r=>!r.rd&&oncPass(Object.assign({},r,{rd:"0"}),{cutoff:"0",upper:"9"})).length:0; return {all,rows,nodate}; }
+function oncData(){ const all=oncRows(), b=dfnBounds(), rows=all.map(r=>oncAt(r,b)).filter(r=>oncPass(r,b)); const nodate=period!==0?all.filter(r=>!r.rd&&!(r.rds&&r.rds.length)&&oncPass(Object.assign({},r,{rd:"0"}),{cutoff:"0",upper:"9"})).length:0; return {all,rows,nodate}; }
 function oncAgg(rows){
   const A={n:rows.length,g:{},t:{},stage:{},age:{},clin:{},hist:{},cancer:0,ben:0,unk:0};
   rows.forEach(r=>{ const c=r.cls, G=ONC.group[c.g]; const ag=A.g[c.g]=A.g[c.g]||{n:0,t:{}}; ag.n++; ag.t[c.t]=(ag.t[c.t]||0)+1; A.t[c.t]=(A.t[c.t]||0)+1;
@@ -12245,7 +12273,7 @@ function oncBodyHTML(){
   const empty=ONC.groups.filter(g=>g.cancer&&!A.g[g.id]).map(g=>g.n);
   const tl=top.slice(0,12).map(([t,n])=>({n:leafName(t),v:n,c:ONC.group[ONC.leaf[t].g].c,a:`data-ot="${t}"`}));
   const cl=Object.entries(A.clin).sort((a,b)=>b[1]-a[1]).map(([k,v],i)=>({n:k,v,c:CH_COL[i%CH_COL.length]})), hs=Object.entries(A.hist).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,v],i)=>({n:k,v,c:CH_COL[i%CH_COL.length]}));
-  return `${prog}<div class="st-msg" style="margin:0 0 6px">Qué tipos de cáncer atiende el servicio, en qué estadio llegan y a quién afectan. Se calcula con el diagnóstico escrito en cada expediente${(()=>{ const n=all.filter(r=>r.cen).length; return n?` y, para ${n} pacientes que aún no tienen archivo en la app, con el diagnóstico escrito en su último censo`:""; })()}.</div><div class="on-note">${esc(lab.charAt(0).toUpperCase()+lab.slice(1))} · referencia: ${esc(ONC_REF[OF.ref].toLowerCase())} · <b>${A.n}</b> de ${all.length} pacientes${nodate&&period!==0?` · ${nodate} sin esa fecha no entran (usa «Todo» para verlos)`:""}</div>
+  return `${prog}<div class="st-msg" style="margin:0 0 6px">Qué tipos de cáncer atiende el servicio, en qué estadio llegan y a quién afectan. Se calcula con el diagnóstico escrito en cada expediente${(()=>{ const n=all.filter(r=>r.cen).length; return n?` y, para ${n} pacientes que aún no tienen archivo en la app, con el diagnóstico escrito en su último censo`:""; })()}.</div><div class="on-note">${esc(lab.charAt(0).toUpperCase()+lab.slice(1))} · referencia: ${esc(ONC_REF[OF.ref].toLowerCase())} · <b>${A.n}</b> de ${all.length} pacientes${nodate&&period!==0?` · ${nodate} sin esa fecha no entran (usa «Todo» para verlos)`:""}${OF.ref==="ing"?" · un paciente con reingresos entra en cada periodo en que estuvo hospitalizado, con el diagnóstico de esa hospitalización":""}${(()=>{ const n=oncSus().length; return n?` · <button type="button" data-onc-sus style="border:0;background:none;padding:0;color:#8A5A0B;font:inherit;font-weight:700;text-decoration:underline;cursor:pointer">${n} diagnóstico${n===1?"":"s"} por revisar</button>`:""; })()}</div>
    <div class="st-kpis">${kp}</div>
    <div class="st-card"><h3>Regiones anatómicas <small>· toca una región para ver sus tipos de cáncer y pacientes</small></h3>${gs.length?`<div class="on-gg">${regCards}</div>`:'<div class="st-msg">Sin pacientes oncológicos con estos filtros.</div>'}${empty.length?`<div class="st-msg on-emp">Sin pacientes ahora: ${esc(empty.join(" · "))}.</div>`:""}</div>
    <div class="st-grid2"><div class="st-card"><h3>Distribución por región</h3><div class="on-dn">${donutSVG(gs.map(i=>Object.assign({},i)),{title:"Pacientes por región",center:"oncológicos"})}${legendHTML(gs,A.cancer)}</div></div>
@@ -12323,7 +12351,7 @@ function oncTable(base,showType){
   const l=oncList(base), shown=l.slice(0,OW.lim), ar=canPerm("ver_archivo");
   const th=(k,t,cls)=>`<th${cls?` class="${cls}"`:""}><button type="button" class="on-sort${OW.sort===k?" on":""}" data-on-sort="${k}">${t}${OW.sort===k?(OW.dir>0?" ▲":" ▼"):""}</button></th>`;
   if(!l.length) return '<div class="st-msg">Sin pacientes con estos filtros.</div>';
-  return `<div class="st-scroll on-ts"><table class="st-act det-t on-t"><thead><tr>${ar?"<th></th>":""}${th("exp","Expediente")}${th("nom","Paciente")}${th("ed","Edad","n")}<th>Diagnóstico</th>${th("st","Estadio")}${showType?th("ty","Tipo"):""}${th("rd",ONC_REF[OF.ref].replace("Fecha de ","").replace("Fecha de alta en la app","Alta app"))}</tr></thead><tbody>${shown.map(r=>`<tr>${ar?`<td class="on-arc">${arB(r.exp,r.id)}</td>`:""}<td class="nm">${esc(r.exp)}</td><td>${esc(r.nom)}</td><td class="n">${r.ed===""?"—":esc(r.ed)}</td><td class="on-dx">${esc(r.dx||"—")}${r.full?"":' <small title="Diagnóstico abreviado de la lista">…</small>'}</td><td>${r.cls.stageFull?`<b>${esc(r.cls.stageFull)}</b>`:"—"}${r.cls.tnm?`<br><small>${esc(r.cls.tnm)}</small>`:""}</td>${showType?`<td>${esc(leafName(r.cls.t))}</td>`:""}<td>${r.rd?esc(r.rd.split("-").reverse().join(".")):"—"}</td></tr>`).join("")}</tbody></table></div>${l.length>shown.length?`<div class="on-more"><button type="button" class="st-btn st-sm" data-on-more>Mostrar más (${l.length-shown.length} restantes)</button></div>`:""}<div class="st-msg" style="margin-top:6px">${l.length} paciente(s). La clasificación sale del texto del diagnóstico; revisa el diagnóstico original si algo no coincide.</div>`;
+  return `<div class="st-scroll on-ts"><table class="st-act det-t on-t"><thead><tr>${ar?"<th></th>":""}${th("exp","Expediente")}${th("nom","Paciente")}${th("ed","Edad","n")}<th>Diagnóstico</th>${th("st","Estadio")}${showType?th("ty","Tipo"):""}${th("rd",ONC_REF[OF.ref].replace("Fecha de ","").replace("Fecha de alta en la app","Alta app"))}</tr></thead><tbody>${shown.map(r=>`<tr>${ar?`<td class="on-arc">${arB(r.exp,r.id)}</td>`:""}<td class="nm">${esc(r.exp)}</td><td>${esc(r.nom)}</td><td class="n">${r.ed===""?"—":esc(r.ed)}</td><td class="on-dx">${esc(r.dx||"—")}${r.full||r.dxSrc?"":' <small title="Diagnóstico abreviado de la lista">…</small>'}${r.dxSrc?`<br><small>Tomado del ${esc(r.dxSrc)}</small>`:""}${r.prev&&r.prev.length?`<br><small>Otro primario en hospitalización previa: ${esc(r.prev.map(x=>leafName(x.t)).join(", "))}</small>`:""}</td><td>${r.cls.stageFull?`<b>${esc(r.cls.stageFull)}</b>`:"—"}${r.cls.tnm?`<br><small>${esc(r.cls.tnm)}</small>`:""}</td>${showType?`<td>${esc(leafName(r.cls.t))}</td>`:""}<td>${r.rd?esc(r.rd.split("-").reverse().join(".")):"—"}</td></tr>`).join("")}</tbody></table></div>${l.length>shown.length?`<div class="on-more"><button type="button" class="st-btn st-sm" data-on-more>Mostrar más (${l.length-shown.length} restantes)</button></div>`:""}<div class="st-msg" style="margin-top:6px">${l.length} paciente(s). La clasificación sale del texto del diagnóstico; revisa el diagnóstico original si algo no coincide.</div>`;
 }
 function oncTblWire(d,base,showType){
   d.querySelectorAll("[data-on-sort]").forEach(b=>b.onclick=()=>{ const k=b.dataset.onSort; if(OW.sort===k) OW.dir*=-1; else { OW.sort=k; OW.dir=(k==="rd"||k==="ed"||k==="st")?-1:1; } const h=d.querySelector("#onTbl"); h.innerHTML=oncTable(base,showType); oncTblWire(d,base,showType); });
@@ -18625,11 +18653,11 @@ body.hjm-child #hjmNav,body.hjm-child #hjmMenuFab,body.hjm-child #hjmMenu,body.h
 #hjmNav .hn-n.warn{background:#FCE8C3;color:#7A4E00}
 #hjmNav .hn-n[hidden]{display:none}
 #hjmNav .hn-ind{position:absolute;bottom:0;left:0;height:3px;width:0;border-radius:3px 3px 0 0;background:var(--hn-ink);transition:left .25s cubic-bezier(.2,.8,.2,1),width .25s cubic-bezier(.2,.8,.2,1),opacity .2s;opacity:0;pointer-events:none}
-body.hn-compact #hjmNav{display:none!important}
+body.hn-compact #hjmNav{position:fixed!important;left:0;right:0;bottom:0;top:auto;z-index:2400;border-bottom:0;border-top:1px solid var(--hn-line);box-shadow:0 -4px 18px rgba(20,34,60,.08);padding-bottom:env(safe-area-inset-bottom,0px)}
 html:root body #pPanel #ppSharedHead #ppHeaderTabs,html:root body #pPanel .pp-view-btns.pp-view-btns{display:none!important}
-body.hn-compact #hjmFab{display:none!important}
+body.hn-compact #hjmFab{bottom:calc(76px + env(safe-area-inset-bottom,0px))!important}
 #hjmMenuFab{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:max(18px,env(safe-area-inset-bottom,0px));z-index:2401;width:56px;height:56px;padding:0;border:0;border-radius:50%;cursor:pointer;display:none;place-items:center;color:#fff;background:linear-gradient(145deg,#2D4F86,#1F3864);box-shadow:0 12px 26px -8px rgba(31,56,100,.6),0 3px 8px rgba(31,56,100,.28),inset 0 1px 0 rgba(255,255,255,.25);transition:transform .18s ease}
-body.hn-compact #hjmMenuFab:not([hidden]){display:grid}
+body.hn-compact #hjmMenuFab{display:none!important}
 #hjmMenuFab:active{transform:scale(.95)}
 #hjmMenuFab svg{width:24px;height:24px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round}
 #hjmMenuFab svg path{transition:transform .22s ease,opacity .18s ease;transform-origin:12px 12px}
@@ -18903,6 +18931,120 @@ dialog.qx-dlg.wide{width:min(96vw,760px)}
 .qx-card.off .qx-c-id b{color:#5B6472}
 .qx-card.off .qx-btn.ghost{color:#5B6472}
 html:root body .qx-card .qx-btn.qx-mini{font-size:11px!important;padding:3px 8px!important;min-height:0!important;color:#6B7280!important;border-color:transparent!important;background:transparent!important;text-decoration:underline;text-underline-offset:2px}
+.qx-autby{display:flex;align-items:center;gap:7px;margin:8px 0 0;padding:6px 10px;border-radius:9px;background:#FBF3E0;color:#7A5410;font-size:12.5px;line-height:1.35}.qx-autby svg{width:14px;height:14px;flex:0 0 14px}.qx-autby b{font-weight:700;color:#5C3E08}
+.qx-c-body small{font-size:11px}.qc-w span{font-size:11px!important}.qx-steps li i{font-size:11px!important}
+.qx-mini-l{display:none}
+.qx-fc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.qx-fc button{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:4px 12px;border:1px solid var(--hn-line);border-radius:999px;background:#fff;color:#44536A;font:600 12.5px/1 var(--rd-sans,system-ui);cursor:pointer}
+.qx-fc button i{width:8px;height:8px;border-radius:50%;background:var(--c)}
+.qx-fc button[aria-pressed="true"]{background:#1F3864;border-color:#1F3864;color:#fff}
+.qx-kpis{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))!important}
+.qx-kpis>.qx-kpi{display:block;text-align:left;padding:14px 16px;background:#fff;border:1px solid var(--hn-line);border-radius:16px;cursor:pointer;font:inherit;min-width:0}
+.qx-kpis>.qx-kpi:hover,button.qx-bar:hover{border-color:#B9C4D6;background:#FAFBFD}
+button.qx-bar{width:100%;border:1px solid transparent;border-radius:8px;background:none;padding:3px 4px;margin:0 -4px;text-align:left;cursor:pointer;font-family:inherit}
+.qx-stt{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.qd-sug{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}
+.qd-sug button{padding:6px 10px;border:1px solid #D8DEE8;border-radius:999px;background:#F6F8FB;color:#33445E;font:600 11.5px/1.2 var(--rd-sans,system-ui);cursor:pointer;text-align:left}
+#dlgQxList .qx-tbl small{color:#7A8492}
+@media (min-width:761px){.qx-grid>.qx-panel{position:sticky;top:76px}}
+@media (min-width:701px) and (max-width:1000px){.qx-grid{grid-template-columns:250px minmax(0,1fr)!important;gap:14px}.qx-c-body{grid-template-columns:repeat(2,minmax(0,1fr))}.qx-c-body>div:nth-child(3){grid-column:1/-1}}
+@media (pointer:coarse){html:root body .qx-card .qx-btn.qx-mini{min-height:34px!important;padding:7px 10px!important;font-size:12px!important}.qx-seg button{min-height:36px}}
+@media (max-width:700px){
+ #qxView{padding-bottom:88px}
+ .qx-mini-l{display:flex;align-items:center;gap:8px;width:100%;margin:8px 0 0;padding:8px 0 0;border:0;border-top:1px dashed #E3E8EF;background:none;text-align:left;font-family:inherit;cursor:pointer;min-height:40px}
+ .qx-mini-l span{flex:1;min-width:0;font-size:12.5px;line-height:1.3;color:#44536A;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+ .qx-mini-l em{flex:0 0 auto;max-width:46%;font-style:normal;font:700 11.5px/1.2 var(--rd-sans,system-ui);padding:5px 9px;border-radius:999px;background:#EEF1F5;color:#44536A;text-align:center}
+ .qx-mini-l em.ok{background:#E3F4EA;color:#1E6B45}.qx-mini-l em.warn{background:#FFF1D6;color:#8A5A0B}.qx-mini-l em.gold{background:#FBF3E0;color:#7A5410}
+ .qx-mini-l i{font-style:normal;font-size:18px;color:#8A95A3;transform:rotate(90deg);transition:transform .15s}
+ .qx-card.open .qx-mini-l i{transform:rotate(-90deg)}.qx-card.open .qx-mini-l span{visibility:hidden;height:0}
+ .qx-card.col:not(.open) .qx-c-body,.qx-card.col:not(.open) .qx-steps,.qx-card.col:not(.open) .qx-who,.qx-card.col:not(.open) .qx-autby,.qx-card.col:not(.open) .qx-c-act{display:none}
+}
+
+body.hn-compact{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
+body.hn-compact #hjmNav .hn-in{display:flex!important;justify-content:space-around;align-items:stretch;gap:0;padding:0 4px;max-width:720px;margin:0 auto;overflow:visible}
+body.hn-compact #hjmNav .hn-sep{display:none!important}
+body.hn-compact #hjmNav button{flex:1 1 0;min-width:0;min-height:60px;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px 2px!important;font-size:11px!important;line-height:1.1;position:relative}
+body.hn-compact #hjmNav button[hidden]{display:none!important}
+body.hn-compact #hjmNav button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.hn-compact #hjmNav button .hn-n{position:absolute;top:4px;left:calc(50% + 6px)}
+body.hn-compact #hjmNav .hn-ind{top:0;bottom:auto}
+body.hn-compact #qxView{padding-bottom:16px}
+.qx-topbar{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:20px;align-items:stretch;margin:0 0 14px}
+.qx-topbar .qx-sum{padding:0}.qx-topbar .qx-sum div{background:#fff;border:1px solid var(--hn-line);display:flex;flex-direction:column;justify-content:center}
+.qw{display:flex;align-items:stretch;gap:8px}
+.qw-days{flex:1;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.qw button{border:1px solid var(--hn-line);background:#fff;border-radius:12px;cursor:pointer;font-family:inherit;color:#44536A;min-height:58px}
+.qw>button{padding:0 14px;font:700 14px/1 var(--rd-sans,system-ui)}
+.qw-d{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px 0}
+.qw-d small{font:700 11px/1 var(--rd-sans,system-ui);color:#5B6675}.qw-d b{font:700 17px/1.1 var(--rd-sans,system-ui);color:#1E2F44}
+.qw-d i{position:absolute;top:4px;right:5px;min-width:17px;height:17px;border-radius:9px;background:#F2C14E;color:#14264A;font:700 11px/17px var(--rd-sans,system-ui);font-style:normal;padding:0 4px;box-sizing:border-box;text-align:center}
+.qw-d.on{background:#1F3864;border-color:#1F3864}.qw-d.on b{color:#fff}.qw-d.on small{color:#C9D4E8}
+.qw-d.today:not(.on){border-color:#1F3864;box-shadow:inset 0 0 0 1px #1F3864}
+.qw .qw-t[aria-pressed="true"]{background:#EAF0F8;border-color:#B9C4D6;color:#1F3864}
+.qx-calp{max-width:360px;margin:0 0 14px}
+.qx-two{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:20px;align-items:start}
+.qx-two.one{grid-template-columns:minmax(0,1fr)}
+.qx-det{position:sticky;top:76px;min-width:0}
+.qx-det .qx-card{box-shadow:0 8px 28px rgba(20,34,60,.09)}
+.qx-det .qx-c-body{grid-template-columns:minmax(0,1fr)!important}.qx-det .qx-c-body>div{grid-column:auto!important}
+.qx-list.rows{gap:0;background:#fff;border:1px solid var(--hn-line);border-radius:14px;overflow:hidden}
+.qx-list.rows .qx-grp{margin:0;padding:8px 16px;background:#EEF2F8;color:#34435E}.qx-list.rows .qx-grp::after{display:none}
+.qx-list.rows .qx-empty{border:0}
+.qx-row{display:flex;align-items:center;gap:12px;width:100%;min-height:58px;padding:10px 16px;border:0;border-top:1px solid #EDF0F5;background:#fff;text-align:left;font-family:inherit;cursor:pointer;box-sizing:border-box}
+.qx-row:hover{background:#F8FAFD}
+.qx-row.sel{background:#F1F5FD;box-shadow:inset 3px 0 0 #1F3864}
+.qx-row.off{background:#F3F4F6}.qx-row.off .nm b{color:#5B6472}
+.qx-row .qx-rsel>i{width:10px;height:10px;border-radius:50%;background:var(--c);flex:0 0 10px}
+.qx-row .nm{flex:1.2;min-width:0}.qx-row .nm b{display:block;font:650 14px/1.25 var(--rd-sans,system-ui);color:#1E2F44;overflow-wrap:anywhere}.qx-row .nm small{font-size:12px;color:#5B6675}
+.qx-row .cx{flex:1.6;min-width:0;font-size:13px;line-height:1.3;color:#34435E;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.qx-row .ad{flex:1;min-width:0;font-size:12.5px;color:#5B6675;overflow-wrap:anywhere}
+.qx-row em{flex:0 0 auto;font:700 12px/1.2 var(--rd-sans,system-ui);font-style:normal;padding:5px 10px;border-radius:999px;background:#E6E9EE;color:#434C5A;white-space:nowrap}
+.qx-row em.ok{background:#E3F4EA;color:#1E6B45}.qx-row em.warn{background:#FFF1D6;color:#8A5A0B}.qx-row em.gold{background:#FBF3E0;color:#7A5410}
+@media (max-width:1100px){.qx-two{grid-template-columns:minmax(0,1fr) 350px;gap:12px}.qx-topbar{grid-template-columns:minmax(0,1fr)}.qx-row .cx,.qx-row .ad{display:none}.qx-row{padding:10px 12px}}
+@media (max-width:700px){.qw{flex-wrap:wrap;gap:6px}.qw-days{order:-1;flex:0 0 100%;gap:4px}.qw>button{flex:1;min-height:42px}.qw-d{min-height:54px}}
+@media (max-width:520px){body.hn-compact #hjmNav button[data-nav="cama"] span{font-size:0!important}body.hn-compact #hjmNav button[data-nav="cama"] span::after{content:"Hospital";font-size:11px}}
+@media (min-width:701px){
+html:root body #pPanel #ppList#ppList#ppList.hx{display:grid!important;grid-template-columns:minmax(0,1fr) 400px!important;column-gap:20px!important;row-gap:0!important;align-items:start!important;grid-auto-rows:min-content}
+html:root body #pPanel #ppList#ppList#ppList.hx>*{grid-column:1;min-width:0}
+html:root body #pPanel #ppList#ppList#ppList.hx>.dlg-item:not(.hsel){display:grid!important;grid-template-columns:54px minmax(0,1.2fr) minmax(0,1.6fr) minmax(0,1fr)!important;grid-template-areas:"bed name dx meta" "bed exp dx meta"!important;align-items:center!important;column-gap:14px!important;row-gap:1px!important;min-height:62px!important;padding:8px 16px!important;margin:0!important;border-radius:0!important;border:1px solid var(--hn-line)!important;border-top:0!important;box-shadow:none!important;background:#fff!important;transform:none!important}
+html:root body #pPanel #ppList#ppList#ppList.hx>.dlg-item:not(.hsel):hover{background:#F8FAFD!important}
+html:root body #pPanel #ppList#ppList#ppList.hx>:first-child{border-top:1px solid var(--hn-line)!important;border-radius:14px 14px 0 0!important}
+html:root body #pPanel #ppList#ppList#ppList.hx>.dlg-item:not(.hsel) .pp-pend,html:root body #pPanel #ppList#ppList#ppList.hx>.dlg-item:not(.hsel) .pp-row-actions,html:root body #pPanel #ppList#ppList#ppList.hx>.dlg-item:not(.hsel) .pp-kebab,html:root body #pPanel #ppList#ppList#ppList.hx>.dlg-item:not(.hsel) .cpy,html:root body #pPanel #ppList#ppList#ppList.hx>.dlg-item:not(.hsel) .tgw:nth-child(n+2),html:root body #pPanel #ppList#ppList#ppList.hx>.dlg-item:not(.hsel) .tag.edad{display:none!important}
+html:root body #pPanel #ppList#ppList#ppList.hx>.dlg-item:not(.hsel) .cama-badge{width:46px!important;height:46px!important;min-width:0!important;font-size:16px!important}
+html:root body #pPanel #ppList#ppList#ppList.hx>.dlg-item:not(.hsel) .dx{font-size:13px!important;line-height:1.3!important;color:#34435E!important}
+html:root body #pPanel #ppList#ppList#ppList.hx>.dlg-item:not(.hsel) .nmw b{font-size:14px!important}
+html:root body #pPanel #ppList#ppList#ppList.hx>.dlg-item.hsel{grid-column:2!important;grid-row:1/span 400!important;position:sticky!important;top:76px;align-self:start!important;margin:0!important;padding:18px!important;box-shadow:0 8px 28px rgba(20,34,60,.09)!important;border-radius:16px!important;grid-template-columns:60px minmax(0,1fr) 38px 24px!important;grid-template-areas:"bed name actions kebab" "bed exp actions kebab" "dx dx dx dx" "meta meta meta meta" "pend pend pend pend"!important;row-gap:10px!important}
+html:root body #pPanel #ppList#ppList#ppList.hx>.dlg-item.hsel .dx{white-space:normal!important;display:block!important;font-size:14px!important;line-height:1.4!important}
+html:root body #pPanel #ppList#ppList#ppList.hx>.dlg-item.hsel .pp-pend{min-height:120px}
+html:root body #pPanel #ppList#ppList#ppList.hx>.hx-ph{display:flex;align-items:center;gap:14px;min-height:62px;padding:8px 16px;box-sizing:border-box;background:#F1F5FD;border:1px solid var(--hn-line);border-top:0;box-shadow:inset 3px 0 0 #1F3864}
+html:root body #pPanel #ppList#ppList#ppList.hx>.hx-ph .cama-badge{flex:0 0 46px;width:46px!important;height:46px!important;display:grid;place-items:center;border-radius:12px;font:700 16px/1 var(--rd-sans,system-ui)!important;background:var(--cb-bg,#EEF1F5);color:var(--cb-fg,#1F3864)}
+html:root body #pPanel #ppList#ppList#ppList.hx>.hx-ph .hx-n{flex:1;min-width:0}html:root body #pPanel #ppList#ppList#ppList.hx>.hx-ph .hx-n b{display:block;font:650 14px/1.25 var(--rd-sans,system-ui);color:#1E2F44}html:root body #pPanel #ppList#ppList#ppList.hx>.hx-ph .hx-n small{font-size:12px;color:#5B6675}
+html:root body #pPanel #ppList#ppList#ppList.hx>.hx-ph em{font:700 12px/1.2 var(--rd-sans,system-ui);font-style:normal;padding:5px 10px;border-radius:999px;background:#DCE7FB;color:#1D3F7A}
+}
+@media (min-width:701px) and (max-width:1100px){html:root body #pPanel #ppList#ppList#ppList.hx{grid-template-columns:minmax(0,1fr) 350px!important;column-gap:12px!important}html:root body #pPanel #ppList#ppList#ppList.hx>.dlg-item:not(.hsel){grid-template-columns:54px minmax(0,1fr)!important;grid-template-areas:"bed name" "bed exp"!important}html:root body #pPanel #ppList#ppList#ppList.hx>.dlg-item:not(.hsel) .dx,html:root body #pPanel #ppList#ppList#ppList.hx>.dlg-item:not(.hsel) .pmeta{display:none!important}}
+@media (min-width:701px){
+html:root body #pPanel #ppList#ppList#ppList.hx{overflow:visible!important}
+html:root body #pPanel #ppList#ppList#ppList.hx.by-record>.dlg-item:not(.hsel){grid-template-columns:minmax(0,1.2fr) minmax(0,1.6fr) minmax(0,1fr)!important;grid-template-areas:"name dx meta" "exp dx meta"!important}
+html:root body #pPanel #ppList#ppList#ppList.hx.by-record>.dlg-item:not(.hsel) .tag.cama{display:none!important}
+html:root body #pPanel #ppList#ppList#ppList.hx.by-record>.dlg-item.hsel{grid-template-columns:minmax(0,1fr) 38px!important;grid-template-areas:"name actions" "exp actions" "dx dx" "meta meta"!important}
+}
+@media (min-width:701px) and (max-width:1100px){html:root body #pPanel #ppList#ppList#ppList.hx.by-record>.dlg-item:not(.hsel){grid-template-columns:minmax(0,1fr)!important;grid-template-areas:"name" "exp"!important}}
+html:root body #dlgStats .st-kpi::before{display:none!important}
+html:root body #dlgStats .st-kpi{border-left:1px solid #D9E3F0!important}
+@media (max-width:700px){
+html:root body #dlgStats .st-tabs,html:root body #dlgStats .st-per,html:root body #dlgStats .sv-nav{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;scrollbar-width:none;-webkit-overflow-scrolling:touch;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);padding-right:24px!important}
+html:root body #dlgStats .st-tabs::-webkit-scrollbar,html:root body #dlgStats .st-per::-webkit-scrollbar,html:root body #dlgStats .sv-nav::-webkit-scrollbar{display:none}
+html:root body #dlgStats .st-tabs>*,html:root body #dlgStats .st-per>*,html:root body #dlgStats .sv-nav>*{flex:0 0 auto!important;white-space:nowrap}
+html:root body #dlgStats .sv-nav>*{padding-left:16px!important;padding-right:16px!important;min-height:40px}
+}
+@media (max-width:700px){html:root body #dlgStats .st-tabs,html:root body #dlgStats .st-per,html:root body #dlgStats .sv-nav{flex:0 0 auto!important;height:auto!important;min-height:48px!important;overflow-y:hidden!important;align-items:center!important}}
+.qx-file{width:36px;height:36px;flex:0 0 36px;display:inline-grid;place-items:center;padding:0;border-radius:10px;border:1px solid #e9d28a;background:#fff3ce;color:#99731b;cursor:pointer}
+.qx-file:hover{background:#FFE9A8}
+.qx-file svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.qx-chips{align-items:center}
+@media (pointer:coarse){.qx-file{width:44px;height:44px;flex-basis:44px}}
+.qx-row{cursor:default}
+.qx-rsel{flex:1;min-width:0;display:flex;align-items:center;gap:12px;min-height:38px;padding:0;border:0;background:none;text-align:left;font-family:inherit;cursor:pointer;color:inherit}
 </style>
 <script id="hjm-v900-js">
 /* v9.00 · Navegación superior (Quirófano · Comité · Censo · Hospitalizados · Archivo), menú flotante en móvil / Fold,
@@ -19151,7 +19293,7 @@ const IC={
  cal:IC_CAL
 };
 const NAV=[['qx','Quirófano'],['cm','Comité'],['censoActual','Censo'],['cama','Hospitalizados'],['recientes','Archivo']];
-const V={view:null,qx:{sel:hoy(),m:null,tab:'agenda',per:'mes'},cm:{sel:hoy(),m:null,tab:'agenda',per:'mes'},navTarget:null};
+const V={view:null,qx:{sel:hoy(),m:null,tab:'agenda',per:'mes'},cm:{sel:hoy(),m:null,tab:'agenda',per:'mes'},navTarget:null,open:new Set(),L:{}};
 function navAllowed(k){ if(k==='qx') return can('ver_quirofano'); if(k==='cm') return can('ver_comite'); if(k==='censoActual') return can('ver_censo')||can('ver_censos_archivados'); try{ return accessViewAllowed(k); }catch(_){ return true; } }
 function navActive(){ const b=document.body.classList; if(!b.contains('pp-browse')) return ''; if(V.view) return V.view; try{ return PP_VIEW==='censos'?'censoActual':PP_VIEW; }catch(_){ return ''; } }
 function navBuild(){
@@ -19222,6 +19364,27 @@ document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closes
 try{ if(typeof HM_OPTS!=='undefined'&&Array.isArray(HM_OPTS)&&!HM_OPTS.some(x=>x[0]==='quirofano')){ HM_OPTS.splice(0,0,['quirofano','Quirófano',IC.qx],['comite','Comité',IC.cm]); } }catch(_){}
 
 /* ---------- Colores de cama por clínica (Hospitalizados) ---------- */
+document.addEventListener('click',async e=>{ try{ if(window.__hjmChildFormat||window.__hjmInlineFormat||!e.target.closest) return; const b=e.target.closest('#formatos [data-fmt]'); if(!b) return; const k=b.dataset.fmt;
+    try{ if(DIRECT_SUPP[k]||PRINT_ONLY_FORMATS.has(k)) return; }catch(_){}
+    if(typeof ppIsolatedOpen!=='function'||!hasSelectedPatient()) return; const f=fileByExp(($i('expediente')||{}).value); if(!f) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    let pend=false; try{ pend=DSN_N>0||(!!LAST_INPUT&&(!DSN_LAST||DSN_LAST.in!==LAST_INPUT)); }catch(_){}
+    if(pend){ say('Guardando los cambios del paciente antes de abrir el formato…','ok'); try{ await driveSaveNow({silent:true}); }catch(_){} }
+    await ppIsolatedOpen(f.id,k); }catch(err){ try{ say('No se pudo abrir el formato en ventana.','warn'); }catch(_){} } },true);
+const HX={cur:null};
+function hxSync(){ const l=$i('ppList'); if(!l) return; const on=false; if(l.classList.contains('hx')!==on) l.classList.toggle('hx',on);
+  const rows=[...l.children].filter(r=>r.classList.contains('dlg-item')&&r.dataset.id&&!r.hidden&&r.style.display!=='none'); let ph=[...l.children].find(c=>c.classList.contains('hx-ph'));
+  if(!on||!rows.length){ rows.forEach(r=>{ if(r.classList.contains('hsel')) r.classList.remove('hsel'); }); if(ph) ph.remove(); return; }
+  const cur=rows.find(r=>r.dataset.id===HX.cur)||rows[0]; HX.cur=cur.dataset.id;
+  rows.forEach(r=>{ const x=r===cur; if(r.classList.contains('hsel')!==x) r.classList.toggle('hsel',x); });
+  const b=cur.querySelector('.cama-badge'), q=x=>{ const e=cur.querySelector(x); return e?e.textContent.trim():''; };
+  const html=`${b?b.outerHTML:''}<span class="hx-n"><b>${H(q('.nmw b'))}</b><small>${H(q('.tags .tag'))}</small></span><em>Seleccionado</em>`;
+  if(!ph){ ph=document.createElement('div'); ph.className='hx-ph'; ph.setAttribute('aria-current','true'); }
+  if(ph._h!==html){ ph.innerHTML=html; ph._h=html; }
+  if(ph.nextElementSibling!==cur) l.insertBefore(ph,cur); }
+document.addEventListener('click',e=>{ const l=$i('ppList'); if(!l||!l.classList.contains('hx')||!e.target.closest) return; if(e.target.closest('.hx-ph')){ e.stopPropagation(); return; }
+  const r=e.target.closest('.dlg-item[data-id]'); if(r&&r.parentNode===l&&!r.classList.contains('hsel')){ e.preventDefault(); e.stopPropagation(); HX.cur=r.dataset.id; hxSync(); } },true);
+try{ const m2=matchMedia('(min-width:701px)'); const f2=()=>{ try{ hxSync(); }catch(_){} }; if(m2.addEventListener) m2.addEventListener('change',f2); else m2.addListener(f2); }catch(_){}
 function bedColors(){ const L=$i('ppList'); if(!L) return; const map=new Map(files().map(f=>[f.id,f])); L.querySelectorAll('.dlg-item[data-id] .cama-badge').forEach(b=>{ const it=b.closest('.dlg-item'), f=map.get(it.dataset.id); let c=''; try{ c=f?(ppFileClins(f)[0]||''):''; }catch(_){ c=f&&f.meta?(f.meta.clinica||''):''; } const ci=clinOf(c); if(b.dataset.clin===ci.k) return; b.dataset.clin=ci.k; b.style.setProperty('--cb-bg',ci.bg); b.style.setProperty('--cb-fg',ci.fg); b.title=(b.title||'').replace(/ · .*$/,'')+' · '+ci.n; }); }
 
 /* =====================================================================
@@ -19253,11 +19416,16 @@ function renderView(){ const v=$i('qxView'); if(!v||!V.view) return; const k=V.v
 function stepsQx(e){ const S=[['nota','Nota de comité'],['rev','Expediente revisado'],['comp','Completo'],['aut','Autorizado']]; return `<ol class="qx-steps">${S.map(([k,l],i)=>`<li class="${e[k]?(k==='aut'?'gold':'ok'):''}"><i>${e[k]?'':i+1}</i>${l}</li>`).join('')}</ol>`; }
 function whoLine(e,keys){ return keys.filter(([k])=>e[k]&&e[k].por).map(([k,l])=>`${l}: <b>${H(whoName(e[k].por))}</b> · ${H(tsTxt(e[k].ts))}`).join('<br>'); }
 const TURNO={M:'Matutino',V:'Vespertino'};
+function fileBtn(e,k){ return `<button type="button" class="qx-file" data-${k}="file" data-id="${H(e.id)}" title="Expediente clínico" aria-label="Expediente clínico de ${H(e.nombre||'paciente')}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/></svg></button>`; }
 function offCard(e,t){ const ci=clinOf(e.clin), age=ageOf(e.fnac,e.fecha), m=e.noaut||e.can||e.nses, lab=e.noaut?'No autorizada':e.can?(t==='quirofano'?'Cancelada':'Entrada cancelada'):'No sesionado', k=t==='quirofano'?'qe':'ce';
   const canR=t==='quirofano'?(isQxRole()||(e.can&&isMine(e))):can('editar_comite');
-  return `<article class="qx-card off" style="--c:${ci.c}"><div class="qx-c-top"><div class="qx-c-id"><b>${H(e.nombre||'Sin nombre')}</b><span>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''} · ${H(t==='quirofano'?(e.cx||''):(e.dx||''))}</span></div><div class="qx-chips"><span class="qx-chip">${lab}</span></div></div>
+  return `<article class="qx-card off" style="--c:${ci.c}"><div class="qx-c-top"><div class="qx-c-id"><b>${H(e.nombre||'Sin nombre')}</b><span>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''} · ${H(t==='quirofano'?(e.cx||''):(e.dx||''))}</span></div><div class="qx-chips"><span class="qx-chip">${lab}</span>${fileBtn(e,''+k+'')}</div></div>
    <div class="qx-who">${m&&m.motivo?'Motivo: <b>'+H(m.motivo)+'</b><br>':''}${m&&m.por?'Por: <b>'+H(whoName(m.por))+'</b> · '+H(tsTxt(m.ts)):''}</div>
-   <div class="qx-c-act"><span class="sp"></span><button type="button" class="qx-btn ghost sm" data-${k}="file" data-id="${H(e.id)}">Archivo clínico</button>${canR?`<button type="button" class="qx-btn ghost sm" data-${k}="restore" data-id="${H(e.id)}">Restaurar</button>`:''}${t==='comite'&&e.can&&isTec()?`<button type="button" class="qx-btn ghost sm bad" data-ce="del" data-id="${H(e.id)}">Borrar</button>`:''}</div></article>`; }
+   <div class="qx-c-act"><span class="sp"></span>${canR?`<button type="button" class="qx-btn ghost sm" data-${k}="restore" data-id="${H(e.id)}">Restaurar</button>`:''}${t==='comite'&&e.can&&isTec()?`<button type="button" class="qx-btn ghost sm bad" data-ce="del" data-id="${H(e.id)}">Borrar</button>`:''}</div></article>`; }
+function miniHTML(e,t){ const o=V.open.has(e.id), txt=t==='quirofano'?(e.cx||e.dx||''):(e.dx||''), s=t==='quirofano'?qxState(e)+(e.aut&&!e.res&&e.turno?' · '+TURNO[e.turno]:''):cmState(e), cls=t==='quirofano'?(e.res?(e.res.v==='operado'?'ok':'warn'):e.aut?'gold':e.comp?'warn':''):(e.nota?'ok':'');
+  return `<button type="button" class="qx-mini-l" data-qtog="${H(e.id)}" aria-expanded="${o}"><span>${H(txt)}</span><em class="${cls}">${H(s)}</em><i aria-hidden="true">›</i></button>`; }
+function fcF(st,es){ const ks=new Set(es.map(e=>clinOf(e.clin).k)); return st.fc&&ks.has(st.fc)?es.filter(e=>clinOf(e.clin).k===st.fc):es; }
+function fcHTML(st,all){ const m=new Map(); all.filter(e=>!offE(e)).forEach(e=>{ const c=clinOf(e.clin); const o=m.get(c.k)||{c,n:0}; o.n++; m.set(c.k,o); }); if(m.size<2) return ''; const cur=m.has(st.fc)?st.fc:''; return `<div class="qx-fc" role="group" aria-label="Filtrar por clínica"><button type="button" data-qfc="" aria-pressed="${!cur}">Todas</button>${[...m.values()].map(o=>`<button type="button" data-qfc="${H(o.c.k)}" aria-pressed="${cur===o.c.k}" style="--c:${o.c.c}"><i></i>${H(o.c.s)} · ${o.n}</button>`).join('')}</div>`; }
 function isMine(e){ const u=me(); return !!(u&&e&&e.creado&&String(e.creado.por||'').toLowerCase()===String(u).toLowerCase()); }
 function qxCard(e){ if(offE(e)) return offCard(e,'quirofano'); const ci=clinOf(e.clin), age=ageOf(e.fnac,e.fecha), canEd=can('editar_quirofano'), role=isQxRole();
   let act='';
@@ -19266,45 +19434,88 @@ function qxCard(e){ if(offE(e)) return offCard(e,'quirofano'); const ci=clinOf(e
   else if(!e.aut){ act+=role?`<button type="button" class="qx-btn gold sm" data-qe="auth" data-id="${H(e.id)}">${IC.lock}Autorizar</button><button type="button" class="qx-btn sm bad" data-qe="noaut" data-id="${H(e.id)}">No autorizar</button>`:`<span class="qx-chip warn">Esperando autorización de Quirófano</span>`; act+=`<button type="button" class="qx-btn sm" data-qe="steps" data-id="${H(e.id)}">Ver pasos</button>`; }
   else act+=`<span class="qx-chip ok">${IC.check} Autorizado${e.turno?' · '+TURNO[e.turno]:''}</span><button type="button" class="qx-btn sm" data-qe="steps" data-id="${H(e.id)}">Ver pasos</button>`;
   if(!e.aut&&isMine(e)) act+=`<button type="button" class="qx-btn sm bad" data-qe="cancel" data-id="${H(e.id)}">Cancelar</button>`;
-  const more=`<span class="sp"></span>${canEd&&(!e.aut||role)?`<button type="button" class="qx-btn ghost sm" data-qe="edit" data-id="${H(e.id)}">Editar datos</button>`:''}<button type="button" class="qx-btn ghost sm" data-qe="file" data-id="${H(e.id)}">Archivo clínico</button>${e.aut&&role?`<button type="button" class="qx-btn ghost sm qx-mini" data-qe="unaut" data-id="${H(e.id)}">Cancelar autorización</button>`:''}${canEd&&(!e.aut||role)?`<button type="button" class="qx-btn ghost sm bad" data-qe="del" data-id="${H(e.id)}">Quitar</button>`:''}`;
-  return `<article class="qx-card${e.aut?' done':''}" style="--c:${ci.c}"><div class="qx-c-top"><div class="qx-c-id"><b>${H(e.nombre||'Sin nombre')}</b><span>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''}${e.sol?' · Solicitud de cirugía':''}</span></div><div class="qx-chips"><span class="qx-chip clin" style="--bg:${ci.bg};--fg:${ci.fg}">${H(ci.n)}</span>${e.turno?`<span class="qx-chip">${TURNO[e.turno]}</span>`:''}${e.np?'<span class="qx-chip np">No programada</span>':''}</div></div>
-    <div class="qx-c-body"><div><small>Cirugía planeada</small>${H(e.cx||'—')}</div><div><small>Diagnóstico</small>${H(e.dx||'—')}</div><div><small>Adscrito</small>${H(e.ads||'—')}</div></div>
-    ${e.np?'':stepsQx(e)}<div class="qx-who">${whoLine(e,[['comp','Completó'],['aut','Autorizó']])}</div><div class="qx-c-act">${act}${more}</div></article>`; }
+  const more=`<span class="sp"></span>${canEd&&(!e.aut||role)?`<button type="button" class="qx-btn ghost sm" data-qe="edit" data-id="${H(e.id)}">Editar datos</button>`:''} ${e.aut&&role&&!e.res?`<button type="button" class="qx-btn ghost sm qx-mini" data-qe="unaut" data-id="${H(e.id)}">Cancelar autorización</button>`:''}${canEd&&(!e.aut||role)&&!e.res?`<button type="button" class="qx-btn ghost sm bad" data-qe="del" data-id="${H(e.id)}">Quitar</button>`:''}`;
+  return `<article class="qx-card col${e.aut?' done':''}${V.open.has(e.id)?' open':''}" style="--c:${ci.c}"><div class="qx-c-top"><div class="qx-c-id"><b>${H(e.nombre||'Sin nombre')}</b><span>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''}${e.sol?' · Solicitud de cirugía':''}</span></div><div class="qx-chips"><span class="qx-chip clin" style="--bg:${ci.bg};--fg:${ci.fg}">${H(ci.n)}</span>${e.turno?`<span class="qx-chip">${TURNO[e.turno]}</span>`:''}${e.np?'<span class="qx-chip np">No programada</span>':''}${fileBtn(e,'qe')}</div></div>
+    ${miniHTML(e,'quirofano')}<div class="qx-c-body"><div><small>Cirugía planeada</small>${H(e.cx||'—')}</div><div><small>Diagnóstico</small>${H(e.dx||'—')}</div><div><small>Adscrito</small>${H(e.ads||'—')}</div></div>
+    ${e.np?'':stepsQx(e)}<div class="qx-who">${whoLine(e,[['comp','Completó']])}</div>${e.aut&&e.aut.por?`<div class="qx-autby">${IC.lock}<span>Autorizó: <b>${H(whoName(e.aut.por))}</b> · ${H(tsTxt(e.aut.ts))}</span></div>`:''}<div class="qx-c-act">${act}${more}</div></article>`; }
 function daySummary(es,t){ es=es.filter(e=>!offE(e)); if(t==='quirofano'){ const a=es.filter(e=>e.aut).length, c=es.filter(e=>e.comp&&!e.aut).length; return `<div class="qx-sum"><div><b>${es.length}</b><small>Tentativos</small></div><div><b>${c}</b><small>Completos</small></div><div><b>${a}</b><small>Autorizados</small></div></div>`; } const s=es.filter(e=>e.nota).length; return `<div class="qx-sum"><div><b>${es.length}</b><small>Agendados</small></div><div><b>${s}</b><small>Sesionados</small></div><div><b>${es.length-s}</b><small>Pendientes</small></div></div>`; }
-function qxAgendaHTML(){ const st=V.qx, all=byDay('quirofano',st.sel), off=all.filter(offE), es=all.filter(e=>!offE(e)).sort((a,b)=>(a.aut?0:1)-(b.aut?0:1)||String(a.turno||'Z').localeCompare(String(b.turno||'Z'))||String(a.nombre).localeCompare(String(b.nombre),'es'));
-  const groups=[['M','Matutino'],['V','Vespertino'],['','Turno por definir']].map(([tk,l])=>[l,es.filter(e=>(e.turno||'')===tk)]).filter(g=>g[1].length);
+const isWide=()=>{ try{ return matchMedia('(min-width:701px)').matches; }catch(_){ return true; } };
+function weekHTML(k){ const st=V[k], t=T(k), d0=pDMY(st.sel)||new Date(), mon=new Date(d0.getFullYear(),d0.getMonth(),d0.getDate()-((d0.getDay()+6)%7),12), h=hoy(); let ds='';
+  for(let i=0;i<7;i++){ const d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i,12), x=dDMY(d), n=byDay(t,x).filter(e=>!offE(e)).length; ds+=`<button type="button" class="qw-d${x===st.sel?' on':''}${x===h?' today':''}" data-qday="${x}" aria-pressed="${x===st.sel}" aria-label="${H(largo(x))}${n?', '+n+' paciente'+(n>1?'s':''):''}"><small>${'LMMJVSD'[i]}</small><b>${d.getDate()}</b>${n?`<i>${n}</i>`:''}</button>`; }
+  return `<div class="qw"><button type="button" data-qwk="-1" aria-label="Semana anterior">‹</button><div class="qw-days">${ds}</div><button type="button" data-qwk="1" aria-label="Semana siguiente">›</button><button type="button" class="qw-t" data-qcal="0">Hoy</button><button type="button" class="qw-t" data-qmes aria-pressed="${!!st.cal}">Mes</button></div>`; }
+function rowHTML(e,t){ const st=V[t==='quirofano'?'qx':'cm'], ci=clinOf(e.clin), age=ageOf(e.fnac,e.fecha), off=offE(e), s=t==='quirofano'?qxState(e):cmState(e), cls=off?'':t==='quirofano'?(e.res?(e.res.v==='operado'?'ok':'warn'):e.aut?'gold':e.comp?'warn':''):(e.nota?'ok':'');
+  return `<div class="qx-row${st.cur===e.id?' sel':''}${off?' off':''}"><button type="button" class="qx-rsel" data-qsel="${H(e.id)}" aria-pressed="${st.cur===e.id}"><i style="--c:${off?'#B5BCC4':ci.c}"></i><span class="nm"><b>${H(e.nombre||'Sin nombre')}</b><small>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''}</small></span><span class="cx">${H(t==='quirofano'?(e.cx||e.dx||''):(e.dx||''))}</span><span class="ad">${H(e.ads||'')}</span><em class="${cls}">${H(s)}</em></button>${fileBtn(e,t==='quirofano'?'qe':'ce')}</div>`; }
+function item(e,t){ return isWide()?rowHTML(e,t):(t==='quirofano'?qxCard(e):cmCard(e)); }
+function curFix(st,pool){ if(!pool.some(e=>e.id===st.cur)) st.cur=pool.length?pool[0].id:null; }
+function shell(k,t,es,off,all,body){ const st=V[k], wide=isWide(), cur=wide?es.concat(off).find(e=>e.id===st.cur):null;
+  return `<div class="qx-topbar">${weekHTML(k)}${daySummary(es,t)}</div>${st.cal?`<div class="qx-panel qx-calp">${calHTML(k)}</div>`:''}<div class="qx-two${wide?'':' one'}"><section><div class="qx-dayh"><b>${H(largo(st.sel))}</b><span>${es.length?es.length+' paciente'+(es.length>1?'s':''):''}</span></div>${fcHTML(st,all)}<div class="qx-list${wide?' rows':''}">${body}</div></section>${wide?`<aside class="qx-det" aria-label="Detalle del paciente">${cur?(t==='quirofano'?qxCard(cur):cmCard(cur)):'<div class="qx-empty"><b>Sin paciente seleccionado</b>Elige un paciente de la lista para ver su detalle.</div>'}</aside>`:''}</div>`; }
+function qxAgendaHTML(){ const st=V.qx, all=byDay('quirofano',st.sel), off=all.filter(offE), es=fcF(st,all.filter(e=>!offE(e))).sort((a,b)=>(a.aut?0:1)-(b.aut?0:1)||String(a.turno||'Z').localeCompare(String(b.turno||'Z'))||String(a.nombre).localeCompare(String(b.nombre),'es'));
+  curFix(st,es.concat(off)); const groups=[['M','Matutino'],['V','Vespertino'],['','Turno por definir']].map(([tk,l])=>[l,es.filter(e=>(e.turno||'')===tk)]).filter(g=>g[1].length);
   const empty=`<div class="qx-empty"><b>Sin pacientes para este día</b>Elige otra fecha en el calendario${can('editar_quirofano')?' o usa «Agregar paciente». También puedes agregar desde una Solicitud de cirugía.':'.'}</div>`;
-  const body=(es.length?groups.map(([l,g])=>(groups.length>1||l!=='Turno por definir'?`<div class="qx-grp"><i style="--c:#1F3864"></i>${l} · ${g.length}</div>`:'')+g.map(qxCard).join('')).join(''):empty)+(off.length?`<div class="qx-grp"><i style="--c:#B5BCC4"></i>No autorizadas o canceladas · ${off.length}</div>`+off.map(qxCard).join(''):'');
-  return `<div class="qx-grid"><aside class="qx-panel">${calHTML('qx')}${daySummary(es,'quirofano')}</aside><section><div class="qx-dayh"><b>${H(largo(st.sel))}</b><span>${es.length?es.length+' paciente'+(es.length>1?'s':''):''}</span></div><div class="qx-list">${body}</div></section></div>`; }
+  const body=(es.length?groups.map(([l,g])=>(groups.length>1||l!=='Turno por definir'?`<div class="qx-grp"><i style="--c:#1F3864"></i>${l} · ${g.length}</div>`:'')+g.map(e=>item(e,'quirofano')).join('')).join(''):empty)+(off.length?`<div class="qx-grp"><i style="--c:#B5BCC4"></i>No autorizadas o canceladas · ${off.length}</div>`+off.map(e=>item(e,'quirofano')).join(''):'');
+  return shell('qx','quirofano',es,off,all,body); }
 function cmCard(e){ if(offE(e)) return offCard(e,'comite'); const ci=clinOf(e.clin), age=ageOf(e.fnac,e.fecha), canEd=can('editar_comite');
   let act=''; if(e.nota){ act=`<span class="qx-chip ok">${IC.check} Paciente sesionado</span><button type="button" class="qx-btn sm" data-ce="view" data-id="${H(e.id)}">Ver nota</button>${can('imprimir_documentos')?`<button type="button" class="qx-btn sm" data-ce="print" data-id="${H(e.id)}">${IC.print}Imprimir nota</button>`:''}${canEd?`<button type="button" class="qx-btn sm" data-ce="editnote" data-id="${H(e.id)}">Editar nota</button>`:''}`; }
   else act=canEd?`<button type="button" class="qx-btn pri sm" data-ce="note" data-id="${H(e.id)}">${IC.note}Crear nota de comité</button><button type="button" class="qx-btn sm" data-ce="link" data-id="${H(e.id)}">Ligar nota existente</button>`:'<span class="qx-chip warn">Pendiente de sesionar</span>';
-  const more=`<span class="sp"></span>${canEd?`<button type="button" class="qx-btn ghost sm" data-ce="resched" data-id="${H(e.id)}">Reprogramar sesión</button><button type="button" class="qx-btn ghost sm" data-ce="edit" data-id="${H(e.id)}">Editar datos</button>`:''}<button type="button" class="qx-btn ghost sm" data-ce="file" data-id="${H(e.id)}">Archivo clínico</button>${canEd&&!e.nota?`<button type="button" class="qx-btn ghost sm bad" data-ce="nses" data-id="${H(e.id)}">No sesionado</button><button type="button" class="qx-btn ghost sm bad" data-ce="cancel" data-id="${H(e.id)}">Cancelar entrada</button>`:''}`;
+  const more=`<span class="sp"></span>${canEd?`<button type="button" class="qx-btn ghost sm" data-ce="resched" data-id="${H(e.id)}">Reprogramar sesión</button><button type="button" class="qx-btn ghost sm" data-ce="edit" data-id="${H(e.id)}">Editar datos</button>`:''}${canEd&&!e.nota?`<button type="button" class="qx-btn ghost sm bad" data-ce="nses" data-id="${H(e.id)}">No sesionado</button><button type="button" class="qx-btn ghost sm bad" data-ce="cancel" data-id="${H(e.id)}">Cancelar entrada</button>`:''}`;
   const rp=(e.h||[]).filter(x=>/^Reprogramad/.test(x.a)).length;
-  return `<article class="qx-card${e.nota?' done':''}" style="--c:${ci.c}"><div class="qx-c-top"><div class="qx-c-id"><b>${H(e.nombre||'Sin nombre')}</b><span>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''}</span></div><div class="qx-chips"><span class="qx-chip clin" style="--bg:${ci.bg};--fg:${ci.fg}">${H(ci.n)}</span>${rp?`<span class="qx-chip warn">Reprogramado ${rp}×</span>`:''}</div></div>
-   <div class="qx-c-body"><div><small>Diagnóstico</small>${H(e.dx||'—')}</div><div><small>Adscrito</small>${H(e.ads||'—')}</div><div><small>Dictamen</small>${H(e.nota&&e.nota.dic?e.nota.dic:'—')}</div></div>
+  return `<article class="qx-card col${e.nota?' done':''}${V.open.has(e.id)?' open':''}" style="--c:${ci.c}"><div class="qx-c-top"><div class="qx-c-id"><b>${H(e.nombre||'Sin nombre')}</b><span>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''}</span></div><div class="qx-chips"><span class="qx-chip clin" style="--bg:${ci.bg};--fg:${ci.fg}">${H(ci.n)}</span>${rp?`<span class="qx-chip warn">Reprogramado ${rp}×</span>`:''}${fileBtn(e,'ce')}</div></div>
+   ${miniHTML(e,'comite')}<div class="qx-c-body"><div><small>Diagnóstico</small>${H(e.dx||'—')}</div><div><small>Adscrito</small>${H(e.ads||'—')}</div><div><small>Dictamen</small>${H(e.nota&&e.nota.dic?e.nota.dic:'—')}</div></div>
    <div class="qx-who">${whoLine(e,[['ses','Sesionó (nota)']])}</div><div class="qx-c-act">${act}${more}</div></article>`; }
-function cmAgendaHTML(){ const st=V.cm, all=byDay('comite',st.sel), off=all.filter(offE), es=all.filter(e=>!offE(e)); const by=new Map(); es.forEach(e=>{ const k=clinOf(e.clin).k; (by.get(k)||by.set(k,[]).get(k)).push(e); });
+function cmAgendaHTML(){ const st=V.cm, all=byDay('comite',st.sel), off=all.filter(offE), es=fcF(st,all.filter(e=>!offE(e))); curFix(st,es.concat(off)); const by=new Map(); es.forEach(e=>{ const k=clinOf(e.clin).k; (by.get(k)||by.set(k,[]).get(k)).push(e); });
   const order=[...CLIN.map(c=>c.k),...[...by.keys()].filter(k=>!CLIN.some(c=>c.k===k))];
-  const body=(es.length?order.filter(k=>by.has(k)).map(k=>{ const g=by.get(k).sort((a,b)=>String(a.nombre).localeCompare(String(b.nombre),'es')), ci=clinOf(k); return `<div class="qx-grp"><i style="--c:${ci.c}"></i>${H(ci.n)} · ${g.length}</div>`+g.map(cmCard).join(''); }).join(''):`<div class="qx-empty"><b>Sin pacientes para esta sesión</b>Elige otra fecha${can('editar_comite')?' o usa «Agregar paciente».':'.'}</div>`)+(off.length?`<div class="qx-grp"><i style="--c:#B5BCC4"></i>Canceladas o no sesionadas · ${off.length}</div>`+off.map(cmCard).join(''):'');
-  return `<div class="qx-grid"><aside class="qx-panel">${calHTML('cm')}${daySummary(es,'comite')}</aside><section><div class="qx-dayh"><b>${H(largo(st.sel))}</b><span>${es.length?es.length+' paciente'+(es.length>1?'s':''):''}</span></div><div class="qx-list">${body}</div></section></div>`; }
+  const body=(es.length?order.filter(k=>by.has(k)).map(k=>{ const g=by.get(k).sort((a,b)=>String(a.nombre).localeCompare(String(b.nombre),'es')), ci=clinOf(k); return `<div class="qx-grp"><i style="--c:${ci.c}"></i>${H(ci.n)} · ${g.length}</div>`+g.map(e=>item(e,'comite')).join(''); }).join(''):`<div class="qx-empty"><b>Sin pacientes para esta sesión</b>Elige otra fecha${can('editar_comite')?' o usa «Agregar paciente».':'.'}</div>`)+(off.length?`<div class="qx-grp"><i style="--c:#B5BCC4"></i>Canceladas o no sesionadas · ${off.length}</div>`+off.map(e=>item(e,'comite')).join(''):'');
+  return shell('cm','comite',es,off,all,body); }
 function perFilter(st,e){ const d=pDMY(e.fecha); if(!d) return false; const M=monthOf(st); if(st.per==='mes') return d.getFullYear()===M.y&&d.getMonth()===M.m; if(st.per==='anio') return d.getFullYear()===M.y; return true; }
 function perSel(st){ const M=monthOf(st); return `<div class="qx-per"><select data-qper aria-label="Periodo"><option value="mes"${st.per==='mes'?' selected':''}>Mes: ${MES[M.m]} ${M.y}</option><option value="anio"${st.per==='anio'?' selected':''}>Año ${M.y}</option><option value="todo"${st.per==='todo'?' selected':''}>Todo el registro</option></select><button type="button" class="qx-btn sm" data-qcal="-1">‹ Mes anterior</button><button type="button" class="qx-btn sm" data-qcal="1">Mes siguiente ›</button></div>`; }
-function barsHTML(rows,max){ max=Math.max(1,max); return rows.map(r=>`<div class="qx-bar"><span title="${H(r.n)}">${H(r.n)}${r.sub?`<small>${H(r.sub)}</small>`:''}</span><em><i style="width:${Math.round(100*r.v/max)}%;--c:${r.c}"></i></em><b>${r.v}</b></div>`).join('')||'<p class="qd-note">Sin datos en el periodo.</p>'; }
-function cmStatsHTML(){ const st=V.cm, es=list('comite').filter(e=>perFilter(st,e)&&!e.can); const nses=es.filter(e=>e.nses).length; const ses=es.filter(e=>e.nota).length, rep=es.reduce((n,e)=>n+(e.h||[]).filter(x=>/^Reprogramad/.test(x.a)).length,0), pac=new Set(es.map(e=>nz(e.exp))).size;
-  const by=new Map(); es.forEach(e=>{ const c=clinOf(e.clin); const o=by.get(c.k)||{n:c.n,c:c.c,v:0,s:0}; o.v++; if(e.nota) o.s++; by.set(c.k,o); }); const rows=[...by.values()].sort((a,b)=>b.v-a.v);
-  const ads=new Map(); es.forEach(e=>{ const k=up(e.ads)||'SIN ADSCRITO'; const c=clinOf(e.clin); const o=ads.get(k)||{n:k,c:c.c,v:0}; o.v++; ads.set(k,o); }); const ar=[...ads.values()].sort((a,b)=>b.v-a.v).slice(0,12);
-  return perSel(st)+`<div class="qx-kpis"><div><b>${es.length}</b><small>Pacientes llevados a comité</small></div><div><b>${ses}</b><small>Sesionados con nota</small></div><div><b>${es.length-ses-nses}</b><small>Pendientes · ${nses} no sesionado${nses===1?'':'s'}</small></div><div><b>${rep}</b><small>Reprogramaciones</small></div></div>
-  <div class="qx-statsg"><div class="qx-panel"><h3 class="qx-h3">Por clínica</h3><div class="qx-bars">${barsHTML(rows.map(r=>({n:r.n,sub:r.s+' sesionado'+(r.s===1?'':'s'),v:r.v,c:r.c})),rows[0]?rows[0].v:1)}</div></div><div class="qx-panel"><h3 class="qx-h3">Por adscrito</h3><div class="qx-bars">${barsHTML(ar,ar[0]?ar[0].v:1)}</div></div></div><p class="qd-note" style="margin-top:14px">${pac} paciente${pac===1?'':'s'} distinto${pac===1?'':'s'} en el periodo.</p>`; }
+function barsHTML(rows,max){ max=Math.max(1,max); return rows.map(r=>`<${r.k?'button type="button" data-qlist="'+r.k+'"':'div'} class="qx-bar"><span title="${H(r.n)}">${H(r.n)}${r.sub?`<small>${H(r.sub)}</small>`:''}</span><em><i style="width:${Math.round(100*r.v/max)}%;--c:${r.c}"></i></em><b>${r.v}</b></${r.k?'button':'div'}>`).join('')||'<p class="qd-note">Sin datos en el periodo.</p>'; }
 function cmNotesHTML(){ const st=V.cm, es=list('comite').filter(e=>e.nota&&perFilter(st,e)).sort((a,b)=>dkey(b.fecha)-dkey(a.fecha));
   return perSel(st)+`<div class="qx-panel"><div class="qx-tblw"><table class="qx-tbl"><thead><tr><th>Sesión</th><th>Paciente</th><th>Expediente</th><th>Clínica</th><th>Dictamen</th><th></th></tr></thead><tbody>${es.map(e=>{ const ci=clinOf(e.clin); return `<tr><td>${H(e.fecha)}</td><td><b>${H(e.nombre)}</b></td><td>${H(e.exp)}</td><td><span class="qx-chip clin" style="--bg:${ci.bg};--fg:${ci.fg}">${H(ci.s)}</span></td><td>${H((e.nota.dic||'').slice(0,140))}</td><td class="a"><button type="button" class="qx-btn sm" data-ce="view" data-id="${H(e.id)}">Ver</button> ${can('imprimir_documentos')?`<button type="button" class="qx-btn sm" data-ce="print" data-id="${H(e.id)}">Imprimir</button>`:''}</td></tr>`; }).join('')||'<tr><td colspan="6" style="text-align:center;color:#7A8492;padding:24px">Sin notas de comité en el periodo.</td></tr>'}</tbody></table></div></div>`; }
-function qxStatsHTML(){ const st=V.qx, es=list('quirofano').filter(e=>perFilter(st,e)); const noa=es.filter(e=>e.noaut).length; const aut=es.filter(e=>e.aut).length, op=es.filter(e=>e.res&&e.res.v==='operado').length, dif=es.filter(e=>e.res&&e.res.v==='diferido'), np=es.filter(e=>e.np).length;
-  const mot=new Map(); dif.forEach(e=>{ const k=up(e.res.motivo)||'SIN MOTIVO'; mot.set(k,(mot.get(k)||0)+1); }); const mr=[...mot.entries()].map(([n,v])=>({n,v,c:'#B7791F'})).sort((a,b)=>b.v-a.v);
-  const by=new Map(); es.forEach(e=>{ const c=clinOf(e.clin); const o=by.get(c.k)||{n:c.n,c:c.c,v:0}; o.v++; by.set(c.k,o); }); const rows=[...by.values()].sort((a,b)=>b.v-a.v);
-  return perSel(st)+`<div class="qx-kpis"><div><b>${es.length}</b><small>Pacientes en programación</small></div><div><b>${aut}</b><small>Autorizados · ${noa} no autorizado${noa===1?'':'s'}</small></div><div><b>${op}</b><small>Operados${np?' ('+np+' no programados)':''}</small></div><div><b>${dif.length}</b><small>Diferidos</small></div></div>
-  <div class="qx-statsg"><div class="qx-panel"><h3 class="qx-h3">Por clínica</h3><div class="qx-bars">${barsHTML(rows,rows[0]?rows[0].v:1)}</div></div><div class="qx-panel"><h3 class="qx-h3">Motivos de diferimiento</h3><div class="qx-bars">${barsHTML(mr,mr[0]?mr[0].v:1)}</div></div></div>`; }
+const pct=(a,b)=>b?Math.round(100*a/b)+'%':'—';
+const normM=s=>up(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[.,;:]+/g,' ').replace(/\b(DE|DEL|LA|EL|LOS|LAS|POR|EN|Y|A)\b/g,' ').replace(/\s+/g,' ').trim();
+function reg(k,t,es){ (V.L||(V.L={}))[k]={t,es}; return k; }
+function grp(es,keyFn,color){ const m=new Map(); es.forEach(e=>{ const r=keyFn(e); if(!r) return; const o=m.get(r.k)||{n:r.n,c:r.c||color||'#1F3864',v:0,es:[],o:r.o}; o.v++; o.es.push(e); m.set(r.k,o); }); return [...m.values()]; }
+function panel(title,id,rows,sort){ if(sort!==false) rows.sort((a,b)=>b.v-a.v); const mx=rows.reduce((n,r)=>Math.max(n,r.v),1); return `<div class="qx-panel"><h3 class="qx-h3">${title}</h3><div class="qx-bars">${barsHTML(rows.map((r,i)=>Object.assign({},r,{k:reg(id+i,title+' · '+r.n,r.es)})),mx)}</div></div>`; }
+function kpi(v,l,id,es){ return `<button type="button" class="qx-kpi" data-qlist="${reg(id,l.replace(/<[^>]+>/g,' '),es)}"><b>${v}</b><small>${l}</small></button>`; }
+const motRow=(get,c)=>e=>{ const m=get(e); const k=normM(m)||'SIN MOTIVO'; return {k,n:up(m)||'SIN MOTIVO',c}; };
+const clinRow=e=>{ const c=clinOf(e.clin); return {k:c.k,n:c.n,c:c.c}; };
+const adsRow=e=>{ const k=up(e.ads)||'SIN ADSCRITO'; return {k,n:k,c:clinOf(e.clin).c}; };
+const mesRow=e=>{ const d=pDMY(e.fecha); if(!d) return null; return {k:d.getFullYear()*12+d.getMonth(),n:MES[d.getMonth()]+' '+d.getFullYear(),o:d.getFullYear()*12+d.getMonth()}; };
+function perLabel(st){ const M=monthOf(st); return st.per==='mes'?MES[M.m]+' '+M.y:st.per==='anio'?'Año '+M.y:'Todo el registro'; }
+function statTools(p){ return can(p)?`<div class="qx-stt"><button type="button" class="qx-btn sm" data-qst="print">${IC.print}Imprimir periodo</button><button type="button" class="qx-btn sm" data-qst="csv">Exportar CSV</button></div>`:''; }
+function qxState(e){ return e.can?'Cancelada':e.noaut?'No autorizada':e.res?(e.res.v==='operado'?'Operado':'Diferido'):e.aut?'Autorizado':e.comp?'Espera autorización':'Expediente incompleto'; }
+function cmState(e){ return e.can?'Cancelada':e.nses?'No sesionado':e.nota?'Sesionado':'Pendiente'; }
+function entMot(e){ return (e.can&&e.can.motivo)||(e.noaut&&e.noaut.motivo)||(e.nses&&e.nses.motivo)||(e.res&&e.res.motivo)||''; }
+function qxStatsHTML(){ V.L={}; const st=V.qx, all=list('quirofano').filter(e=>perFilter(st,e)), es=all.filter(e=>!e.can), cans=all.filter(e=>e.can);
+  const comp=es.filter(e=>e.comp||e.aut), aut=es.filter(e=>e.aut), noa=es.filter(e=>e.noaut), op=es.filter(e=>e.res&&e.res.v==='operado'), dif=es.filter(e=>e.res&&e.res.v==='diferido'), np=op.filter(e=>e.np).length, pac=new Set(es.map(e=>nz(e.exp))).size, t0=dkey(hoy()), sinr=aut.filter(e=>!e.res&&dkey(e.fecha)<t0);
+  const k=kpi(es.length,`Programaciones · ${pac} paciente${pac===1?'':'s'} distinto${pac===1?'':'s'}`,'k1',es)+kpi(aut.length,`Autorizadas · ${pct(aut.length,comp.length)} de las completas`,'k2',aut)+kpi(noa.length,'No autorizadas','k3',noa)+kpi(op.length,`Operadas · ${pct(op.length,aut.length)} de las autorizadas${np?' ('+np+' no programadas)':''}`,'k4',op)+kpi(dif.length,`Diferidas · ${pct(dif.length,op.length+dif.length)} de las que tienen resultado`,'k5',dif)+kpi(sinr.length,'Autorizadas con fecha pasada y sin resultado','k6',sinr)+kpi(cans.length,'Canceladas por quien las solicitó','k7',cans);
+  const clin=grp(es,clinRow).map(r=>Object.assign(r,{sub:r.es.filter(e=>e.res&&e.res.v==='operado').length+' operadas · '+r.es.filter(e=>e.res&&e.res.v==='diferido').length+' diferidas'}));
+  const tur=grp(aut,e=>({k:e.turno||'',n:TURNO[e.turno]||'Sin turno'}));
+  return perSel(st)+statTools('imprimir_programacion')+`<div class="qx-kpis">${k}</div><div class="qx-statsg">${panel('Por clínica','pc',clin)}${panel('Por adscrito','pa',grp(es,adsRow).sort((a,b)=>b.v-a.v).slice(0,12))}${panel('Motivos de diferimiento','pd',grp(dif,motRow(e=>e.res.motivo,'#B7791F')))}${panel('Motivos de no autorización','pn',grp(noa,motRow(e=>e.noaut.motivo,'#9B2C2C')))}${panel('Autorizó','pz',grp(aut,e=>e.aut.por?{k:e.aut.por,n:whoName(e.aut.por),c:'#B7791F'}:null))}${panel('Autorizadas por turno','pt',tur)}${st.per!=='mes'?panel('Por mes','pm',grp(es,mesRow).sort((a,b)=>a.o-b.o),false):''}</div><p class="qd-note" style="margin-top:14px">Toca una cifra o una barra para ver la lista de pacientes.</p>`; }
+function cmStatsHTML(){ V.L={}; const st=V.cm, all=list('comite').filter(e=>perFilter(st,e)), es=all.filter(e=>!e.can), cans=all.filter(e=>e.can);
+  const ses=es.filter(e=>e.nota), nses=es.filter(e=>e.nses&&!e.nota), pen=es.filter(e=>!e.nota&&!e.nses), repE=es.filter(e=>(e.h||[]).some(x=>/^Reprogramad/.test(x.a))), rep=es.reduce((n,e)=>n+(e.h||[]).filter(x=>/^Reprogramad/.test(x.a)).length,0), pac=new Set(es.map(e=>nz(e.exp))).size;
+  const qx=list('quirofano').filter(e=>e.res&&e.res.v==='operado'); const lag=[]; ses.forEach(e=>{ const t=dkey(e.fecha), c=qx.filter(q=>nz(q.exp)===nz(e.exp)&&dkey(q.fecha)>=t).sort((a,b)=>dkey(a.fecha)-dkey(b.fecha))[0]; if(c) lag.push([e,Math.round((dkey(c.fecha)-t)/86400000)]); });
+  const avg=lag.length?Math.round(lag.reduce((n,x)=>n+x[1],0)/lag.length):null;
+  const k=kpi(es.length,`Presentaciones · ${pac} paciente${pac===1?'':'s'} distinto${pac===1?'':'s'}`,'k1',es)+kpi(ses.length,`Sesionados con nota · ${pct(ses.length,es.length)}`,'k2',ses)+kpi(pen.length,'Pendientes de sesionar','k3',pen)+kpi(nses.length,'No sesionados','k4',nses)+kpi(rep,'Reprogramaciones','k5',repE)+kpi(cans.length,'Entradas canceladas','k6',cans)+kpi(avg===null?'—':avg+' d',`Promedio de comité a cirugía${lag.length?' · '+lag.length+' caso'+(lag.length===1?'':'s'):''}`,'k7',lag.map(x=>x[0]));
+  const clin=grp(es,clinRow).map(r=>Object.assign(r,{sub:r.es.filter(e=>e.nota).length+' sesionados'}));
+  return perSel(st)+statTools('imprimir_comite')+`<div class="qx-kpis">${k}</div><div class="qx-statsg">${panel('Por clínica','pc',clin)}${panel('Por adscrito','pa',grp(es,adsRow).sort((a,b)=>b.v-a.v).slice(0,12))}${panel('Motivos de no sesionado','pn',grp(nses,motRow(e=>e.nses.motivo,'#B7791F')))}${panel('Motivos de cancelación','px',grp(cans,motRow(e=>e.can.motivo,'#9B2C2C')))}${st.per!=='mes'?panel('Por mes','pm',grp(es,mesRow).sort((a,b)=>a.o-b.o),false):''}</div><p class="qd-note" style="margin-top:14px">Toca una cifra o una barra para ver la lista de pacientes.</p>`; }
+function statRows(k){ const t=T(k), st=V[k]; return list(t).filter(e=>perFilter(st,e)).sort((a,b)=>dkey(a.fecha)-dkey(b.fecha)||String(a.nombre).localeCompare(String(b.nombre),'es')).map(e=>[e.fecha||'',e.nombre||'',e.exp||'',clinOf(e.clin).n,e.ads||'',k==='qx'?(e.cx||''):(e.dx||''),k==='qx'?(TURNO[e.turno]||''):'',k==='qx'?qxState(e):cmState(e),entMot(e),k==='qx'&&e.aut&&e.aut.por?whoName(e.aut.por):'']); }
+const STAT_COLS=['Fecha','Paciente','Expediente','Clínica','Adscrito','Cirugía / Diagnóstico','Turno','Estado','Motivo','Autorizó'];
+function statExport(k,how){ if(!can(k==='qx'?'imprimir_programacion':'imprimir_comite')){ say('Tu usuario no tiene permiso para imprimir o exportar.','warn'); return; } const rows=statRows(k), ttl=(k==='qx'?'RESULTADOS DE QUIRÓFANO':'RESULTADOS DEL COMITÉ MULTIDISCIPLINARIO'), per=perLabel(V[k]);
+  if(how==='csv'){ const q=x=>'"'+String(x).replace(/"/g,'""')+'"'; const txt='﻿'+[STAT_COLS].concat(rows).map(r=>r.map(q).join(',')).join('\r\n'); const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([txt],{type:'text/csv;charset=utf-8'})); a.download=(k==='qx'?'Quirofano_':'Comite_')+per.replace(/\s+/g,'_')+'.csv'; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500); say('Archivo CSV descargado.','ok'); return; }
+  printDoc(head(ttl,H(up(per)))+(rows.length?`<table><thead><tr>${STAT_COLS.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${H(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`:'<p class="none">SIN REGISTROS EN EL PERIODO</p>'),ttl+' '+per,true); }
+function openList(key){ const L=V.L&&V.L[key]; if(!L) return; const k=V.view, d=dlg('dlgQxList','wide'); const es=L.es.slice().sort((a,b)=>dkey(a.fecha)-dkey(b.fecha));
+  d.innerHTML=dlgShell(H(L.t),es.length+' registro'+(es.length===1?'':'s')+' · '+H(perLabel(V[k])),es.length?`<div class="qx-tblw"><table class="qx-tbl"><thead><tr><th>Fecha</th><th>Paciente</th><th>Expediente</th><th>${k==='qx'?'Cirugía':'Diagnóstico'}</th><th>Estado</th></tr></thead><tbody>${es.map(e=>{ const m=entMot(e); return `<tr><td>${H(e.fecha)}</td><td><b>${H(e.nombre)}</b></td><td>${H(e.exp)}</td><td>${H(k==='qx'?(e.cx||''):(e.dx||''))}</td><td>${H(k==='qx'?qxState(e):cmState(e))}${m?'<br><small>'+H(m)+'</small>':''}</td></tr>`; }).join('')}</tbody></table></div>`:'<p class="qd-note">Sin pacientes.</p>','<button type="button" class="qx-btn" data-qd-x>Cerrar</button>'); show(d); }
+try{ const mqW=matchMedia('(min-width:701px)'); const rr=()=>{ try{ renderView(); }catch(_){} }; if(mqW.addEventListener) mqW.addEventListener('change',rr); else mqW.addListener(rr); }catch(_){}
 function viewChange(e){ const s=e.target.closest('[data-qper]'); if(s){ V[V.view].per=s.value; renderView(); } }
 function viewClick(e){ const t=e.target.closest('button'); if(!t) return; const k=V.view, st=V[k];
+  if(t.dataset.qsel){ st.cur=t.dataset.qsel; renderView(); return; }
+  if(t.dataset.qwk){ const d=pDMY(st.sel)||new Date(); const n=new Date(d.getFullYear(),d.getMonth(),d.getDate()+7*(+t.dataset.qwk),12); st.sel=dDMY(n); st.m={y:n.getFullYear(),m:n.getMonth()}; renderView(); return; }
+  if('qmes' in t.dataset){ st.cal=!st.cal; renderView(); return; }
+  if(t.dataset.qtog){ const id=t.dataset.qtog; if(V.open.has(id)) V.open.delete(id); else V.open.add(id); renderView(); return; }
+  if('qfc' in t.dataset){ st.fc=t.dataset.qfc; renderView(); return; }
+  if(t.dataset.qlist){ openList(t.dataset.qlist); return; }
+  if(t.dataset.qst){ statExport(k,t.dataset.qst); return; }
   if(t.dataset.qday){ st.sel=t.dataset.qday; const d=pDMY(st.sel); if(d&&(d.getMonth()!==st.m.m||d.getFullYear()!==st.m.y)) st.m={y:d.getFullYear(),m:d.getMonth()}; renderView(); if(matchMedia('(max-width:760px)').matches){ const h=document.querySelector('#qxView .qx-dayh'); if(h) setTimeout(()=>{ try{ h.scrollIntoView({behavior:'smooth',block:'start'}); }catch(_){} },60); } return; }
   if(t.dataset.qcal){ const n=+t.dataset.qcal; if(n===0){ st.sel=hoy(); st.m=null; } else { const M=monthOf(st); const d=new Date(M.y,M.m+n,1); st.m={y:d.getFullYear(),m:d.getMonth()}; } renderView(); return; }
   if(t.dataset.qtab){ st.tab=t.dataset.qtab; renderView(); return; }
@@ -19315,8 +19526,10 @@ function viewClick(e){ const t=e.target.closest('button'); if(!t) return; const 
 }
 function unAuth(id,b){ if(!b.dataset.ok){ b.dataset.ok='1'; const lb=b.textContent; b.textContent='¿Cancelar autorización?'; setTimeout(()=>{ if(b.isConnected){ delete b.dataset.ok; b.textContent=lb; } },4000); return; } agChange('quirofano',id,{aut:null},'Autorización cancelada (en espera de autorización)'); say('Autorización cancelada: vuelve a esperar autorización.','ok'); }
 function delEntry(t,id,b){ if(!b.dataset.ok){ b.dataset.ok='1'; const lb=b.textContent; b.textContent='¿Seguro?'; setTimeout(()=>{ if(b.isConnected){ delete b.dataset.ok; b.textContent=lb; } },4000); return; } agChange(t,id,{},t==='quirofano'?'Quitado de la programación':'Quitado del comité','del'); say(t==='quirofano'?'Paciente quitado de la programación.':'Entrada borrada.','ok'); }
+const SUG={quirofanonoaut:['FALTA VALORACIÓN PREOPERATORIA','ESTUDIOS INCOMPLETOS','EXPEDIENTE INCOMPLETO','FALTA DE TIEMPO QUIRÚRGICO','FALTA DE MATERIAL O INSUMOS','FALTA DE HEMODERIVADOS','SIN CAMA EN TERAPIA INTENSIVA'],quirofanocan:['PACIENTE NO ACEPTA CIRUGÍA','CAMBIO DE PLAN TERAPÉUTICO','PROGRESIÓN DE LA ENFERMEDAD','REFERIDO A OTRA UNIDAD','ENTRADA DUPLICADA'],comitecan:['CAMBIO DE PLAN TERAPÉUTICO','REFERIDO A OTRA UNIDAD','PACIENTE PERDIDO EN SEGUIMIENTO','ENTRADA DUPLICADA'],comitenses:['FALTA REPORTE DE PATOLOGÍA','FALTAN ESTUDIOS DE IMAGEN','PACIENTE NO ACUDIÓ','ADSCRITO AUSENTE','FALTA DE TIEMPO EN LA SESIÓN']};
 function reasonAsk(t,id,k){ const e=AG[t].items[id]; if(!e) return; const C={noaut:['No autorizar','Motivo por el que no se autoriza','No autorizar','No autorizada: '],can:['Cancelar entrada','Motivo de la cancelación','Cancelar entrada','Entrada cancelada: '],nses:['No sesionado','Motivo por el que no se sesionó','Marcar no sesionado','No sesionado: ']}[k];
-  const d=dlg('dlgQxReason'); d.innerHTML=dlgShell(C[0],H(e.nombre)+' · Exp. '+H(e.exp),`<label class="qd-l req"><span>${C[1]}</span><textarea id="qrsT" rows="3"></textarea></label><p class="qd-msg" id="qrsM" role="alert"></p>`,`<button type="button" class="qx-btn" data-qd-x>Volver</button><button type="button" class="qx-btn pri" id="qrsOk">${C[2]}</button>`); show(d); setTimeout(()=>{ try{ d.querySelector('#qrsT').focus(); }catch(_){} },40);
+  const d=dlg('dlgQxReason'); d.innerHTML=dlgShell(C[0],H(e.nombre)+' · Exp. '+H(e.exp),`<label class="qd-l req"><span>${C[1]}</span><textarea id="qrsT" rows="3"></textarea></label><div class="qd-sug">${(SUG[t+k]||[]).map(x=>`<button type="button" data-sug>${H(x)}</button>`).join('')}</div><p class="qd-msg" id="qrsM" role="alert"></p>`,`<button type="button" class="qx-btn" data-qd-x>Volver</button><button type="button" class="qx-btn pri" id="qrsOk">${C[2]}</button>`); show(d); setTimeout(()=>{ try{ d.querySelector('#qrsT').focus(); }catch(_){} },40);
+  d.querySelectorAll('[data-sug]').forEach(b=>b.onclick=()=>{ const x=d.querySelector('#qrsT'); x.value=b.textContent; x.focus(); });
   d.querySelector('#qrsOk').onclick=()=>{ const m=up(d.querySelector('#qrsT').value); if(!m){ d.querySelector('#qrsM').textContent='Escribe el motivo.'; return; } const set={}; set[k]={motivo:m}; agChange(t,id,set,C[3]+m); d.close(); say(C[0]+' · listo.','ok'); }; }
 async function openFile(exp){ const f=fileByExp(exp); if(!f){ say('No se encontró el expediente '+exp+' en Drive.','warn'); return; } try{ if(window.arWinOpen) arWinOpen(f.id); else openDriveFile(f.id); }catch(e){ say('No se pudo abrir: '+(typeof friendly==='function'?friendly(e):e.message),'warn'); } }
 
@@ -19611,7 +19824,7 @@ addEventListener('resize',()=>{ try{ cenNavPlace(); }catch(_){} try{ revSide(); 
 function renderAll(){ try{ if(V.view&&document.body.classList.contains('pp-browse')) renderView(); }catch(e){ try{ console.error(e); }catch(_){} } try{ navSync(); }catch(_){} try{ solButtons(); }catch(_){} }
 window.HJM_QX={noteSaved,askFromSol,openAdd,openEntry,solEntry,navGo,agenda:AG,reload:()=>{ agLoad('quirofano',true); agLoad('comite',true); }};
 navBuild();
-let fr=0; new MutationObserver(()=>{ if(fr) return; fr=requestAnimationFrame(()=>{ fr=0; try{ bedColors(); }catch(_){} try{ solButtons(); }catch(_){} try{ revSide(); }catch(_){} try{ cenNavPlace(); }catch(_){} try{ navSync(); }catch(_){} }); }).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+let fr=0; new MutationObserver(()=>{ if(fr) return; fr=requestAnimationFrame(()=>{ fr=0; try{ bedColors(); }catch(_){} try{ hxSync(); }catch(_){} try{ solButtons(); }catch(_){} try{ revSide(); }catch(_){} try{ cenNavPlace(); }catch(_){} try{ navSync(); }catch(_){} }); }).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
 let lastLog=false;
 setInterval(()=>{ const on=logged(); if(on&&!lastLog){ agLoad('quirofano'); agLoad('comite'); ['quirofano','comite'].forEach(agFlush); } lastLog=on; navSync(); },1500);
 setInterval(()=>{ if(!logged()||document.hidden) return; const vis=V.view&&document.body.classList.contains('pp-browse'); ['quirofano','comite'].forEach(t=>{ if(AG[t].q.length) agFlush(t); if(vis||Date.now()-AG[t].at>180000) agLoad(t); }); },45000);
