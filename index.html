@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.44">
+<meta name="application-version" content="9.45">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2756,7 +2756,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.44 · Fecha de publicación: 16.11.26</div>
+  <div class="app-footer-version">Versión 9.45 · Fecha de publicación: 16.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -9592,7 +9592,7 @@ function buildBlankPage(key,override){
     const tx=document.createElementNS(NS,"text"), base=it.y+0.905*it.s;   // línea base = borde superior + ascenso de Arial
     tx.setAttribute("class",it.b?"b":""); tx.setAttribute("font-size",it.s); if(it.ls) tx.style.letterSpacing=it.ls+"pt";
     const surgical=SURGICAL_TEXT_KEYS.has(key);
-    if(surgical){tx.setAttribute("font-size",SURGICAL_TEXT_SIZE);tx.dataset.surgicalFont="1";const cell=BUILT[key]?.querySelector('.c[data-c="'+it.ref+'"]');if(cell?.dataset.readable==="diagnosis")tx.dataset.surgicalDiagnosis="1";}
+    if(surgical){tx.setAttribute("font-size",SURGICAL_TEXT_SIZE);tx.dataset.surgicalFont="1";const cell=BUILT[key]?.querySelector('.c[data-c="'+it.ref+'"]');if(cell?.dataset.readable==="diagnosis"){tx.dataset.surgicalDiagnosis="1";tx.dataset.ref=it.ref;}}
     tx.dataset.s=surgical?SURGICAL_TEXT_SIZE:it.s; tx.dataset.base=base;
     if(it.ml){ tx.dataset.ml="1"; tx.dataset.cx=it.cx; tx.dataset.w=it.w||330; tx.dataset.hmax=it.hmax; tx.dataset.txt=String(txt).replace(/\s*\n\s*/g," "); tx.setAttribute("text-anchor","middle"); }
     else if(it.block){ tx.dataset.blk="1"; tx.dataset.lx=it.lx; tx.dataset.w=it.w; tx.dataset.h=it.h; tx.dataset.lh=it.lh; tx.dataset.txt=txt; }
@@ -9631,6 +9631,22 @@ function fitBlank(host){
     }
   });
 }
+/* Diagnóstico en blanco: misma distribución de renglones que la impresión normal */
+function blankDiagnosisLikePrint(host,key){
+  const NS="http://www.w3.org/2000/svg";
+  host.querySelectorAll('text[data-surgical-diagnosis][data-ref]').forEach(tx=>{
+    const cell=document.querySelector('#view-format .sheet .c[data-c="'+tx.dataset.ref+'"]')||BUILT[key]?.querySelector('.c[data-c="'+tx.dataset.ref+'"]');
+    if(!cell) return; try{ layoutDiagnosis(cell); }catch(_){}
+    const page=cell.closest('.sheet'), layer=cell.querySelector(':scope > .diagnosis-layout'); if(!page||!layer||!layer.children.length) return;
+    const pr=page.getBoundingClientRect(); if(!pr.width) return; const k=612/pr.width;
+    const center=cell.dataset.diagnosisCenter==='true';
+    tx.textContent=""; tx.removeAttribute("text-anchor");
+    [...layer.children].forEach(ln=>{ const r=ln.getBoundingClientRect(), fs=r.height*k; if(!fs) return;
+      const ts=document.createElementNS(NS,"tspan"); ts.setAttribute("font-size",fs);
+      ts.setAttribute("x",((center?r.left+r.width/2:r.left)-pr.left)*k); ts.setAttribute("text-anchor",center?"middle":"start");
+      ts.setAttribute("y",(r.top-pr.top)*k+0.8465*fs); ts.textContent=ln.textContent||" "; tx.appendChild(ts); });
+  });
+}
 function cleanBlank(){ document.body.classList.remove("printing-blank"); const h=$("blankPrint"); if(h){ h.replaceChildren(); h.removeAttribute("style"); } }
 function printBlank(){
   if(!current||!BLANKS[current]) return;
@@ -9638,7 +9654,7 @@ function printBlank(){
   renderFormat(current);
   const host=$("blankPrint"); host.replaceChildren(buildBlankPage(current));
   host.style.cssText="display:block;position:fixed;left:-9999px;top:0;width:8.5in;height:11in";
-  fitBlank(host); host.removeAttribute("style");
+  fitBlank(host); try{ blankDiagnosisLikePrint(host,current); }catch(_){} host.removeAttribute("style");
   document.body.classList.add("printing-blank");
   autoSaveOnPrint();
   window.print(); setTimeout(cleanBlank,600);
@@ -19014,7 +19030,7 @@ try{(function(){ const T=["Liberación automática de camas","Archivos de pacien
    c.classList.add("st-col"); if(OPEN.has(t)) c.classList.add("st-open"); h.setAttribute("role","button"); h.tabIndex=0;
    const tg=()=>{ c.classList.toggle("st-open"); if(c.classList.contains("st-open")) OPEN.add(t); else OPEN.delete(t); };
    h.addEventListener("click",tg); h.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); tg(); } }); }); }
- let fr=0; new MutationObserver(()=>{ if(fr) return; fr=requestAnimationFrame(()=>{ fr=0; fix(); }); }).observe(document.documentElement,{childList:true,subtree:true}); })();
+ let fr=0; const DS=document.getElementById("dlgStats"); if(DS){ new MutationObserver(()=>{ if(fr) return; fr=requestAnimationFrame(()=>{ fr=0; fix(DS); }); }).observe(DS,{childList:true,subtree:true}); fix(DS); } })();
 }catch(e){try{console.error(e);}catch(_){}}
 ;
 /* hjm-modulos */
@@ -19360,7 +19376,7 @@ function sheetSync(){ if(window.__hjmChildFormat) return; const m=$i('view-data'
   if(bar.parentNode!==m||m.firstElementChild!==bar) m.prepend(bar); bar.hidden=false;
   const q=id=>String(($i(id)||{}).value||'').trim(), nm=q('nombreCompleto')||[q('apPaterno'),q('apMaterno'),q('nombres')].filter(Boolean).join(' ')||'Paciente nuevo', sub=[q('expediente')?'Exp. '+q('expediente'):'',q('cama')?'Cama '+q('cama'):''].filter(Boolean).join(' · ')||'Hoja de datos';
   const tb=bar.querySelector('b'), ts=bar.querySelector('span'); if(tb.textContent!==nm) tb.textContent=nm; if(ts.textContent!==sub) ts.textContent=sub; }
-try{ new MutationObserver(()=>{ clearTimeout(sheetSync._t); sheetSync._t=setTimeout(()=>{ try{ sheetSync(); }catch(_){} },80); }).observe(document.body,{attributes:true,attributeFilter:['class'],childList:true}); document.addEventListener('input',()=>{ clearTimeout(sheetSync._t); sheetSync._t=setTimeout(()=>{ try{ sheetSync(); }catch(_){} },150); },true); }catch(_){}
+try{ document.addEventListener('input',()=>{ clearTimeout(sheetSync._t); sheetSync._t=setTimeout(()=>{ try{ sheetSync(); }catch(_){} },150); },true); }catch(_){}
 const HX={cur:null};
 function hxSync(){ const l=$i('ppList'); if(!l) return; const on=false; if(l.classList.contains('hx')!==on) l.classList.toggle('hx',on);
   const rows=[...l.children].filter(r=>r.classList.contains('dlg-item')&&r.dataset.id&&!r.hidden&&r.style.display!=='none'); let ph=[...l.children].find(c=>c.classList.contains('hx-ph'));
