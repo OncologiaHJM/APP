@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.45">
+<meta name="application-version" content="9.46">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2756,7 +2756,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.45 · Fecha de publicación: 16.11.26</div>
+  <div class="app-footer-version">Versión 9.46 · Fecha de publicación: 16.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -2912,8 +2912,7 @@ html body:not(.pp-browse) #pPanel #ppBody{max-width:100%;min-width:0}
 
 /* ===== v3.15 · Censos ===== */
 #cenWrap[hidden]{display:none!important}
-#cenWrap{--cen-bg:var(--rd-surface,#fff);--cen-ink:var(--rd-ink,#1C1E21);--cen-mute:var(--rd-mute,#797C7E);--cen-line:var(--rd-line2,#C9CBCD);--cen-head:#D9DADB;--cen-tint:var(--rd-tint,#EDF1F4);
-  background:var(--cen-bg);color:var(--cen-ink);border:1px solid var(--rd-line,#E7E8E9);border-radius:22px;overflow:hidden;font-family:var(--rd-sans,system-ui,sans-serif)}
+#cenWrap{--cen-bg:var(--rd-surface,#fff);--cen-ink:var(--rd-ink,#1C1E21);--cen-mute:var(--rd-mute,#797C7E);--cen-line:var(--rd-line2,#C9CBCD);--cen-head:#D9DADB;--cen-tint:var(--rd-tint,#EDF1F4);color:var(--cen-ink);border:1px solid var(--rd-line,#E7E8E9);border-radius:22px;overflow:hidden;font-family:var(--rd-sans,system-ui,sans-serif)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #cenWrap{--cen-head:#3A3C3E}}
 :root[data-theme="dark"] #cenWrap{--cen-head:#3A3C3E}
 html body.pp-browse #pPanel.cen-on #ppList,html body.pp-browse #pPanel.pp-xl.cen-on #ppList.pp-list,html body.pp-browse #pPanel.cen-on .pp-more-wrap,html body.pp-browse #pPanel.cen-on #ppPrev,html body.pp-browse #pPanel.cen-on #ppNext{display:none!important}
@@ -2924,13 +2923,13 @@ html body.pp-browse #pPanel.cen-on #cenWrap{display:block}
 .cen-btn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .cen-btn:disabled{opacity:.5;cursor:default}
 .cen-scroll{overflow:auto;-webkit-overflow-scrolling:touch}
-table.cen{border-collapse:collapse;table-layout:fixed;width:max-content;font:400 12px/1.25 "HJM Calibri",Calibri,Carlito,var(--rd-sans,system-ui),sans-serif}
+table.cen{border-collapse:collapse;table-layout:fixed;font:400 12px/1.25 "HJM Calibri",Calibri,Carlito,var(--rd-sans,system-ui),sans-serif}
 table.cen th,table.cen td{border:1px solid var(--cen-line);text-align:center;vertical-align:middle;position:relative;word-break:break-word}
 table.cen thead th{background:var(--cen-head);font-weight:700;position:sticky;top:0;z-index:2;text-transform:uppercase}
 table.cen thead tr.t1 th{top:0}
 table.cen thead tr.t2 th{top:25px}
 table.cen tr.nuevo td{font-weight:700}
-table.cen tr.sec td{background:var(--cen-head);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+table.cen tr.sec td{font-weight:700;text-transform:uppercase;letter-spacing:.04em}
 table.cen tr.res td{font-weight:700;background:var(--cen-tint)}
 table.cen td.l{text-align:left}
 table.cen td.ro{background:color-mix(in srgb,var(--cen-tint) 55%,transparent)}
@@ -2968,7 +2967,7 @@ table.cenlist th{color:var(--cen-mute);font-weight:600;font-size:12px;text-trans
 table.cenlist td.a{text-align:right;white-space:nowrap}
 table.cenlist td.a .cen-btn{margin-left:6px}
 /* Identificación · Censo */
-.cen-det{grid-column:1/-1;border:1px solid var(--line,#D8DADC);border-radius:10px;padding:0 12px;background:var(--bg,transparent)}
+.cen-det{grid-column:1/-1;border-radius:10px;padding:0 12px}
 .cen-det>summary{cursor:pointer;font-weight:700;padding:10px 0;list-style:none;display:flex;align-items:center;gap:8px}
 .cen-det>summary::-webkit-details-marker{display:none}
 .cen-det>summary::before{content:"›";display:inline-block;transition:transform .15s;font-size:18px;line-height:1}
@@ -3021,7 +3020,7 @@ dialog.cen-add #caHost fieldset{display:block;border:0;padding:0;margin:0}
 @media (max-width:620px){.f.s2{grid-column:1/-1}}
 /* móvil / Z Fold: misma tabla ancha con scroll horizontal */
 #cenWrap .cen-scroll,#cenWrap .cen-rev{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
-#cenWrap table.cen{display:table;width:max-content}
+#cenWrap table.cen{display:table}
 #cenWrap table.rev{display:table;width:561px}
 @media (max-width:767px){#cenWrap{max-width:100vw;min-width:0}}
 .pp-view-btns{max-width:100%;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
@@ -3047,7 +3046,6 @@ dialog.cen-hd .ca-foot{position:static}
 /* 3 puntos: columna fija a la izquierda, siempre visible, color acento */
 table.cen th.kbc,table.cen td.kbc{width:34px;min-width:34px;padding:0;border:0;background:transparent;text-align:center;position:relative}
 table.cen td.kbc .kb,table.cen td.kbc .kb.pp-kebab{position:static!important;display:inline-flex!important;align-items:center;justify-content:center;border:0;background:color-mix(in srgb,#1F6FB5 14%,transparent);cursor:pointer;opacity:1}
-table.cen td.kbc .kb:hover{background:color-mix(in srgb,#1F6FB5 28%,transparent)!important}
 table.cen td.kbc .kb svg{fill:currentColor}
 /* ventana Censos */
 dialog.cen-ld{width:min(96vw,820px)}
@@ -3208,9 +3206,9 @@ html body.pp-browse #pPanel #ppList .dlg-item,html body.pp-browse #pPanel #ppLis
 table.cen td.kbc .kbs{display:inline-block;width:22px;height:22px}
 
 /* v3.16 · botón copiar en Hospitalizados */
-html body #pPanel #ppList .cpy{display:none;vertical-align:middle;align-items:center;justify-content:center;margin:0 4px 0 3px;color:var(--cen-mute,#7a8794);cursor:pointer;flex:0 0 auto}
+html body #pPanel #ppList .cpy{display:none;vertical-align:middle;align-items:center;justify-content:center;margin:0 4px 0 3px;cursor:pointer;flex:0 0 auto}
 html body.pp-browse #pPanel #ppList .cpy{display:inline-flex}
-html body #pPanel #ppList .cpy:hover{opacity:1;background:color-mix(in srgb,var(--cen-acc,#2a6f97) 16%,transparent);color:var(--cen-acc,#2a6f97)}
+html body #pPanel #ppList .cpy:hover{opacity:1;color:var(--cen-acc,#2a6f97)}
 html body #pPanel #ppList .cpy.ok{opacity:1}
 html body #pPanel #ppList [data-fn]:empty + .cpy{display:none}
 html body #pPanel #ppList .tgw:has([data-fn]:empty){display:none}
@@ -3264,7 +3262,7 @@ table.cen td:has(>textarea):focus-within,table.rev td:has(>textarea):focus-withi
 .cen-chip small{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--cen-mute,#6B6F73)}
 .cen-chip b{font-weight:800}
 .cen-chips[hidden]{display:none}
-#cenAlert{flex:1 0 100%;order:3;margin-top:8px;display:flex;flex-wrap:wrap;gap:2px 8px;align-items:center;margin-top:6px;padding:5px 10px;border-radius:9px;background:#FFF4D6;border:1px solid #E0A800;color:#6B4B00;font:600 12px/1.35 system-ui,sans-serif}
+#cenAlert{flex:1 0 100%;order:3;display:flex;flex-wrap:wrap;gap:2px 8px;align-items:center;margin-top:6px;padding:5px 10px;border-radius:9px;background:#FFF4D6;border:1px solid #E0A800;color:#6B4B00;font:600 12px/1.35 system-ui,sans-serif}
 #cenAlert::before{content:"!";display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#E0A800;color:#fff;font-weight:900;font-size:11px;flex:0 0 auto}
 #cenAlert[hidden]{display:none}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #cenAlert{background:#3a3010;border-color:#a37d00;color:#f3d68a}}
@@ -3932,7 +3930,7 @@ html body .top .brand p{display:none}
 html body .top h1{width:auto;margin:0;font:400 clamp(23px,2.5vw,31px)/1.05 var(--rd-serif);letter-spacing:-.005em;color:var(--rd-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 html body .top .credit{order:3;margin:0 0 0 auto;padding:0;border:0;text-align:right;width:auto}
 html body .top .credit p{display:inline-flex;align-items:center;margin:0}
-html body .top .credit .credit-name{font:600 13px/1 var(--rd-sans);color:var(--rd-ink2);opacity:1}
+html body .top .credit .credit-name{opacity:1}
 html body .top .credit .credit-name::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--rd-accent)}
 html body .top .seal,html body .top>.seal.crab{display:block;border:1px solid var(--rd-line);border-radius:50%;background:#fff;box-shadow:none;transition:none;transform:none}
 html body .top>.seal.crab{order:4}
@@ -3948,7 +3946,6 @@ html body .band .band-meta{font:500 12.5px/1.35 var(--rd-sans);color:var(--rd-mu
 html body .band .band-btn{min-height:38px;padding:0 15px;border:1px solid var(--rd-line2);border-radius:999px;background:var(--rd-surface);color:var(--rd-ink);font-family:var(--rd-sans);font-size:13.5px;font-weight:600;line-height:1;box-shadow:none;transition:background .15s,border-color .15s,color .15s}
 html body .band .band-btn:hover,html body .band .band-btn:focus-visible{background:var(--rd-tint);border-color:var(--rd-line2);color:var(--rd-ink)}
 html body .band .band-btn .ic{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8}
-html body .band .band-btn#bandBack{background:var(--rd-surface);border-color:var(--rd-line2);color:var(--rd-ink)}
 html body.pp-browse .band #bandNew{display:inline-flex;align-items:center;gap:7px;background:var(--rd-inkbtn);border-color:var(--rd-inkbtn);color:var(--rd-on-ink);font-weight:650;box-shadow:none}
 html body.pp-browse .band #bandNew .ic{stroke:currentColor}
 html body.pp-browse .band #bandNew:hover,html body.pp-browse .band #bandNew:focus-visible{background:var(--rd-inkbtn);border-color:var(--rd-inkbtn);color:var(--rd-on-ink);opacity:.88}
@@ -3972,9 +3969,9 @@ html body .band .sync-n{background:var(--rd-inkbtn);color:var(--rd-on-ink)}
 @media (min-width:621px){ html body .band .sync-st{font-size:12.5px;min-height:34px;padding:0 13px 0 12px} }
 
 /* ───────── Ventana de usuario ───────── */
-html body #dlgResidentGate{width:min(92vw,424px);padding:0;border:1px solid var(--rd-line);border-radius:28px;background:var(--rd-surface);color:var(--rd-ink);box-shadow:0 40px 90px -24px rgba(20,22,24,.5),0 2px 8px rgba(20,22,24,.08);overflow:hidden}
+html body #dlgResidentGate{padding:0;border:1px solid var(--rd-line);border-radius:28px;background:var(--rd-surface);color:var(--rd-ink);box-shadow:0 40px 90px -24px rgba(20,22,24,.5),0 2px 8px rgba(20,22,24,.08);overflow:hidden}
 html body #dlgResidentGate::backdrop{background:var(--rd-scrim);-webkit-backdrop-filter:blur(16px) saturate(1.1);backdrop-filter:blur(16px) saturate(1.1)}
-html body #dlgResidentGate .resident-gate-head{display:grid;grid-template-columns:auto auto 1fr;background:transparent;color:var(--rd-ink)}
+html body #dlgResidentGate .resident-gate-head{display:grid;background:transparent;color:var(--rd-ink)}
 html body #dlgResidentGate .resident-gate-logo{border:1px solid var(--rd-line);border-radius:50%;background:#fff;box-shadow:none}
 html body #dlgResidentGate .resident-gate-logo:not(.crab){grid-area:hjm}
 html body #dlgResidentGate .resident-gate-logo.crab{grid-area:crab}
@@ -4008,7 +4005,7 @@ html body.pp-browse #pPanel{background:transparent;border:0;border-radius:0;box-
 html body.pp-browse #pPanel .pp-head{display:flex;flex-wrap:wrap;gap:16px 12px;padding:0 0 18px;background:transparent;color:var(--rd-ink);border:0}
 html body.pp-browse #pPanel .pp-head::after{content:"";order:5;flex:0 0 100%}
 html body.pp-browse #pPanel .pp-actions{display:contents}
-html body.pp-browse #pPanel .pp-head h2{order:1;margin:0;font:400 clamp(34px,4.4vw,48px)/1 var(--rd-serif);color:var(--rd-ink)}
+html body.pp-browse #pPanel .pp-head h2{order:1;margin:0;color:var(--rd-ink)}
 html body.pp-browse #pPanel .pp-count{order:2;flex:1 1 auto;align-self:flex-end;padding-bottom:6px;font:500 14px/1 var(--rd-sans);color:var(--rd-mute);font-variant-numeric:tabular-nums}
 html body.pp-browse #pPanel .pp-view-btns{order:3;display:inline-flex;gap:2px;padding:3px;margin:0;background:var(--rd-tint);border-radius:999px}
 html body.pp-browse #pPanel .pp-actions .pp-view-btns button{height:34px;padding:0 17px;border:0;border-radius:999px;background:transparent;color:var(--rd-ink2);font:600 13.5px/1 var(--rd-sans);transition:background .15s,color .15s}
@@ -4275,7 +4272,6 @@ html body .pop.info .pi{border-color:var(--rd-line2);border-top-color:var(--rd-i
 html body .pop.loading .pi{border-color:var(--rd-line2);border-top-color:var(--rd-ink)}
 html body .pop .pa{border-radius:999px;border-color:var(--rd-line2);background:var(--rd-surface);color:var(--rd-ink);font-family:var(--rd-sans);padding:6px 14px}
 html body .pop .pa:hover{background:var(--rd-tint)}
-html body .toast{background:var(--rd-inkbtn);color:var(--rd-on-ink);font-family:var(--rd-sans)}
 
 /* archivo clínico del paciente (expediente completo) */
 html body #view-archive .ar-shell{max-width:1280px}
@@ -5034,11 +5030,11 @@ html body #dlgResidentGate .resident-gate-legal .legal-platform{font-size:10.5px
 @media(max-width:480px){html body #dlgResidentGate .resident-gate-legal .legal-platform{font-size:clamp(6px,2.1vw,10px);white-space:nowrap;text-wrap:nowrap}}
 
 
-#dlgTechAdmin{width:min(92vw,460px);padding:0;border:0;background:#fff;color:#303132}
+#dlgTechAdmin{width:min(92vw,460px);padding:0}
 #dlgTechAdmin::backdrop{backdrop-filter:blur(4px)}
 #dlgTechAdmin .usr-form{display:grid;gap:12px;padding:18px}
-#dlgTechAdmin h3{margin:0;font-size:16px;color:#3A3B3B}
-#dlgTechAdmin label{display:grid;gap:4px;margin:0;font-size:12px;font-weight:700;color:#53565A}
+#dlgTechAdmin h3{margin:0;font-size:16px}
+#dlgTechAdmin label{display:grid;gap:4px;margin:0;font-size:12px;font-weight:700}
 #dlgTechAdmin input,#dlgTechAdmin select{font:inherit;font-size:14px;font-weight:500;padding:9px 11px;border:1px solid #D6D8DB;border-radius:10px;width:100%;box-sizing:border-box;background:#fff;color:#303132}
 #dlgTechAdmin{background:var(--rd-surface);color:var(--rd-ink);border:1px solid var(--hj-line);border-radius:20px;box-shadow:0 30px 80px -20px rgba(20,40,80,.45)}
 #dlgTechAdmin::backdrop{background:rgba(20,32,52,.5)}
@@ -5198,7 +5194,7 @@ html body.pp-browse #pPanel #ppSharedHead.pp-head{display:grid!important;grid-te
 html body.pp-browse #pPanel #ppSharedHead>*{margin:0!important;min-width:0}
 html body.pp-browse #pPanel #ppSharedHead>.pp-actions{display:contents}
 html body.pp-browse #pPanel #ppSharedHead>.pp-actions>*{margin:0;min-width:0}
-html body.pp-browse #pPanel #ppSharedHead #ppHeaderTitle{grid-template-columns:max-content max-content minmax(0,1fr);align-items:center!important;min-width:0;align-self:center!important}
+html body.pp-browse #pPanel #ppSharedHead #ppHeaderTitle{align-items:center!important;min-width:0;align-self:center!important}
 html body.pp-browse #pPanel #ppSharedHead #ppHeaderTitle h2{grid-column:1!important;grid-row:1!important;margin:0!important;padding:0;line-height:1.1!important;white-space:nowrap!important}
 html body.pp-browse #pPanel #ppSharedHead #ppHeaderTitle h2::before{display:none!important}
 html body.pp-browse #pPanel #ppSharedHead #ppHeaderSummary{display:block;grid-column:1/3;grid-row:2;margin:0;min-width:0}
@@ -5209,7 +5205,7 @@ html body.pp-browse #pPanel #ppSharedHead #cenDateActions{display:flex!important
 html body.pp-browse #pPanel #ppSharedHead #cenChips{display:flex!important;gap:6px;align-items:center!important;flex-wrap:nowrap;margin:0}
 html body.pp-browse #pPanel #ppSharedHead .cen-chip{display:flex;align-items:baseline!important;flex-direction:row!important;gap:4px;margin:0;line-height:1.2!important;white-space:nowrap}
 html body.pp-browse #pPanel #ppSharedHead #cenEditBtn{height:28px;padding:0 8px;margin:0;font-size:11px;width:auto}
-html body.pp-browse #pPanel #ppSharedHead #cenAlert{display:flex;flex-direction:column;align-items:center;justify-content:center;justify-self:center!important;align-self:center;width:min(100%,370px);box-sizing:border-box;margin:0!important;border:1px solid #dfc6c9;border-radius:10px;background:#fbf0f1;color:#873b42;text-align:center;white-space:normal;line-height:1.3}
+html body.pp-browse #pPanel #ppSharedHead #cenAlert{display:flex;flex-direction:column;align-items:center;justify-content:center;justify-self:center!important;align-self:center;box-sizing:border-box;margin:0!important;border:1px solid #dfc6c9;border-radius:10px;background:#fbf0f1;color:#873b42;text-align:center;white-space:normal;line-height:1.3}
 html body.pp-browse #pPanel #ppSharedHead #cenAlert b,html body.pp-browse #pPanel #ppSharedHead #cenAlert span{display:block}
 html body.pp-browse #pPanel #ppSharedHead #ppHeaderNav{display:flex!important;align-items:center;justify-content:flex-end!important;min-width:0;min-height:34px;margin:0}
 html body.pp-browse #pPanel #ppSharedHead #ppHeaderUtility{display:flex;flex:1 1 auto;min-width:0;align-items:center;gap:5px;overflow:hidden}
@@ -5255,7 +5251,7 @@ html body.pp-browse #pPanel #ppSharedHead .cen-chip{font-size:11px;padding:3px 5
 }
 @media(max-width:650px){
 html body.pp-browse #pPanel #ppSharedHead.pp-head{gap:5px 6px!important;grid-template-columns:minmax(0,1fr) 36px 125px!important}
-html body.pp-browse #pPanel #ppSharedHead #ppHeaderTitle{grid-template-columns:max-content minmax(0,1fr);gap:0 7px}
+html body.pp-browse #pPanel #ppSharedHead #ppHeaderTitle{gap:0 7px}
 html body.pp-browse #pPanel #ppSharedHead #ppHeaderTitle h2{font-size:24px}
 html body.pp-browse #pPanel #ppSharedHead #cenDateActions{gap:3px!important}
 html body.pp-browse #pPanel #ppSharedHead .cen-chip{font-size:10px;padding:2px 3px;gap:2px!important}
@@ -5418,7 +5414,7 @@ html body #ppList.by-record .tags{gap:6px 10px}
 @media screen{
 html body #ppList .pp-frequent-launch{box-sizing:border-box;display:grid;place-items:center;padding:0;line-height:0}
 html body #ppList .pp-frequent-launch>svg{display:block;position:static;transform:none;margin:0;width:20px;height:20px;flex:none}
-html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed{grid-template-columns:60px minmax(0,1.2fr) minmax(0,1.4fr) 76px minmax(0,1fr) minmax(0,1.7fr) 38px 24px;gap:6px 10px;padding:14px!important}
+html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed{gap:6px 10px;padding:14px!important}
 html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed>.pinfo{display:contents!important}
 html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed .nmw{grid-area:name}
 html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed .tags{grid-area:exp}
@@ -5441,7 +5437,7 @@ html body #ppFrequentPop .pff-groups svg{flex:none}
 html body #ppFrequentPop .pff-arrow{margin-left:auto;font-size:21px}
 html body #ppFrequentPop .pff-title{min-height:28px}
 html body #ppFrequentPop [data-pff-back]{font:600 12px var(--rd-sans,system-ui);display:flex;align-items:center;gap:4px;color:#3c6b94}
-html body #ppWindowTabs{display:flex;flex:1 0 100%;order:5;padding-top:3px;overflow-x:auto;scrollbar-width:thin;align-items:center;min-width:0}
+html body #ppWindowTabs{display:flex;flex:1 0 100%;order:5;padding-top:3px;overflow-x:auto;scrollbar-width:thin;min-width:0}
 html body #ppWindowTabs[hidden]{display:none!important}
 html body #ppWindowTabs button{flex:none;white-space:nowrap;border:1px solid var(--rd-line,#d1ddea);border-radius:9px;background:var(--rd-surface,#fff);color:var(--rd-mute,#59738b);padding:5px 10px;font:500 11px var(--rd-sans,system-ui);cursor:pointer}
 html body #ppWindowTabs button[aria-selected=true]{background:#e1edf9;color:#214e78;border-color:#92b2d2;font-weight:700}
@@ -6109,7 +6105,6 @@ html:root body #btnClear{background:var(--u-surf)!important;border-color:var(--u
 #dlgStats .ch-tbl{margin-top:8px;max-height:260px}
 #dlgStats #stBody,#dlgStats #stTab,#dlgStats .sv-main{grid-template-columns:minmax(0,1fr)}
 #dlgStats .sv-main>*,#dlgStats .st-grid2>*{min-width:0}
-html:root body #dlgStats .sv-nav{grid-template-columns:repeat(5,minmax(0,1fr))}
 #dlgStats .sv-nav .sv-s{display:none}
 @media (max-width:560px){#dlgStats .sv-nav .sv-l{display:none}#dlgStats .sv-nav .sv-s{display:inline}}
 @media (max-width:560px){#dlgStats .on-dn svg{max-width:210px;margin:0 auto;display:block}}
@@ -6915,7 +6910,6 @@ body.hjm-sheet #view-data .app-footer{display:none}
 .qx-calp.in{max-width:none;margin:0;box-shadow:0 8px 28px rgba(20,34,60,.09)}
 body.hjm-cara-a #cenWrap .cen-rev{display:none}
 body.hjm-cara-r #cenWrap .cen-scroll,body.hjm-cara-r #cenWrap .cen-exbar,body.hjm-cara-r #cenWrap .cen-cont{display:none}
-#cenToolbar.cen-grp{border:1px solid var(--hn-line,#DDE3EC)}
 #cenToolbar.cen-grp .cr-seg{display:inline-flex;background:#EEF2F8;gap:2px}
 #cenToolbar.cen-grp .cr-seg button{border:0;background:none;font:700 13.5px var(--rd-sans,system-ui);color:#44536A;cursor:pointer}
 #cenToolbar.cen-grp .cr-seg button[aria-pressed="true"]{background:#1F3864;color:#fff;box-shadow:0 1px 4px rgba(20,34,60,.25)}
