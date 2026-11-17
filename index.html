@@ -204,7 +204,7 @@ html body #dlgResidentGate .resident-gate-buttons [data-hjm-install]{flex:0 0 au
 .beta-acc-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 0;border-top:1px solid #E8E9EB}
 .beta-acc-row>div{flex:1 1 220px;min-width:0;display:grid}.beta-acc-row small{color:#7B7E81;overflow-wrap:anywhere}.beta-acc-row b{overflow-wrap:anywhere}
 .beta-acc-row .st-in{flex:1 1 200px;min-width:0}
-#dlgResidentGate.beta-gate[open]{margin:min(12vh,110px) auto auto!important;top:0!important;transform:none!important}
+#dlgResidentGate.beta-gate[open]{margin:min(12vh,110px) auto auto!important;top:0!important;transform:none!important}@media (max-width:900px){#dlgResidentGate.beta-gate[open]{position:fixed!important;inset:0!important;margin:auto!important;width:min(92vw,440px)!important;max-width:min(92vw,440px)!important;height:fit-content!important;max-height:calc(100dvh - 32px)!important}}
 #betaFinal{display:none}#dlgResidentGate.beta-denied #betaFinal{display:grid;justify-items:center;gap:6px}#dlgResidentGate.beta-denied #betaG,#dlgResidentGate.beta-denied #residentGateMsg,#dlgResidentGate.beta-denied #residentGateLegal{display:none!important}
 html body #dlgResidentGate .gate-final-title{margin:0;padding:6px 0 0;text-align:center;font:700 24px/1.25 var(--rd-sans,system-ui);color:var(--rd-ink,#1e2f44);letter-spacing:-.01em}
 html body #dlgResidentGate .gate-final-note{margin:0;text-align:center;font:500 11.5px/1.45 var(--rd-sans,system-ui);color:var(--rd-mute,#6a7e93)}
@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.52">
+<meta name="application-version" content="9.53">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2756,7 +2756,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.52 · Fecha de publicación: 17.11.26</div>
+  <div class="app-footer-version">Versión 9.53 · Fecha de publicación: 17.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -2768,6 +2768,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   <p><b>No es expediente clínico.</b> No es un expediente clínico electrónico ni sustituye al expediente físico, que continúa siendo el expediente oficial del paciente. Los documentos generados se imprimen, se firman y se integran al expediente conforme al procedimiento vigente.</p>
   <p><b>Datos de tu cuenta de Google.</b> Se accede con una cuenta de Google solo para verificar la identidad del usuario; la app únicamente recibe el correo, el nombre y la foto de perfil de esa cuenta y no solicita permisos adicionales sobre tus datos de Google.</p>
   <p><b>Información clínica.</b> Se guarda en la misma cuenta y en las mismas carpetas de Google Drive que la Jefatura de Oncología ya designó para los censos y los ingresos. No se agregan datos, finalidades ni proveedores de almacenamiento distintos de los que el Servicio ya utiliza. Esta página no guarda datos de pacientes ni de usuarios: funciona solo como un puente con Google Drive, protegido por los certificados de seguridad de Google, y no usa ningún servicio de almacenamiento nuevo. Al concentrar la información en una sola cuenta administrada por el Servicio de Oncología, ordena y homologa los datos, disminuye el riesgo de fuga de información (copias dispersas en cuentas o equipos personales) y permite una lectura más confiable para el análisis y la obtención de información del Servicio. Todo lo elaborado se imprime y se integra al expediente físico oficial. La información no se vende ni se comparte con terceros y se usa solo para fines asistenciales y de organización del Servicio.</p>
+  <p><b>Cuenta del Servicio.</b> La cuenta de Google y las carpetas de Google Drive donde se guarda la información pertenecen al Servicio de Oncología; ya existían y eran utilizadas por los integrantes del Servicio antes de esta aplicación. La aplicación no creó cuentas ni lugares de almacenamiento nuevos: solo organiza esa información y agrega control de acceso por usuario y registro de quién realiza cada acción. Cada usuario es responsable de la información que captura, modifica, imprime o comparte.</p>
   <p><b>Acceso.</b> Solo pueden entrar las cuentas autorizadas y ligadas a un usuario del Servicio. El acceso total corresponde únicamente a la Jefatura y al administrador técnico; los demás usuarios tienen acceso limitado a las funciones de su labor. Las acciones quedan registradas a nombre del usuario que inició sesión, y cualquier acceso puede retirarse en todo momento.</p>
   <p><b>Reglas de uso.</b> No compartas tu cuenta ni dejes la sesión abierta. Usa solo equipos del Servicio o equipos personales de los integrantes del Servicio. No extraigas información fuera de Drive (descargas, capturas, copias o envíos por otros medios) sin el consentimiento previo del Jefe del Servicio. Reporta de inmediato la pérdida o el robo de un dispositivo con acceso a la aplicación y cualquier acceso no autorizado o sospecha del mismo.</p>
   <p><b>Responsabilidad.</b> El uso de la aplicación es responsabilidad exclusiva de cada usuario que inicia sesión. Se ofrece tal cual, como prueba, sin garantía de disponibilidad, exactitud ni continuidad. Quienes la desarrollaron no asumen responsabilidad por el uso que se le dé, por la información capturada en ella ni por las decisiones clínicas o administrativas que se tomen con base en ella; verificar la información corresponde al personal que la utiliza.</p>
@@ -2932,6 +2933,10 @@ html body .qx-card .qx-c-act>[data-qe="auth"]:not(.ed):hover{background:#17663A!
 html body .qx-card .qx-c-act>[data-qe="noaut"]{grid-column:2!important;background:#C0392B!important;border-color:#C0392B!important;color:#fff!important}
 html body .qx-card .qx-c-act>[data-qe="noaut"]:hover{background:#A33024!important}
 html body .qx-card .qx-c-act>[data-qe="auth"] svg,html body .qx-card .qx-c-act>[data-qe="noaut"] svg{stroke:currentColor}
+/* Agregar a Quirófano/Comité: «Paciente nuevo» como renglón normal aunque la búsqueda no tenga resultados */
+html body #dlgQxAdd .qd-res{align-content:start!important;align-items:start!important;grid-auto-rows:min-content!important}
+html body #dlgQxAdd .qd-res>button.new{height:auto!important;min-height:52px!important;width:100%!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:10px!important;padding:12px 16px!important;text-align:left!important;white-space:normal!important;border:1.5px dashed #9DB6D6!important;border-radius:14px!important;background:#F5F9FE!important;color:#1F3864!important;font:650 14px/1.3 var(--rd-sans,system-ui)!important}
+html body #dlgQxAdd .qd-res>button.new svg{width:20px!important;height:20px!important;flex:none!important;stroke:currentColor;fill:none;stroke-width:2}
 /* Agenda (Quirófano y Comité): mismos colores de acción */
 html body .qx-c-act .qx-btn.bad{color:#B42318;border-color:#F4C7C2;background:#FEF3F2}
 html body .qx-c-act .qx-btn.bad:hover{background:#FDE4E1}
