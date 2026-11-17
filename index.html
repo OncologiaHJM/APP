@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.47">
+<meta name="application-version" content="9.49">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2756,7 +2756,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.47 · Fecha de publicación: 17.11.26</div>
+  <div class="app-footer-version">Versión 9.49 · Fecha de publicación: 17.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -2869,6 +2869,48 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
 <div id="clinicalPrint" aria-hidden="true"></div>
 
 <style id="hjm-estilos">
+/* Hospitalizados en Z Fold 7 desplegado (601–900 px): tarjeta en dos columnas simétricas
+   [cama] [nombre / expediente·FN·edad / diagnóstico] [adscrito·clínica·ingreso / pendientes] [acciones] */
+@media (min-width:601px) and (max-width:900px){
+ html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item{display:grid!important;grid-template-columns:62px minmax(0,1fr) minmax(0,1fr) 40px!important;grid-template-rows:auto auto 1fr!important;
+   grid-template-areas:"cama nom meta act" "cama tags meta act" "cama dx pend act"!important;column-gap:14px!important;row-gap:6px!important;align-items:start!important;padding:12px 12px 12px 14px!important;min-height:0!important}
+ html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item>.pinfo{display:contents!important}
+ html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item>.cama-badge{grid-area:cama!important;align-self:center!important;justify-self:center!important;margin:0!important}
+ html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item .nmw{grid-area:nom!important;width:auto!important;min-width:0!important;margin:0!important}
+ html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item .nmw b{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;display:block;min-width:0}
+ html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item .tags{grid-area:tags!important;display:flex!important;flex-wrap:wrap!important;gap:4px 12px!important;width:auto!important;margin:0!important}
+ html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item .tags .tag{white-space:nowrap!important}
+ html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item .tags .tgw{width:auto!important}
+ html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item small.dx{grid-area:dx!important;width:auto!important;margin:0!important;align-self:start!important;-webkit-line-clamp:3}
+ html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item .pmeta{grid-area:meta!important;display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:3px 10px!important;width:auto!important;margin:0!important;justify-content:flex-start!important}
+ html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item .pmeta .pm-ads{flex:1 1 100%!important;width:auto!important}
+ html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item .pmeta .pm-cl,html body #ppList .dlg-item .pmeta .pp-ing{width:auto!important;flex:0 1 auto!important}
+ html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item>.pp-pend{grid-area:pend!important;width:auto!important;margin:0!important;align-self:stretch!important}
+ html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item>.pp-row-actions{grid-area:act!important;display:flex!important;flex-direction:column!important;align-items:center!important;gap:8px!important;margin:0!important;padding-top:30px!important;align-self:start!important;position:static!important}
+ html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item>.pp-kebab{grid-area:act!important;align-self:start!important;justify-self:center!important;position:static!important;margin:0!important;z-index:1}
+ html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item .pmeta{flex-direction:column!important;align-items:flex-start!important;flex-wrap:nowrap!important;gap:3px!important}
+ html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item:not(.has-bed){grid-template-columns:minmax(0,1fr) minmax(0,1fr) 40px!important;grid-template-areas:"nom meta act" "tags meta act" "dx pend act"!important;padding-left:16px!important}
+ html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item .pmeta>*,html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item .pmeta .tag{position:static!important;transform:none!important;top:auto!important;left:auto!important;margin:0!important}
+ html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item .pmeta>*{text-align:left!important;justify-content:flex-start!important;align-items:center!important;margin:0!important}
+ html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item .pmeta .pm-ads{display:block!important;font-weight:700}
+ html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item .tags{flex-wrap:wrap!important;align-items:center!important}
+ html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item .tags .tag.cama{margin-left:0!important}
+ html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item .tags .tgw{flex:0 0 auto!important;max-width:none!important}
+ html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item small.dx{padding-left:0!important}
+}
+/* Agenda en PC: columnas fijas para que nombre, cirugía/diagnóstico, adscrito y estado queden alineados entre renglones; textos hasta 2 líneas */
+@media (min-width:1101px){
+ html:root body .qx-list.rows>.qx-row>.qx-rsel{display:grid!important;grid-template-columns:10px minmax(0,1fr) minmax(0,1.35fr) minmax(0,.85fr) 150px!important;align-items:center!important;column-gap:14px!important}
+ html:root body .qx-list.rows>.qx-row>.qx-rsel>em{justify-self:end!important}
+ html:root body .qx-list.rows>.qx-row>.qx-rsel>.cx>b,html:root body .qx-list.rows>.qx-row>.qx-rsel>.cx>small,html:root body .qx-list.rows>.qx-row>.qx-rsel>.cx{white-space:normal!important;text-overflow:clip!important;overflow:hidden!important;display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:2!important}
+ html:root body .qx-list.rows>.qx-row>.qx-rsel>.cx:has(b){display:flex!important;flex-direction:column!important;-webkit-line-clamp:unset!important;gap:2px}
+}
+/* Panel en móvil: periodos y pestañas en varias filas, sin quedar cortados a la derecha */
+@media (max-width:600px){
+ html:root body #dlgStats #stTab .st-per{display:flex!important;flex-wrap:wrap!important;overflow:visible!important;gap:6px!important}
+ html:root body #dlgStats #stTab .sv-nav{display:flex!important;flex-wrap:wrap!important;overflow:visible!important;gap:4px!important}
+ html:root body #dlgStats #stTab .sv-nav>button,html:root body #dlgStats #stTab .st-per>button{flex:0 0 auto!important}
+}
 /* Agenda (Quirófano y Comité): mismos colores de acción */
 html body .qx-c-act .qx-btn.bad{color:#B42318;border-color:#F4C7C2;background:#FEF3F2}
 html body .qx-c-act .qx-btn.bad:hover{background:#FDE4E1}
@@ -11660,6 +11702,8 @@ const histCap=t=>HIST_CAP[t]||HIST_MAX;
 let DELETED={};
 function canDeleteClinicalRecord(){return canPerm('borrar_documentos');}
 function canRestoreClinicalRecord(){return canPerm('restaurar_documentos');}
+/* Búsqueda: en móvil el texto de ayuda se acorta para que no se corte */
+(()=>{ const ps=document.getElementById("ppSearch"); if(!ps) return; const full=ps.getAttribute("placeholder")||"", mq=matchMedia("(max-width:600px)"); const set=()=>{ ps.placeholder=mq.matches?"Buscar paciente…":full; }; set(); try{ mq.addEventListener("change",set); }catch(_){} })();
 function histDelete(tp,id){if(!canDeleteClinicalRecord()||!HIST[tp])return;HIST[tp]=HIST[tp].filter(x=>x.id!==id);DELETED[id]=Date.now();if(tp==="notas")try{window.HJM_EXT&&HJM_EXT.notaDeleted&&HJM_EXT.notaDeleted(id);}catch(_){}}
 function saveAfterDelete(){const ex=($("expediente").value||"").trim();if(STORE==="drive"&&CAN_DRIVE&&ex&&ex===LOADED_EXP)driveSaveNow({silent:true}).catch(()=>{});else toast("Borrado. Se guarda con el paciente al presionar Guardar.");}
 const histEmpty=()=>({receta:[],interconsulta:[],rx:[],solCx:[],repCx:[],consInf:[],prequx:[],notas:[],indicaciones:[],altas:[]});
