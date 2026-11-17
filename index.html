@@ -174,7 +174,7 @@ try{if(child())return;const r=B.ses?userRecord(B.ses.usuario):null,nm=B.name(r);
 return B;})();
 
 /* v7.14 · Botón Instalar: solo PC, a la derecha a la altura del texto rojo */
-(function(){try{const st=document.createElement('style');st.textContent='.hjm-legal-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px}.hjm-legal-row>.legal-risk{grid-column:2;margin:0}.hjm-legal-row>.hjm-install-footer{grid-column:3;justify-self:end;padding:0!important}.hjm-install-footer{display:none!important}@media (min-width:1100px) and (hover:hover) and (pointer:fine){.hjm-install-footer:not(:has([hidden])){display:flex!important}}';document.head.appendChild(st);}catch(_){}
+(function(){try{const st=document.createElement('style');st.textContent='.hjm-legal-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px}.hjm-legal-row>.legal-risk{grid-column:2;margin:0}.hjm-legal-row>.hjm-install-footer{grid-column:3;justify-self:end;padding:0!important}.hjm-install-footer{display:none!important}.hjm-install-footer:not(:has([hidden])){display:flex!important}@media (max-width:1099px){.hjm-legal-row{grid-template-columns:1fr}.hjm-legal-row>.legal-risk{grid-column:1}.hjm-legal-row>.hjm-install-footer{grid-column:1;justify-self:center;margin-top:10px}}';document.head.appendChild(st);}catch(_){}
 setInterval(()=>{try{const w=document.querySelector('.hjm-install-footer'),lr=document.querySelector('.app-footer-legal .legal-risk');if(!w||!lr)return;let row=lr.parentElement;if(!row.classList.contains('hjm-legal-row')){row=document.createElement('div');row.className='hjm-legal-row';lr.before(row);row.append(lr);}if(w.parentElement!==row)row.append(w);}catch(_){}},1000);})();
 </script>
 <script src="https://accounts.google.com/gsi/client" async></script>
@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.49">
+<meta name="application-version" content="9.52">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2756,7 +2756,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.49 · Fecha de publicación: 17.11.26</div>
+  <div class="app-footer-version">Versión 9.52 · Fecha de publicación: 17.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -2772,7 +2772,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   <p><b>Reglas de uso.</b> No compartas tu cuenta ni dejes la sesión abierta. Usa solo equipos del Servicio o equipos personales de los integrantes del Servicio. No extraigas información fuera de Drive (descargas, capturas, copias o envíos por otros medios) sin el consentimiento previo del Jefe del Servicio. Reporta de inmediato la pérdida o el robo de un dispositivo con acceso a la aplicación y cualquier acceso no autorizado o sospecha del mismo.</p>
   <p><b>Responsabilidad.</b> El uso de la aplicación es responsabilidad exclusiva de cada usuario que inicia sesión. Se ofrece tal cual, como prueba, sin garantía de disponibilidad, exactitud ni continuidad. Quienes la desarrollaron no asumen responsabilidad por el uso que se le dé, por la información capturada en ella ni por las decisiones clínicas o administrativas que se tomen con base en ella; verificar la información corresponde al personal que la utiliza.</p>
   <p><b>Marco institucional.</b> Esta aplicación no sustituye ni modifica los lineamientos del Hospital Juárez de México ni la normatividad aplicable en materia de expediente clínico, protección de datos personales y seguridad de la información, a los que el Servicio y cada usuario continúan sujetos.</p>
-  <p>Para dudas o solicitudes sobre tus datos, escribe a oncociruhjm2024@gmail.com o acude a la Jefatura del Servicio de Oncología.</p>
+  <p>Para dudas o solicitudes sobre tus datos, escribe a oncociruhjm2024@gmail.com</p>
 </details>
   </footer>
 </main>
@@ -2875,7 +2875,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
  html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item{display:grid!important;grid-template-columns:62px minmax(0,1fr) minmax(0,1fr) 40px!important;grid-template-rows:auto auto 1fr!important;
    grid-template-areas:"cama nom meta act" "cama tags meta act" "cama dx pend act"!important;column-gap:14px!important;row-gap:6px!important;align-items:start!important;padding:12px 12px 12px 14px!important;min-height:0!important}
  html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item>.pinfo{display:contents!important}
- html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item>.cama-badge{grid-area:cama!important;align-self:center!important;justify-self:center!important;margin:0!important}
+ html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item>.cama-badge{grid-area:cama!important;align-self:start!important;justify-self:center!important;margin:2px 0 0!important;max-width:100%!important;white-space:nowrap!important;overflow:hidden!important}
  html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item .nmw{grid-area:nom!important;width:auto!important;min-width:0!important;margin:0!important}
  html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item .nmw b{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;display:block;min-width:0}
  html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item .tags{grid-area:tags!important;display:flex!important;flex-wrap:wrap!important;gap:4px 12px!important;width:auto!important;margin:0!important}
@@ -2911,6 +2911,27 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
  html:root body #dlgStats #stTab .sv-nav{display:flex!important;flex-wrap:wrap!important;overflow:visible!important;gap:4px!important}
  html:root body #dlgStats #stTab .sv-nav>button,html:root body #dlgStats #stTab .st-per>button{flex:0 0 auto!important}
 }
+/* Censo: aviso único de revisión (cargando / sin pendientes) */
+html body #cenWrap .cen-rv-wait,html body #cenWrap .cen-rv-okk{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin:0 0 10px;padding:9px 14px;border-radius:12px;font:500 12.5px/1.4 var(--rd-sans,system-ui)}
+html body #cenWrap .cen-rv-wait{background:#EEF4FA;border:1px solid #CBDCEE;color:#2B4A6B}
+html body #cenWrap .cen-rv-okk{background:#EEF8F1;border:1px solid #BFE3CB;color:#1E6B3A}
+html body #cenWrap .cen-rv-hint{display:block;width:100%;font:500 11.5px/1.3 var(--rd-sans,system-ui);color:#6B7785;margin-top:2px}
+/* Filtros Adscrito / Clínica de la agenda (mismo aspecto que en Hospitalizados) */
+html body #qxView .qx-filt{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) auto;gap:8px;align-items:center;margin:0 0 10px}
+html body #qxView .qx-filt:not(.on){grid-template-columns:repeat(2,minmax(0,1fr))}
+html body #qxView .qx-fsel{position:relative;display:flex;align-items:center;gap:8px;min-width:0;height:42px;padding:0 12px;border:1px solid #D3DAE4;border-radius:14px;background:#fff;cursor:pointer}
+html body #qxView .qx-fsel>span{flex:none;font:500 12px/1 var(--rd-sans,system-ui);color:#6B7785}
+html body #qxView .qx-fsel select{flex:1 1 auto;min-width:0;width:100%;height:100%;border:0;background:transparent;font:700 13.5px/1 var(--rd-sans,system-ui);color:#1F3864;text-overflow:ellipsis;cursor:pointer;outline:0}
+html body #qxView .qx-filt.on .qx-fsel:has(select:not([value=""])){border-color:#9DB6D6}
+html body #qxView .qx-fclr{height:42px;padding:0 14px;border:1px solid #F4C7C2;border-radius:999px;background:#FEF3F2;color:#B42318;font:650 12.5px/1 var(--rd-sans,system-ui);cursor:pointer;white-space:nowrap}
+@media (max-width:600px){ html body #qxView .qx-filt.on{grid-template-columns:repeat(2,minmax(0,1fr))} html body #qxView .qx-fclr{grid-column:1/-1;height:36px} }
+/* Quirófano: Autorizar (verde) y No autorizar (rojo) siempre juntos en la misma fila */
+html body .qx-card .qx-c-act>[data-qe="steps"]:has(~[data-qe="auth"]){grid-column:1/-1!important}
+html body .qx-card .qx-c-act>[data-qe="auth"]:not(.ed){grid-column:1!important;background:#1E7B45!important;border-color:#1E7B45!important;color:#fff!important}
+html body .qx-card .qx-c-act>[data-qe="auth"]:not(.ed):hover{background:#17663A!important}
+html body .qx-card .qx-c-act>[data-qe="noaut"]{grid-column:2!important;background:#C0392B!important;border-color:#C0392B!important;color:#fff!important}
+html body .qx-card .qx-c-act>[data-qe="noaut"]:hover{background:#A33024!important}
+html body .qx-card .qx-c-act>[data-qe="auth"] svg,html body .qx-card .qx-c-act>[data-qe="noaut"] svg{stroke:currentColor}
 /* Agenda (Quirófano y Comité): mismos colores de acción */
 html body .qx-c-act .qx-btn.bad{color:#B42318;border-color:#F4C7C2;background:#FEF3F2}
 html body .qx-c-act .qx-btn.bad:hover{background:#FDE4E1}
@@ -12794,11 +12815,11 @@ const cenRvKey=x=>x.cat+"|"+((x.r&&(x.r.exp||x.r.k))||x.txt);
 
 
 const CEN_RV_BTN={"Cama repetida":"Cambiar cama","Paciente repetido":"Revisar paciente","Sin cama":"Asignar cama","Defunción sin egreso":"Revisar datos","Sin expediente":"Capturar expediente","Sin clínica":"Asignar clínica","Sin adscrito":"Asignar adscrito","Sin diagnóstico":"Capturar diagnóstico","Sin fecha de ingreso":"Capturar fecha de ingreso","Fecha de ingreso inválida":"Corregir fecha de ingreso","Fecha de ingreso futura":"Corregir fecha de ingreso","Marcado ALTA":"Cambiar estatus","INGRESO antiguo":"Cambiar estatus","Egreso con cama ocupada":"Revisar datos"};
-function cenRevisaHTML(per,cen){
-  let L=[]; try{ L=cenRevisa(per,cen); }catch(_){ return ""; } CEN._rv=L; if(!L.length) return "";
+function cenRevisaHTML(per,cen,extra){
+  let L=[]; try{ L=cenRevisa(per,cen); }catch(_){ L=[]; } L=(extra||[]).concat(L).sort((a,b)=>b.lv-a.lv); CEN._rv=L; if(!L.length) return `<div class="cen-rv cen-rv-okk" role="status"><b>✓ Censo revisado</b><span>Sin datos por corregir.</span></div>`;
   const w=accessCensusWrite(), n3=L.filter(x=>x.lv===3).length, n2=L.length-n3, show=L.filter(x=>!CENRV.lv||x.lv===CENRV.lv);
   const chip=(lv,n,t)=>n?`<button type="button" class="cen-rv-c cen-rv${lv}" data-rvlv="${lv}" aria-pressed="${CENRV.lv===lv&&!!CEN._rvOpen}"><i>${n}</i>${t}</button>`:"";
-  const btns=(x,i)=>{ const b=[]; if(!w||!x.r) return "";
+  const btns=(x,i)=>{ const b=[]; if(x.bh) return w?x.bh:""; if(!w||!x.r) return "";
     if(x.qa){ const lb={alta:"Registrar alta",ce:"Liberar cama (CE)",rip:"Liberar cama (RIP)"}[x.qa], armed=CENRV.arm===cenRvKey(x), dn=CENRV.done&&CENRV.done.has(cenRvKey(x)); b.push(`<button type="button" class="cen-rv-btn cen-rv-q${armed?" cen-rv-arm":""}" data-rvqa="${i}"${dn?" disabled":""}>${dn?"Guardando…":armed?"¿Seguro? toca otra vez":lb}</button>`); }
     if(x.r.k) b.push(`<button type="button" class="cen-rv-btn" data-rvedit="${i}">${esc(CEN_RV_BTN[x.cat]||"Corregir")}</button>`); return b.join(""); };
   /* v8.16 · un renglón por paciente: todos sus problemas juntos y un botón por cada cosa que le falta */
@@ -12809,7 +12830,7 @@ function cenRevisaHTML(per,cen){
     if(a.length===1&&!x0.r) return `<li class="cen-rv${lv}"><div class="cen-rv-tx"><em>${esc(x0.cat)}</em><span>${esc(x0.txt)}</span>${x0.act?`<small>${esc(x0.act)}</small>`:""}</div><div class="cen-rv-b">${btns(x0,L.indexOf(x0))}</div></li>`;
     const seen=new Set(), bt=a.map(x=>{ const h=btns(x,L.indexOf(x)); return h.split(/(?=<button)/).filter(b=>{ const t=b.replace(/<[^>]+>/g,"").trim(); if(!t||seen.has(t)) return false; seen.add(t); return true; }).join(""); }).join("");
     return `<li class="cen-rv${lv}"><div class="cen-rv-tx"><b class="cen-rv-pt">${esc(head(x0.r))}</b><ul class="cen-rv-pl">${a.map(x=>`<li><em class="${x.lv===3?"cen-rv-e3":""}">${esc(x.cat)}</em><span>${esc(strip(x))}</span></li>`).join("")}</ul></div><div class="cen-rv-b">${bt}</div></li>`; }).join("");
-  return `<details class="cen-rv" data-rvbox${CEN._rvOpen?" open":""}><summary><b>Revisar datos del censo</b><span class="cen-rv-sum">${chip(3,n3,"por corregir")}${chip(2,n2,"incompletos")}</span></summary><ul class="cen-rv-l">${items}</ul></details>`;
+  return `<details class="cen-rv" data-rvbox${CEN._rvOpen?" open":""}><summary><b>Revisar datos del censo</b><span class="cen-rv-sum">${chip(3,n3,n3===1?"error":"errores")}${chip(2,n2,n2===1?"dato incompleto":"datos incompletos")}</span><small class="cen-rv-hint">Toca para ver cada paciente y corregirlo con su botón</small></summary><ul class="cen-rv-l">${items}</ul></details>`;
 }
 try{(function(){
   const rr=()=>{ try{ cenRender(); }catch(_){} }, get=i=>(CEN._rv||[])[+i];
@@ -12833,10 +12854,24 @@ try{(function(){
 })();
 }catch(e){try{console.error(e);}catch(_){}}
 function cenContHTML(per,cen){
-  const S=cenSinPrevioHTML(per,cen)+cenRevisaHTML(per,cen);
-  const L=cenContinuidad(per,cen); CEN._cont=L; if(!L.length||(typeof isTechnicalAdmin==="function"&&!isTechnicalAdmin())) return S;
-  const pv=cenDay(per.next.y,per.next.m,per.next.d,-1);
-  return `<div class="cen-cont" role="alert"><b>Revisar: ${L.length} paciente(s) del censo anterior (${cenDot(pv)}) ya no aparecen en este censo y no tienen alta ni defunción registrada.</b><ul>${L.map((x,i)=>`<li><span>${esc((x.p.cama?x.p.cama+" · ":"")+x.p.nombre)} · Exp. ${esc(x.p.exp)}${x.f?" · cama actual: "+esc(String((x.f.meta&&x.f.meta.cama)||"vacía"))+(((ppRowS(x.f)||{}).camaLiberada)?" (cama liberada a CE, sin alta)":""):" · sin expediente en la app"}</span>${x.f&&accessCensusWrite()?`<button type="button" class="cen-btn" data-contalta="${i}">Registrar alta</button>`:""}${!x.f&&x.p.exp&&x.p.nombre&&accessCensusWrite()?`<button type="button" class="cen-btn" data-contnew="${i}">Crear paciente</button>`:""}</li>`).join("")}</ul><small>Si salieron del servicio, registra el alta para que aparezcan en ALTAS. Si siguen hospitalizados, corrige su cama en Hospitalizados. Si no tienen expediente en la app, «Crear paciente» abre Agregar Paciente con los datos del censo anterior.</small></div>`+S;
+  /* Los avisos se calculan solo con todo cargado (censo anterior, pacientes y sus datos); mientras, un solo aviso neutro.
+     Así no aparece un número provisional que cambia al terminar de cargar. */
+  const fecha=cenDot(per.next), pvName=cenFile(cenDay(per.next.y,per.next.m,per.next.d,-1));
+  const ready=CEN._rvReady===fecha||(CEN.prevSets&&CEN.prevSets.has(pvName)&&CEN.prevSets.get(pvName)!==undefined&&(typeof DRIVE_FILES!=="undefined"&&DRIVE_FILES.length>0)&&!(cen.pac||[]).some(r=>!r.ok));
+  if(!ready) return `<div class="cen-rv cen-rv-wait" role="status"><b>Revisando el censo…</b><span>Los avisos aparecen al terminar de cargar a todos los pacientes y el censo anterior.</span></div>`;
+  CEN._rvReady=fecha;
+  const pv=cenDot(cenDay(per.next.y,per.next.m,per.next.d,-1)), w=accessCensusWrite(), extra=[];
+  const C=cenContinuidad(per,cen); CEN._cont=C;
+  if(typeof isTechnicalAdmin!=="function"||isTechnicalAdmin()) C.forEach((x,i)=>extra.push({lv:3,cat:"Salió sin alta",r:null,qa:"",
+    txt:`${(x.p.cama?x.p.cama+" · ":"")+x.p.nombre} · Exp. ${x.p.exp}: estaba en el censo del ${pv} y ya no aparece; no tiene alta ni defunción.`,
+    act:x.f?"Si ya se fue, registra su alta (saldrá en ALTAS). Si sigue internado, corrige su cama en Hospitalizados.":"No tiene expediente en la app: créalo con los datos del censo anterior.",
+    bh:x.f?`<button type="button" class="cen-rv-btn cen-rv-q" data-contalta="${i}">Registrar alta</button>`:(x.p.exp&&x.p.nombre?`<button type="button" class="cen-rv-btn" data-contnew="${i}">Crear paciente</button>`:"")}));
+  const P=cenSinPrevio(per,cen); CEN._sinp=P;
+  P.forEach((x,i)=>extra.push({lv:2,cat:"Ingreso sin registrar",r:null,qa:"",
+    txt:`${(x.r.cama?x.r.cama+" · ":"")+(x.r.nombre||"")} · Exp. ${x.r.exp}: está hospitalizado, pero no estaba en el censo del ${pv} y ${x.r.ing?"su ingreso ("+x.r.ing+") no cae en esta guardia":"no tiene fecha de ingreso"}.`,
+    act:"Si es ingreso nuevo, captura su fecha de ingreso o marca INGRESO en estatus. Si ya no está, libera su cama.",
+    bh:(x.f?`<button type="button" class="cen-rv-btn cen-rv-q" data-sinpalta="${i}">No está · liberar cama</button>`:"")+`<button type="button" class="cen-rv-btn" data-sinpok="${i}">Sí está hospitalizado</button>`}));
+  return cenRevisaHTML(per,cen,extra);
 }
 try{document.addEventListener("click",e=>{ const b=e.target&&e.target.closest&&e.target.closest("[data-contalta]"); if(!b) return; const x=(CEN._cont||[])[+b.dataset.contalta]; if(!x||!x.f||!accessCensusWrite()) return;
   b.disabled=true; b.textContent="Registrando…"; const now0=Date.now(), prev=String(x.p.cama||"").trim().toUpperCase();
@@ -19456,8 +19491,15 @@ function viewEnsure(){ let v=$i('qxView'); if(v) return v; v=document.createElem
   v.addEventListener('click',viewClick); v.addEventListener('change',viewChange); return v; }
 const T=k=>k==='qx'?'quirofano':'comite';
 function monthOf(st){ if(!st.m){ const d=pDMY(st.sel)||new Date(); st.m={y:d.getFullYear(),m:d.getMonth()}; } return st.m; }
+/* Filtros Adscrito y Clínica de Quirófano y Comité: aplican al día, a la semana y a la vista de mes */
+const adsK=e=>String(e&&e.ads||'').replace(/\s+/g,' ').trim().toUpperCase();
+function agF(st,es){ return es.filter(e=>(!st.fad||adsK(e)===st.fad)&&(!st.fcl||clinOf(e.clin).k===st.fcl)); }
+function filtHTML(k){ const st=V[k], t=T(k), ads=[...new Set(list(t).map(adsK).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+  if(st.fad&&!ads.includes(st.fad)) ads.unshift(st.fad);
+  const on=!!(st.fad||st.fcl);
+  return `<div class="qx-filt${on?' on':''}" role="group" aria-label="Filtros"><label class="qx-fsel"><span>Adscrito</span><select data-qfa><option value="">Todos</option>${ads.map(a=>`<option value="${H(a)}"${a===st.fad?' selected':''}>${H(a)}</option>`).join('')}</select></label><label class="qx-fsel"><span>Clínica</span><select data-qfcl><option value="">Todas</option>${CLIN.map(c=>`<option value="${H(c.k)}"${c.k===st.fcl?' selected':''}>${H(c.n)}</option>`).join('')}</select></label>${on?'<button type="button" class="qx-fclr" data-qfclr>Quitar filtros</button>':''}</div>`; }
 function calHTML(k){ const st=V[k], t=T(k), M=monthOf(st), first=new Date(M.y,M.m,1,12), start=new Date(first); start.setDate(1-((first.getDay()+6)%7));
-  const all=list(t).filter(e=>!offE(e)), by=new Map(); all.forEach(e=>{ if(!e.fecha) return; (by.get(e.fecha)||by.set(e.fecha,[]).get(e.fecha)).push(e); });
+  const all=agF(st,list(t)).filter(e=>!offE(e)), by=new Map(); all.forEach(e=>{ if(!e.fecha) return; (by.get(e.fecha)||by.set(e.fecha,[]).get(e.fecha)).push(e); });
   let cells=''; for(let i=0;i<42;i++){ const d=new Date(start); d.setDate(start.getDate()+i); const s=dDMY(d), es=by.get(s)||[]; if(i>=35&&d.getMonth()!==M.m) break;
     const cl=[...new Set(es.map(e=>clinOf(e.clin).k))].slice(0,5), allOk=es.length&&es.every(e=>t==='quirofano'?!!e.aut:!!e.nota);
     cells+=`<button type="button" class="qc-d${d.getMonth()!==M.m?' out':''}${s===hoy()?' today':''}${s===st.sel?' sel':''}${es.length?' has':''}" data-qday="${s}" aria-label="${H(largo(s))}${es.length?' · '+es.length+' paciente'+(es.length>1?'s':''):''}" aria-pressed="${s===st.sel}"><span class="n">${d.getDate()}</span><span class="dots">${cl.map(c=>`<i style="--c:${clinOf(c).c}"></i>`).join('')}</span>${allOk?'<svg class="ck" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>':''}</button>`; }
@@ -19512,15 +19554,15 @@ function qxCard(e){ if(offE(e)) return offCard(e,'quirofano'); const ci=clinOf(e
 function daySummary(es,t){ es=es.filter(e=>!offE(e)); if(t==='quirofano'){ const a=es.filter(e=>e.aut).length, c=es.filter(e=>e.comp&&!e.aut).length; return `<div class="qx-sum"><div><b>${es.length}</b><small>Tentativos</small></div><div><b>${c}</b><small>Completos</small></div><div><b>${a}</b><small>Autorizados</small></div></div>`; } const s=es.filter(e=>e.nota).length; return `<div class="qx-sum"><div><b>${es.length}</b><small>Agendados</small></div><div><b>${s}</b><small>Sesionados</small></div><div><b>${es.length-s}</b><small>Pendientes</small></div></div>`; }
 const isWide=()=>{ try{ return matchMedia('(min-width:701px)').matches; }catch(_){ return true; } };
 function weekHTML(k){ const st=V[k], t=T(k), d0=pDMY(st.sel)||new Date(), mon=new Date(d0.getFullYear(),d0.getMonth(),d0.getDate()-((d0.getDay()+6)%7),12), h=hoy(); let ds='';
-  for(let i=0;i<7;i++){ const d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i,12), x=dDMY(d), n=byDay(t,x).filter(e=>!offE(e)).length; ds+=`<button type="button" class="qw-d${x===st.sel?' on':''}${x===h?' today':''}" data-qday="${x}" aria-pressed="${x===st.sel}" aria-label="${H(largo(x))}${n?', '+n+' paciente'+(n>1?'s':''):''}"><small>${'LMMJVSD'[i]}</small><b>${d.getDate()}</b>${n?`<i>${n}</i>`:''}</button>`; }
+  for(let i=0;i<7;i++){ const d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i,12), x=dDMY(d), n=agF(st,byDay(t,x)).filter(e=>!offE(e)).length; ds+=`<button type="button" class="qw-d${x===st.sel?' on':''}${x===h?' today':''}" data-qday="${x}" aria-pressed="${x===st.sel}" aria-label="${H(largo(x))}${n?', '+n+' paciente'+(n>1?'s':''):''}"><small>${'LMMJVSD'[i]}</small><b>${d.getDate()}</b>${n?`<i>${n}</i>`:''}</button>`; }
   return `<div class="qw"><button type="button" data-qwk="-1" aria-label="Semana anterior">‹</button><div class="qw-days">${ds}</div><button type="button" data-qwk="1" aria-label="Semana siguiente">›</button><button type="button" class="qw-t" data-qcal="0">Hoy</button><button type="button" class="qw-t" data-qmes aria-pressed="${!!st.cal}">${IC.cal}Mes</button></div>`; }
 function rowHTML(e,t){ const st=V[t==='quirofano'?'qx':'cm'], ci=clinOf(e.clin), age=ageOf(e.fnac,e.fecha), off=offE(e), s=t==='quirofano'?qxState(e):cmState(e), cls=off?'':t==='quirofano'?(e.res?(e.res.v==='operado'?'ok':'warn'):e.aut?'gold':e.comp?'warn':''):(e.nota?'ok':'');
   return `<div class="qx-row${st.cur===e.id?' sel':''}${off?' off':''}"><button type="button" class="qx-rsel" data-qsel="${H(e.id)}" aria-pressed="${st.cur===e.id}"><i style="--c:${off?'#B5BCC4':ci.c}"></i><span class="nm"><b>${H(e.nombre||'Sin nombre')}</b><small>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''}</small></span><span class="cx">${t==='quirofano'?`<b>${H(e.cx||'—')}</b><small>${H(e.dx||'')}</small>`:H(e.dx||'')}</span><span class="ad">${H(e.ads||'')}${t==='quirofano'&&(e.sala||e.tq||e.turno)?`<small>${H([salaTxt(e),TQ[e.tq]||'',TURNO[e.turno]||''].filter(Boolean).join(' · '))}</small>`:''}</span><em class="${cls}">${H(s)}</em></button>${fileBtn(e,t==='quirofano'?'qe':'ce')}</div>`; }
 function item(e,t){ return isWide()?rowHTML(e,t):(t==='quirofano'?qxCard(e):cmCard(e)); }
 function curFix(st,pool){ if(!pool.some(e=>e.id===st.cur)) st.cur=pool.length?pool[0].id:null; }
 function shell(k,t,es,off,all,body){ const st=V[k], wide=isWide(), cur=wide?es.concat(off).find(e=>e.id===st.cur):null;
-  return `<div class="qx-topbar">${weekHTML(k)}${daySummary(es,t)}</div>${st.cal&&!wide?`<div class="qx-panel qx-calp">${calHTML(k)}</div>`:''}<div class="qx-two${wide?'':' one'}"><section><div class="qx-dayh"><b>${H(largo(st.sel))}</b><span>${es.length?es.length+' paciente'+(es.length>1?'s':''):''}</span></div>${fcHTML(st,all)}<div class="qx-list${wide?' rows':''}">${body}</div></section>${wide?`<aside class="qx-det" aria-label="${st.cal?'Calendario del mes':'Detalle del paciente'}">${st.cal?`<div class="qx-panel qx-calp in">${calHTML(k)}</div>`:cur?(t==='quirofano'?qxCard(cur):cmCard(cur)):'<div class="qx-empty"><b>Sin paciente seleccionado</b>Elige un paciente de la lista para ver su detalle.</div>'}</aside>`:''}</div>`; }
-function qxAgendaHTML(){ const st=V.qx, all=byDay('quirofano',st.sel), off=all.filter(offE), es=fcF(st,all.filter(e=>!offE(e))).sort((a,b)=>(a.aut?0:1)-(b.aut?0:1)||qxOrd(a,b));
+  return `${filtHTML(k)}<div class="qx-topbar">${weekHTML(k)}${daySummary(es,t)}</div>${st.cal&&!wide?`<div class="qx-panel qx-calp">${calHTML(k)}</div>`:''}<div class="qx-two${wide?'':' one'}"><section><div class="qx-dayh"><b>${H(largo(st.sel))}</b><span>${es.length?es.length+' paciente'+(es.length>1?'s':''):''}</span></div>${fcHTML(st,all)}<div class="qx-list${wide?' rows':''}">${body}</div></section>${wide?`<aside class="qx-det" aria-label="${st.cal?'Calendario del mes':'Detalle del paciente'}">${st.cal?`<div class="qx-panel qx-calp in">${calHTML(k)}</div>`:cur?(t==='quirofano'?qxCard(cur):cmCard(cur)):'<div class="qx-empty"><b>Sin paciente seleccionado</b>Elige un paciente de la lista para ver su detalle.</div>'}</aside>`:''}</div>`; }
+function qxAgendaHTML(){ const st=V.qx, all=agF(st,byDay('quirofano',st.sel)), off=all.filter(offE), es=fcF(st,all.filter(e=>!offE(e))).sort((a,b)=>(a.aut?0:1)-(b.aut?0:1)||qxOrd(a,b));
   curFix(st,es.concat(off)); const groups=[['M','Matutino'],['V','Vespertino'],['','Turno por definir']].map(([tk,l])=>[l,es.filter(e=>(e.turno||'')===tk)]).filter(g=>g[1].length);
   const empty=`<div class="qx-empty"><b>Sin pacientes para este día</b>Elige otra fecha en el calendario${can('editar_quirofano')?' o usa «Agregar paciente». También puedes agregar desde una Solicitud de cirugía.':'.'}</div>`;
   const body=(es.length?groups.map(([l,g])=>(groups.length>1||l!=='Turno por definir'?`<div class="qx-grp"><i style="--c:#1F3864"></i>${l} · ${g.length}</div>`:'')+g.map(e=>item(e,'quirofano')).join('')).join(''):empty)+(off.length?`<div class="qx-grp"><i style="--c:#B5BCC4"></i>No autorizadas o canceladas · ${off.length}</div>`+off.map(e=>item(e,'quirofano')).join(''):'');
@@ -19533,7 +19575,7 @@ function cmCard(e){ if(offE(e)) return offCard(e,'comite'); const ci=clinOf(e.cl
   return `<article class="qx-card col${e.nota?' done':''}${V.open.has(e.id)?' open':''}" style="--c:${ci.c}"><div class="qx-c-top"><div class="qx-c-id"><b>${H(e.nombre||'Sin nombre')}</b><span>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''}</span></div><div class="qx-chips"><span class="qx-chip clin" style="--bg:${ci.bg};--fg:${ci.fg}">${H(ci.n)}</span>${rp?`<span class="qx-chip warn">Reprogramado ${rp}×</span>`:''}${fileBtn(e,'ce')}</div></div>
    ${miniHTML(e,'comite')}<div class="qx-c-body"><div><small>Diagnóstico</small>${H(e.dx||'—')}</div><div><small>Adscrito</small>${H(e.ads||'—')}</div><div><small>Dictamen</small>${H(e.nota&&e.nota.dic?e.nota.dic:'—')}</div></div>
    <div class="qx-who">${whoLine(e,[['creado','Programado por'],['ses','Nota de sesión realizada por']])}</div><div class="qx-c-act">${act}${more}</div></article>`; }
-function cmAgendaHTML(){ const st=V.cm, all=byDay('comite',st.sel), off=all.filter(offE), es=fcF(st,all.filter(e=>!offE(e))); curFix(st,es.concat(off)); const by=new Map(); es.forEach(e=>{ const k=clinOf(e.clin).k; (by.get(k)||by.set(k,[]).get(k)).push(e); });
+function cmAgendaHTML(){ const st=V.cm, all=agF(st,byDay('comite',st.sel)), off=all.filter(offE), es=fcF(st,all.filter(e=>!offE(e))); curFix(st,es.concat(off)); const by=new Map(); es.forEach(e=>{ const k=clinOf(e.clin).k; (by.get(k)||by.set(k,[]).get(k)).push(e); });
   const order=[...CLIN.map(c=>c.k),...[...by.keys()].filter(k=>!CLIN.some(c=>c.k===k))];
   const body=(es.length?order.filter(k=>by.has(k)).map(k=>{ const g=by.get(k).sort((a,b)=>String(a.nombre).localeCompare(String(b.nombre),'es')), ci=clinOf(k); return `<div class="qx-grp"><i style="--c:${ci.c}"></i>${H(ci.n)} · ${g.length}</div>`+g.map(e=>item(e,'comite')).join(''); }).join(''):`<div class="qx-empty"><b>Sin pacientes para esta sesión</b>Elige otra fecha${can('editar_comite')?' o usa «Agregar paciente».':'.'}</div>`)+(off.length?`<div class="qx-grp"><i style="--c:#B5BCC4"></i>Canceladas o no sesionadas · ${off.length}</div>`+off.map(e=>item(e,'comite')).join(''):'');
   return shell('cm','comite',es,off,all,body); }
@@ -19578,13 +19620,14 @@ function statExport(k,how){ if(!can(k==='qx'?'imprimir_programacion':'imprimir_c
 function openList(key){ const L=V.L&&V.L[key]; if(!L) return; const k=V.view, d=dlg('dlgQxList','wide'); const es=L.es.slice().sort((a,b)=>dkey(a.fecha)-dkey(b.fecha));
   d.innerHTML=dlgShell(H(L.t),es.length+' registro'+(es.length===1?'':'s')+' · '+H(perLabel(V[k])),es.length?`<div class="qx-tblw"><table class="qx-tbl"><thead><tr><th>Fecha</th><th>Paciente</th><th>Expediente</th><th>${k==='qx'?'Cirugía':'Diagnóstico'}</th><th>Estado</th></tr></thead><tbody>${es.map(e=>{ const m=entMot(e); return `<tr><td>${H(e.fecha)}</td><td><b>${H(e.nombre)}</b></td><td>${H(e.exp)}</td><td>${H(k==='qx'?(e.cx||''):(e.dx||''))}</td><td>${H(k==='qx'?qxState(e):cmState(e))}${m?'<br><small>'+H(m)+'</small>':''}</td></tr>`; }).join('')}</tbody></table></div>`:'<p class="qd-note">Sin pacientes.</p>','<button type="button" class="qx-btn" data-qd-x>Cerrar</button>'); show(d); }
 try{ const mqW=matchMedia('(min-width:701px)'); const rr=()=>{ try{ renderView(); }catch(_){} }; if(mqW.addEventListener) mqW.addEventListener('change',rr); else mqW.addListener(rr); }catch(_){}
-function viewChange(e){ const s=e.target.closest('[data-qper]'); if(s){ V[V.view].per=s.value; renderView(); } }
+function viewChange(e){ const s=e.target.closest('[data-qper]'); if(s){ V[V.view].per=s.value; renderView(); return; } const st=V[V.view]; if(!st) return; if(e.target.matches('[data-qfa]')){ st.fad=e.target.value; st.cur=null; renderView(); return; } if(e.target.matches('[data-qfcl]')){ st.fcl=e.target.value; st.fc=''; st.cur=null; renderView(); } }
 function viewClick(e){ const t=e.target.closest('button'); if(!t) return; const k=V.view, st=V[k];
   if(t.dataset.qsel){ st.cur=t.dataset.qsel; st.cal=false; renderView(); return; }
   if(t.dataset.qwk){ const d=pDMY(st.sel)||new Date(); const n=new Date(d.getFullYear(),d.getMonth(),d.getDate()+7*(+t.dataset.qwk),12); st.sel=dDMY(n); st.m={y:n.getFullYear(),m:n.getMonth()}; renderView(); return; }
   if('qmes' in t.dataset){ st.cal=!st.cal; renderView(); return; }
   if(t.dataset.qtog){ const id=t.dataset.qtog; if(V.open.has(id)) V.open.delete(id); else V.open.add(id); renderView(); return; }
   if('qfc' in t.dataset){ st.fc=t.dataset.qfc; renderView(); return; }
+  if('qfclr' in t.dataset){ st.fad=''; st.fcl=''; st.fc=''; renderView(); return; }
   if(t.dataset.qlist){ openList(t.dataset.qlist); return; }
   if(t.dataset.qst){ statExport(k,t.dataset.qst); return; }
   if(t.dataset.qday){ st.sel=t.dataset.qday; const d=pDMY(st.sel), M0=monthOf(st); if(d&&(d.getMonth()!==M0.m||d.getFullYear()!==M0.y)) st.m={y:d.getFullYear(),m:d.getMonth()}; renderView(); if(matchMedia('(max-width:760px)').matches){ const h=document.querySelector('#qxView .qx-dayh'); if(h) setTimeout(()=>{ try{ h.scrollIntoView({behavior:'smooth',block:'start'}); }catch(_){} },60); } return; }
