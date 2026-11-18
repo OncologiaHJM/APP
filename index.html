@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.54">
+<meta name="application-version" content="9.57">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2756,7 +2756,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.54 · Fecha de publicación: 17.11.26</div>
+  <div class="app-footer-version">Versión 9.57 · Fecha de publicación: 17.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -2942,6 +2942,14 @@ html:root body #dlgResidentGate.hjm-locked #hjmLockBox{display:flex!important;fl
 html:root body #dlgResidentGate.hjm-locked #hjmLockBox .resident-gate-buttons{display:flex!important;justify-content:center!important;width:100%!important;max-width:340px!important;margin:12px auto 4px!important;padding:0!important;box-sizing:border-box!important}
 html:root body #dlgResidentGate.hjm-locked #hjmLockBox #hjmLockIn{flex:1 1 auto!important;width:100%!important;max-width:340px!important;margin:0!important;box-sizing:border-box!important}
 html:root body #dlgResidentGate.hjm-locked #hjmLockBox .lk-m{margin:8px 0 0!important;padding:0!important}
+/* Solicitud de Transfusión: misma distribución que los demás formatos (hoja a la izquierda; a la derecha el botón al consentimiento, los faltantes y la captura) */
+@media screen and (min-width:1040px){
+ html body.transfusion-side #view-format .fbody{display:grid!important;grid-template-columns:minmax(0,1fr) 300px!important;grid-template-areas:"main switch" "main missingnotice" "main missing"!important;grid-template-rows:auto auto 1fr!important;align-items:start!important;gap:14px 18px!important}
+ html body.transfusion-side #view-format .fbody>.stage{grid-area:main!important;min-width:0!important}
+ html body.transfusion-side #view-format #relNav{grid-area:switch!important;width:auto!important;margin:0!important}
+ html body.transfusion-side #view-format #transfusionMissingChips{grid-area:missingnotice!important;width:auto!important}
+ html body.transfusion-side #view-format #transfusionMissing{grid-area:missing!important;width:auto!important;align-self:start!important}
+}
 /* Agenda (Quirófano y Comité): mismos colores de acción */
 html body .qx-c-act .qx-btn.bad{color:#B42318;border-color:#F4C7C2;background:#FEF3F2}
 html body .qx-c-act .qx-btn.bad:hover{background:#FDE4E1}
@@ -7342,7 +7350,10 @@ function accessEffective(u,roleOverride){const role=roleOverride||accessRole(u);
  for(const k of ACCESS_TECH_ONLY)out[k]=false;if(adm&&base!=='administrativo')out.gestionar_usuarios=true;for(const k of ACCESS_ALWAYS)out[k]=true;
  if(!adm){out.descargar_bases=false;out.descargar_index=false;if(base==='administrativo'){out.buscar_diagnostico=false;out.descargar_diagnostico=false;}}
  for(let i=0;i<3;i++)for(const [k,deps] of Object.entries(ACCESS_REQUIRES))if(deps.some(d=>!out[d]))out[k]=false;return out;}
-function canPerm(key){try{if(window.__hjmChildFormat)return parent!==window&&parent.sessionUserName()===sessionUserName()&&parent.canPerm(key);const u=userRecord(sessionUserName());return !!u&&accessEffective(u)[key]===true;}catch(_){return false;}}
+/* Administrador (rol) y Técnico. El Técnico puede apagar sus permisos especiales de borrado (Configuración › Permitir borrar entradas): entonces borra como su tipo de usuario. */
+function isRealAdmin(){try{if(window.__hjmChildFormat)return parent!==window&&parent.isRealAdmin();const r=userRecord(sessionUserName());return !!r&&r.admin===true&&!(window.HJM_BETA&&HJM_BETA.ses&&HJM_BETA.ses.compartida&&!HJM_BETA.ses.suplanta);}catch(_){return false;}}
+function techDel(){try{if(!isTechnicalAdmin())return false;const r=userRecord(sessionUserName());return !(r&&r.tborr==="0");}catch(_){return false;}}
+function canPerm(key){try{if(window.__hjmChildFormat)return parent!==window&&parent.sessionUserName()===sessionUserName()&&parent.canPerm(key);const u=userRecord(sessionUserName());if(!u)return false;if(u.tborr==="0"&&isTechAdminRecord(u)&&/borrar|eliminar/.test(key)){const b=u.tipo==='administrativo'?'administrativo':(u.tipo==='adscrito'?'adscrito':'residente');return accessEffective(u,u.admin===true?b+'_admin':b)[key]===true;}return accessEffective(u)[key]===true;}catch(_){return false;}}
 function accessRequire(key){if(canPerm(key))return true;try{notify('Tu usuario no tiene permiso para esta acción.','warn');}catch(_){}return false;}
 function accessViewAllowed(view){return canPerm(({censoActual:'ver_censo',censos:'ver_censos_archivados',cama:'ver_hospitalizados',recientes:'ver_expedientes'})[view]||'ver_datos');}
 function accessFirstView(){return ['censoActual','cama','recientes','censos'].find(accessViewAllowed)||'';}
@@ -7373,7 +7384,7 @@ function cleanUsers(list){
     /* v3.13 · filtros predeterminados de inicio (Hospitalizados / Todos): clínicas y adscritos elegidos; vacío = todos */
     const uniq=(a,n)=>Array.isArray(a)?[...new Set(a.map(v=>String(v==null?"":v).trim()).filter(Boolean))].slice(0,n):[];
     const fclin=uniq(x.fclin,12), fads=uniq(x.fads,60);
-    out.push({usuario,nombre,tipo,servicio,...(typeof x.admin==="boolean"?{admin:x.admin}:{}),...(x.tecnico===true?{tecnico:true}:{}),...(typeof x.quirofano==="boolean"?{quirofano:x.quirofano}:{}),...(x.grupal===true?{grupal:true,grupalPor:x.grupalPor==="usuario"?"usuario":"tecnico"}:{}),...(x.permisos&&typeof x.permisos==="object"?{permisos:accessCleanMap(x.permisos)}:{}),...(x.raiz===true?{raiz:true}:{}),...(x.raiz===true&&x.perfiles?{perfiles:accessCleanProfiles(x.perfiles)}:{}),...(cp?{cp}:{}),...(anio?{anio}:{}),...(esp?{esp}:{}),...(inicio?{inicio}:{}),...(fclin.length?{fclin}:{}),...(fads.length?{fads}:{}),...(String(x.ntab||"")==="0"?{ntab:"0"}:{})});
+    out.push({usuario,nombre,tipo,servicio,...(typeof x.admin==="boolean"?{admin:x.admin}:{}),...(x.tecnico===true?{tecnico:true}:{}),...(typeof x.quirofano==="boolean"?{quirofano:x.quirofano}:{}),...(x.grupal===true?{grupal:true,grupalPor:x.grupalPor==="usuario"?"usuario":"tecnico"}:{}),...(x.permisos&&typeof x.permisos==="object"?{permisos:accessCleanMap(x.permisos)}:{}),...(x.raiz===true?{raiz:true}:{}),...(x.raiz===true&&x.perfiles?{perfiles:accessCleanProfiles(x.perfiles)}:{}),...(cp?{cp}:{}),...(anio?{anio}:{}),...(esp?{esp}:{}),...(inicio?{inicio}:{}),...(fclin.length?{fclin}:{}),...(fads.length?{fads}:{}),...(String(x.ntab||"")==="0"?{ntab:"0"}:{}),...(String(x.tborr||"")==="0"?{tborr:"0"}:{})});
   });
   return out;
 }
@@ -7398,7 +7409,7 @@ function userRecord(v){
    Cada cambio: clave del usuario → {op:"set"|"del", ts, u:{usuario,nombre,tipo,servicio}}. El más reciente por usuario gana. */
 const ukey=v=>normalizeStaffName(v);
 const BASE_MAP=(()=>{const m=new Map();cleanUsers(HJM_USERS_BASE&&HJM_USERS_BASE.usuarios).forEach(u=>m.set(ukey(u.usuario),u));return m;})();
-const sameUser=(a,b)=>!!a&&!!b&&a.usuario===b.usuario&&a.nombre===b.nombre&&a.tipo===b.tipo&&a.servicio===b.servicio&&!!a.admin===!!b.admin&&(a.cp||"")===(b.cp||"")&&(a.inicio||"")===(b.inicio||"")&&(a.anio||"")===(b.anio||"")&&(a.esp||"")===(b.esp||"")&&JSON.stringify(a.fclin||[])===JSON.stringify(b.fclin||[])&&JSON.stringify(a.fads||[])===JSON.stringify(b.fads||[])&&(a.ntab||"")===(b.ntab||"")&&!!a.tecnico===!!b.tecnico&&JSON.stringify(a.permisos||{})===JSON.stringify(b.permisos||{})&&JSON.stringify(a.perfiles||{})===JSON.stringify(b.perfiles||{});
+const sameUser=(a,b)=>!!a&&!!b&&a.usuario===b.usuario&&a.nombre===b.nombre&&a.tipo===b.tipo&&a.servicio===b.servicio&&!!a.admin===!!b.admin&&(a.cp||"")===(b.cp||"")&&(a.inicio||"")===(b.inicio||"")&&(a.anio||"")===(b.anio||"")&&(a.esp||"")===(b.esp||"")&&JSON.stringify(a.fclin||[])===JSON.stringify(b.fclin||[])&&JSON.stringify(a.fads||[])===JSON.stringify(b.fads||[])&&(a.ntab||"")===(b.ntab||"")&&(a.tborr||"")===(b.tborr||"")&&!!a.tecnico===!!b.tecnico&&JSON.stringify(a.permisos||{})===JSON.stringify(b.permisos||{})&&JSON.stringify(a.perfiles||{})===JSON.stringify(b.perfiles||{});
 function opsClean(o){
   const out={};
   if(o&&typeof o==="object")Object.entries(o).forEach(([k,x])=>{
@@ -9474,7 +9485,7 @@ function renderRel(key){
   }
   updatePajaMissing();
   if(CAPTURE_FIELDS[key]&&key!=="transfusion"){nav.hidden=false;nav.classList.add("side");document.body.classList.add("rel-side");nav.insertAdjacentHTML("afterbegin",capturePanelHTML(key));}
-  if(key==="consInf"||key==="solCx")nav.insertAdjacentHTML("afterbegin",surgeryRelatedButtonHTML(key));
+  if(["consInf","solCx","transfusion","consTransf"].includes(key)){nav.hidden=false;nav.classList.add("side");nav.classList.remove("child-empty");document.body.classList.add("rel-side");nav.insertAdjacentHTML("afterbegin",surgeryRelatedButtonHTML(key));}
   if(key==="rx"){ nav.insertAdjacentHTML("beforeend",'<div class="rcsec rcbox" data-tipo="rx"></div>'); renderRecent("rx"); }
   if(key==="receta"){
     const html=recPresetsHTML("receta"), paseLabel=[...nav.querySelectorAll(":scope > .lbl")].find(el=>el.textContent.includes("Servicio del pase"));
@@ -11733,6 +11744,20 @@ const histCap=t=>HIST_CAP[t]||HIST_MAX;
 let DELETED={};
 function canDeleteClinicalRecord(){return canPerm('borrar_documentos');}
 function canRestoreClinicalRecord(){return canPerm('restaurar_documentos');}
+/* Ctrl+P / Cmd+P: hace lo mismo que el botón Imprimir de lo que está abierto (ventana del paciente, censo, listas…) */
+(()=>{ if(window.__hjmCtrlPOn) return; window.__hjmCtrlPOn=1;
+  const vis=b=>!!(b&&!b.disabled&&b.offsetParent&&getComputedStyle(b).visibility!=='hidden');
+  const isPrint=b=>{ const t=(b.textContent||'').trim().toLowerCase(); return /^imprimir/.test(t)&&!/blanco/.test(t); };
+  window.__hjmCtrlP=function(){ try{
+    const dlg=document.getElementById('dlgPatientFormat');
+    if(dlg&&dlg.open){ const b=[...dlg.querySelectorAll('#ppEditorActions button,.pfw-actions button')].find(x=>vis(x)&&isPrint(x)); if(b){ b.click(); return true; } return false; }
+    const open=[...document.querySelectorAll('dialog[open]')].pop(); const scope=open||document;
+    const b=[...scope.querySelectorAll('button')].find(x=>vis(x)&&isPrint(x)&&!x.closest('[hidden]'));
+    if(b){ b.click(); return true; } return false; }catch(_){ return false; } };
+  addEventListener('keydown',e=>{ if(!(e.ctrlKey||e.metaKey)||e.altKey||String(e.key).toLowerCase()!=='p') return;
+    let done=false; try{ done=(window.__hjmChildFormat&&parent!==window&&parent.__hjmCtrlP)?parent.__hjmCtrlP():window.__hjmCtrlP(); }catch(_){}
+    if(done){ e.preventDefault(); e.stopPropagation(); } },true);
+})();
 /* Búsqueda: en móvil el texto de ayuda se acorta para que no se corte */
 (()=>{ const ps=document.getElementById("ppSearch"); if(!ps) return; const full=ps.getAttribute("placeholder")||"", mq=matchMedia("(max-width:600px)"); const set=()=>{ ps.placeholder=mq.matches?"Buscar paciente…":full; }; set(); try{ mq.addEventListener("change",set); }catch(_){} })();
 function histDelete(tp,id){if(!canDeleteClinicalRecord()||!HIST[tp])return;HIST[tp]=HIST[tp].filter(x=>x.id!==id);DELETED[id]=Date.now();if(tp==="notas")try{window.HJM_EXT&&HJM_EXT.notaDeleted&&HJM_EXT.notaDeleted(id);}catch(_){}}
@@ -12495,9 +12520,9 @@ function recentsHTML(tp,newId,owner=current){
    +'</div>';
 }
 function surgeryRelatedButtonHTML(key){
-  const target=key==="consInf"?"solCx":key==="solCx"?"consInf":null;
+  const PAIR={consInf:"solCx",solCx:"consInf",transfusion:"consTransf",consTransf:"transfusion"}, target=PAIR[key]||null;
   if(!target)return "";
-  const title=target==="solCx"?"Solicitud de Cirugía":"Consentimiento Informado";
+  const title={solCx:"Solicitud de Cirugía",consInf:"Consentimiento Informado",transfusion:"Solicitud de Transfusión",consTransf:"Consentimiento de Transfusión"}[target];
   return `<div class="related-format-footer"><button type="button" class="related-format-link" data-section-go="${target}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 3h5l3 3v10H2zM7 3v3h3M14 9h5l3 3v9h-8zM19 9v3h3M12 4h7m-3-3 3 3-3 3"/></svg><span>${title}</span></button></div>`;
 }
 function renderRecent(tp,newId){
@@ -16520,7 +16545,7 @@ function usrPend(u){ const k=ukey(u.usuario), o=HJM_OPS[k]; if(!o||o.op!=="set")
 function usrItem(u){
   const k=ukey(u.usuario);
   const pd=usrPend(u), tag=pd?`<span class="usr-pend" title="Está guardado en este equipo y en Drive, pero el HTML (index) todavía no lo trae: descarga el Index actualizado y súbelo a GitHub.">${pd==="nuevo"?"Nuevo · sin integrar al Index":"Editado · sin integrar al Index"}</span>`:"";
-  return `<div class="usr-item${pd?" usr-pd":""}" data-k="${esc(k)}"><div class="usr-nm">${tag}<b>${esc(u.nombre)}</b>${u.grupal===true?`<span class="usr-grp" title="Acceso desde cuenta grupal activo · lo activó ${u.grupalPor==="usuario"?"el usuario":"el Técnico"}" aria-label="Acceso desde cuenta grupal activo">${(window.HJM_GRP||{}).ic||""}</span>`:""}<small>${esc(u.servicio||"Sin servicio")}${resSuf(u)?" · "+esc(resSuf(u).trim()):""}${u.usuario!==u.nombre?" · Usuario: "+esc(u.usuario):""}${u.cp?" · CP "+esc(u.cp):""}${u.inicio?" · Inicio: "+(({nuevo:"Nuevo Paciente",censo:"Censo",quirofano:"Quirófano",comite:"Comité",hospitalizados:"Hospitalizados"})[u.inicio]||"Archivo"):""}${u.inicio!=="nuevo"&&((u.fclin&&u.fclin.length)||(u.fads&&u.fads.length))?" · Filtro: "+[(u.fclin&&u.fclin.length)?u.fclin.join(", "):"",(u.fads&&u.fads.length)?u.fads.length+(u.fads.length===1?" adscrito":" adscritos"):""].filter(Boolean).join(" · "):""}${adminRank(u)?" · "+esc(adminRank(u)):""}${u.quirofano===true?" · Rol Quirófano":""}</small></div><div class="usr-act"><button type="button" class="st-btn st-sm" data-edit="${esc(k)}">Editar</button><button type="button" class="st-btn st-sm" data-del="${esc(k)}">Borrar</button></div></div>`;
+  return `<div class="usr-item${pd?" usr-pd":""}" data-k="${esc(k)}"><div class="usr-nm">${tag}<b>${esc(u.nombre)}</b>${u.grupal===true?`<span class="usr-grp" title="Acceso desde cuenta grupal activo · lo activó ${u.grupalPor==="usuario"?"el usuario":"el Técnico"}" aria-label="Acceso desde cuenta grupal activo">${(window.HJM_GRP||{}).ic||""}</span>`:""}<small>${esc(u.servicio||"Sin servicio")}${resSuf(u)?" · "+esc(resSuf(u).trim()):""}${u.usuario!==u.nombre?" · Usuario: "+esc(u.usuario):""}${u.cp?" · CP "+esc(u.cp):""}${u.inicio?" · Inicio: "+(({nuevo:"Nuevo Paciente",censo:"Censo",quirofano:"Quirófano",comite:"Comité",hospitalizados:"Hospitalizados"})[u.inicio]||"Archivo"):""}${u.inicio!=="nuevo"&&((u.fclin&&u.fclin.length)||(u.fads&&u.fads.length))?" · Filtro: "+[(u.fclin&&u.fclin.length)?u.fclin.join(", "):"",(u.fads&&u.fads.length)?u.fads.length+(u.fads.length===1?" adscrito":" adscritos"):""].filter(Boolean).join(" · "):""}${adminRank(u)?" · "+esc(adminRank(u)):""}${u.quirofano===true?" · Rol Quirófano":""}</small></div><div class="usr-act"><button type="button" class="st-btn st-sm" data-edit="${esc(k)}">Editar</button>${isTechnicalAdmin()?`<button type="button" class="st-btn st-sm" data-del="${esc(k)}">Borrar</button>`:""}</div></div>`;
 }
 function usrDraw(){
   const l=$s("stUsrList"); if(!l) return;
@@ -17108,8 +17133,8 @@ function cfgSave(patch){
   if(HJM_USERS.some(x=>ukey(x.usuario)===k&&ukey(x.usuario)!==oldKey)) return {ok:false,err:"Ya existe un usuario «"+usuario+"»."};
   if(HJM_USERS.some(x=>ukey(x.usuario)!==oldKey&&normalizeStaffName(x.nombre)===normalizeStaffName(nombre))) return {ok:false,err:"Ya existe un usuario con el nombre completo «"+nombre+"»."};
   const needAdm=admRec(cur);   /* un administrador de origen que cambia su nombre conserva el permiso */
-  const u=Object.assign({},cur,{usuario,nombre,tipo:cur.tipo,servicio:cur.servicio},cur.anio?{anio:cur.anio}:{},cur.esp?{esp:cur.esp}:{},needAdm?{admin:true}:{},{cp:patch.cp,inicio:patch.inicio},patch.fclin&&patch.fclin.length?{fclin:patch.fclin}:{},patch.fads&&patch.fads.length?{fads:patch.fads}:{},patch.ntab==="0"?{ntab:"0"}:{});
-  if(patch.ntab!=="0") delete u.ntab;
+  const u=Object.assign({},cur,{usuario,nombre,tipo:cur.tipo,servicio:cur.servicio},cur.anio?{anio:cur.anio}:{},cur.esp?{esp:cur.esp}:{},needAdm?{admin:true}:{},{cp:patch.cp,inicio:patch.inicio},patch.fclin&&patch.fclin.length?{fclin:patch.fclin}:{},patch.fads&&patch.fads.length?{fads:patch.fads}:{},patch.ntab==="0"?{ntab:"0"}:{},patch.tborr==="0"?{tborr:"0"}:{});
+  if(patch.ntab!=="0") delete u.ntab; if(patch.tborr!=="0") delete u.tborr;
   const clean=cleanUsers([u])[0];
   if(sameUser(cur,clean)) return {ok:true,same:true};
   const ch=[]; if(k!==oldKey) ch.push({k:oldKey,op:"del"}); ch.push({k,op:"set",u});
@@ -17181,7 +17206,7 @@ function cfgFill(){
 function cfgCommit(hf){
   const g=id=>document.getElementById(id); if(!g("cfgU")||!cfgRec()) return;
   const noH=(()=>{ const c0=cfgRec(); return !!c0&&c0.tipo==="administrativo"; })();
-  const r=cfgSave({usuario:g("cfgU").value,nombre:g("cfgN").value,cp:g("cfgP").value,inicio:noH?"":g("cfgI").value,fclin:noH?[]:CFG_HF.clin,fads:noH?[]:CFG_HF.ads,ntab:g("cfgT")&&!g("cfgT").checked?"0":""});
+  const r=cfgSave({usuario:g("cfgU").value,nombre:g("cfgN").value,cp:g("cfgP").value,inicio:noH?"":g("cfgI").value,fclin:noH?[]:CFG_HF.clin,fads:noH?[]:CFG_HF.ads,ntab:g("cfgT")&&!g("cfgT").checked?"0":"",tborr:g("cfgTB")&&!g("cfgTB").checked?"0":""});
   cfgFill();
   if(!r.ok){ cfgMsg("⚠ "+r.err,true); return; }
   if(r.same) return;
@@ -17824,8 +17849,8 @@ function ppIsolatedChildBoot(){
     const arrange=()=>{const nav=document.getElementById('relNav'),bar=document.getElementById('formatPresetToolbar');if(nav){nav.hidden=false;nav.classList.add('side');if(bar)nav.prepend(bar);}document.querySelectorAll('.paja-nav-rows,#captureMiniNav').forEach(n=>{if(n.classList.contains('paja-nav-rows')&&n.previousElementSibling?.classList.contains('lbl'))n.previousElementSibling.remove();n.remove();});if(nav?.dataset.key==='rx'){const capture=nav.querySelector('[data-capture-format="rx"]');if(capture)nav.prepend(capture);}if(nav)nav.classList.toggle('child-empty',!nav.textContent.trim()&&!nav.querySelector('input,textarea,button'));};
     const rel=window.renderRel;window.renderRel=function(...a){const out=rel.apply(this,a);arrange();return out;};
     const format=window.openFormat,archive=window.openArchive,persist=window.doSaveNow,clinical=window.openClinical;
-    const chrome=()=>{const key=cfg.key==='postop'||cfg.inlinePostop?'postop':currentClinical||current||'archive';parent.postMessage({type:'hjm-window-chrome',token:cfg.token,key,state:editorWindowState(key)},'*');};
-    let chromeQueued=false,lastChrome='';const queueChrome=()=>{if(chromeQueued)return;chromeQueued=true;requestAnimationFrame(()=>{chromeQueued=false;const key=cfg.key==='postop'||cfg.inlinePostop?'postop':currentClinical||current||'archive',state=editorWindowState(key),snapshot=JSON.stringify([key,state]);if(snapshot!==lastChrome){lastChrome=snapshot;chrome();}});};
+    const chrome=()=>{const bc=document.body.classList,key=cfg.key==='postop'||cfg.inlinePostop?'postop':bc.contains('showing-clinical')?(currentClinical||'notas'):bc.contains('showing-format')?(current||'archive'):bc.contains('showing-archive')?'archive':(currentClinical||current||'archive');parent.postMessage({type:'hjm-window-chrome',token:cfg.token,key,state:editorWindowState(key)},'*');};
+    let chromeQueued=false,lastChrome='';const queueChrome=()=>{if(chromeQueued)return;chromeQueued=true;requestAnimationFrame(()=>{chromeQueued=false;const bc=document.body.classList,key=cfg.key==='postop'||cfg.inlinePostop?'postop':bc.contains('showing-clinical')?(currentClinical||'notas'):bc.contains('showing-format')?(current||'archive'):bc.contains('showing-archive')?'archive':(currentClinical||current||'archive'),state=editorWindowState(key),snapshot=JSON.stringify([key,state]);if(snapshot!==lastChrome){lastChrome=snapshot;chrome();}});};
     for(const head of [document.querySelector('#view-clinical .clinical-head'),document.querySelector('#view-format .fbar')])if(head)new MutationObserver(queueChrome).observe(head,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden','disabled','aria-pressed','class']});
     window.openFormat=function(...a){if(PRINT_ONLY_FORMATS.has(a[0])){current=a[0];currentClinical=null;document.body.className='hjm-child child-supplement';let view=document.getElementById('hjmSupplementView');if(!view){view=document.createElement('div');view.id='hjmSupplementView';document.body.appendChild(view);}view.replaceChildren(...DIRECT_SUPP[current]());let button=document.getElementById('hjmSupplementPrint');if(!button){button=document.createElement('button');button.id='hjmSupplementPrint';button.hidden=true;document.body.appendChild(button);}button.onclick=()=>printDirectSupplement(current);chrome();return;}const out=format.apply(this,a);document.body.classList.remove('child-clinical','child-archive');document.body.classList.add('hjm-child');arrange();chrome();return out;};
     window.openClinical=function(...a){const out=clinical.apply(this,a);document.body.classList.remove('child-archive');document.body.classList.add('hjm-child','child-clinical');window.__hjmClinicalOpening=JSON.stringify(clinicalPayload(currentClinical));chrome();return out;};
@@ -18000,7 +18025,7 @@ try{addEventListener('load',()=>{window.arWinOpen=id=>ppIsolatedOpen(id,'archive
 const DW={t:0,sig:'',busy:false,saved:0};
 function dwOn(){ const d=$('dlgPatientFormat'); return !!(d&&d.open&&d.dataset.pfwKey==='datos'); }
 function dwChild(){ try{ const w=PPIW.frame&&PPIW.frame.contentWindow; return w&&w.document&&w.document.body?w:null; }catch(_){ return null; } }
-function dwMode(w){ const c=w.document.body.classList; if(c.contains('showing-format')||c.contains('showing-clinical')||c.contains('showing-archive')){ let k=null; try{ k=w.eval('(typeof currentClinical!=="undefined"&&currentClinical)||(typeof current!=="undefined"&&current)||(document.body.classList.contains("showing-archive")?"archive":null)'); }catch(_){} return k||'fmt'; } return 'datos'; }
+function dwMode(w){ const c=w.document.body.classList; if(c.contains('showing-format')||c.contains('showing-clinical')||c.contains('showing-archive')){ let k=null; try{ k=c.contains('showing-archive')?'archive':(window.__ppLastChrome&&window.__ppLastChrome.key)||null; }catch(_){} return k||'fmt'; } return 'datos'; }
 function dwKeys(w){ if(!w||w.__dwKeys) return; w.__dwKeys=true; w.document.addEventListener('keydown',e=>{ if(e.key!=='Escape'||e.defaultPrevented) return; try{ if(w.document.querySelector('dialog[open]')||w.document.querySelector('#popHost .pop:not([hidden]),.pp-pop:not([hidden])')) return; }catch(_){} e.preventDefault(); try{ window.ppIsolatedClose(); }catch(_){} },false); }
 function dwShare(w){ try{ const pf=window.eval('typeof DRIVE_FILES!=="undefined"?DRIVE_FILES:null'); if(!pf||w.__dwFiles===pf) return; w.__dwFiles=pf; w.__dwPF=pf; w.eval('try{ if(Array.isArray(window.__dwPF)) DRIVE_FILES=window.__dwPF.slice(); }catch(_){}'); }catch(_){} }
 function dwSt(w){ const d=$('dlgPatientFormat'); if(!d) return; let chip=$('pfwSync'); const src=w&&w.document.querySelector('.sync-st');
@@ -18024,8 +18049,8 @@ function dwSync(){ try{ const w0=dwChild(); dwKeys(w0); if(w0&&w0.__hjmChildRead
   if(!dwOn()){ clearInterval(DW.t); DW.t=0; DW.sig=''; return; } const w=dwChild(); if(!w||!w.__hjmChildReady) return; const m=dwMode(w), d=$('dlgPatientFormat');
   let nm=''; try{ const q=id=>String((w.document.getElementById(id)||{}).value||'').trim(); nm=q('nombreCompleto')||[q('apPaterno'),q('apMaterno'),q('nombres')].filter(Boolean).join(' '); }catch(_){}
   const sig=m+'|'+nm; if(sig===DW.sig) return; DW.sig=sig;
-  if(m==='datos'){ $('ppFormatWindowTitle').textContent='Hoja de datos'; const bar=d.querySelector('.pfw-actions'); if(bar) bar.hidden=true; const tb=$('ppWindowTabs'); if(tb) tb.hidden=true; d.classList.add('pfw-datos'); }
-  else { d.classList.remove('pfw-datos'); if(m!=='fmt'){ try{ ppIsolatedChrome(m); }catch(_){} } const bar=d.querySelector('.pfw-actions'); if(bar) bar.hidden=m==='archive'; try{ d.querySelectorAll('[data-frame-action],[data-frame-blank]').forEach(b=>b.disabled=false); }catch(_){} }
+  if(m==='datos'){ $('ppFormatWindowTitle').textContent='Hoja de datos'; const bar=d.querySelector('.pfw-actions'); if(bar) bar.hidden=true; ['ppEditorActions','ppEditorSelector'].forEach(id=>{ const x=$(id); if(x) x.hidden=true; }); const tb=$('ppWindowTabs'); if(tb) tb.hidden=true; d.classList.add('pfw-datos'); }
+  else { d.classList.remove('pfw-datos'); const ED=['notas','indicaciones','repCx','alta','postop']; if(m!=='fmt'){ try{ const L=window.__ppLastChrome; ppIsolatedChrome(m,L&&L.key===m?L.state:null); }catch(_){} } const bar=d.querySelector('.pfw-actions'); if(bar) bar.hidden=m==='archive'||ED.includes(m); try{ d.querySelectorAll('[data-frame-action],[data-frame-blank]').forEach(b=>b.disabled=false); }catch(_){} }
   $('ppFormatWindowPatient').textContent=nm||'Paciente nuevo'; }
 function dwOpen(id,sec){ DW.busy=false; DW.saved=0; if(typeof ppIsolatedOpen!=='function') return false; id=id||''; try{ if(PPIW.active) return false; }catch(_){} DW.sig=''; ppIsolatedOpen(id,'datos',{section:sec||''}); clearInterval(DW.t); DW.t=setInterval(dwSync,250); return true; }
 try{window.hjmDatosWindow=dwOpen;
@@ -18285,7 +18310,7 @@ function ppIsolatedChrome(key,state=null){
  const rows=[['informe','hFrontal','hCaritas','hc','medicamentos'],['marcaje','cxSegura','prequx','bj','cj','consInf','consEspecial']];
  tabs.innerHTML=visible?rows.map((keys,i)=>'<div class="pfw-tab-row" aria-label="'+(i?'Cirugía':'Ingreso')+'">'+keys.filter(k=>FORMATS[k]).map(k=>'<button type="button" data-window-tab="'+k+'" aria-selected="'+(k===key)+'">'+esc(CAT[k]?.tt||FORMATS[k].title)+'</button>').join('')+'</div>').join(''):'';
 }
-try{addEventListener('message',e=>{if(!PPIW.frame||e.source!==PPIW.frame.contentWindow||e.data?.token!==PPIW.token||e.data.type!=='hjm-window-chrome')return;ppIsolatedChrome(e.data.key,e.data.state);});
+try{addEventListener('message',e=>{if(!PPIW.frame||e.source!==PPIW.frame.contentWindow||e.data?.token!==PPIW.token||e.data.type!=='hjm-window-chrome')return;window.__ppLastChrome={key:e.data.key,state:e.data.state};ppIsolatedChrome(e.data.key,e.data.state);});
 }catch(e){try{console.error(e);}catch(_){}}
 ;
 /* hjm-v406-census-band */
@@ -19459,6 +19484,9 @@ function cfgGrupal(){ try{ usrGrpFilter(); }catch(_){} const f=$i('cfgForm'), st
   box.innerHTML=`<input type="checkbox" id="cfgG"${c.grupal===true?' checked':''}${sh?' disabled':''}><i class="cfg-grp-ic">${GRP_IC}</i><span><b>Permitir acceder desde cuenta grupal</b><br><small>Si está activo, se puede entrar a tu usuario usando los correos grupales del servicio. Si no está activo, tu usuario no aparece en las cuentas grupales.${sh?' Solo se cambia desde tu cuenta personal.':''}</small></span>`;
   st.before(box); const G=box.querySelector('#cfgG');
   try{ const nt=f.querySelector('.cfg-ntab'); if(nt){ box.after(nt); nt.className='cfg-grp cfg-ntab'; nt.removeAttribute('style'); const T=nt.querySelector('#cfgT'); if(T){ T.removeAttribute('style'); if(!nt.querySelector('.cfg-grp-ic')){ const ic=document.createElement('i'); ic.className='cfg-grp-ic'; ic.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M3.5 14.5h17M9.5 9.5v10"/></svg>'; T.after(ic); } } nt.querySelectorAll('b,small').forEach(x=>x.removeAttribute('style')); } }catch(_){}
+  try{ if(isTechAdminRecord(c)&&!$i('cfgTB')){ const nt=f.querySelector('.cfg-ntab')||box, tb=document.createElement('label'); tb.className='cfg-grp cfg-tborr';
+    tb.innerHTML=`<input type="checkbox" id="cfgTB"${c.tborr==="0"?'':' checked'}><i class="cfg-grp-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg></i><span><b>Permitir borrar entradas</b><br><small>Si está activo, como Técnico ves el botón de borrar en notas, indicaciones, Archivo clínico, Quirófano, Comité y donde tienes más permisos de borrado que un usuario normal. Si está desactivado, borras igual que tu tipo de usuario.</small></span>`;
+    nt.after(tb); tb.querySelector('#cfgTB').addEventListener('change',()=>{ try{ cfgCommit(); }catch(_){} setTimeout(()=>{ try{ renderSync&&renderSync(); }catch(_){} try{ HJM_QX&&HJM_QX.renderView&&HJM_QX.renderView(); }catch(_){} },300); }); } }catch(_){}
   const send=async on=>{ G.disabled=true; try{ await gcall('hjmGrupalMio',on); try{ await HJM_BETA.refresh(); }catch(_){} say(on?'Acceso desde cuenta grupal activado.':'Acceso desde cuenta grupal desactivado.','ok'); }catch(err){ G.checked=!on; say('No se pudo guardar: '+((err&&err.message)||err),'warn'); } G.disabled=false; };
   G.addEventListener('change',()=>{ if(!G.checked){ send(false); return; } G.checked=false; const d=dlg('dlgCfgGrp');
     d.innerHTML=dlgShell('Acceso desde cuenta grupal','Lee esto antes de activarlo',`<p class="qd-note" style="font-size:14px;line-height:1.5">Al activarlo, <b>cualquier persona con acceso al correo grupal</b>, o que use una computadora donde esa cuenta esté abierta, podrá entrar con tu nombre y <b>guardar notas, indicaciones y datos a tu nombre</b>.<br><br>Lo que se guarde así queda registrado como hecho por ti y es tu responsabilidad.</p>`,`<button type="button" class="qx-btn" data-qd-x>Cancelar</button><button type="button" class="qx-btn pri" id="cgOk">Entiendo, activar</button>`); show(d);
@@ -19547,8 +19575,8 @@ function fcHTML(st,all){ const m=new Map(); all.filter(e=>!offE(e)).forEach(e=>{
    · Quirófano: el permiso de quirófano borra cualquiera; quien la creó y el administrador técnico, solo si no está autorizada ni no autorizada.
    · Comité: quien la creó y el administrador técnico. */
 function canDelE(e,t){ if(!e) return false; const locked=!!(e.aut||e.noaut);
-  if(t==='quirofano'){ if(isQxRole()) return true; return !locked&&(isMine(e)||isTec()); }
-  return isMine(e)||isTec(); }
+  if(t==='quirofano'){ if(isQxRole()) return true; return !locked&&(isMine(e)||techDel()); }
+  return isMine(e)||techDel(); }
 function isMine(e){ const u=me(); return !!(u&&e&&e.creado&&String(e.creado.por||'').toLowerCase()===String(u).toLowerCase()); }
 function qxCard(e){ if(offE(e)) return offCard(e,'quirofano'); const ci=clinOf(e.clin), age=ageOf(e.fnac,e.fecha), canEd=can('editar_quirofano'), role=isQxRole();
   let act='';
@@ -19939,11 +19967,16 @@ window.accessEditorMount=function(dlgU,cur){
   sec.innerHTML=`<h4>Roles</h4><div style="display:grid;gap:8px"><label class="usr-chk"><input type="checkbox" id="usrfRA"${admShow?' checked':''}><span><b>Administrador</b> <small>· Médico o Administrativo según su tipo</small></span></label><label class="usr-chk"><input type="checkbox" id="usrfRT"${tec?' checked':''}><span><b>Técnico</b> <small>· mantenimiento de la app</small></span></label><label class="usr-chk"><input type="checkbox" id="usrfRQ"${qx?' checked':''}><span><b>Quirófano</b> <small>· autoriza la programación quirúrgica, paciente por paciente</small></span></label></div><p class="access-hint">El tipo (Adscrito, Residente o Administrativo) se elige arriba. Los permisos de cada tipo se definen en la pestaña Permisos.</p>`;
   dlgU.querySelector('#usrfE').before(sec);
   const A=sec.querySelector('#usrfRA'), Tq=sec.querySelector('#usrfRT'), Q=sec.querySelector('#usrfRQ');
-  const sync=()=>{ A.disabled=false; Q.disabled=false; if(admin) admin.checked=A.checked||Tq.checked; }; Tq.addEventListener('change',()=>{ if(Tq.checked){ A.checked=true; Q.checked=true; } });
+  const sync=()=>{ Q.disabled=false; if(admin) admin.checked=A.checked||Tq.checked; }; Tq.addEventListener('change',()=>{ if(Tq.checked){ if(!A.disabled) A.checked=true; Q.checked=true; } });
   let root=false; try{ root=accessRoot(cur); }catch(_){}
   if(root){ Tq.disabled=true; try{ dlgU.querySelector('#usrfU').readOnly=true; dlgU.querySelector('#usrfN').readOnly=true; }catch(_){} }
   [A,Tq,Q].forEach(x=>x.addEventListener('change',sync)); sync(); if(root){ Tq.disabled=true; }
   try{ homeRoleWire(dlgU,cur,A,Tq); }catch(_){}
+  /* Roles: Administrador y Técnico solo los asigna o quita un Administrador. El Administrador (sin ser Técnico) edita solo nombre, tipo, servicio, año, roles y acceso grupal. */
+  const rAdm=isRealAdmin(), rTec=isTechnicalAdmin();
+  if(!rAdm){ [A,Tq].forEach(x=>{ x.disabled=true; x.closest('label').title='Solo un Administrador asigna o quita este rol'; }); const nb=document.createElement('p'); nb.className='access-hint'; nb.textContent='Los roles Administrador y Técnico solo los asigna o quita un Administrador.'; sec.appendChild(nb); }
+  else Tq.disabled=!!root;
+  if(!rTec){ ['#usrfP','#usrfI'].forEach(q=>{ const el=dlgU.querySelector(q), lb=el&&el.closest('label'); if(lb) lb.hidden=true; }); const hf=dlgU.querySelector('#usrfHF'); if(hf){ hf.hidden=true; hf.dataset.lock='1'; } if(cur){ const U0=dlgU.querySelector('#usrfU'); if(U0){ U0.readOnly=true; U0.title='Solo el Técnico cambia el nombre de usuario'; } } }
   const gOn=!!(cur&&cur.grupal===true), gUsr=gOn&&cur.grupalPor==='usuario'; const gs=document.createElement('label'); gs.className='usr-chk'; gs.style.marginTop='8px';
   gs.innerHTML=`<input type="checkbox" id="usrfRG"${gOn?' checked':''}><span><b class="usr-grp-t">${GRP_IC}Permitir acceso desde cuenta grupal</b>${gUsr?' <em class="usr-gmark">Activado por el usuario</em>':''} <small>· Si está activo, se puede entrar a este usuario con los correos grupales. Si no, no aparece en las cuentas grupales.</small></span>`;
   sec.firstElementChild.nextElementSibling.appendChild(gs); const G=gs.querySelector('#usrfRG');
