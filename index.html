@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.74">
+<meta name="application-version" content="9.75">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2756,7 +2756,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.74 · Fecha de publicación: 19.11.26</div>
+  <div class="app-footer-version">Versión 9.75 · Fecha de publicación: 19.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -2967,6 +2967,7 @@ html body #dlgPatientFormat #ppEditorActions [data-dw=btnClear]{background:#fff!
 .cm-otros2 .cm-otros-row{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto;gap:8px;align-items:center}
 .cm-otros2 .cm-otros-row .cm-add{position:static}
 @media (max-width:600px){.cm-otros2 .cm-otros-row{grid-template-columns:1fr}}
+.usr-item .usr-nosad{color:#B4232A;font-weight:600}
 /* Agenda (Quirófano y Comité): mismos colores de acción */
 html body .qx-c-act .qx-btn.bad{color:#B42318;border-color:#F4C7C2;background:#FEF3F2}
 html body .qx-c-act .qx-btn.bad:hover{background:#FDE4E1}
@@ -16597,7 +16598,7 @@ function usrPend(u){ const k=ukey(u.usuario), o=HJM_OPS[k]; if(!o||o.op!=="set")
 function usrItem(u){
   const k=ukey(u.usuario);
   const pd=usrPend(u), tag=pd?`<span class="usr-pend" title="Está guardado en este equipo y en Drive, pero el HTML (index) todavía no lo trae: descarga el Index actualizado y súbelo a GitHub.">${pd==="nuevo"?"Nuevo · sin integrar al Index":"Editado · sin integrar al Index"}</span>`:"";
-  return `<div class="usr-item${pd?" usr-pd":""}" data-k="${esc(k)}"><div class="usr-nm">${tag}<b>${esc(u.nombre)}</b>${u.grupal===true?`<span class="usr-grp" title="Acceso desde cuenta grupal activo · lo activó ${u.grupalPor==="usuario"?"el usuario":"el Técnico"}" aria-label="Acceso desde cuenta grupal activo">${(window.HJM_GRP||{}).ic||""}</span>`:""}<small>${esc(u.servicio||"Sin servicio")}${resSuf(u)?" · "+esc(resSuf(u).trim()):""}${u.usuario!==u.nombre?" · Usuario: "+esc(u.usuario):""}${u.cp?" · CP "+esc(u.cp):""}${u.inicio?" · Inicio: "+(({nuevo:"Nuevo Paciente",censo:"Censo",quirofano:"Quirófano",comite:"Comité",hospitalizados:"Hospitalizados"})[u.inicio]||"Archivo"):""}${u.inicio!=="nuevo"&&((u.fclin&&u.fclin.length)||(u.fads&&u.fads.length))?" · Filtro: "+[(u.fclin&&u.fclin.length)?u.fclin.join(", "):"",(u.fads&&u.fads.length)?u.fads.length+(u.fads.length===1?" adscrito":" adscritos"):""].filter(Boolean).join(" · "):""}${adminRank(u)?" · "+esc(adminRank(u)):""}${u.quirofano===true?" · Rol Quirófano":""}</small></div><div class="usr-act"><button type="button" class="st-btn st-sm" data-edit="${esc(k)}">Editar</button>${isTechnicalAdmin()?`<button type="button" class="st-btn st-sm" data-del="${esc(k)}">Borrar</button>`:""}</div></div>`;
+  return `<div class="usr-item${pd?" usr-pd":""}" data-k="${esc(k)}"><div class="usr-nm">${tag}<b>${esc(u.nombre)}</b>${u.grupal===true?`<span class="usr-grp" title="Acceso desde cuenta grupal activo · lo activó ${u.grupalPor==="usuario"?"el usuario":"el Técnico"}" aria-label="Acceso desde cuenta grupal activo">${(window.HJM_GRP||{}).ic||""}</span>`:""}<small>${u.tipo==="adscrito"?(u.servicio?esc(u.servicio)+" · ":"Sin clínica · ")+(u.sad?"Servicio: "+esc(u.sad):"<span class=\"usr-nosad\">Sin servicio</span>"):esc(u.servicio||"Sin servicio")}${resSuf(u)?" · "+esc(resSuf(u).trim()):""}${u.usuario!==u.nombre?" · Usuario: "+esc(u.usuario):""}${u.cp?" · CP "+esc(u.cp):""}${u.inicio?" · Inicio: "+(({nuevo:"Nuevo Paciente",censo:"Censo",quirofano:"Quirófano",comite:"Comité",hospitalizados:"Hospitalizados"})[u.inicio]||"Archivo"):""}${u.inicio!=="nuevo"&&((u.fclin&&u.fclin.length)||(u.fads&&u.fads.length))?" · Filtro: "+[(u.fclin&&u.fclin.length)?u.fclin.join(", "):"",(u.fads&&u.fads.length)?u.fads.length+(u.fads.length===1?" adscrito":" adscritos"):""].filter(Boolean).join(" · "):""}${adminRank(u)?" · "+esc(adminRank(u)):""}${u.quirofano===true?" · Rol Quirófano":""}</small></div><div class="usr-act"><button type="button" class="st-btn st-sm" data-edit="${esc(k)}">Editar</button>${isTechnicalAdmin()?`<button type="button" class="st-btn st-sm" data-del="${esc(k)}">Borrar</button>`:""}</div></div>`;
 }
 function usrDraw(){
   const l=$s("stUsrList"); if(!l) return;
