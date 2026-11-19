@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.75">
+<meta name="application-version" content="9.78">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2756,7 +2756,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.75 · Fecha de publicación: 19.11.26</div>
+  <div class="app-footer-version">Versión 9.78 · Fecha de publicación: 19.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -2968,6 +2968,67 @@ html body #dlgPatientFormat #ppEditorActions [data-dw=btnClear]{background:#fff!
 .cm-otros2 .cm-otros-row .cm-add{position:static}
 @media (max-width:600px){.cm-otros2 .cm-otros-row{grid-template-columns:1fr}}
 .usr-item .usr-nosad{color:#B4232A;font-weight:600}
+/* v9.76 · Modo oscuro: superficies que seguían claras (barra de pestañas, agenda, editores de notas, capturas) */
+@media screen and (prefers-color-scheme: dark){
+:root:not([data-theme="light"]) #hjmNav{background:#141a21!important;border-color:#2b333d!important}
+:root:not([data-theme="light"]) #hjmNav button{color:#c9d1da!important} :root:not([data-theme="light"]) #hjmNav button[aria-current],:root:not([data-theme="light"]) #hjmNav button.on{color:#fff!important}
+:root:not([data-theme="light"]) #hjmNav .hn-n{background:#2b333d!important;color:#e6e8eb!important} :root:not([data-theme="light"]) #hjmNav .hn-n.warn{background:#5a4416!important;color:#ffd98a!important} :root:not([data-theme="light"]) #hjmNav .hn-sep{background:#2b333d!important}
+:root:not([data-theme="light"]) .cen-rv.cen-rv-okk{background:#18261e!important;border-color:#2c5a3e!important;color:#cfe9d8!important}
+:root:not([data-theme="light"]) #cenAlert{background:#3a1d22!important;border-color:#6b2e36!important;color:#f3b8bd!important}
+:root:not([data-theme="light"]) #cenSeg,:root:not([data-theme="light"]) .qx-seg{background:#232830!important;border-color:#343b44!important} :root:not([data-theme="light"]) #cenSeg button,:root:not([data-theme="light"]) .qx-seg button{background:transparent!important;color:#c9d1da!important} :root:not([data-theme="light"]) #cenSeg button[aria-pressed="true"],:root:not([data-theme="light"]) #cenSeg button.on,:root:not([data-theme="light"]) .qx-seg button.on,:root:not([data-theme="light"]) .qx-seg button[aria-selected="true"]{background:#2f6fb3!important;color:#fff!important}
+:root:not([data-theme="light"]) #residente,:root:not([data-theme="light"]) #cl-residente,:root:not([data-theme="light"]) input[readonly]:not([type=checkbox]):not([type=radio]){background:#232830!important;color:#c9d1da!important;border-color:#343b44!important}
+:root:not([data-theme="light"]) .qx-btn,:root:not([data-theme="light"]) .qx-fsel,:root:not([data-theme="light"]) .qw-d:not(.on):not([aria-current]),:root:not([data-theme="light"]) .qw-t,:root:not([data-theme="light"]) .qw > button,:root:not([data-theme="light"]) .qx-sum > div,:root:not([data-theme="light"]) .qx-fc button:not(.on),:root:not([data-theme="light"]) .qx-list,:root:not([data-theme="light"]) .qx-row,:root:not([data-theme="light"]) .qx-panel,:root:not([data-theme="light"]) .qc-h button,:root:not([data-theme="light"]) .qc-today,:root:not([data-theme="light"]) .qx-file{background:#1d2229!important;color:#e6e8eb!important;border-color:#343b44!important}
+:root:not([data-theme="light"]) .qw-d:not(.on):not([aria-current]) *,:root:not([data-theme="light"]) .qw-t *,:root:not([data-theme="light"]) .qx-sum > div *,:root:not([data-theme="light"]) .qx-sum > div{color:#e6e8eb!important} :root:not([data-theme="light"]) .qx-sum > div small,:root:not([data-theme="light"]) .qw-d:not(.on) small{color:#aab4bf!important}
+:root:not([data-theme="light"]) .qx-seg button[aria-pressed="true"],:root:not([data-theme="light"]) #cenSeg button[aria-pressed="true"]{background:#2f6fb3!important;color:#fff!important} :root:not([data-theme="light"]) .qx-btn.pri{background:#2f6fb3!important;border-color:#2f6fb3!important;color:#fff!important} :root:not([data-theme="light"]) #qxView h2,:root:not([data-theme="light"]) #qxView h3,:root:not([data-theme="light"]) .qx-two > section > h2,:root:not([data-theme="light"]) .qx-two > section > h3,:root:not([data-theme="light"]) .qx-two > section > div:first-child{color:#e6e8eb!important}
+:root:not([data-theme="light"]) .qx-dayh b,:root:not([data-theme="light"]) .qx-dayh{color:#e6e8eb!important} :root:not([data-theme="light"]) .qx-fc button{background:#1d2229!important;color:#e6e8eb!important;border-color:#343b44!important} :root:not([data-theme="light"]) .qx-fc button[aria-pressed="true"]{background:#2f6fb3!important;color:#fff!important;border-color:#2f6fb3!important}
+:root:not([data-theme="light"]) .qx-fsel select,:root:not([data-theme="light"]) .qx-fsel b,:root:not([data-theme="light"]) .qx-fsel span{color:#e6e8eb!important;background:transparent!important}
+:root:not([data-theme="light"]) .qx-row.sel{background:#24324a!important} :root:not([data-theme="light"]) .qx-row.off{opacity:.75} :root:not([data-theme="light"]) .qx-grp{background:#26303c!important;color:#c9d6e6!important}
+:root:not([data-theme="light"]) .qx-row b,:root:not([data-theme="light"]) .qx-row strong{color:#f1f3f5!important} :root:not([data-theme="light"]) .qx-row small,:root:not([data-theme="light"]) .qx-row span{color:#aab4bf}
+:root:not([data-theme="light"]) .qx-rsel em{background:#2b333d!important;color:#e6e8eb!important} :root:not([data-theme="light"]) .qx-rsel em.ok{background:#183626!important;color:#9fe0b8!important} :root:not([data-theme="light"]) .qx-rsel em.gold{background:#3d3214!important;color:#f3d27a!important} :root:not([data-theme="light"]) .qx-rsel em.warn{background:#43311a!important;color:#f7c58a!important}
+:root:not([data-theme="light"]) .qx-file{background:#3d3214!important;border-color:#6b5520!important}
+:root:not([data-theme="light"]) .qc,:root:not([data-theme="light"]) .qc *{color:#e6e8eb} :root:not([data-theme="light"]) .qc{background:#1d2229!important}
+:root:not([data-theme="light"]) .rich-box,:root:not([data-theme="light"]) .rich-box [contenteditable]{background:#1d2229!important;color:#e6e8eb!important} :root:not([data-theme="light"]) .rich-tools{background:#232830!important;border-color:#343b44!important} :root:not([data-theme="light"]) .rich-tools button{color:#c9d1da!important;background:transparent}
+:root:not([data-theme="light"]) .rich-copy-last{background:#1d3150!important;color:#bcd6f7!important;border-color:#2f4f7a!important} :root:not([data-theme="light"]) .rich-clear-content{background:#3a1d22!important;color:#f3b8bd!important;border-color:#6b2e36!important}
+:root:not([data-theme="light"]) .clinical-note-vitals,:root:not([data-theme="light"]) .signature,:root:not([data-theme="light"]) .indication-capture,:root:not([data-theme="light"]) #altaCapture,:root:not([data-theme="light"]) #altaCapture label,:root:not([data-theme="light"]) .clinical-field,:root:not([data-theme="light"]) .alta-check{background:#1d2229!important;color:#e6e8eb!important;border-color:#343b44!important}
+:root:not([data-theme="light"]) #clinicalForm :is(input,textarea,select):not([type=checkbox]):not([type=radio]),:root:not([data-theme="light"]) #altaCapture :is(input,textarea,select),:root:not([data-theme="light"]) [id^="capture-"]:is(input,textarea,select),:root:not([data-theme="light"]) #cl-tipo{background:#232830!important;color:#e6e8eb!important;border-color:#3a414a!important}
+:root:not([data-theme="light"]) .rb.rb-view,:root:not([data-theme="light"]) .rb.rb-drive{background:#232830!important;color:#e6e8eb!important;border-color:#3a414a!important}
+:root:not([data-theme="light"]) .clinical-notes-table tr,:root:not([data-theme="light"]) table.clinical-history tr{background:transparent!important}
+}
+@media (prefers-color-scheme: dark){
+html body #dlgPatientFormat #ppEditorActions [data-dw=btnClear]{background:#1E2A38!important;color:#DCE6F2!important;border-color:#3A4A5E!important}
+html body #dlgPatientFormat #ppEditorActions [data-dw=btnSave]{background:#2F5E8E!important;border-color:#2F5E8E!important}
+.clinical-note-vitals>legend{background:transparent!important;color:#E6E8EB!important}
+.clinical-note-vitals>legend small{color:#9AA4AF!important}
+}
+@media (max-width:600px){
+.qx-per{display:grid!important;grid-template-columns:1fr 1fr;gap:8px!important;align-items:stretch}
+.qx-per>select{grid-column:1/-1;width:100%!important;min-width:0}
+.qx-per>.qx-btn{width:100%;justify-content:center;margin:0!important}
+}
+@media (prefers-color-scheme: dark){
+.qx-tbl,.qx-tbl tr,.qx-tbl td{background-color:transparent}
+.qx-tblw,.qx-panel .qx-tbl tbody tr{background:#1C232B!important;color:#E6E8EB!important;border-color:#2F3843!important}
+.qx-panel .qx-tbl td{color:#E6E8EB!important}
+.qx-panel .qx-tbl td b{color:#F2F4F6!important}
+}
+@media (max-width:600px){
+.cl-filt{display:grid!important;grid-template-columns:1fr 1fr;gap:8px!important;align-items:end}
+.cl-filt>label{display:flex;flex-direction:column;align-items:stretch;gap:4px;margin:0!important;min-width:0}
+.cl-filt>label>select{width:100%!important;min-width:0}
+.cl-filt>.cen-btn{grid-column:1/-1;width:100%;justify-content:center;margin:0!important;min-height:38px;border:1px solid #9FB6CF!important;border-radius:10px!important;background:#fff!important;color:#23496F!important;font-weight:700}
+}
+@media (max-width:600px) and (prefers-color-scheme: dark){.cl-filt>.cen-btn{background:#1E2A38!important;color:#DCE6F2!important;border-color:#3A4A5E!important}
+}
+@media (prefers-color-scheme: dark){.qx-per>select{background:#1C232B!important;color:#E6E8EB!important;border-color:#2F3843!important}}
+@media (max-width:600px){html body .qx-panel .qx-tbl td.a{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px;padding:8px 0!important}html body .qx-panel .qx-tbl td.a::before{display:none!important}html body .qx-panel .qx-tbl td.a .qx-btn{width:100%!important;max-width:none!important;min-width:0!important;grid-column:auto!important;margin:0!important;justify-content:center}html body .qx-panel .qx-tbl td.a .qx-btn:only-child{grid-column:1/-1}}
+@media (prefers-color-scheme: dark){
+html body .qx-kpi{background:#1C232B!important;border-color:#2F3843!important;color:#E6E8EB!important}
+html body .qx-kpi b{color:#F2F4F6!important}
+html body .qx-kpi small{color:#A9B3BE!important}
+html body .qx-bar>span,html body .qx-bar>b{color:#E6E8EB!important}
+html body .qx-bar>span small{color:#9AA4AF!important}
+html body .qx-bar>em{background:#2A323C!important}
+}
 /* Agenda (Quirófano y Comité): mismos colores de acción */
 html body .qx-c-act .qx-btn.bad{color:#B42318;border-color:#F4C7C2;background:#FEF3F2}
 html body .qx-c-act .qx-btn.bad:hover{background:#FDE4E1}
