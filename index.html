@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.71">
+<meta name="application-version" content="9.72">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2756,7 +2756,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.71 · Fecha de publicación: 18.11.26</div>
+  <div class="app-footer-version">Versión 9.72 · Fecha de publicación: 18.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -2963,6 +2963,7 @@ html body #dlgPatientFormat #ppEditorActions [data-dw=btnClear]{background:#fff!
 @media print{#dxPromote{display:none!important}}
 @media (min-width:1101px){html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item.has-bed{grid-template-rows:auto auto 1fr!important;grid-template-areas:"bed name dx meta pend actions kebab" "bed exp dx meta pend actions kebab" ". . dx meta pend actions kebab"!important}html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item.has-bed>.cama-badge{align-self:center!important}html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item.has-bed .nmw{align-self:end!important}html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item.has-bed .tags{align-self:start!important}}
 @media (min-width:601px) and (max-width:900px){html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item.has-bed>.pp-pend{align-self:stretch!important;min-height:120px!important;max-height:none!important;height:auto!important}html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item.has-bed>.pinfo>.pp-meta,html:root body.pp-browse #pPanel #ppList#ppList#ppList:not(.hx)>.dlg-item.dlg-item.has-bed .pp-meta{align-self:start!important;margin-top:6px!important}}
+#dlgCenAdd.ca-hist .ca-bed,#dlgCenAdd.ca-hist .ca-clinical-fields .f:has(#cenIngProxy),#dlgCenAdd.ca-hist .ca-clinical-fields .f:has(#cenEhOut),#dlgCenAdd.ca-hist .ca-clinical-fields .f:has(#censoCirugias),#dlgCenAdd.ca-hist .ca-clinical-fields .f:has(#censoQT),#dlgCenAdd.ca-hist .ca-clinical-fields .f:has(#censoMT),#dlgCenAdd.ca-hist .ca-clinical-fields .f:has(#censoLabs),#dlgCenAdd.ca-hist .ca-clinical-fields .f:has(#censoPendientes),#dlgCenAdd.ca-hist .ca-clinical-fields .f:has(#censoEstatus),#dlgCenAdd.ca-hist #caBack{display:none!important}
 /* Agenda (Quirófano y Comité): mismos colores de acción */
 html body .qx-c-act .qx-btn.bad{color:#B42318;border-color:#F4C7C2;background:#FEF3F2}
 html body .qx-c-act .qx-btn.bad:hover{background:#FDE4E1}
@@ -14229,13 +14230,14 @@ function cenAddList(){
 async function cenAddOpen(){
  if(!accessRequire("agregar_censo"))return;
 
-  const d=cenAddEnsure(); if(!d) return; CENADD.mode="add";CENADD.selectedId=""; d.classList.remove("edit"); $("caTitle").textContent="Agregar paciente al censo"; $("caOk").textContent="Agregar paciente";
+  const d=cenAddEnsure(); if(!d) return; d.classList.remove("ca-hist"); CENADD.mode="add";CENADD.selectedId=""; d.classList.remove("edit"); $("caTitle").textContent="Agregar paciente al censo"; $("caOk").textContent="Agregar paciente";
   CENADD.open=true; CENADD.wasBrowse=document.body.classList.contains("pp-browse");
   document.body.classList.add("cen-add-on"); $("caQ").value=""; cenAddPhase(1); cenAddList();
   if(!d.open) d.showModal(); $("caQ").focus();
   try{ await ensureFolder(); if(!DRIVE_FILES.length) { DRIVE_FILES=onlyJsonFiles(await gcall("hjmList",FOLDER.id)); } cenAddList(); }catch(_){}
 }
 function cenAddClose(){
+  try{ const dd=$("dlgCenAdd"); if(dd) dd.classList.remove("ca-hist"); }catch(_){}
   const d=$("dlgCenAdd"); try{ const e=$("expediente"); if(e) e.readOnly=false; }catch(_){} CENADD.open=false; cenAddRestore(); if(d){ d.classList.remove("loading"); if(d.open) d.close(); } document.body.classList.remove("cen-add-on"); window.__cenKeepBg=false;
   try{ fill(DEFAULTS()); if($("ppSearch")) $("ppSearch").value=""; PP_AUTO=false; PP_MANUAL=false; PP_BROWSE=true; ppLayout(); renderPP(); }catch(_){}
   try{ if(CENADD.mode!=="hist"&&PP_VIEW!=="censoActual"){ const b=$("ppViewCenA"); if(b) b.click(); } }catch(_){}
@@ -18901,9 +18903,9 @@ try{(function(){
     try{ cenAddNew(); }catch(_){} await new Promise(r=>setTimeout(r,120));
     const n=partir(p.nombre);
     put('expediente',p.exp); put('apPaterno',n.p); put('apMaterno',n.m); put('nombres',n.n); put('fnac',fecha(p.fnac)); put('cama','CE'); put('medico',p.adsRaw||p.ads);
-    put('clinica',(Array.isArray(p.cf)&&p.cf[0])||p.clin); put('diagnostico',p.dx); put('fIngreso',fecha(p.ing)); if(p.ingp) put('ingresosPrev',p.ingp);
-    put('censoCirugias',p.cir); put('censoQT',p.qt); put('censoMT',p.mt); put('censoLabs',p.labs); put('censoEstatus',p.est);
+    put('clinica',(Array.isArray(p.cf)&&p.cf[0])||p.clin); put('diagnostico',p.dx); if(p.ingp) put('ingresosPrev',p.ingp);
     try{ const h=$('hospOnco'); if(h) h.value=''; }catch(_){}
+    try{ const d=$('dlgCenAdd'); if(d) d.classList.add('ca-hist'); const ci=d&&d.querySelector('.ca-clinical-fields h3'); if(ci) ci.textContent='Datos clínicos de identificación'; const it=d&&d.querySelector('.ca-intro'); if(it) it.textContent='Solo se crea la ficha de identificación (no se hospitaliza ni se agrega al censo).'; }catch(_){}
     try{ refresh(); }catch(_){} try{ cenAddPresentation(false); }catch(_){}
     try{ notify('Datos tomados del censo del '+(p._f||'')+'. Verifica nombre, sexo y adscrito, y presiona «Crear paciente».','info',{ms:8000}); }catch(_){}
   }
