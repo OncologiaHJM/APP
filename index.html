@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.67">
+<meta name="application-version" content="9.68">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2756,7 +2756,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.67 · Fecha de publicación: 18.11.26</div>
+  <div class="app-footer-version">Versión 9.68 · Fecha de publicación: 18.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -16764,7 +16764,7 @@ async function bakReadAll(list,rd,tick){
   const w=async()=>{ while(next<list.length){ const i=next++,f=list[i]; try{ const t=await rd(f); if(typeof t==="string") out[i]={name:String(f.name||f.id).trim().replace(/[\\\/:*?"<>|]+/g,"_"),text:t}; }catch(_){} done++; if(tick) tick(done,list.length); } };
   await Promise.all([w(),w(),w(),w()]); const seen={}; return out.filter(Boolean).map(o=>{ const k=o.name.toLowerCase(); if(seen[k]){ const m=/^(.*?)(\.json)?$/i.exec(o.name); o.name=m[1]+" ("+(++seen[k])+")"+(m[2]||""); } else seen[k]=1; return o; });
 }
-async function bakReadAgenda(){ const out=[]; for(const [t,n] of [["comite","COMITE.json"],["quirofano","QUIROFANO.json"]]){ try{ const r=await G("hjmAgendaLeer",t,null); if(r&&r.items) out.push({name:n,text:JSON.stringify({app:"agenda-hjm",tipo:t,v:1,ts:r.ts||0,items:r.items})}); }catch(_){} } return out; }
+async function bakReadAgenda(){ const out=[]; for(const [t,n] of [["comite","COMITE"],["quirofano","QUIROFANO"]]){ try{ const r=await G("hjmAgendaLeer",t,null); if(r&&r.items) out.push({name:n+".json",text:JSON.stringify({app:"agenda-hjm",tipo:t,v:1,ts:r.ts||0,items:r.items})}); }catch(_){} try{ const h=await G("hjmAgendaHistorico",t,null); if(h&&h.items&&Object.keys(h.items).length) out.push({name:n+"_HISTORICO.json",text:JSON.stringify({app:"agenda-hjm-hist",tipo:t,v:1,meses:h.meses||[],items:h.items})}); }catch(_){} } return out; }
 async function bakInfo(){ try{ BAKINFO=await G("hjmRespaldoUltimos"); BAKERR=""; }catch(e){ BAKINFO=null; BAKERR=(e&&e.code==="accion")||/Acción no permitida/i.test(String(e&&e.message))?"Falta actualizar Codigo.gs a la versión 18.":"No se pudo consultar la última copia en línea."; } return BAKINFO; }
 async function bakRun(force,say){
   if(!canPerm('descargar_bases'))return false;
@@ -16832,8 +16832,8 @@ function bakDiffCen(oldF,newF){ const nm=new Map(newF.map(f=>[bakNameKey(f.name)
     if(!n||!Array.isArray(n.pac)) out.push(Object.assign(who,{tipo:"Censo dañado",det:["El censo actual ya no tiene su lista de pacientes"]})); }); return out; }
 function bakDiffEst(o,n){ const out=[]; if(!o) return out; if(!n){ out.push({name:"_ESTADISTICAS_USO.json",exp:"Estadísticas",nombre:"",tipo:"Archivo perdido",det:["No se encontró el archivo de estadísticas actual"]}); return out; }
   return out; }
-function bakDiffAg(oldF,newF){ const out=[]; (oldF||[]).forEach(f=>{ const g=(newF||[]).find(x=>x.name===f.name), who={name:f.name,exp:f.name,nombre:""}; let o=null; try{ o=JSON.parse(f.text); }catch(_){} if(!o||!o.items||!Object.keys(o.items).length) return;
-  if(!g){ out.push(Object.assign(who,{tipo:"Archivo perdido",det:["No se pudo leer el archivo actual de la agenda"]})); return; } let n=null; try{ n=JSON.parse(g.text); }catch(_){} if(!n||!n.items||!Object.keys(n.items).length) out.push(Object.assign(who,{tipo:"Archivo vacío o dañado",det:["La agenda actual no tiene entradas (antes "+Object.keys(o.items).length+")"]})); }); return out; }
+function bakDiffAg(oldF,newF){ const out=[], cnt=L=>{ const m={}; (L||[]).forEach(f=>{ const k=String(f.name).split(/[._]/)[0]; let o=null; try{ o=JSON.parse(f.text); }catch(_){ o=null; } m[k]=(m[k]||0)+(o&&o.items?Object.keys(o.items).length:0); }); return m; }, a=cnt(oldF), b=cnt(newF);
+  Object.keys(a).forEach(k=>{ if(a[k]&&!b[k]) out.push({name:k+".json",exp:k==="COMITE"?"Comité":"Quirófano",nombre:"",tipo:"Archivo perdido o vacío",det:["La agenda actual (activa + histórico) no tiene entradas; antes tenía "+a[k]]}); }); return out; }
 async function bakReadCens(say){ let l=[]; try{ l=await G("hjmCensoList"); }catch(_){} l=(Array.isArray(l)?l:[]).filter(x=>x&&/\.json$/i.test(x.name||""));
   return await bakReadAll(l,async f=>{ const r=await G("hjmCensoRead",f.id); return r&&r.content; },(d,t)=>say&&say("Leyendo censos actuales "+d+" de "+t+"…")); }
 async function bakLoadSet(grp,say){ const o={pac:null,cen:null,est:null};
@@ -19404,7 +19404,8 @@ function applyLocal(t,c){ const it=AG[t].items, now=c.ts||Date.now(), u=c.por||m
   if(t==='quirofano'){ if(e.comp&&!(e.nota&&e.rev)) delete e.comp; if(e.aut&&e.noaut) delete e.noaut; }
   if(c.a) e.h=(e.h||[]).concat([{ts:now,por:u,a:c.a}]).slice(-40); e.mod=now; it[c.id]=e; }
 function agChange(t,id,set,a,op){ const c={id,set:set||{},a:a||'',op:op||'set',ts:Date.now(),por:me()}; applyLocal(t,c); AG[t].q.push(c); qSave(t); cSave(t); renderAll(); agFlush(t); return AG[t].items[id]; }
-function agServer(t,res){ if(!res||res.igual) return; const A=AG[t]; A.items=res.items||{}; A.sello=res.sello; A.loaded=true; A.err=''; A.at=Date.now(); A.q.forEach(c=>applyLocal(t,c)); cSave(t); renderAll(); }
+async function agHist(t,hs){ const A=AG[t]; if(A.histBusy) return; A.histBusy=true; try{ const r=await gcall('hjmAgendaHistorico',t,null); if(r&&r.items){ A.hist=r.items; A.hsv=r.sello; A.items=Object.assign({},A.hist,A.act||{}); (A.q||[]).forEach(c=>applyLocal(t,c)); cSave(t); renderAll(); } }catch(_){ A.hsv=hs; } finally{ A.histBusy=false; } }
+function agServer(t,res){ if(!res||res.igual) return; const A=AG[t]; A.act=res.items||{}; A.items=Object.assign({},A.hist||{},A.act); if(res.hs!=null&&res.hs!==A.hsv&&res.hs>0) setTimeout(()=>agHist(t,res.hs),0); A.sello=res.sello; A.loaded=true; A.err=''; A.at=Date.now(); A.q.forEach(c=>applyLocal(t,c)); cSave(t); renderAll(); }
 async function agFlush(t){ const A=AG[t]; if(A.busy||!A.q.length) return; if(!logged()) return; A.busy=true;
   try{ while(A.q.length){ const c=A.q[0]; let res; const send={id:c.id,op:c.op,set:c.set,a:c.a};
       try{ res=await gcall('hjmAgendaCambiar',t,[send]); }
