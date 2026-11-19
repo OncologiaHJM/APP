@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.63">
+<meta name="application-version" content="9.65">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2756,7 +2756,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.63 · Fecha de publicación: 18.11.26</div>
+  <div class="app-footer-version">Versión 9.65 · Fecha de publicación: 18.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -10913,7 +10913,8 @@ async function integrarPendientes(id,obj){
     if(!res||res.conflicto) return null;                             // otro equipo guardó en ese instante: se intenta la próxima vez
     if(res.id&&res.modified) try{ upsertDriveFile(res); }catch(_){}
     /* v2.154 · Notas hechas con el skill notion-hjm: cuentan como «Notas realizadas» del residente asignado a la nota (solo si se guardaron bien y no estaban ya) */
-    try{ if(window.__hjmStatsBumpAs) contar.forEach(r=>{ const k=noteStatsUser(r); if(k) window.__hjmStatsBumpAs(k,"nts"); }); }catch(_){}
+    try{ if(window.__hjmStatsBumpAs) contar.forEach(r=>{ const k=noteStatsUser(r); if(k) window.__hjmStatsBumpAs(k,"nts"); }); }catch(_){}    /* v9.64 · Notas de comité que llegan por PendientesJCF (skill): ligan la agenda de Comité/Quirófano y marcan sesionado, igual que si se guardaran en la app */
+    try{ let q=window.HJM_QX; try{ if(!q&&parent!==window) q=parent.HJM_QX; }catch(_){} if(q&&q.noteSaved) contar.forEach(r=>{ const p=r&&r.p||{}; let isC=false; try{ isC=normalizedNoteType(p.tipo)==="Comité Multidisciplinario"; }catch(_){ isC=/comit|sesi[oó]n multi/i.test(String(p.tipo||"")); } if(!isC) return; const tx=String(p.dictamen||p.contenido||p.texto||"").replace(/<[^>]+>|\*\*/g,"").replace(/\s+/g," ").trim(); q.noteSaved({exp:String(exp||"").trim(),id:r.id,fecha:p.fecha,hora:p.hora,dic:tx.slice(0,240),nombre:(p.enc&&p.enc.nombreCompleto)||""}); }); }catch(_){}
   }
   for(const pid of listos){ try{ await gcall("hjmBorrarPendiente",pid); }catch(_){} }   // solo después de guardar bien
   if(descartados) try{ mini("Se descartaron "+descartados+" pendiente(s) dañados o vacíos del Exp. "+exp+".","",0); }catch(_){}
@@ -19252,7 +19253,7 @@ window.hjmClinColor=clinOf;
 
 /* ---------- Sesión y roles ---------- */
 function me(){ try{ const r=userRecord(sessionUserName()); return r?r.usuario:String(sessionUserName()||''); }catch(_){ return ''; } }
-function whoName(u){ if(!u) return ''; try{ const r=userRecord(u); if(r) return (window.HJM_BETA&&HJM_BETA.name)?HJM_BETA.name(r):r.nombre; }catch(_){} return String(u); }
+function whoName(u){ if(!u) return ''; { const m=/^SKILL\s*·\s*(.+)$/i.exec(String(u)); if(m) return m[1]+' (desde skill)'; } try{ const r=userRecord(u); if(r) return (window.HJM_BETA&&HJM_BETA.name)?HJM_BETA.name(r):r.nombre; }catch(_){} return String(u); }
 function isQxRole(){ try{ const r=userRecord(sessionUserName()); if(r&&r.quirofano===false) return false; if(window.HJM_BETA&&HJM_BETA.ses&&HJM_BETA.ses.quirofano) return true; return !!r&&(r.quirofano===true||(r.quirofano!==false&&typeof isTechAdminRecord==='function'&&isTechAdminRecord(r))); }catch(_){ return false; } }
 function logged(){ try{ return !!sessionUserName()&&!document.querySelector('#dlgResidentGate[open]'); }catch(_){ return false; } }
 
@@ -19625,7 +19626,7 @@ function fcHTML(st,all){ const m=new Map(); all.filter(e=>!offE(e)).forEach(e=>{
 function canDelE(e,t){ if(!e) return false; const locked=!!(e.aut||e.noaut);
   if(t==='quirofano'){ if(isQxRole()) return true; return !locked&&(isMine(e)||techDel()); }
   return isMine(e)||techDel(); }
-function isMine(e){ const u=me(); return !!(u&&e&&e.creado&&String(e.creado.por||'').toLowerCase()===String(u).toLowerCase()); }
+function isMine(e){ const u=me(); if(!(u&&e&&e.creado)) return false; const por=String(e.creado.por||''); if(por.toLowerCase()===String(u).toLowerCase()) return true; if(!e.creado.skill) return false; try{ const r=userRecord(u), n=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]/g,''); return !!(r&&n(por.replace(/^SKILL\s*·\s*/i,''))===n(r.nombre)); }catch(_){ return false; } }
 function qxCard(e){ if(offE(e)) return offCard(e,'quirofano'); const ci=clinOf(e.clin), age=ageOf(e.fnac,e.fecha), canEd=can('editar_quirofano'), role=isQxRole();
   let act='';
   if(e.res){ act=`<span class="qx-chip ${e.res.v==='operado'?'ok':'warn'}">${e.res.v==='operado'?'Se operó':'Se difirió'}${e.res.motivo?' · '+H(e.res.motivo):''}</span>`; }
