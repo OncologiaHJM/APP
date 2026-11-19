@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.66">
+<meta name="application-version" content="9.67">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2756,7 +2756,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.66 · Fecha de publicación: 18.11.26</div>
+  <div class="app-footer-version">Versión 9.67 · Fecha de publicación: 18.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -16764,13 +16764,14 @@ async function bakReadAll(list,rd,tick){
   const w=async()=>{ while(next<list.length){ const i=next++,f=list[i]; try{ const t=await rd(f); if(typeof t==="string") out[i]={name:String(f.name||f.id).trim().replace(/[\\\/:*?"<>|]+/g,"_"),text:t}; }catch(_){} done++; if(tick) tick(done,list.length); } };
   await Promise.all([w(),w(),w(),w()]); const seen={}; return out.filter(Boolean).map(o=>{ const k=o.name.toLowerCase(); if(seen[k]){ const m=/^(.*?)(\.json)?$/i.exec(o.name); o.name=m[1]+" ("+(++seen[k])+")"+(m[2]||""); } else seen[k]=1; return o; });
 }
+async function bakReadAgenda(){ const out=[]; for(const [t,n] of [["comite","COMITE.json"],["quirofano","QUIROFANO.json"]]){ try{ const r=await G("hjmAgendaLeer",t,null); if(r&&r.items) out.push({name:n,text:JSON.stringify({app:"agenda-hjm",tipo:t,v:1,ts:r.ts||0,items:r.items})}); }catch(_){} } return out; }
 async function bakInfo(){ try{ BAKINFO=await G("hjmRespaldoUltimos"); BAKERR=""; }catch(e){ BAKINFO=null; BAKERR=(e&&e.code==="accion")||/Acción no permitida/i.test(String(e&&e.message))?"Falta actualizar Codigo.gs a la versión 18.":"No se pudo consultar la última copia en línea."; } return BAKINFO; }
 async function bakRun(force,say){
   if(!canPerm('descargar_bases'))return false;
   if(BAKRUN) return false; BAKRUN=true; const key=bakKey(); say=say||(()=>{});
   try{
     await ensureFolder();
-    if(!force){ const inf=await bakInfo(); if(!inf) return false; const ok=k=>inf[k]&&inf[k].name===k+"_"+key+".zip"; if(ok("PACIENTES")&&ok("CENSOS")) return true; }
+    if(!force){ const inf=await bakInfo(); if(!inf) return false; const ok=k=>inf[k]&&inf[k].name===k+"_"+key+".zip"; if(ok("PACIENTES")&&ok("CENSOS")&&(ok("AGENDA")||!("AGENDA" in inf))) return true; }
     let r1,r2;
     say("Respaldo semanal: leyendo expedientes…");
     const pl=onlyJsonFiles(await G("hjmList",FOLDER.id));
@@ -16781,8 +16782,9 @@ async function bakRun(force,say){
     const cl=(Array.isArray(cl0)?cl0:[]).filter(x=>x&&/\.json$/i.test(x.name||""));
     const cf=await bakReadAll(cl,async f=>{ const r=await G("hjmCensoRead",f.id); return r&&r.content; },(d,t)=>say("Respaldo semanal: censos "+d+" de "+t+"…"));
     if(cf.length){ say("Respaldo semanal: guardando censos…"); r2=await bakUpload("CENSOS_"+key+".zip",await bakZip(cf),force); }
+    let af=[]; try{ say("Respaldo semanal: leyendo Comité y Quirófano…"); af=await bakReadAgenda(); if(af.length){ say("Respaldo semanal: guardando Comité y Quirófano…"); await bakUpload("AGENDA_"+key+".zip",await bakZip(af),force); } }catch(_){}
     try{ await syncRemote(); const o=remoteCache||await loadRemote(); if(o){ const wire=Object.assign({},o,{app:"solicitudes-hjm",tipo:"hjm-stats",datos:{expediente:"_ESTADISTICAS",nombres:"Estadísticas de uso"}}); await G("hjmEstadisticasRespaldo","ESTADISTICAS_"+key+".json",JSON.stringify(wire),JSON.stringify({})); } }catch(_){}
-    if(!(r1&&r1.existe)) await bakReviewAfter({pac:pf,cen:cf,est:remoteCache},key,say);
+    if(!(r1&&r1.existe)) await bakReviewAfter({pac:pf,cen:cf,est:remoteCache,ag:af},key,say);
     await bakInfo(); BAKERR="";
     say("Respaldo semanal guardado en línea","ok"); return true;
   }catch(e){ BAKERR=(e&&e.code==="accion")||/Acción no permitida/i.test(String(e&&e.message))?"Falta actualizar Codigo.gs a la versión 18.":"No se pudo hacer el respaldo en línea: "+friendly(e); say(""); return false; }
@@ -16812,9 +16814,7 @@ function bakDiff(oldF,newF){
   oldF.forEach(f=>{ if(!/\.json$/i.test(f.name)||/^_/.test(f.name)) return; let o=null; try{ o=JSON.parse(f.text); }catch(_){ return; } const d=(o&&o.datos)||{}, who={name:f.name,exp:String(d.expediente||""),nombre:String(d.nombres||d.nombre||[d.apellidoPaterno,d.apellidoMaterno,d.nombres].filter(Boolean).join(" ")||"")};
     const g=nm.get(bakNameKey(f.name))||byExp.get(ek(d.expediente)); if(!g){ out.push(Object.assign(who,{tipo:"Archivo perdido",det:["El expediente ya no está en la carpeta de pacientes"]})); return; }
     let n=null; try{ n=JSON.parse(g.text); }catch(_){ out.push(Object.assign(who,{tipo:"Archivo dañado",det:["El archivo actual no se puede leer"]})); return; }
-    const a=bakCounts(o), b=bakCounts(n), det=[]; Object.keys(a).forEach(k=>{ if((b[k]||0)<a[k]) det.push(`${a[k]-(b[k]||0)} ${BAK_LBL(k)} menos (${a[k]} → ${b[k]||0})`); });
-    const dn=(n&&n.datos)||{}; Object.keys(d).forEach(k=>{ const v=String(d[k]==null?"":d[k]).trim(); if(v&&typeof d[k]!=="object"&&!String(dn[k]==null?"":dn[k]).trim()) det.push(`«${k}» quedó vacío (antes: ${v.slice(0,40)})`); });
-    if(det.length) out.push(Object.assign(who,{tipo:"Datos perdidos",det})); });
+    if(!n||typeof n!=="object"||!n.datos) out.push(Object.assign(who,{tipo:"Archivo dañado",det:["El archivo actual ya no tiene la hoja de datos"]})); });   /* v9.67 · solo archivos completos (perdidos o dañados); los cambios de datos dentro de un expediente no se reportan como pérdida */
   return out;
 }
 async function bakReadCurrent(say){ await ensureFolder(); const pl=onlyJsonFiles(await G("hjmList",FOLDER.id));
@@ -16822,47 +16822,45 @@ async function bakReadCurrent(say){ await ensureFolder(); const pl=onlyJsonFiles
 let BAKLIST=null, BAKREV=null, BAKVIEW=null;
 /* v8.21 · una copia = una fecha: PACIENTES_, CENSOS_ y ESTADISTICAS_ del mismo DDMMAA se revisan, ven y restauran juntos */
 const bakDKey=n=>{ const m=/_(\d{6})\.(zip|json)$/i.exec(String(n||"")); return m?m[1]:""; }, bakDLbl=k=>k.slice(0,2)+"."+k.slice(2,4)+"."+k.slice(4,6), bakDSort=k=>k.slice(4,6)+k.slice(2,4)+k.slice(0,2);
-function bakGroups(){ const g={}; (BAKLIST||[]).forEach(x=>{ const k=bakDKey(x.name), t=/^PACIENTES_/.test(x.name)?"pac":/^CENSOS_/.test(x.name)?"cen":/^ESTADISTICAS_/.test(x.name)?"est":""; if(!k||!t) return; (g[k]=g[k]||{k})[t]=x; });
+function bakGroups(){ const g={}; (BAKLIST||[]).forEach(x=>{ const k=bakDKey(x.name), t=/^PACIENTES_/.test(x.name)?"pac":/^CENSOS_/.test(x.name)?"cen":/^AGENDA_/.test(x.name)?"ag":/^ESTADISTICAS_/.test(x.name)?"est":""; if(!k||!t) return; (g[k]=g[k]||{k})[t]=x; });
   return Object.values(g).filter(x=>x.pac||x.cen).sort((a,b)=>bakDSort(b.k).localeCompare(bakDSort(a.k))); }
 async function bakListLoad(){ try{ const l=await G("hjmRespaldoLista"); BAKLIST=Array.isArray(l)?l:[]; }catch(e){ BAKLIST=null; } try{ const r=await G("hjmRespaldoRevision"); BAKREV=r&&r.content?JSON.parse(r.content):null; }catch(_){ BAKREV=null; } }
 function bakDiffCen(oldF,newF){ const nm=new Map(newF.map(f=>[bakNameKey(f.name),f])), out=[];
   oldF.forEach(f=>{ if(!/\.json$/i.test(f.name)) return; let o; try{ o=JSON.parse(f.text); }catch(_){ return; } const g=nm.get(bakNameKey(f.name)), who={name:f.name,exp:f.name.replace(/\.json$/i,""),nombre:"Censo "+(o.fecha||"")};
     if(!g){ out.push(Object.assign(who,{tipo:"Censo perdido",det:["El archivo del censo ya no está en la carpeta de censos"]})); return; }
     let n; try{ n=JSON.parse(g.text); }catch(_){ out.push(Object.assign(who,{tipo:"Censo dañado",det:["El censo actual no se puede leer"]})); return; }
-    const det=[], cp=x=>(x&&Array.isArray(x.pac)?x.pac.length:0), cr=x=>Object.values(((x&&x.rev)||{}).f||{}).filter(v=>String(v||"").trim()).length;
-    if(cp(n)<cp(o)) det.push(`${cp(o)-cp(n)} paciente(s) menos (${cp(o)} → ${cp(n)})`); if(cr(n)<cr(o)) det.push(`${cr(o)-cr(n)} dato(s) del reverso vacíos (${cr(o)} → ${cr(n)})`);
-    if(det.length) out.push(Object.assign(who,{tipo:"Datos perdidos",det})); }); return out; }
+    if(!n||!Array.isArray(n.pac)) out.push(Object.assign(who,{tipo:"Censo dañado",det:["El censo actual ya no tiene su lista de pacientes"]})); }); return out; }
 function bakDiffEst(o,n){ const out=[]; if(!o) return out; if(!n){ out.push({name:"_ESTADISTICAS_USO.json",exp:"Estadísticas",nombre:"",tipo:"Archivo perdido",det:["No se encontró el archivo de estadísticas actual"]}); return out; }
-  const oc=Object.keys(o.censos||{}), nc=new Set(Object.keys(n.censos||{})), lost=oc.filter(k=>!nc.has(k)), det=[];
-  if(lost.length) det.push(`${lost.length} resumen(es) de censo perdidos: ${lost.slice(0,8).map(k=>k.slice(8)+"."+k.slice(5,7)+"."+k.slice(2,4)).join(", ")}${lost.length>8?"…":""}`);
-  const od=Object.keys(o.dev||{}).length, nd=Object.keys(n.dev||{}).length; if(nd<od) det.push(`${od-nd} registro(s) de uso de equipos menos (${od} → ${nd})`);
-  if(det.length) out.push({name:"_ESTADISTICAS_USO.json",exp:"Estadísticas",nombre:"",tipo:"Datos perdidos",det,lost}); return out; }
+  return out; }
+function bakDiffAg(oldF,newF){ const out=[]; (oldF||[]).forEach(f=>{ const g=(newF||[]).find(x=>x.name===f.name), who={name:f.name,exp:f.name,nombre:""}; let o=null; try{ o=JSON.parse(f.text); }catch(_){} if(!o||!o.items||!Object.keys(o.items).length) return;
+  if(!g){ out.push(Object.assign(who,{tipo:"Archivo perdido",det:["No se pudo leer el archivo actual de la agenda"]})); return; } let n=null; try{ n=JSON.parse(g.text); }catch(_){} if(!n||!n.items||!Object.keys(n.items).length) out.push(Object.assign(who,{tipo:"Archivo vacío o dañado",det:["La agenda actual no tiene entradas (antes "+Object.keys(o.items).length+")"]})); }); return out; }
 async function bakReadCens(say){ let l=[]; try{ l=await G("hjmCensoList"); }catch(_){} l=(Array.isArray(l)?l:[]).filter(x=>x&&/\.json$/i.test(x.name||""));
   return await bakReadAll(l,async f=>{ const r=await G("hjmCensoRead",f.id); return r&&r.content; },(d,t)=>say&&say("Leyendo censos actuales "+d+" de "+t+"…")); }
 async function bakLoadSet(grp,say){ const o={pac:null,cen:null,est:null};
   if(grp.pac){ say&&say("Leyendo copia de pacientes…"); o.pac=await bakUnzip(await bakDownload(grp.pac.id)); }
   if(grp.cen){ say&&say("Leyendo copia de censos…"); o.cen=await bakUnzip(await bakDownload(grp.cen.id)); }
+  if(grp.ag){ say&&say("Leyendo copia de Comité y Quirófano…"); try{ o.ag=await bakUnzip(await bakDownload(grp.ag.id)); }catch(_){} }
   if(grp.est){ say&&say("Leyendo copia de estadísticas…"); try{ const u=await bakDownload(grp.est.id); o.est=JSON.parse(new TextDecoder().decode(u)); }catch(_){} } return o; }
-function bakCompare(old,cur){ return {pac:old.pac&&cur.pac?bakDiff(old.pac,cur.pac):[],cen:old.cen&&cur.cen?bakDiffCen(old.cen,cur.cen):[],est:old.est?bakDiffEst(old.est,cur.est):[]}; }
-const bakNLost=d=>d?(d.pac||[]).length+(d.cen||[]).length+(d.est||[]).length:0;
+function bakCompare(old,cur){ return {pac:old.pac&&cur.pac?bakDiff(old.pac,cur.pac):[],cen:old.cen&&cur.cen?bakDiffCen(old.cen,cur.cen):[],est:old.est?bakDiffEst(old.est,cur.est):[],ag:old.ag&&cur.ag?bakDiffAg(old.ag,cur.ag):[]}; }
+const bakNLost=d=>d?(d.pac||[]).length+(d.cen||[]).length+(d.est||[]).length+(d.ag||[]).length:0;
 async function bakReviewAfter(cur,key,say){
   try{ await bakListLoad(); const prev=bakGroups().filter(g=>g.k!==key)[0]; if(!prev) return; say&&say("Respaldo semanal: comparando con la copia del "+bakDLbl(prev.k)+"…");
     const old=await bakLoadSet(prev), dif=bakCompare(old,cur);
     const rev={fecha:new Date().toISOString(),nuevo:bakDLbl(key),previo:bakDLbl(prev.k),dif,visto:false};
     await G("hjmRespaldoRevision",JSON.stringify(rev)); BAKREV=rev; }catch(_){}
 }
-function bakDifTable(d){ const rows=[["Pacientes",d.pac],["Censos",d.cen],["Estadísticas",d.est]].filter(x=>x[1]&&x[1].length);
+function bakDifTable(d){ const rows=[["Pacientes",d.pac],["Censos",d.cen],["Comité y Quirófano",d.ag],["Estadísticas",d.est]].filter(x=>x[1]&&x[1].length);
   return rows.map(([t,L])=>`<h4 class="det-h">${t} · ${L.length}</h4><div class="st-scroll"><table class="st-act"><thead><tr><th>${t==="Pacientes"?"Expediente":"Archivo"}</th><th>${t==="Pacientes"?"Paciente":""}</th><th>Qué pasó</th><th>Detalle</th></tr></thead><tbody>${L.map(x=>`<tr><td>${esc(x.exp||x.name)}</td><td>${esc(x.nombre||"")}</td><td><b>${esc(x.tipo)}</b></td><td>${x.det.map(esc).join("<br>")}</td></tr>`).join("")}</tbody></table></div>`).join(""); }
 function bakCardHTML(){
-  const adm=isAdmin(), R=BAKREV, d=R&&(R.dif||(R.perdidos?{pac:R.perdidos,cen:[],est:[]}:null)), n=bakNLost(d);
-  const warn=n?`<div class="bk-warn"><b>⚠ Posible pérdida de datos</b> entre la copia del ${esc(R.previo)} y la del ${esc(R.nuevo)} (revisado ${new Date(R.fecha).toLocaleString("es-MX",{dateStyle:"short",timeStyle:"short"})}).${bakDifTable(d)}<small>Para recuperarlos usa «Restaurar» en la copia del ${esc(R.previo)}: se suma lo perdido sin borrar nada de lo actual.</small></div>`
-    :(R?`<div class="st-msg">✓ Última revisión (copia del ${esc(R.previo)} → ${esc(R.nuevo)}): sin pérdida de pacientes, censos ni estadísticas.</div>`:"");
+  const adm=isAdmin(), R=BAKREV, d0=R&&(R.dif||(R.perdidos?{pac:R.perdidos,cen:[],est:[]}:null)), d=d0?Object.fromEntries(Object.entries(d0).map(([k,L])=>[k,(Array.isArray(L)?L:[]).filter(x=>x&&x.tipo!=="Datos perdidos")])):null, n=bakNLost(d);
+  const warn=n?`<div class="bk-warn"><b>⚠ Posible pérdida de archivos</b> entre la copia del ${esc(R.previo)} y la del ${esc(R.nuevo)} (revisado ${new Date(R.fecha).toLocaleString("es-MX",{dateStyle:"short",timeStyle:"short"})}).${bakDifTable(d)}<small>Para recuperarlos usa «Restaurar» en la copia del ${esc(R.previo)}: se suma lo perdido sin borrar nada de lo actual.</small></div>`
+    :(R?`<div class="st-msg">✓ Última revisión (copia del ${esc(R.previo)} → ${esc(R.nuevo)}): sin archivos perdidos de pacientes, censos, Comité/Quirófano ni estadísticas.</div>`:"");
   const G0=bakGroups(), part=(x,t)=>x?`<span class="bk-pt" title="${esc(x.name)} · ${(x.size/1048576).toFixed(1)} MB">✓ ${t}</span>`:`<span class="bk-pt bk-no">— ${t}</span>`;
-  const tbl=BAKLIST===null?`<div class="st-msg">Cargando copias…</div>`:G0.length?`<div class="st-scroll"><table class="st-act"><thead><tr><th>Copia</th><th>Contiene</th><th></th></tr></thead><tbody>${G0.map(g=>`<tr><td class="nm">${bakDLbl(g.k)}</td><td>${part(g.pac,"Pacientes")} ${part(g.cen,"Censos")} ${part(g.est,"Estadísticas")}</td><td style="white-space:nowrap"><button type="button" class="st-btn st-sm" data-bkv="${g.k}">Ver</button>${adm?` <button type="button" class="st-btn st-sm" data-bkr="${g.k}">Restaurar</button>`:""}</td></tr>`).join("")}</tbody></table></div>`:`<div class="st-msg">Aún no hay copias semanales.</div>`;
+  const tbl=BAKLIST===null?`<div class="st-msg">Cargando copias…</div>`:G0.length?`<div class="st-scroll"><table class="st-act"><thead><tr><th>Copia</th><th>Contiene</th><th></th></tr></thead><tbody>${G0.map(g=>`<tr><td class="nm">${bakDLbl(g.k)}</td><td>${part(g.pac,"Pacientes")} ${part(g.cen,"Censos")} ${part(g.ag,"Comité y Quirófano")} ${part(g.est,"Estadísticas")}</td><td style="white-space:nowrap"><button type="button" class="st-btn st-sm" data-bkv="${g.k}">Ver</button>${adm?` <button type="button" class="st-btn st-sm" data-bkr="${g.k}">Restaurar</button>`:""}</td></tr>`).join("")}</tbody></table></div>`:`<div class="st-msg">Aún no hay copias semanales.</div>`;
   const V=BAKVIEW, view=V?`<div class="bk-view"><b>Copia del ${esc(bakDLbl(V.k))} contra lo guardado hoy</b> ${V.msg?`<span class="st-sub">${esc(V.msg)}</span>`:""}${V.dif?(bakNLost(V.dif)?bakDifTable(V.dif):`<div class="st-msg">✓ Nada de esa copia se ha perdido: pacientes, censos y estadísticas siguen completos.</div>`):""}</div>`:"";
   return `<div class="st-card bk-card" id="bkCard"><h3>Copias de seguridad semanales</h3>${warn}${tbl}${view}<div class="st-msg" id="bkMsg" aria-live="polite"></div></div>`;
 }
-async function bakCurrent(say){ const cur={pac:await bakReadCurrent(say),cen:await bakReadCens(say),est:null}; try{ cur.est=remoteCache||await loadRemote(); }catch(_){} return cur; }
+async function bakCurrent(say){ const cur={pac:await bakReadCurrent(say),cen:await bakReadCens(say),est:null,ag:[]}; try{ cur.ag=await bakReadAgenda(); }catch(_){} try{ cur.est=remoteCache||await loadRemote(); }catch(_){} return cur; }
 function bakCardWire(host){
   const box=host.querySelector("#bkCard"); if(!box) return; const msg=t=>{ const m=host.querySelector("#bkMsg"); if(m) m.textContent=t||""; }, redraw=()=>{ const c=host.querySelector("#bkCard"); if(c){ c.outerHTML=bakCardHTML(); bakCardWire(host); } };
   const grp=k=>bakGroups().find(g=>g.k===k);
@@ -16901,9 +16899,9 @@ const OFF_IC={
 function offTile(id,ic,title,sub,bk){ return `<button type="button" class="db-tile" id="${id}"><span class="db-ic">${OFF_IC[ic]}</span><span class="db-t"><b>${title}</b><small class="dl-s">${sub}</small>${bk?`<small class="dl-b" data-bak="${bk}">Consultando copia en línea…</small>`:""}</span><span class="db-go">${OFF_IC.dl}</span></button>`; }
 function offDbHTML(){
  const search=canPerm('buscar_diagnostico')?`<div class="db-dx"><label for="dbDxQ">Buscar por diagnóstico</label><div id="dbDxTerms" class="dx-term-list" hidden></div><div class="dx-term-input"><input id="dbDxQ" type="search" placeholder="Ej. colon, sigmoides…" autocomplete="off" spellcheck="false" aria-describedby="dbDxHint"><button type="button" id="dbDxClear">Limpiar</button></div><p id="dbDxHint">Presiona Enter para agregar otro término. Se incluyen diagnósticos que coincidan con cualquiera de los términos.</p><div class="db-dx-res" id="dbDxRes" hidden><div class="db-dx-n" id="dbDxN"></div><div class="db-dx-btns"><button type="button" id="dbDxPrint">Imprimir lista</button><button type="button" id="dbDxZip">Descargar archivos</button></div></div></div>`:'';
- const bases=canPerm('descargar_bases')?offTile('btnDbDownload','pac','Pacientes','Todos los expedientes · .zip','PACIENTES')+offTile('btnDbCensos','cen','Censos','Todos los censos · .zip','CENSOS')+offTile('btnDbStats','est','Estadísticas','Archivo de uso · .json','ESTADISTICAS'):'';
+ const bases=canPerm('descargar_bases')?offTile('btnDbDownload','pac','Pacientes','Todos los expedientes · .zip','PACIENTES')+offTile('btnDbCensos','cen','Censos','Todos los censos · .zip','CENSOS')+offTile('btnDbAgenda','cen','Comité y Quirófano','Agenda completa · .zip','AGENDA')+offTile('btnDbStats','est','Estadísticas','Archivo de uso · .json','ESTADISTICAS'):'';
  const full=canPerm('descargar_todo')?offTile('hjmFullDownload','all','Descargar todo','Carpeta completa y subcarpetas · .zip',''):'';
- const backup=canPerm('descargar_bases')?'<div class="db-bak"><button type="button" class="st-btn st-sm" id="btnBakNow">Hacer copia en línea ahora</button><small>Incluye expedientes, censos y estadísticas en RespaldosJCF.</small></div>':'';
+ const backup=canPerm('descargar_bases')?'<div class="db-bak"><button type="button" class="st-btn st-sm" id="btnBakNow">Hacer copia en línea ahora</button><small>Incluye expedientes, censos, Comité/Quirófano y estadísticas en RespaldosJCF.</small></div>':'';
  return '<div class="st-card"><h3>Descargar archivos</h3>'+search+(bases||full?'<div class="db-grid" style="margin-top:14px">'+bases+full+'</div>':'')+backup+(!search&&!bases&&!full?'<p class="st-msg">Tu tipo de usuario no permite descargar archivos clínicos ni bases de datos.</p>':'')+'<div class="db-msg" id="dbMsg" role="status"></div></div>';
 }
 function offSaveBlob(name,blob){ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },4000); }
@@ -16915,6 +16913,8 @@ async function offTileRun(btn,fn){
   finally{ if(s) s.textContent=orig; btn.disabled=false; }
 }
 document.addEventListener("click",e=>{
+  const ag=e.target.closest&&e.target.closest("#btnDbAgenda");
+  if(ag){ offTileRun(ag,async say=>{ say("Leyendo Comité y Quirófano…"); const f=await bakReadAgenda(); if(!f.length) throw new Error("no se pudo leer la agenda"); offSaveBlob("Comite_Quirofano_HJM_"+offStamp()+".zip",window.__zipStore(f)); say("Comité y Quirófano descargados ("+f.map(x=>x.name).join(", ")+").",true); }); return; }
   const c=e.target.closest&&e.target.closest("#btnDbCensos"), t=e.target.closest&&e.target.closest("#btnDbStats");
   if(c) offTileRun(c,async say=>{
     say("Leyendo lista…"); await ensureFolder(); const l=await gcall("hjmCensoList"); const list=(Array.isArray(l)?l:[]).filter(x=>x&&/\.json$/i.test(x.name||""));
