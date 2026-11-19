@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.70">
+<meta name="application-version" content="9.71">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2651,12 +2651,12 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
           <div class="cen-det cen-block" id="cenDet"><div class="cen-bh">CENSO</div><div class="grid">
             <div class="f s2"><label for="cenIngProxy">Fecha de ingreso <small>(la misma de HC / Ingreso)</small></label><input id="cenIngProxy" data-nopersist data-date inputmode="numeric" placeholder="DD.MM.AA"></div>
             <div class="f s1"><label>Días de estancia</label><div class="auto empty" id="cenEhOut">—</div></div>
-            <div class="f s3"><label for="censoEstatus">Estatus</label><input id="censoEstatus" class="up" hidden><div class="estsel" id="censoEstChips" data-estchips></div></div>
             <div class="f s6"><label for="censoCirugias">Cirugías / BJ</label><textarea id="censoCirugias" class="up" rows="3"></textarea></div>
             <div class="f s3"><label for="censoQT">QT / RT</label><textarea id="censoQT" class="up" rows="2"></textarea></div>
             <div class="f s3"><label for="censoMT">MT</label><textarea id="censoMT" class="up" rows="2"></textarea></div>
             <div class="f s6"><label for="censoLabs">Labs</label><textarea id="censoLabs" class="up" rows="3"></textarea></div>
             <div class="f s6"><label for="censoPendientes">Pendientes</label><textarea id="censoPendientes" class="up" rows="3"></textarea></div>
+            <div class="f s6"><label for="censoEstatus">Estatus</label><input id="censoEstatus" class="up" hidden><div class="estsel" id="censoEstChips" data-estchips></div></div>
             <input type="hidden" id="hospOnco"><input type="hidden" id="altaEn"><input type="hidden" id="defEn"><input type="hidden" id="camaPrevia"><input type="hidden" id="ingresosPrev"><input type="hidden" id="modPor"><input type="hidden" id="modEn">
           </div></div>
         </div>
@@ -2756,7 +2756,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.70 · Fecha de publicación: 18.11.26</div>
+  <div class="app-footer-version">Versión 9.71 · Fecha de publicación: 18.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -14238,7 +14238,7 @@ async function cenAddOpen(){
 function cenAddClose(){
   const d=$("dlgCenAdd"); try{ const e=$("expediente"); if(e) e.readOnly=false; }catch(_){} CENADD.open=false; cenAddRestore(); if(d){ d.classList.remove("loading"); if(d.open) d.close(); } document.body.classList.remove("cen-add-on"); window.__cenKeepBg=false;
   try{ fill(DEFAULTS()); if($("ppSearch")) $("ppSearch").value=""; PP_AUTO=false; PP_MANUAL=false; PP_BROWSE=true; ppLayout(); renderPP(); }catch(_){}
-  try{ if(PP_VIEW!=="censoActual"){ const b=$("ppViewCenA"); if(b) b.click(); } }catch(_){}
+  try{ if(CENADD.mode!=="hist"&&PP_VIEW!=="censoActual"){ const b=$("ppViewCenA"); if(b) b.click(); } }catch(_){}
 }
 async function cenAddPick(id){
  CENADD.selectedId=id;
@@ -14267,6 +14267,7 @@ async function cenAddSubmit(){
  if(!accessRequire(CENADD.mode==="edit"?(CEN.mode==="hist"?"editar_censos_archivados":"editar_censo"):"agregar_censo"))return;
 
   if(CENADD.busy) return;
+  if(CENADD.mode==="hist"){ const ex=String(($("expediente")||{}).value||"").trim(), ap=String(($("apPaterno")||{}).value||"").trim(); if(!ex||!ap){ notify("Falta expediente o apellido paterno.","warn"); return; } if(DRIVE_FILES.some(f=>expKey(expOf(f))===expKey(ex))){ notify("Ya existe un paciente con el expediente "+ex+".","warn"); return; } CENADD.busy=true; $("caOk").disabled=true; try{ try{ const h=$("hospOnco"); if(h) h.value=""; }catch(_){} try{ refresh(); }catch(_){} const p=driveSaveNow(), st=await Promise.race([p,Promise.resolve("pending")]); if(st===false) return; cenAddClose(); p.then(()=>{ try{ loadPatients(); }catch(_){} notify("Paciente creado en Archivo.","ok"); }); }finally{ CENADD.busy=false; const o=$("caOk"); if(o) o.disabled=false; } return; }
   const cama=String(($("cama")||{}).value||"").trim(), edit=CENADD.mode==="edit";
   if(cama&&!camaValida(cama)&&!camaFuera(cama)&&!camaConsulta(cama)){ const hh=$("hospOnco"); if(hh){ hh.value="1"; hh.dispatchEvent(new Event("input",{bubbles:true})); } try{ hospOncoSync(); }catch(_){} }   /* agregar o editar en el Censo = hospitalizado en Oncología */
   if(!(camaHosp(cama,($("hospOnco")||{}).value)||(edit&&camaFuera(cama)))){ notify("Escribe una cama (3 cifras, UCI, URG, Coronarios u otro texto de cama) para agregar al paciente al censo. Las camas de consulta externa (CE, Externa, C Ext…) no se agregan.","warn"); try{ $("cama").focus(); }catch(_){} return; }
@@ -14420,6 +14421,7 @@ function cenListDraw(d){
 
 /* Encabezado: en la página Censo, «Nuevo Paciente» pasa a «Agregar Paciente» y abre la ventana de identificación */
 function cenBandSync(on){ const b=$("bandNew"); if(!b) return; const t=[...b.childNodes].reverse().find(n=>n.nodeType===3); const lbl=on?"Agregar Paciente":"Nuevo Paciente"; if(t) t.textContent=lbl; b.title=lbl; b.dataset.cen=on?"1":""; }
+window.addEventListener("click",e=>{ try{ const b=e.target.closest&&e.target.closest("#bandNew"); if(!b) return; if(document.body.classList.contains("pp-browse")&&typeof PP_VIEW!=="undefined"&&PP_VIEW==="censoActual"){ e.stopImmediatePropagation(); e.preventDefault(); cenAddOpen(); } }catch(_){} },true);
 try{$("bandNew").addEventListener("click",e=>{ if(document.body.classList.contains("pp-browse")&&PP_VIEW==="censoActual"&&$("bandNew").dataset.cen==="1"){ e.stopImmediatePropagation(); e.preventDefault(); cenAddOpen(); } },true);
 }catch(e){try{console.error(e);}catch(_){}}
 
@@ -18894,12 +18896,16 @@ try{(function(){
   /* v8.46 · Paciente de censos anteriores (ya no hospitalizado): se abre como Nuevo Paciente en la hoja de datos con los datos del censo, cama CE; se revisa y se guarda */
   async function crearHist(p){
     if(typeof accessRequire==='function'&&!accessRequire('crear_pacientes')) return;
-    const b=$('btnClear'); if(b) b.click(); await new Promise(r=>setTimeout(r,250));
+    await cenAddOpen(); await new Promise(r=>setTimeout(r,150));
+    try{ CENADD.mode='hist'; const t=$('caTitle'); if(t) t.textContent='Crear paciente desde el censo'; const ok=$('caOk'); if(ok) ok.textContent='Crear paciente'; }catch(_){}
+    try{ cenAddNew(); }catch(_){} await new Promise(r=>setTimeout(r,120));
     const n=partir(p.nombre);
     put('expediente',p.exp); put('apPaterno',n.p); put('apMaterno',n.m); put('nombres',n.n); put('fnac',fecha(p.fnac)); put('cama','CE'); put('medico',p.adsRaw||p.ads);
     put('clinica',(Array.isArray(p.cf)&&p.cf[0])||p.clin); put('diagnostico',p.dx); put('fIngreso',fecha(p.ing)); if(p.ingp) put('ingresosPrev',p.ingp);
     put('censoCirugias',p.cir); put('censoQT',p.qt); put('censoMT',p.mt); put('censoLabs',p.labs); put('censoEstatus',p.est);
-    try{ notify('Datos tomados del censo del '+(p._f||'')+'. Verifica nombre, sexo y adscrito, y guarda el paciente.','info',{ms:8000}); }catch(_){}
+    try{ const h=$('hospOnco'); if(h) h.value=''; }catch(_){}
+    try{ refresh(); }catch(_){} try{ cenAddPresentation(false); }catch(_){}
+    try{ notify('Datos tomados del censo del '+(p._f||'')+'. Verifica nombre, sexo y adscrito, y presiona «Crear paciente».','info',{ms:8000}); }catch(_){}
   }
   window.cenCrearHist=crearHist;
   document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('[data-contnew]'); if(!b) return; e.preventDefault(); const x=(CEN._cont||[])[+b.dataset.contnew]; if(!x) return; const full=(CEN.prevFull&&CEN.prevFull.get(String(x.p.exp)))||x.p; crear(full); },true);
