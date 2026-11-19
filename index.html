@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.68">
+<meta name="application-version" content="9.69">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2642,7 +2642,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
           <div class="f"><label for="nombres">Nombre(s)</label><input id="nombres" class="up"></div>
           <div class="f"><label for="fnac">Fecha de nacimiento</label><input id="fnac" data-date inputmode="numeric" placeholder="DD.MM.AA"></div>
           <div class="f s1"><label>Edad</label><div class="auto empty" data-out="edad">—</div></div>
-          <div class="f s3 medico-field"><label for="medico">Médico tratante (adscrito)</label><input id="medico" class="up" placeholder="DRA. NOMBRE APELLIDO" role="combobox" aria-haspopup="listbox" aria-autocomplete="list" aria-controls="medico-list" aria-expanded="false" autocomplete="off"><div id="medico-list" role="listbox" aria-label="Adscritos" hidden></div><small class="medico-hint">(Presiona / para agregar un adscrito no guardado)</small></div>
+          <div class="f s3 medico-field"><label for="medico">Médico tratante (adscrito)</label><input id="medico" class="up" placeholder="DRA. NOMBRE APELLIDO" role="combobox" aria-haspopup="listbox" aria-autocomplete="list" aria-controls="medico-list" aria-expanded="false" autocomplete="off"><div id="medico-list" role="listbox" aria-label="Adscritos" hidden></div><small class="medico-hint">(Solo adscritos registrados · / para agregar otro de la lista)</small></div>
           <div class="f s6"><label for="diagnostico">Diagnóstico <span class="cnt"></span></label><input id="diagnostico" class="up" data-max="80"></div>
           <div class="f s3 medico-field clinica-field"><label for="clinica">Clínica</label><input id="clinica" class="up" placeholder="Se llena según el adscrito" role="combobox" aria-haspopup="listbox" aria-autocomplete="list" aria-controls="clinica-list" aria-expanded="false" autocomplete="off"><div id="clinica-list" role="listbox" aria-label="Clínicas" hidden></div><small class="medico-hint">(Solo clínicas registradas · / para agregar otra)</small></div>
           <div class="f s3"><label for="residente">Residente</label><input id="residente"></div>
@@ -2756,7 +2756,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.68 · Fecha de publicación: 18.11.26</div>
+  <div class="app-footer-version">Versión 9.69 · Fecha de publicación: 18.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -7622,6 +7622,13 @@ function adsExact(part){ const strip=v=>normalizeStaffName(v).replace(/^DRA?\s+/
 function adsComplete(txt){ let a=staffAdscrito(txt); if(a) return a; try{ a=staffAdscritoLoose(String(txt).toLocaleUpperCase("es-MX")); }catch(_){} if(a) return a;
   const w=normalizeStaffName(txt).replace(/^DRA?\s+/,"").split(" ").filter(Boolean); if(!w.length) return null;
   const hits=HJM_STAFF.adscritos.filter(x=>{const n=normalizeStaffName(x.nombre).split(" ");return w.every(t=>n.includes(t));}); return hits.length===1?hits[0]:null; }
+/* v9.69 · Solo adscritos registrados: cada parte (separadas por «/», o pegadas «DR. X DRA. Y») se cambia por su nombre registrado; lo que no coincide con nadie se descarta */
+function adsClean(v){ const seen=new Set(), out=[]; String(v||"").toLocaleUpperCase("es-MX").split("/").flatMap(p=>p.split(/\s+(?=DRA?\.?\s)/)).map(x=>x.trim()).filter(Boolean).forEach(p=>{ let a=null; try{ a=adsExact(p)||adsComplete(p); }catch(_){} if(a&&a.nombre&&!seen.has(a.nombre)){ seen.add(a.nombre); out.push(a.nombre); } }); return out.join(" / "); }
+function adsGuard(inp){ if(!inp) return; const v=String(inp.value||"").trim(); if(!v){ inp.dataset.adsOk=""; return; } if(!HJM_STAFF.adscritos.length) return; const c=adsClean(v);
+  if(c){ if(c!==v){ inp.value=c; inp.dispatchEvent(new Event("input",{bubbles:true})); } inp.dataset.adsOk=c; return; }
+  inp.value=inp.dataset.adsOk||""; inp.dispatchEvent(new Event("input",{bubbles:true})); try{ notify("Solo se pueden usar adscritos registrados en la lista de usuarios. Elige uno de la lista.","warn"); }catch(_){} }
+$("medico").addEventListener("change",()=>adsGuard($("medico")));
+$("medico").addEventListener("blur",()=>setTimeout(()=>{ if(document.activeElement!==$("medico")&&!document.querySelector('#medico-list:not([hidden]) :hover')) adsGuard($("medico")); },150));
 function adscritoMismatch(value){ if(!HJM_STAFF.adscritos.length) return []; const f=String(value||"").split("/")[0].trim(); return f&&!adsExact(f)?[f]:[]; }
 function syncAltaClinicFromAdscrito(){
   const root=BUILT.alta,sp=root&&root.querySelector('.c.pick[data-auto-clinic="1"] > span');if(!sp||document.activeElement===sp)return;
@@ -10890,7 +10897,7 @@ async function integrarPendientes(id,obj){
     /* versiones casi iguales: se queda la del expediente y la otra se guarda en el mismo registro (no se imprime) */
     for(const {x,r} of variantes){ if(!x||!x.id) continue; const vs=x.variantes=Array.isArray(x.variantes)?x.variantes:[]; const sig=pendTexto(r.p); if(!vs.some(v=>pendTexto(v&&v.p)===sig)){ vs.push({p:JSON.parse(JSON.stringify(r.p)),archivo:f.name||"",ts:Date.now()}); if(vs.length>5) vs.splice(0,vs.length-5); nd++; } }
     /* v2.54 · datos de la hoja de datos que cambiaron (Ingreso/Solicitud con archivo grande): se aplican campo por campo */
-    if(o.datos&&typeof o.datos==="object"){ base.datos=base.datos||{}; for(const [k,v] of Object.entries(o.datos)){ if(typeof v==="string"&&base.datos[k]!==v){ base.datos[k]=v; nd++; } } }
+    if(o.datos&&typeof o.datos==="object"){ base.datos=base.datos||{}; for(const [k,v0] of Object.entries(o.datos)){ let v=v0; if(k==="medico"&&typeof v==="string"&&v.trim()){ try{ if(HJM_STAFF.adscritos.length){ v=adsClean(v); if(!v) continue; } }catch(_){} } if(typeof v==="string"&&base.datos[k]!==v){ base.datos[k]=v; nd++; } } }
     for(const clase of ["notas","indicaciones"]){                    // v2.54 · también indicaciones
       if(!Array.isArray(o[clase])) continue;
       const lista=h[clase]=Array.isArray(h[clase])?h[clase]:[]; const ya=new Set(lista.map(clave));
@@ -14346,9 +14353,9 @@ function cenHistEdit(k){
     if(fnac&&!parts(fnac)){ err.textContent="Fecha de nacimiento: usa DD.MM.AA."; return; }
     if(ing&&!parts(ing)){ err.textContent="Fecha de ingreso: usa DD.MM.AA."; return; }
     if(!nom){ err.textContent="Escribe el nombre."; return; }
-    if(ads&&!adsComplete(ads.split("/")[0].trim())){ err.textContent="Elige un adscrito de la lista (o escríbelo completo)."; return; }
+    const adsC=ads?adsClean(ads):""; if(ads&&!adsC){ err.textContent="Solo adscritos registrados: elige uno de la lista."; return; }
     if(clin&&!clin.split("/").map(x=>x.trim()).filter(Boolean).every(x=>clinMatch(x))){ err.textContent="Elige clínicas de la lista."; return; }
-    const nv={cama,nombre:nom,fnac,ing,ads,clin,est:line("est"),dx:line("dx"),cir:val("cir"),qt:val("qt"),mt:val("mt"),labs:val("labs"),pend:val("pend")};
+    const nv={cama,nombre:nom,fnac,ing,ads:adsC,clin,est:line("est"),dx:line("dx"),cir:val("cir"),qt:val("qt"),mt:val("mt"),labs:val("labs"),pend:val("pend")};
     const cur={cama:row.cama||"",nombre:row.nombre||"",fnac:row.fnac||"",ing:row.ing||"",ads:row.adsRaw||"",clin:(row.cf||[]).join("/"),est:row.est||"",dx:row.dx||"",cir:row.cir||"",qt:row.qt||"",mt:row.mt||"",labs:row.labs||"",pend:row.pend||""};
     let ops=[]; Object.keys(nv).forEach(f=>{ if(nv[f]!==String(cur[f])) ops=ops.concat(cenHistOps(row,f,nv[f])); });
     close(); if(ops.length){ ops.forEach(o=>CEN.hist.queue(o)); if(nv.clin!==cur.clin||nv.ads!==cur.ads) { try{ cenRecalcHist(); }catch(_){} } cenRender(); } };
@@ -19782,7 +19789,7 @@ function openAdd(t,pre,editId){
       const x=Object.assign({},pre,{dx:up(g('qaDx')),ads:up(g('qaAds')),clin:g('qaCl'),fecha:normDMY(g('qaF'))});
       if(Q){ x.cx=up(g('qaCx')); const p=tg&&tg.querySelector('[aria-pressed="true"]'); x.turno=p?p.dataset.v:''; }
       if(nu){ x.exp=up(g('qaExp')); x.apP=up(g('qaApP')); x.apM=up(g('qaApM')); x.nom=up(g('qaNom')); x.fnac=normDMY(g('qaFn')); x.sexo=g('qaSx'); x.nombre=[x.apP,x.apM,x.nom].filter(Boolean).join(' '); }
-      const miss=[]; if(!x.exp) miss.push('expediente'); if(nu&&(!x.apP||!x.nom)) miss.push('nombre'); if(Q&&!x.cx) miss.push('cirugía planeada'); if(!x.dx) miss.push('diagnóstico'); if(!x.ads) miss.push('adscrito'); if(!x.clin) miss.push('clínica'); if(!x.fecha) miss.push(Q?'fecha de cirugía (DD.MM.AA)':'día de la sesión (DD.MM.AA)');
+      const miss=[]; if(!x.exp) miss.push('expediente'); if(nu&&(!x.apP||!x.nom)) miss.push('nombre'); if(Q&&!x.cx) miss.push('cirugía planeada'); if(!x.dx) miss.push('diagnóstico'); if(x.ads){ try{ const c=adsClean(x.ads); if(c) x.ads=c; else miss.push('adscrito registrado de la lista'); }catch(_){} } if(!x.ads) miss.push('adscrito'); if(!x.clin) miss.push('clínica'); if(!x.fecha) miss.push(Q?'fecha de cirugía (DD.MM.AA)':'día de la sesión (DD.MM.AA)');
       if(nu&&g('qaFn')&&!x.fnac) miss.push('fecha de nacimiento válida');
       if(miss.length){ msg.textContent='Falta: '+miss.join(', ')+'.'; return; }
       if(nu&&fileByExp(x.exp)){ msg.textContent='Ya existe un paciente con el expediente '+x.exp+'. Búscalo con «Atrás».'; return; }
