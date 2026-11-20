@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.83">
+<meta name="application-version" content="9.84">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2756,7 +2756,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.83 · Fecha de publicación: 19.11.26</div>
+  <div class="app-footer-version">Versión 9.84 · Fecha de publicación: 19.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -3046,6 +3046,9 @@ html body .qx-bar>em{background:#2A323C!important}
 #dxAsk .dxa-t{font-size:11px;color:#7b8b9b;margin-top:6px}
 [data-theme="dark"] #dxAsk{background:#18212c;border-color:#34475c;border-left-color:#d9a032;color:#dce7f2}[data-theme="dark"] #dxAsk .dxa-d,[data-theme="dark"] #dxAsk .dxa-t{color:#9fb3c7}[data-theme="dark"] #dxAsk .dxa-d span{color:#dce7f2}[data-theme="dark"] #dxAsk .dxa-no{background:#3b78b3}[data-theme="dark"] #dxAsk .dxa-si{color:#b9cadb;border-color:#34475c}
 @media print{#dxAsk{display:none!important}}
+#ppList .pp-nj td.pp-nj-acc{white-space:nowrap}#ppList .pp-nj .pp-nj-x{margin-left:6px;border:1px solid #D9D2C0;background:transparent;color:#8A7F66;border-radius:8px;padding:4px 9px;font:600 12px/1 inherit;cursor:pointer}#ppList .pp-nj .pp-nj-x:hover{background:#F4EEDF;color:#6A5E44}
+#ppList .pp-nj .pp-nj-d{margin-top:8px}#ppList .pp-nj .pp-nj-dt{border:0;background:none;color:#8A7F66;font:600 12.5px inherit;cursor:pointer;text-decoration:underline;padding:4px 0}#ppList .pp-nj tr.dsc td{color:#9A9384}
+[data-theme="dark"] #ppList .pp-nj .pp-nj-x{border-color:#4a4434;color:#b9ad90}[data-theme="dark"] #ppList .pp-nj tr.dsc td{color:#8a8576}
 /* Agenda (Quirófano y Comité): mismos colores de acción */
 html body .qx-c-act .qx-btn.bad{color:#B42318;border-color:#F4C7C2;background:#FEF3F2}
 html body .qx-c-act .qx-btn.bad:hover{background:#FDE4E1}
@@ -11552,15 +11555,24 @@ function renderPP(){
 }
 
 /* ---------- v8.46 · Solo Técnico, pestaña Todos: pacientes que aparecen en censos pero no tienen archivo JSON en la app ---------- */
-let PP_NJ_OPEN=false;
+let PP_NJ_OPEN=false, NJ_DESC=null, NJ_DESC_LOADING=false, PP_NJ_SHOWD=false;
+const njKey=e=>String(e||"").replace(/[^0-9A-Za-z]/g,"").replace(/^0+/,"");   /* v9.84 · «929967|» = «929967» */
+function njDescLoad(){ if(NJ_DESC||NJ_DESC_LOADING) return; NJ_DESC_LOADING=true; gcall("hjmNjDescartes").then(d=>{ NJ_DESC=d&&typeof d==="object"?d:{}; }).catch(()=>{ NJ_DESC={}; }).finally(()=>{ NJ_DESC_LOADING=false; try{ renderPP(); }catch(_){} }); }
 function ppNoJsonList(){ let C={}; try{ C=(window.__hjmStatsCensos&&window.__hjmStatsCensos())||{}; }catch(_){}
-  const have=new Set(); uniqueFiles(DRIVE_FILES||[]).forEach(f=>{ const e=String(expOf(f)||"").trim().replace(/^0+/,""); if(e) have.add(e); });
+  const have=new Set(); uniqueFiles(DRIVE_FILES||[]).forEach(f=>{ const e=njKey(expOf(f)); if(e) have.add(e); });
   const ks=Object.keys(C).filter(k=>C[k]&&Array.isArray(C[k].hx)).sort(), lastK=ks[ks.length-1]||"", M=new Map();
-  ks.forEach(k=>C[k].hx.forEach(h=>{ const e=String(h[0]||"").trim(), ek=e.replace(/^0+/,""); if(!ek||have.has(ek)||!/\d{3,}/.test(ek)) return; let x=M.get(ek); if(!x){ x={e,first:k,n:0}; M.set(ek,x); } x.last=k; x.n++; x.nom=h[2]||x.nom; x.srv=h[1]||x.srv; x.cama=h[3]||x.cama; }));
-  return {rows:[...M.values()].sort((a,b)=>b.last.localeCompare(a.last)||String(a.nom).localeCompare(String(b.nom))),lastK}; }
-function ppNoJsonHTML(){ const {rows,lastK}=ppNoJsonList(); if(!rows.length) return "";
+  ks.forEach(k=>C[k].hx.forEach(h=>{ const e=String(h[0]||"").trim(), ek=njKey(e); if(!ek||have.has(ek)||!/\d{3,}/.test(ek)) return; let x=M.get(ek); if(!x){ x={e,first:k,n:0}; M.set(ek,x); } x.last=k; x.n++; x.nom=h[2]||x.nom; x.srv=h[1]||x.srv; x.cama=h[3]||x.cama; }));
+  const all=[...M.values()].sort((a,b)=>b.last.localeCompare(a.last)||String(a.nom).localeCompare(String(b.nom))), D=NJ_DESC||{};
+  return {rows:all.filter(x=>!D[njKey(x.e)]),desc:all.filter(x=>D[njKey(x.e)]),lastK}; }
+function ppNoJsonHTML(){ njDescLoad(); const {rows,desc,lastK}=ppNoJsonList(); if(!rows.length&&!desc.length) return "";
   const kf=k=>k?k.slice(8)+"."+k.slice(5,7)+"."+k.slice(2,4):"";
-  return `<details class="pp-nj" ${PP_NJ_OPEN?"open":""} ontoggle="PP_NJ_OPEN=this.open"><summary><b>${rows.length}</b> pacientes en censos sin archivo en la app <small>· solo administrador técnico · del más reciente al más antiguo</small></summary><div class="pp-nj-s"><table><thead><tr><th>Último censo</th><th>Primer censo</th><th>Paciente</th><th>Expediente</th><th>Cama</th><th>Clínica</th><th>Censos</th><th></th></tr></thead><tbody>${rows.map(x=>`<tr${x.last===lastK?' class="on"':""}><td>${kf(x.last)}${x.last===lastK?" <em>actual</em>":""}</td><td>${kf(x.first)}</td><td>${esc(x.nom||"—")}</td><td>${esc(x.e)}</td><td>${esc(x.cama||"")}</td><td>${esc(x.srv&&x.srv!=="OTRO"?x.srv:"—")}</td><td>${x.n}</td><td><button type="button" class="pp-nj-b" data-njcrear="${esc(x.e)}" data-njk="${x.last}">Crear</button></td></tr>`).join("")}</tbody></table></div></details>`; }
+  return `<details class="pp-nj" ${PP_NJ_OPEN?"open":""} ontoggle="PP_NJ_OPEN=this.open"><summary><b>${rows.length}</b> pacientes en censos sin archivo en la app <small>· solo administrador técnico · del más reciente al más antiguo</small></summary><div class="pp-nj-s"><table><thead><tr><th>Último censo</th><th>Primer censo</th><th>Paciente</th><th>Expediente</th><th>Cama</th><th>Clínica</th><th>Censos</th><th></th></tr></thead><tbody>${rows.map(x=>`<tr${x.last===lastK?' class="on"':""}><td>${kf(x.last)}${x.last===lastK?" <em>actual</em>":""}</td><td>${kf(x.first)}</td><td>${esc(x.nom||"—")}</td><td>${esc(x.e)}</td><td>${esc(x.cama||"")}</td><td>${esc(x.srv&&x.srv!=="OTRO"?x.srv:"—")}</td><td>${x.n}</td><td class="pp-nj-acc"><button type="button" class="pp-nj-b" data-njcrear="${esc(x.e)}" data-njk="${x.last}">Crear</button><button type="button" class="pp-nj-x" data-njdesc="${esc(x.e)}" title="Descartar: no se creará (sin nombre, sin nota de ingreso, expediente mal escrito o duplicado)">Descartar</button></td></tr>`).join("")}</tbody></table>${desc.length?`<div class="pp-nj-d"><button type="button" class="pp-nj-dt" data-njshowd>${PP_NJ_SHOWD?"Ocultar":"Ver"} descartados (${desc.length})</button>${PP_NJ_SHOWD?`<table><tbody>${desc.map(x=>{const d=(NJ_DESC||{})[njKey(x.e)]||{};return `<tr class="dsc"><td>${kf(x.last)}</td><td>${esc(x.nom||"—")}</td><td>${esc(x.e)}</td><td>${esc(x.cama||"")}</td><td><small>${esc(d.por||"")}</small></td><td><button type="button" class="pp-nj-b" data-njundo="${esc(x.e)}">Restaurar</button></td></tr>`;}).join("")}</tbody></table>`:""}</div>`:""}</div></details>`; }
+document.addEventListener("click",async e=>{ const t=e.target.closest&&e.target.closest("[data-njdesc],[data-njundo],[data-njshowd]"); if(!t) return; e.preventDefault(); e.stopPropagation();
+  if(t.hasAttribute("data-njshowd")){ PP_NJ_SHOWD=!PP_NJ_SHOWD; try{ renderPP(); }catch(_){} return; }
+  const exp=t.dataset.njdesc||t.dataset.njundo, quitar=!!t.dataset.njundo; t.disabled=true;
+  try{ NJ_DESC=await gcall("hjmNjDescartar",exp,"",quitar)||{}; try{ renderPP(); }catch(_){}
+    if(!quitar) notify("Expediente "+exp+" descartado de la lista.","ok",{actions:[{label:"Deshacer",fn:async()=>{ try{ NJ_DESC=await gcall("hjmNjDescartar",exp,"",true)||{}; renderPP(); }catch(_){} }}]});
+  }catch(err){ t.disabled=false; notify((err&&err.code)==="accion"?"Falta actualizar Codigo.gs a la versión 40.":"No se pudo descartar: "+(err&&err.message||err),"error"); } },true);
 document.addEventListener("click",async e=>{ const b=e.target.closest&&e.target.closest("[data-njcrear]"); if(!b) return; e.preventDefault(); e.stopPropagation(); if(b.disabled) return; b.disabled=true; const old=b.textContent; b.textContent="Leyendo…";
   try{ const exp=b.dataset.njcrear, k=b.dataset.njk, nm="JCF"+k.slice(8)+k.slice(5,7)+k.slice(2,4)+".json"; const L=await cenList(true), x=L.find(z=>z.name===nm); if(!x) throw new Error("No se encontró el censo "+nm);
     const r=await cenReadEntry(x), o=r&&r.obj, row=((o&&o.pac)||[]).find(p=>String(p.exp||"").trim().replace(/^0+/,"")===exp.replace(/^0+/,"")); if(!row) throw new Error("El paciente ya no aparece en ese censo");
@@ -16413,7 +16425,7 @@ function drawPacStats(prog){
   const ad={},cl={},ge={},gn={},rs={},mo={}; let conMed=0,cama=0,h24=0,d7=0,d30=0,old=0,tot=0,n=0,notas=0,ind=0;
   fs.forEach(f=>{ const c=PCACHE[f.id]; const t=now-fileTime(f); if(t<=864e5) h24++; if(t<=7*864e5) d7++; if(t<=30*864e5) d30++; else old++; if(f.meta&&String(f.meta.cama||"").trim()&&!isCE(f.meta.cama)) cama++;
     if(!c) return; n++; tot+=c.sz; notas+=c.nn; ind+=c.ni; const a=adsOf(c.med); if(a.length) conMed++; a.forEach(x=>{ ad[x.n.replace(/^DRA?\.\s*/,"")]=(ad[x.n.replace(/^DRA?\.\s*/,"")]||0)+1; cl[x.c]=(cl[x.c]||0)+1; });
-    { let a=NaN; try{ a=parseInt(edad(c.fn,todayStr()),10); }catch(_){} if(Number.isFinite(a)&&a>=0&&a<125){ const k=Math.floor(a/10)*10; ge[k]=(ge[k]||0)+1; } } if(c.gen) gn[c.gen]=(gn[c.gen]||0)+1; if(c.res) rs[c.res]=(rs[c.res]||0)+1;
+    { let a=NaN; try{ a=parseInt(edad(c.fn,todayStr()),10); }catch(_){} if(Number.isFinite(a)&&a>=0&&a<125){ const k=Math.floor(a/10)*10; ge[k]=(ge[k]||0)+1; } } if(c.gen) gn[c.gen]=(gn[c.gen]||0)+1; if(c.res){ const rk=String(c.res).toLocaleUpperCase('es-MX').replace(/\s+/g,' ').trim(); rs[rk]=(rs[rk]||0)+1; };
     const m=/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2,4})$/.exec(c.ing); if(m){ const y=m[3].length===2?"20"+m[3]:m[3]; const k=y+"-"+pad(+m[2]); mo[k]=(mo[k]||0)+1; } });
   const months=Object.entries(mo).sort((a,b)=>a[0].localeCompare(b[0])).slice(-6).map(([k,v])=>[k,v]), mm=Math.max(1,...months.map(x=>x[1]));
   host.innerHTML=`<h3>Pacientes en Drive <small style="font-weight:500;color:#7B7E81">${prog||(n<fs.length?"· analizando…":"")}</small></h3>
