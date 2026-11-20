@@ -125,7 +125,7 @@ B.finishExit=async function(ok){try{if(outboxCount())await flushOutbox({quiet:tr
 B.idle=function(){if(B.shared()){B.setU('');return;}if(B.paseOk())return;B.clear();try{google.accounts.id.disableAutoSelect();}catch(_){}};
 B.decorate=function(host){if(!host||!isTechnicalAdmin()||!B.ses)return;const cu=B.ses.cuentas||{},by={};Object.keys(cu).forEach(e=>{const k=ukey(cu[e]);(by[k]=by[k]||[]).push(e);});
  host.querySelectorAll('.usr-item[data-k]').forEach(it=>{const k=it.dataset.k,ms=by[k]||[],sig=ms.join(',');let d=it.querySelector('.beta-mail');if(d&&(d.dataset.sig===sig||d.dataset.sig==='~edit'))return;if(!d){d=document.createElement('div');d.className='beta-mail';(it.querySelector('.usr-nm')||it).appendChild(d);}d.dataset.sig=sig;
-  d.innerHTML=(ms.length?ms.map(e=>'<span class="beta-mail-e" data-mail="'+esc(e)+'">'+esc(e)+(e===B.ses.email?' <em>· tu cuenta</em>':' <button type="button" data-mail-drop>Quitar</button>')+'</span>').join(''):'<span class="beta-mail-none">Sin correo ligado</span>')+' <button type="button" data-mail-add>'+(ms.length?'Cambiar correo':'Ligar correo')+'</button>';});};
+  d.innerHTML=(ms.length?ms.map(e=>'<span class="beta-mail-e" data-mail="'+esc(e)+'">'+esc(e)+(e===B.ses.email?' <em>· tu cuenta</em>':' <button type="button" data-mail-drop>Quitar</button>')+'</span>').join(''):'<span class="beta-mail-none">Correo no registrado</span>')+' <button type="button" data-mail-add>'+(ms.length?'Cambiar correo':'Registrar correo')+'</button>';});};
 document.addEventListener('click',async ev=>{const b=ev.target.closest('.beta-mail [data-mail-add],.beta-mail [data-mail-drop],.beta-mail [data-mail-save],.beta-mail [data-mail-cancel]');if(!b)return;ev.stopPropagation();const d=b.closest('.beta-mail'),it=b.closest('.usr-item'),u=HJM_USERS.find(x=>ukey(x.usuario)===it.dataset.k);if(!u)return;
  const fail=e=>{d.dataset.sig='~';const m=document.createElement('small');m.className='beta-mail-err';m.textContent='⚠ '+(typeof friendly==='function'?friendly(e):e.message);d.appendChild(m);};
  if(b.hasAttribute('data-mail-cancel')){d.dataset.sig='~';B.decorate(d.closest('#stTab')||document);return;}
@@ -5637,6 +5637,7 @@ html body #ppFrequentPop .pff-groups{grid-template-columns:repeat(2,minmax(0,1fr
 html body #ppFrequentPop .pff-groups button{flex-direction:row;justify-content:flex-start;min-height:52px;padding:10px;font-size:11px;text-align:left}
 html body #ppFrequentPop .pff-groups svg{flex:none}
 html body #ppFrequentPop .pff-arrow{margin-left:auto;font-size:21px}
+#stPacStats .pac-bar{width:100%;background:transparent;border:0;text-align:left;font:inherit;color:inherit;cursor:pointer} #stPacStats .pac-bar:hover{background:#edf4fa} #stPacStats .st-grid2{margin:14px 0}
 html body #ppFrequentPop .pff-title{min-height:28px}
 html body #ppFrequentPop [data-pff-back]{font:600 12px var(--rd-sans,system-ui);display:flex;align-items:center;gap:4px;color:#3c6b94}
 html body #ppWindowTabs{display:flex;flex:1 0 100%;order:5;padding-top:3px;overflow-x:auto;scrollbar-width:thin;min-width:0}
@@ -7079,6 +7080,7 @@ input[data-slk]{background:#F3F5F8!important;color:#44536A!important;cursor:not-
 .usr-gmark{font-style:normal;font:700 11px var(--rd-sans,system-ui);padding:2px 8px;border-radius:999px;background:#DDF1E6;color:#17603C;margin-left:6px}
 html:root body #ppFrequentPop{border-radius:18px;padding:16px;border:1px solid #D5DCE8;box-shadow:0 18px 48px rgba(20,34,60,.22);background:#fff}
 html:root body #ppFrequentPop .pff-title{display:flex;align-items:center;justify-content:space-between;margin:0 0 12px;padding:0 0 10px;border-bottom:1px solid #E6EAF1}
+html:root body #ppFrequentPop .pff-title button[data-pff-back]{width:auto;flex:none;padding:0 10px;white-space:nowrap;font-size:14px}
 html:root body #ppFrequentPop .pff-title b{font:700 16px/1.2 var(--rd-sans,system-ui);color:#14223C}
 html:root body #ppFrequentPop .pff-title button{width:36px;height:36px;border-radius:10px;border:1px solid #D5DCE8;background:#fff;font-size:18px;color:#44536A;cursor:pointer}
 html:root body #ppFrequentPop .pff-primary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
@@ -11549,7 +11551,7 @@ function renderPP(){
   try{ ppCensusSync(!!camaMode); }catch(_){}
   try{ ppRowFill(!!(camaMode||feMode||simple),items.slice(0,ppShown)); }catch(_){}
   try{ ppPendFitAll($("ppList")); }catch(_){}
-  try{ if(ppHome&&!s&&PP_VIEW==="recientes"&&typeof isTechnicalAdmin==="function"&&isTechnicalAdmin()&&!(window.HJM_BETA&&HJM_BETA.ses&&(HJM_BETA.ses.compartida||HJM_BETA.ses.suplanta||HJM_BETA.ses.tecnico!==true))) $("ppList").insertAdjacentHTML("afterbegin",ppNoJsonHTML()); }catch(_){}
+  try{ if(ppHome&&!s&&PP_VIEW==="recientes"&&pendingVisible()) $("ppList").insertAdjacentHTML("afterbegin",ppNoJsonHTML()+pendingAdmissionHTML()); }catch(_){}
   ppMarkCurrent();
   if(_keep){ try{ const c=document.querySelector('#ppList [data-pend="'+_keep.id+'"]'); if(c){ ppPendSet(c,_keep.rows); const t=c.children[_keep.i]&&c.children[_keep.i].querySelector(".pp-pt"); if(t){ t.focus({preventScroll:true}); t.setSelectionRange(_keep.s,_keep.e); } } }catch(_){} }
 }
@@ -11558,13 +11560,55 @@ function renderPP(){
 let PP_NJ_OPEN=false, NJ_DESC=null, NJ_DESC_LOADING=false, PP_NJ_SHOWD=false;
 const njKey=e=>String(e||"").replace(/[^0-9A-Za-z]/g,"").replace(/^0+/,"");   /* v9.84 · «929967|» = «929967» */
 function njDescLoad(){ if(NJ_DESC||NJ_DESC_LOADING) return; NJ_DESC_LOADING=true; gcall("hjmNjDescartes").then(d=>{ NJ_DESC=d&&typeof d==="object"?d:{}; }).catch(()=>{ NJ_DESC={}; }).finally(()=>{ NJ_DESC_LOADING=false; try{ renderPP(); }catch(_){} }); }
+function pendingTechnicalSession(){
+  const ses=window.HJM_BETA?.ses;
+  return isTechnicalAdmin()&&!(ses&&(ses.compartida||ses.suplanta||ses.tecnico!==true));
+}
+function pendingPrefKey(){return "hjm.pendingAdmissions."+sessionUserName();}
+function pendingVisible(){return pendingTechnicalSession()&&localStorage.getItem(pendingPrefKey())==="1";}
+const admissionCache=new Map();
+let admissionOpen=false, admissionJob=null;
+function pendingAdmissionHTML(){
+  return '<details class="pp-nj" id="ppAdmissions" '+(admissionOpen?'open':'')+' ontoggle="pendingAdmissionToggle(this)"><summary>Pacientes creados sin nota de ingreso</summary><div class="pp-nj-s" data-admissions></div></details>';
+}
+async function pendingAdmissionToggle(panel){
+  if(!panel.isConnected)return;
+  admissionOpen=panel.open;
+  if(!panel.open||!pendingVisible())return;
+  const actor=sessionUserName();
+  const files=uniqueFiles(onlyJsonFiles(DRIVE_FILES)).filter(f=>! /\.nota-\d{8}-\d{4}\.json$/i.test(f.name));
+  const key=f=>JSON.stringify([actor,f.id,f.modified]);
+  const out=panel.querySelector('[data-admissions]');
+  out.textContent='Revisando notas de ingreso…';
+  if(admissionJob)await admissionJob;
+  if(!panel.isConnected||!panel.open||!pendingVisible())return;
+  const missing=files.filter(f=>!admissionCache.has(key(f)));
+  const job=ppPool(missing,3,async f=>{
+    if(!admissionOpen||!document.querySelector('#ppAdmissions[open]')||actor!==sessionUserName()||!pendingVisible())return;
+    try{
+      const res=await gcall("hjmReadFull",f.id), patient=JSON.parse(res.content);
+      if(!patient?.datos)return;
+      const notes=patient.historial?.notas??[];
+      const has=notes.some(r=>r&&!isCx(r)&&/^(?:nota (?:de )?)?ingreso$/i.test(String(r.p?.tipo||'').trim()));
+      admissionCache.set(key(f),has);
+    }catch(_){}
+  });
+  admissionJob=job;
+  await job;
+  if(admissionJob===job)admissionJob=null;
+  if(!panel.isConnected||!panel.open||actor!==sessionUserName()||!pendingVisible())return;
+  const pending=files.filter(f=>admissionCache.get(key(f))===false);
+  const unread=files.filter(f=>!admissionCache.has(key(f))).length;
+  out.innerHTML='<p>'+pending.length+' pacientes sin nota de ingreso'+(unread?' · '+unread+' expedientes sin verificar. Vuelve a abrir para reintentar.':'')+'</p>'+
+    (pending.length?'<table><thead><tr><th>Paciente</th><th>Expediente</th></tr></thead><tbody>'+pending.map(f=>'<tr><td>'+esc(f.meta?.nombre||'—')+'</td><td>'+esc(expOf(f))+'</td></tr>').join('')+'</tbody></table>':'');
+}
 function ppNoJsonList(){ let C={}; try{ C=(window.__hjmStatsCensos&&window.__hjmStatsCensos())||{}; }catch(_){}
   const have=new Set(); uniqueFiles(DRIVE_FILES||[]).forEach(f=>{ const e=njKey(expOf(f)); if(e) have.add(e); });
   const ks=Object.keys(C).filter(k=>C[k]&&Array.isArray(C[k].hx)).sort(), lastK=ks[ks.length-1]||"", M=new Map();
   ks.forEach(k=>C[k].hx.forEach(h=>{ const e=String(h[0]||"").trim(), ek=njKey(e); if(!ek||have.has(ek)||!/\d{3,}/.test(ek)) return; let x=M.get(ek); if(!x){ x={e,first:k,n:0}; M.set(ek,x); } x.last=k; x.n++; x.nom=h[2]||x.nom; x.srv=h[1]||x.srv; x.cama=h[3]||x.cama; }));
   const all=[...M.values()].sort((a,b)=>b.last.localeCompare(a.last)||String(a.nom).localeCompare(String(b.nom))), D=NJ_DESC||{};
   return {rows:all.filter(x=>!D[njKey(x.e)]),desc:all.filter(x=>D[njKey(x.e)]),lastK}; }
-function ppNoJsonHTML(){ njDescLoad(); const {rows,desc,lastK}=ppNoJsonList(); if(!rows.length&&!desc.length) return "";
+function ppNoJsonHTML(){ njDescLoad(); const {rows,desc,lastK}=ppNoJsonList(); 
   const kf=k=>k?k.slice(8)+"."+k.slice(5,7)+"."+k.slice(2,4):"";
   return `<details class="pp-nj" ${PP_NJ_OPEN?"open":""} ontoggle="PP_NJ_OPEN=this.open"><summary><b>${rows.length}</b> pacientes en censos sin archivo en la app <small>· solo administrador técnico · del más reciente al más antiguo</small></summary><div class="pp-nj-s"><table><thead><tr><th>Último censo</th><th>Primer censo</th><th>Paciente</th><th>Expediente</th><th>Cama</th><th>Clínica</th><th>Censos</th><th></th></tr></thead><tbody>${rows.map(x=>`<tr${x.last===lastK?' class="on"':""}><td>${kf(x.last)}${x.last===lastK?" <em>actual</em>":""}</td><td>${kf(x.first)}</td><td>${esc(x.nom||"—")}</td><td>${esc(x.e)}</td><td>${esc(x.cama||"")}</td><td>${esc(x.srv&&x.srv!=="OTRO"?x.srv:"—")}</td><td>${x.n}</td><td class="pp-nj-acc"><button type="button" class="pp-nj-b" data-njcrear="${esc(x.e)}" data-njk="${x.last}">Crear</button><button type="button" class="pp-nj-x" data-njdesc="${esc(x.e)}" title="Descartar: no se creará (sin nombre, sin nota de ingreso, expediente mal escrito o duplicado)">Descartar</button></td></tr>`).join("")}</tbody></table>${desc.length?`<div class="pp-nj-d"><button type="button" class="pp-nj-dt" data-njshowd>${PP_NJ_SHOWD?"Ocultar":"Ver"} descartados (${desc.length})</button>${PP_NJ_SHOWD?`<table><tbody>${desc.map(x=>{const d=(NJ_DESC||{})[njKey(x.e)]||{};return `<tr class="dsc"><td>${kf(x.last)}</td><td>${esc(x.nom||"—")}</td><td>${esc(x.e)}</td><td>${esc(x.cama||"")}</td><td><small>${esc(d.por||"")}</small></td><td><button type="button" class="pp-nj-b" data-njundo="${esc(x.e)}">Restaurar</button></td></tr>`;}).join("")}</tbody></table>`:""}</div>`:""}</div></details>`; }
 document.addEventListener("click",async e=>{ const t=e.target.closest&&e.target.closest("[data-njdesc],[data-njundo],[data-njshowd]"); if(!t) return; e.preventDefault(); e.stopPropagation();
@@ -15498,7 +15542,7 @@ let svTab="res";
 const arC=(exp,id)=>`<span class="on-arw">${arB(exp,id)}</span>`, arHd=h=>canPerm("ver_archivo")?[""].concat(h):h, arCl=(exp,c)=>canPerm("ver_archivo")?[arC(exp)].concat(c):c;
 /* ===== v5.16 · Estadísticas por apartados (Resumen · Actividad · Censo · Oncología) y Oncología por región / tipo de cáncer / estadio ===== */
 const ONC=window.HJM_ONCO;
-const SV_TABS=[["res","Resumen"],["hos","Hospitalización","Hospital"],["cen","Censos"],["qx","Quirófano"],["onc","Perfil oncológico","Onco"],["act","Uso de la app","Uso app"]];
+const SV_TABS=[["res","Resumen"],["pac","Pacientes"],["hos","Hospitalización","Hospital"],["cen","Censos"],["qx","Quirófano"],["onc","Perfil oncológico","Onco"],["act","Uso de la app","Uso app"]];
 const ONC_FLD='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v1M3 7v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H3z"/></svg>';
 const ONC_STAGES=[["0","Estadio 0 / in situ","#8FB8A8"],["I","Estadio I","#6FA8DC"],["II","Estadio II","#4F7FBF"],["III","Estadio III","#D9822B"],["IV","Estadio IV","#B5473A"],["","Sin estadio identificado","#B8BEC6"]];
 const ONC_REF={ing:"Fecha de ingreso",reg:"Fecha de alta en la app",mod:"Última modificación"};
@@ -15791,8 +15835,10 @@ async function renderStats(body){
   else if(svTab==="cen") main=movView(remote);
   else if(svTab==="qx") main=qxView(remote);
   else if(svTab==="hos") main=hosView();
+  else if(svTab==="pac") main='<div class="st-card" id="stPacStats"></div>';
   else main=oncView();
-  body.innerHTML=PER+svNav()+`<div class="sv-main">${main}</div>`;
+  body.innerHTML=(svTab==="pac"?"":PER)+svNav()+`<div class="sv-main">${main}</div>`;
+  if(svTab==="pac") drawPacStats();
   wireDet(body); wireList(body,period); hosWire(body);
   body.querySelectorAll("[data-sv]").forEach(b=>b.onclick=b.onkeydown=e=>{ if(e&&e.type==="keydown"&&e.key!=="Enter"&&e.key!==" ") return; if(e&&e.type==="keydown") e.preventDefault(); svTab=b.dataset.sv; render().then(()=>{ const s=scroller($s("stBody")); if(s) s.scrollTop=0; }); });
   if(svTab==="onc") oncWireTop(body); else if(svTab==="res") oncWire(body);
@@ -16420,18 +16466,73 @@ async function analyzeAll(onTick,force){
   } finally{ ANA_RUN=false; } }
 const topN=(o,n)=>Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,n);
 function bars(list,empty){ if(!list.length) return `<div class="st-msg">${empty||"Sin datos."}</div>`; const mx=list[0][1]||1; return list.map(([k,n])=>`<div class="frow"><span title="${esc(k)}">${esc(k.length>34?k.slice(0,33)+"…":k)}</span><div class="bar"><i style="width:${Math.round(n/mx*100)}%"></i></div><b>${n}</b></div>`).join(""); }
-function drawPacStats(prog){
-  const host=$s("stPacStats"); if(!host) return; const fs=uniqueFiles(DRIVE_FILES), now=Date.now();
-  const ad={},cl={},ge={},gn={},rs={},mo={}; let conMed=0,cama=0,h24=0,d7=0,d30=0,old=0,tot=0,n=0,notas=0,ind=0;
-  fs.forEach(f=>{ const c=PCACHE[f.id]; const t=now-fileTime(f); if(t<=864e5) h24++; if(t<=7*864e5) d7++; if(t<=30*864e5) d30++; else old++; if(f.meta&&String(f.meta.cama||"").trim()&&!isCE(f.meta.cama)) cama++;
-    if(!c) return; n++; tot+=c.sz; notas+=c.nn; ind+=c.ni; const a=adsOf(c.med); if(a.length) conMed++; a.forEach(x=>{ ad[x.n.replace(/^DRA?\.\s*/,"")]=(ad[x.n.replace(/^DRA?\.\s*/,"")]||0)+1; cl[x.c]=(cl[x.c]||0)+1; });
-    { let a=NaN; try{ a=parseInt(edad(c.fn,todayStr()),10); }catch(_){} if(Number.isFinite(a)&&a>=0&&a<125){ const k=Math.floor(a/10)*10; ge[k]=(ge[k]||0)+1; } } if(c.gen) gn[c.gen]=(gn[c.gen]||0)+1; if(c.res){ const rk=String(c.res).toLocaleUpperCase('es-MX').replace(/\s+/g,' ').trim(); rs[rk]=(rs[rk]||0)+1; };
-    const m=/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2,4})$/.exec(c.ing); if(m){ const y=m[3].length===2?"20"+m[3]:m[3]; const k=y+"-"+pad(+m[2]); mo[k]=(mo[k]||0)+1; } });
-  const months=Object.entries(mo).sort((a,b)=>a[0].localeCompare(b[0])).slice(-6).map(([k,v])=>[k,v]), mm=Math.max(1,...months.map(x=>x[1]));
-  host.innerHTML=`<h3>Pacientes en Drive <small style="font-weight:500;color:#7B7E81">${prog||(n<fs.length?"· analizando…":"")}</small></h3>
-  <div class="st-kpis"><div class="st-kpi"><b>${fs.length}</b><span>Pacientes (archivos)</span></div><div class="st-kpi"><b>${cama}</b><span>Con cama asignada</span></div><div class="st-kpi"><b>${h24}</b><span>Editados en 24 h</span></div><div class="st-kpi"><b>${d7}</b><span>Editados en 7 días</span></div><div class="st-kpi"><b>${old}</b><span>Sin editar +30 días</span></div><div class="st-kpi"><b>${n?kb(Math.round(tot/n)):"—"}</b><span>Tamaño promedio por archivo · total ${kb(tot)}</span></div></div>
-  <div class="st-grid2" style="margin-top:12px"><div><h3>Adscritos con más pacientes (top 6)</h3>${bars(topN(ad,6),"Aún sin datos de médico tratante.")}</div><div><h3>Pacientes por clínica</h3>${bars(topN(cl,8),"Aún sin datos de clínica.")}</div><div><h3>Por grupo etario</h3>${Object.keys(ge).length?(()=>{ const mx=Math.max(...Object.values(ge)); return Object.keys(ge).map(Number).sort((a,b)=>a-b).map(k=>`<div class="frow"><span>${k}–${k+9} años</span><div class="bar"><i style="width:${Math.round(ge[k]/mx*100)}%"></i></div><b>${ge[k]}</b></div>`).join(""); })():'<div class="st-msg">Sin fecha de nacimiento registrada.</div>'}</div><div><h3>Residentes con más pacientes (top 6)</h3>${bars(topN(rs,6))}</div><div><h3>Por género</h3>${bars(topN(gn,4))}</div><div><h3>Ingresos por mes (últimos 6)</h3>${months.length?months.map(([k,v])=>`<div class="frow"><span>${k}</span><div class="bar"><i style="width:${Math.round(v/mm*100)}%"></i></div><b>${v}</b></div>`).join(""):'<div class="st-msg">Sin datos.</div>'}</div></div>
-  <div class="st-msg" style="margin-top:10px">Sin médico asignado: ${n-conMed} · notas guardadas: ${notas} · indicaciones guardadas: ${ind} · actividad: ${h24} hoy, ${d7} en 7 días, ${d30} en 30 días.</div>`; }
+function drawPacStats(){
+  const host=$s("stPacStats"); if(!host)return;
+  const files=uniqueFiles(DRIVE_FILES), now=Date.now(), groups=new Map(), chartGroups=new Map();
+  function add(key,f){if(!groups.has(key))groups.set(key,[]); groups.get(key).push(f);}
+  function category(section,label,f){
+    if(!label)return;
+    if(!chartGroups.has(section))chartGroups.set(section,new Map());
+    const key=section+"|"+label;
+    chartGroups.get(section).set(label,key); add(key,f);
+  }
+  let totalBytes=0,totalNotes=0,totalOrders=0;
+  for(const f of files){
+    add("all",f);
+    const elapsed=now-fileTime(f), bed=String(f.meta?.cama||"").trim();
+    if(bed&&!isCE(bed))add("bed",f);
+    if(elapsed<=864e5)add("day",f);
+    if(elapsed<=7*864e5)add("week",f);
+    if(elapsed<=30*864e5)add("month",f); else add("old",f);
+    const c=fresh(f)&&PCACHE[f.id]; if(!c?.ok)continue;
+    add("size",f); totalBytes+=c.sz;
+    if(c.nn){add("notes",f);totalNotes+=c.nn;}
+    if(c.ni){add("orders",f);totalOrders+=c.ni;}
+    const staff=adsOf(c.med);
+    if(!staff.length)add("noStaff",f);
+    for(const name of new Set(staff.map(x=>x.n.replace(/^DRA?\.\s*/,""))))category("staff",name,f);
+    for(const clinic of new Set(staff.map(x=>x.c||"Sin clínica registrada")))category("clinic",clinic,f);
+    const age=parseInt(edad(c.fn,todayStr()),10);
+    if(age>=0&&age<125){const start=Math.floor(age/10)*10;category("age",start+"–"+(start+9)+" años",f);}
+    category("resident",String(c.res||"").toLocaleUpperCase("es-MX").replace(/\s+/g," ").trim(),f);
+    category("gender",c.gen,f);
+    const date=/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2,4})$/.exec(c.ing);
+    if(date)category("admission",(date[3].length===2?"20":"")+date[3]+"-"+pad(+date[2]),f);
+  }
+  const count=k=>groups.get(k)?.length||0;
+  const titles=new Map();
+  function attr(key,title){titles.set(key,title);return 'data-patient-group="'+esc(key)+'"';}
+  function tile(key,title,value=count(key)){return kpi(value,title,"",attr(key,title));}
+  function chart(section,title,limit){
+    let entries=Array.from(chartGroups.get(section)||[]);
+    if(section==="age")entries.sort((a,b)=>parseInt(a[0])-parseInt(b[0]));
+    else if(section==="admission")entries.sort().splice(0,Math.max(0,entries.length-6));
+    else entries.sort((a,b)=>count(b[1])-count(a[1])||a[0].localeCompare(b[0],"es"));
+    if(limit)entries=entries.slice(0,limit);
+    const max=Math.max(1,...entries.map(([,key])=>count(key)));
+    return '<section><h3>'+title+'</h3>'+ (entries.map(([label,key])=>`<button type="button" class="frow pac-bar" ${attr(key,title+" · "+label)}><span>${esc(label)}</span><span class="bar"><i style="width:${100*count(key)/max}%"></i></span><b>${count(key)}</b></button>`).join("")||'<div class="st-msg">Sin datos.</div>')+'</section>';
+  }
+  host.innerHTML='<h3>Pacientes en Drive</h3><div class="st-kpis">'+
+    tile("all","Pacientes (archivos)")+tile("bed","Con cama asignada")+tile("day","Editados en 24 h")+tile("week","Editados en 7 días")+tile("old","Sin editar +30 días")+
+    tile("size","Tamaño promedio por archivo · total "+kb(totalBytes),count("size")?kb(totalBytes/count("size")):"—")+'</div><div class="st-grid2">'+
+    chart("staff","Adscritos con más pacientes (top 6)",6)+chart("clinic","Pacientes por clínica")+chart("age","Por grupo etario")+chart("resident","Residentes con más pacientes (top 6)",6)+chart("gender","Por género")+chart("admission","Ingresos por mes (últimos 6)")+'</div><div class="st-kpis">'+
+    tile("noStaff","Sin médico asignado")+tile("notes","Notas guardadas",totalNotes)+tile("orders","Indicaciones guardadas",totalOrders)+tile("month","Editados en 30 días")+'</div>'+
+    (count("size")<files.length?`<p class="st-msg">Datos de contenido disponibles para ${count("size")} de ${files.length} expedientes.</p>`:"");
+  function show(key){
+    const records=groups.get(key)||[], dialog=dlgList();
+    dialog.querySelector("#stlT").textContent=titles.get(key)+" · "+records.length+" pacientes";
+    const headers=["Expediente","Paciente","Diagnóstico","Cama","Adscrito","Residente","Edad","Género","Ingreso","Última edición","Tamaño","Notas","Indicaciones"];
+    const rows=records.map(f=>{
+      const c=(fresh(f)&&PCACHE[f.id])||{}, m=f.meta||{}, exp=fexp(f);
+      const cells=[exp,c.patientName||m.nombre,c.patientDx||m.dx,m.cama,c.med,c.res,c.fn&&edad(c.fn,todayStr()),c.gen,c.ing,fileTime(f)&&new Date(fileTime(f)).toLocaleDateString("es-MX"),c.sz!=null&&kb(c.sz),c.nn,c.ni];
+      return detTr(arCl(exp,cells.map(v=>esc(String(v===false||v==null||v===""?"—":v)))));
+    });
+    dialog.querySelector("#stlB").innerHTML=rows.length?detTbl(arHd(headers),rows):'<p class="st-msg">Ningún paciente en este rubro.</p>';
+    if(!dialog.open)dialog.showModal();
+  }
+  host.onclick=e=>{const b=e.target.closest("[data-patient-group]");if(b)show(b.dataset.patientGroup);};
+  host.onkeydown=e=>{const b=e.target.closest('.st-kpi[data-patient-group]');if(b&&["Enter"," "].includes(e.key)){e.preventDefault();show(b.dataset.patientGroup);}};
+}
 function pacRows(){
   const q=pacQ.trim().toUpperCase();
   const files=uniqueFiles(DRIVE_FILES).filter(f=>{ const p=f.meta||{}; return !q||fexp(f).toUpperCase().includes(q)||String(p.nombre||"").toUpperCase().includes(q); }).sort((a,b)=>fileTime(b)-fileTime(a));
@@ -17126,7 +17227,7 @@ async function render(){
   const body=$s("stBody");
   const RO=false,ADM=false;if(!accessPanelTab(tab))tab=["stats","cmt","err","idx","usr","pend","cfg"].find(accessPanelTab)||"cfg";
   if(!isTechnicalAdmin()&&["usr","pend"].includes(tab)&&!(tab==="usr"&&canPerm("gestionar_usuarios")))tab="stats";
-  const npac=uniqueFiles(DRIVE_FILES).length, nerr=RO?0:errCount(), tabs=RO?[["stats","Estadísticas"],["ownFiles","Mi expediente"],["pac",`Pacientes <span class="st-cnt">${npac}</span>`],["cfg","Configuración"]]:ADM?[["stats","Estadísticas"],["ownFiles","Mi expediente"],["pac",`Pacientes <span class="st-cnt">${npac}</span>`],["err","Errores"+(nerr?` <span class="st-cnt st-bad" title="Hay elementos con error">${nerr}</span>`:"")],["usr",`Usuarios <span class="st-cnt">${HJM_USERS.length}</span>`],["idx","Descargas"],["cfg","Configuración"]]:[["stats","Estadísticas"],["ownFiles","Mi expediente"],["pac",`Pacientes <span class="st-cnt">${npac}</span>`],["pend","Administrar"+pendBadge()],["err","Errores"+(nerr?` <span class="st-cnt st-bad" title="Hay elementos con error">${nerr}</span>`:"")],["usr",`Usuarios <span class="st-cnt">${HJM_USERS.length}</span>`],["idx","Descargas"],["cmt","Comentarios"+cmTabDot()],["cfg","Configuración"]];
+  const nerr=RO?0:errCount(), tabs=RO?[["stats","Estadísticas"],["ownFiles","Mi expediente"],["cfg","Configuración"]]:ADM?[["stats","Estadísticas"],["ownFiles","Mi expediente"],["err","Errores"+(nerr?` <span class="st-cnt st-bad" title="Hay elementos con error">${nerr}</span>`:"")],["usr",`Usuarios <span class="st-cnt">${HJM_USERS.length}</span>`],["idx","Descargas"],["cfg","Configuración"]]:[["stats","Estadísticas"],["ownFiles","Mi expediente"],["pend","Administrar"+pendBadge()],["err","Errores"+(nerr?` <span class="st-cnt st-bad" title="Hay elementos con error">${nerr}</span>`:"")],["usr",`Usuarios <span class="st-cnt">${HJM_USERS.length}</span>`],["idx","Descargas"],["cmt","Comentarios"+cmTabDot()],["cfg","Configuración"]];
   let bar=body.querySelector(".st-tabs"); 
   body.innerHTML='<div class="st-tabs">'+tabs.filter(([k])=>accessPanelTab(k)).map(([k,l])=>`<button type="button" role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join("")+'</div><div id="stTab"></div>';
   body.querySelectorAll("[data-tab]").forEach(b=>b.onclick=async()=>{
@@ -19705,7 +19806,15 @@ function cfgGrupal(){ try{ usrGrpFilter(); }catch(_){} const f=$i('cfgForm'), st
   try{ const nt=f.querySelector('.cfg-ntab'); if(nt){ box.after(nt); nt.className='cfg-grp cfg-ntab'; nt.removeAttribute('style'); const T=nt.querySelector('#cfgT'); if(T){ T.removeAttribute('style'); if(!nt.querySelector('.cfg-grp-ic')){ const ic=document.createElement('i'); ic.className='cfg-grp-ic'; ic.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M3.5 14.5h17M9.5 9.5v10"/></svg>'; T.after(ic); } } nt.querySelectorAll('b,small').forEach(x=>x.removeAttribute('style')); } }catch(_){}
   try{ if(isTechAdminRecord(c)&&!$i('cfgTB')){ const nt=f.querySelector('.cfg-ntab')||box, tb=document.createElement('label'); tb.className='cfg-grp cfg-tborr';
     tb.innerHTML=`<input type="checkbox" id="cfgTB"${c.tborr==="0"?'':' checked'}><i class="cfg-grp-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg></i><span><b>Permitir borrar entradas</b><br><small>Si está activo, como Técnico ves el botón de borrar en notas, indicaciones, Archivo clínico, Quirófano, Comité y donde tienes más permisos de borrado que un usuario normal. Si está desactivado, borras igual que tu tipo de usuario.</small></span>`;
-    nt.after(tb); tb.querySelector('#cfgTB').addEventListener('change',()=>{ try{ (window.__cfgCommit||cfgCommit)(); }catch(_){} setTimeout(()=>{ try{ renderSync&&renderSync(); }catch(_){} try{ HJM_QX&&HJM_QX.renderView&&HJM_QX.renderView(); }catch(_){} },300); }); } }catch(_){}
+    nt.after(tb);
+    if(pendingTechnicalSession()){
+      const pref=document.createElement('label'); pref.className='cfg-grp';
+      pref.innerHTML='<input type="checkbox"><span><b>Ver pacientes pendientes de ingresar</b><br><small>Muestra en Archivo los pacientes del censo sin expediente en la app y los expedientes sin nota de ingreso.</small></span>';
+      const input=pref.querySelector('input'); input.checked=pendingVisible();
+      input.onchange=()=>{if(!pendingTechnicalSession())return; localStorage.setItem(pendingPrefKey(),input.checked?'1':'0'); admissionOpen=false; renderPP();};
+      tb.after(pref);
+    }
+    tb.querySelector('#cfgTB').addEventListener('change',()=>{ try{ (window.__cfgCommit||cfgCommit)(); }catch(_){} setTimeout(()=>{ try{ renderSync&&renderSync(); }catch(_){} try{ HJM_QX&&HJM_QX.renderView&&HJM_QX.renderView(); }catch(_){} },300); }); } }catch(_){}
   const send=async on=>{ G.disabled=true; try{ await gcall('hjmGrupalMio',on); try{ await HJM_BETA.refresh(); }catch(_){} say(on?'Acceso desde cuenta grupal activado.':'Acceso desde cuenta grupal desactivado.','ok'); }catch(err){ G.checked=!on; say('No se pudo guardar: '+((err&&err.message)||err),'warn'); } G.disabled=false; };
   G.addEventListener('change',()=>{ if(!G.checked){ send(false); return; } G.checked=false; const d=dlg('dlgCfgGrp');
     d.innerHTML=dlgShell('Acceso desde cuenta grupal','Lee esto antes de activarlo',`<p class="qd-note" style="font-size:14px;line-height:1.5">Al activarlo, <b>cualquier persona con acceso al correo grupal</b>, o que use una computadora donde esa cuenta esté abierta, podrá entrar con tu nombre y <b>guardar notas, indicaciones y datos a tu nombre</b>.<br><br>Lo que se guarde así queda registrado como hecho por ti y es tu responsabilidad.</p>`,`<button type="button" class="qx-btn" data-qd-x>Cancelar</button><button type="button" class="qx-btn pri" id="cgOk">Entiendo, activar</button>`); show(d);
