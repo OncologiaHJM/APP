@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.84">
+<meta name="application-version" content="9.85">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2756,7 +2756,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.84 · Fecha de publicación: 19.11.26</div>
+  <div class="app-footer-version">Versión 9.85 · Fecha de publicación: 19.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -7100,6 +7100,16 @@ body.hjm-sheet{overflow:hidden!important}
 body.hjm-sheet::before{content:"";position:fixed;inset:0;z-index:2500;background:rgba(18,30,54,.5);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
 html:root body.hjm-sheet #view-data{position:fixed!important;z-index:2501;top:27px;bottom:27px;left:0;right:0;margin:0 auto!important;width:min(1240px,calc(100vw - 32px))!important;max-width:none!important;height:auto!important;overflow:auto!important;background:#F4F6FA!important;border-radius:20px;box-shadow:0 24px 70px rgba(10,20,40,.38);padding:0 0 12px!important}
 body.hjm-sheet:has(#dlgPatientFormat[open]) #view-data{visibility:hidden}
+#popHost .pop.pop-confirm{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:start;gap:12px;padding:16px;box-sizing:border-box;max-width:100%}
+#popHost .pop-confirm .pm{align-self:center;overflow-wrap:anywhere}
+#popHost .pop-confirm .px{grid-area:1/3;align-self:start;width:32px;height:32px}
+#popHost .pop-confirm .pop-actions{grid-row:2;grid-column:1/-1;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;padding-top:12px;border-top:1px solid var(--u-line)}
+#popHost .pop-confirm .pa{min-height:38px;max-width:100%;white-space:normal;background:#f1f5f9!important;color:#273c50!important;border:1px solid #cdd8e2!important}
+#popHost .pop-confirm .pa:hover{background:#e3ebf3!important}
+#popHost .pop-confirm .pa-danger{background:#b4232e!important;color:white!important;border-color:#b4232e!important}
+#popHost .pop-confirm .pa-danger:hover{background:#901d26!important}
+#popHost .pop-confirm button:focus-visible{outline:3px solid #3075af;outline-offset:2px}
+@media(max-width:420px){#popHost .pop-confirm .pop-actions .pa{flex:1 1 auto}}
 body.hjm-sheet #popHost{z-index:2600!important}
 body.hjm-sheet #hjmFab{z-index:2550!important}
 #hjmSheetBar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;padding:14px 20px;margin:0 0 14px;background:#fff;border-bottom:1px solid #DDE3EC;border-radius:20px 20px 0 0}
@@ -7168,6 +7178,7 @@ html:root body.pp-browse #pPanel.cen-on .pp-head #cenToolbar.cen-grp>#cenSendBtn
 .usr-grpf{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 12px;border:1px solid #D5DCE8;border-radius:999px;background:#fff;font:600 12.5px var(--rd-sans,system-ui);color:#34435E;cursor:pointer;white-space:nowrap}
 .usr-grpf[hidden]{display:none}.usr-grpf input{width:16px;height:16px;margin:0;accent-color:#17603C}.usr-grpf svg{color:#17603C}
 .usr-grpf:has(input:checked){background:#DDF1E6;border-color:#9FD3B4;color:#17603C}
+#dlgStats #cfgForm .cfg-pending{justify-content:flex-start;text-align:left}
 .cfg-grp-ic{display:inline-grid;place-items:center;width:30px;height:30px;flex:0 0 30px;border-radius:50%;background:#DDF1E6;color:#17603C;font-style:normal}
 .usr-grp-t{display:inline-flex;align-items:center;gap:6px}.usr-grp-t svg{color:#17603C}
 #dlgStats .usr-nm:has(>.usr-grp)>b{display:inline!important}
@@ -9964,7 +9975,7 @@ function emptyPrintWarning(){
 function guardPrintBtn(id){
   const b=$(id); if(!b||!b.onclick) return; const orig=b.onclick;
   b.onclick=function(ev){ const m=emptyPrintWarning(); if(!m) return orig.call(this,ev);
-    notify(m+" ¿Quieres imprimir de todos modos?","warn",{center:true,ms:60000,actions:[{label:"Imprimir de todos modos",fn:()=>orig.call(b,ev)},{label:"Cancelar",fn:()=>{}}]}); };
+    notify(m+" ¿Quieres imprimir de todos modos?","warn",{center:true,ms:60000,actions:[{label:"Imprimir de todos modos",danger:true,fn:()=>orig.call(b,ev)},{label:"Cancelar",fn:()=>{}}]}); };
 }
 guardPrintBtn("btnPrint");
 async function printFormatNow(alreadySaved=false){ document.activeElement&&document.activeElement.blur(); if(!alreadySaved)autoSaveOnPrint(); if(current==="alta") await prewarmAltaSupp(); addPrintCopies(); window.print(); setTimeout(removePrintCopies,1500); }
@@ -9982,7 +9993,13 @@ function notify(msg,kind="info",opt={}){
   const d=document.createElement("div"); d.className="pop "+kind+(opt.loading?" loading":""); if(opt.loading)d.setAttribute("aria-busy","true"); d.setAttribute("role",kind==="info"?"status":"alert");
   d.innerHTML=`<span class="pi">${ic}</span><span class="pm">${esc(msg)}</span>`;
   if(opt.messageParts){const pm=d.querySelector(".pm");pm.replaceChildren();opt.messageParts.forEach(part=>{if(part.break){pm.appendChild(document.createElement("br"));return;}if(part.bold){const strong=document.createElement("strong");strong.textContent=part.text;pm.appendChild(strong);}else pm.appendChild(document.createTextNode(part.text));});}
-  [].concat(opt.actions||[],opt.action||[]).forEach(ac=>{ const b=document.createElement("button"); b.type="button"; b.className="pa"; b.textContent=ac.label; b.onclick=()=>{ close(); ac.fn(); }; d.appendChild(b); });
+  const actions=[].concat(opt.actions||[],opt.action||[]);
+  let actionHost=d;
+  if(kind==="warn"&&actions.length>1){
+    d.classList.add("pop-confirm");
+    actionHost=document.createElement("div"); actionHost.className="pop-actions"; d.appendChild(actionHost);
+  }
+  actions.forEach(ac=>{ const b=document.createElement("button"); b.type="button"; b.className=ac.danger?"pa pa-danger":"pa"; b.textContent=ac.label; b.onclick=()=>{ close(); ac.fn(); }; actionHost.appendChild(b); });
   const x=document.createElement("button"); x.type="button"; x.className="px"; x.setAttribute("aria-label","Cerrar"); x.textContent="×"; x.onclick=close; if(!opt.loading)d.appendChild(x);
   if(opt.modal){
     const modal=document.createElement("dialog");modal.className="pop-modal";modal.setAttribute("role","alertdialog");modal.setAttribute("aria-label","Paciente existente");modal.setAttribute("aria-describedby","pop-modal-message");modal.setAttribute("closedby","none");d.querySelector(".pm").id="pop-modal-message";
@@ -11566,8 +11583,20 @@ function pendingTechnicalSession(){
 }
 function pendingPrefKey(){return "hjm.pendingAdmissions."+sessionUserName();}
 function pendingVisible(){return pendingTechnicalSession()&&localStorage.getItem(pendingPrefKey())==="1";}
-const admissionCache=new Map();
 let admissionOpen=false, admissionJob=null;
+const admissionCache=new Map();
+function admissionStatus(patient){
+  if(!patient?.datos)throw Error("Expediente incompleto");
+  return (patient.historial?.notas??[]).some(r=>r&&!isCx(r)&&/^(?:nota (?:de )?)?ingreso$/i.test(String(r.p?.tipo||"").trim()));
+}
+function admissionIndex(actor){
+  if(!admissionCache.has(actor)){
+    let saved=[];
+    try{saved=JSON.parse(localStorage.getItem("hjm.admissionIndex."+actor)||"[]");}catch(_){}
+    admissionCache.set(actor,new Map(Array.isArray(saved)?saved.filter(x=>Array.isArray(x)&&typeof x[1]==="boolean"):[]));
+  }
+  return admissionCache.get(actor);
+}
 function pendingAdmissionHTML(){
   return '<details class="pp-nj" id="ppAdmissions" '+(admissionOpen?'open':'')+' ontoggle="pendingAdmissionToggle(this)"><summary>Pacientes creados sin nota de ingreso</summary><div class="pp-nj-s" data-admissions></div></details>';
 }
@@ -11575,32 +11604,34 @@ async function pendingAdmissionToggle(panel){
   if(!panel.isConnected)return;
   admissionOpen=panel.open;
   if(!panel.open||!pendingVisible())return;
-  const actor=sessionUserName();
-  const files=uniqueFiles(onlyJsonFiles(DRIVE_FILES)).filter(f=>! /\.nota-\d{8}-\d{4}\.json$/i.test(f.name));
-  const key=f=>JSON.stringify([actor,f.id,f.modified]);
-  const out=panel.querySelector('[data-admissions]');
-  out.textContent='Revisando notas de ingreso…';
-  if(admissionJob)await admissionJob;
-  if(!panel.isConnected||!panel.open||!pendingVisible())return;
-  const missing=files.filter(f=>!admissionCache.has(key(f)));
-  const job=ppPool(missing,3,async f=>{
-    if(!admissionOpen||!document.querySelector('#ppAdmissions[open]')||actor!==sessionUserName()||!pendingVisible())return;
+  const actor=sessionUserName(), cache=admissionIndex(actor);
+  const files=uniqueFiles(onlyJsonFiles(DRIVE_FILES).filter(f=>! /\.nota-\d{8}-\d{4}\.json$/i.test(f.name)));
+  const key=f=>JSON.stringify([f.id,f.modified||""]);
+  const sig=JSON.stringify([actor,...files.map(key)]);
+  if(admissionJob?.sig===sig){admissionJob.paint();return;}
+  const job={sig}; admissionJob=job;
+  function output(){return admissionJob===job&&actor===sessionUserName()&&pendingVisible()&&document.querySelector("#ppAdmissions[open] [data-admissions]");}
+  let failed=0,finished=false,timer;
+  job.paint=()=>{
+    const out=output();if(!out)return;
+    const pending=files.filter(f=>cache.get(key(f))===false), verified=files.filter(f=>cache.has(key(f))).length;
+    out.innerHTML='<p role="status">'+verified+' de '+files.length+' expedientes verificados · '+pending.length+' sin nota de ingreso'+(failed?' · '+failed+' sin verificar':'')+(!finished&&verified+failed<files.length?' · Revisando…':failed?' · Vuelve a abrir para reintentar.':'')+'</p>'+
+      (pending.length?'<table><thead><tr><th>Paciente</th><th>Expediente</th></tr></thead><tbody>'+pending.map(f=>'<tr><td>'+esc(f.meta?.nombre||'—')+'</td><td>'+esc(expOf(f))+'</td></tr>').join('')+'</tbody></table>':'');
+  };
+  job.paint();
+  await ppPool(files.filter(f=>!cache.has(key(f))),4,async f=>{
+    if(!output()||cache.has(key(f)))return;
+    let timeout;
     try{
-      const res=await gcall("hjmReadFull",f.id), patient=JSON.parse(res.content);
-      if(!patient?.datos)return;
-      const notes=patient.historial?.notas??[];
-      const has=notes.some(r=>r&&!isCx(r)&&/^(?:nota (?:de )?)?ingreso$/i.test(String(r.p?.tipo||'').trim()));
-      admissionCache.set(key(f),has);
-    }catch(_){}
+      const res=await Promise.race([gcall("hjmReadFull",f.id),new Promise((_,reject)=>{timeout=setTimeout(()=>reject(Error("Tiempo agotado")),30000);})]);
+      cache.set(key(f),admissionStatus(JSON.parse(res.content)));
+    }catch(_){failed++;}
+    finally{clearTimeout(timeout);}
+    if(!timer)timer=setTimeout(()=>{timer=null;job.paint();},350);
   });
-  admissionJob=job;
-  await job;
+  clearTimeout(timer);finished=true;job.paint();
   if(admissionJob===job)admissionJob=null;
-  if(!panel.isConnected||!panel.open||actor!==sessionUserName()||!pendingVisible())return;
-  const pending=files.filter(f=>admissionCache.get(key(f))===false);
-  const unread=files.filter(f=>!admissionCache.has(key(f))).length;
-  out.innerHTML='<p>'+pending.length+' pacientes sin nota de ingreso'+(unread?' · '+unread+' expedientes sin verificar. Vuelve a abrir para reintentar.':'')+'</p>'+
-    (pending.length?'<table><thead><tr><th>Paciente</th><th>Expediente</th></tr></thead><tbody>'+pending.map(f=>'<tr><td>'+esc(f.meta?.nombre||'—')+'</td><td>'+esc(expOf(f))+'</td></tr>').join('')+'</tbody></table>':'');
+  try{localStorage.setItem("hjm.admissionIndex."+actor,JSON.stringify(files.filter(f=>f.modified&&cache.has(key(f))).map(f=>[key(f),cache.get(key(f))])));}catch(_){}
 }
 function ppNoJsonList(){ let C={}; try{ C=(window.__hjmStatsCensos&&window.__hjmStatsCensos())||{}; }catch(_){}
   const have=new Set(); uniqueFiles(DRIVE_FILES||[]).forEach(f=>{ const e=njKey(expOf(f)); if(e) have.add(e); });
@@ -16452,6 +16483,7 @@ function getEntry(f){ if(fresh(f)) return Promise.resolve(PCACHE[f.id]); if(INFL
     let bad=""; if(!o) bad="JSON ilegible o incompleto"; else if(o.app!=="solicitudes-hjm") bad="no es un expediente de la app"; else { const ex=String(d.expediente||"").trim(); const me=f.meta&&f.meta.exp&&String(f.meta.exp).trim(); if(!ex) bad="sin número de expediente"; else if(me&&expKey(me)!==expKey(ex)) bad=`expediente del archivo (${ex}) distinto al de la lista (${me})`; }
     if(!bad&&c.length>1500000) bad=`archivo muy grande (${kb(c.length)}, límite ≈1.9 MB)`;
     const e={m:String(f.modified||""),sz:new Blob([c]).size,bad,ed:(o&&o.ultimoEditor&&o.ultimoEditor.u)||(f.meta&&f.meta.ed)||"",med:String(d.medico||""),patientName:d.nombreCompleto||[d.apPaterno,d.apMaterno,d.nombres].filter(Boolean).join(" "),patientExp:String(d.expediente||""),patientDx:String(d.diagnostico||""),fullIdentity:true,fn:String(d.fnac||"").trim(),gen:String(d.genero||"").trim(),ing:String(d.fIngreso||"").trim(),res:String(d.residente||"").trim(),nn:Array.isArray(h.notas)?h.notas.length:0,ni:Array.isArray(h.indicaciones)?h.indicaciones.length:0,ok:!!o};
+    if(!bad&&pendingTechnicalSession()){try{admissionIndex(sessionUserName()).set(JSON.stringify([f.id,f.modified||""]),admissionStatus(o));}catch(_){}}
     PCACHE[f.id]=e; DET[f.id]={size:e.sz,ed:e.ed,edTs:0}; delete READFAIL[f.id]; return e;
   }catch(err){ READFAIL[f.id]="no se pudo leer: "+friendly(err); throw err; } finally{ delete INFL[f.id]; } })(); }
 let ANA_RUN=false;
@@ -19808,8 +19840,8 @@ function cfgGrupal(){ try{ usrGrpFilter(); }catch(_){} const f=$i('cfgForm'), st
     tb.innerHTML=`<input type="checkbox" id="cfgTB"${c.tborr==="0"?'':' checked'}><i class="cfg-grp-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg></i><span><b>Permitir borrar entradas</b><br><small>Si está activo, como Técnico ves el botón de borrar en notas, indicaciones, Archivo clínico, Quirófano, Comité y donde tienes más permisos de borrado que un usuario normal. Si está desactivado, borras igual que tu tipo de usuario.</small></span>`;
     nt.after(tb);
     if(pendingTechnicalSession()){
-      const pref=document.createElement('label'); pref.className='cfg-grp';
-      pref.innerHTML='<input type="checkbox"><span><b>Ver pacientes pendientes de ingresar</b><br><small>Muestra en Archivo los pacientes del censo sin expediente en la app y los expedientes sin nota de ingreso.</small></span>';
+      const pref=document.createElement('label'); pref.className='cfg-grp cfg-pending';
+      pref.innerHTML='<input type="checkbox"><i class="cfg-grp-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="7" r="3"/><path d="M3 20v-2a6 6 0 0 1 9-5"/><circle cx="17" cy="16" r="5"/><path d="M17 13v3l2 1"/></svg></i><span><b>Ver pacientes pendientes de ingresar</b><br><small>Muestra en Archivo los pacientes del censo sin expediente en la app y los expedientes sin nota de ingreso.</small></span>';
       const input=pref.querySelector('input'); input.checked=pendingVisible();
       input.onchange=()=>{if(!pendingTechnicalSession())return; localStorage.setItem(pendingPrefKey(),input.checked?'1':'0'); admissionOpen=false; renderPP();};
       tb.after(pref);
