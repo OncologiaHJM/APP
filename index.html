@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.100">
+<meta name="application-version" content="10.01">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2756,7 +2756,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.100 · Fecha de publicación: 21.11.26</div>
+  <div class="app-footer-version">Versión 10.01 · Fecha de publicación: 21.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -7318,6 +7318,22 @@ html body .qx-card .qx-delete-icon{flex:none;width:42px!important;min-width:42px
 html body .qx-card .committee-note-actions>button.rb{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:3px;min-height:40px;flex:1 0 auto;border:1px solid #bfccda!important;border-radius:999px!important;background:#fff!important;color:#193956!important;font:650 12px/1.2 var(--rd-sans,system-ui);padding:5px 7px;cursor:pointer}
 html body .qx-card .committee-note-actions>button.rb:hover{background:#edf5ff!important}
 .qx-card .cm-session svg.cm-session-check{fill:none!important;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+#qxView .qx-agenda-column>details[data-surgery-pending]{margin:16px 0 0!important;border-radius:12px;border:1px solid #ccd8e4;overflow:hidden}
+#qxView details[data-surgery-pending]>summary{display:flex;align-items:center;gap:10px;min-height:46px;padding:9px 14px;box-sizing:border-box;list-style:none;font-weight:700}
+#qxView details[data-surgery-pending]>summary::-webkit-details-marker{display:none}
+#qxView details[data-surgery-pending]>summary::before{content:"";width:7px;height:7px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(-45deg)}
+#qxView details[data-surgery-pending][open]>summary::before{transform:rotate(45deg)}
+#qxView details[data-surgery-pending]>summary b{margin-inline-start:auto;background:#e6eef6;color:#234766;border-radius:999px;padding:3px 9px}
+#qxView details[data-surgery-pending]>p{margin:0;padding:12px 16px}
+.qx-card .cm-session-stack{grid-column:1/-1;display:grid;gap:8px;min-width:0;container-type:inline-size}
+.cm-session-stack>.qx-chip{min-height:36px;justify-content:center}
+.cm-session-stack>.cm-session{display:flex;align-items:center;gap:7px;padding-inline:12px}
+.cm-session-stack .cm-session-check{width:18px;height:18px;flex:none}
+.cm-session-stack .cm-note-tools{display:grid;grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:5px}
+.cm-note-tools>.qx-btn{padding:4px 2px;min-width:0;min-height:40px;gap:4px;border-radius:999px}
+.cm-note-tools [data-ce="drive"] svg{stroke:none}
+@container(max-width:340px){.cm-note-tools>.qx-btn{flex-direction:column;font-size:11px;gap:2px}}
 </style>
 <script id="saved-data" type="application/json">null</script>
 <script type="text/hjm-init" id="hjm-formatos">
@@ -20143,7 +20159,7 @@ function pendingSurgeryTable(st,rows){
     return `<tr class="${old?'qx-overdue':''}"><td>${ts?H(tsTxt(ts)):'—'}</td><td>${H(e.nombre)}<br><small>Exp. ${H(e.exp)}</small></td><td>${H(e.cx||'—')}</td><td>${can('editar_quirofano')?`<button type="button" class="qx-btn sm" data-qe="edit" data-id="${H(e.id)}">Asignar fecha</button>`:''}${!e.aut&&can('editar_quirofano')?` <button type="button" class="qx-btn sm bad" data-qe="delPending" data-id="${H(e.id)}">${IC.trash}Cancelar pendiente</button>`:''}</td></tr>`;
   }).join('');
   const filtered=!!(st.fad||st.fcl||st.fc);
-  return `<details class="qx-panel" data-surgery-pending ${filtered||st.pendingExpanded?'open':''}><summary style="cursor:pointer;font-weight:700">Pacientes pendientes de fecha quirúrgica · ${rows.length}</summary>${body?`<div class="qx-tblw"><table class="qx-tbl"><thead><tr><th>Fecha de registro</th><th>Paciente</th><th>Cirugía planeada</th><th></th></tr></thead><tbody>${body}</tbody></table></div>`:'<p>Sin pacientes pendientes de fecha quirúrgica.</p>'}</details>`;
+  return `<details class="qx-panel" data-surgery-pending ${filtered||st.pendingExpanded?'open':''}><summary><span>Pacientes pendientes de fecha quirúrgica</span><b>${rows.length}</b></summary>${body?`<div class="qx-tblw"><table class="qx-tbl"><thead><tr><th>Fecha de registro</th><th>Paciente</th><th>Cirugía planeada</th><th></th></tr></thead><tbody>${body}</tbody></table></div>`:'<p>Sin pacientes pendientes de fecha quirúrgica.</p>'}</details>`;
 }
 function qxAgendaHTML(){ const st=V.qx, all=agF(st,byDay('quirofano',st.sel)), off=all.filter(offE), es=fcF(st,all.filter(e=>!offE(e))).sort((a,b)=>(a.aut?0:1)-(b.aut?0:1)||qxOrd(a,b));
   curFix(st,es.concat(off)); const groups=[['M','Matutino'],['V','Vespertino'],['','Turno por definir']].map(([tk,l])=>[l,es.filter(e=>(e.turno||'')===tk)]).filter(g=>g[1].length);
@@ -20152,12 +20168,12 @@ function qxAgendaHTML(){ const st=V.qx, all=agF(st,byDay('quirofano',st.sel)), o
   const body=(es.length?groups.map(([l,g])=>(groups.length>1||l!=='Turno por definir'?`<div class="qx-grp"><i style="--c:#1F3864"></i>${l} · ${g.length}</div>`:'')+g.map(e=>item(e,'quirofano')).join('')).join(''):empty)+(rejected.length?`<div class="qx-grp"><i style="--c:#B5BCC4"></i>No autorizadas · ${rejected.length}</div>`+rejected.map(e=>item(e,'quirofano')).join(''):'')+(cancelled.length?`<div class="qx-grp"><i style="--c:#89929C"></i>Programaciones canceladas · ${cancelled.length}</div>`+cancelled.map(e=>item(e,'quirofano')).join(''):'');
   return shell('qx','quirofano',es,off,all,body,pendingSurgeryTable(st,pendingSurgeryRows(st))); }
 function committeeNoteActions(e,canEdit){
-  const attrs=action=>`data-ce="${action}" data-id="${H(e.id)}"`;
-  const print=can('imprimir_documentos');
-  return '<div class="committee-note-actions">'+
-    (canEdit&&can('editar_documentos')?rbBtn('edit','Editar',attrs('editnote')):'')+
-    rbBtn('view','Ver',attrs('view'))+
-    (print?rbBtn('print','Imprimir',attrs('print'))+window.hjmDriveBtn(attrs('drive')):'')+'</div>';
+  const button=(action,label,icon)=>`<button type="button" class="qx-btn sm" data-ce="${action}" data-id="${H(e.id)}">${icon}<span>${label}</span></button>`;
+  const eye='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
+  return '<div class="cm-note-tools">'+
+    (canEdit&&can('editar_documentos')?button('editnote','Editar',IC.edit):'')+
+    button('view','Ver',eye)+
+    (can('imprimir_documentos')?button('print','Imprimir',IC.print)+button('drive','Drive',window.hjmDriveIco):'')+'</div>';
 }
 function committeeSurgery(e){
   const day=dkey(e.nota?.fecha||e.fecha);
@@ -20171,7 +20187,7 @@ function committeeSurgery(e){
   }).sort((a,b)=>Math.abs((dkey(a.fecha)||a.creado.ts)-day)-Math.abs((dkey(b.fecha)||b.creado.ts)-day))[0];
 }
 function cmCard(e){ if(offE(e)) return offCard(e,'comite'); const ci=clinOf(e.clin), age=ageOf(e.fnac,e.fecha), canEd=can('editar_comite');
-  let act=''; if(e.nota){ const surgery=committeeSurgery(e); act=`${surgery?`<span class="qx-chip"> ${surgery.fecha?'Programado para el '+H(surgery.fecha):'Agregado a programación · Pendiente de fecha de cirugía'}</span>`:can('editar_quirofano')?`<button type="button" class="qx-btn sm ed" style="grid-column:1/-1" data-ce="program" data-id="${H(e.id)}">${IC.cal}Agregar en Programación</button>`:''}<span class="qx-chip ok cm-session"><svg class="cm-session-check" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m7.5 12 3 3 6-6"/></svg> Paciente sesionado<button type="button" class="qx-btn sm" data-ce="dictamen" data-id="${H(e.id)}" aria-expanded="false">Ver dictamen</button></span><p hidden data-full-dictamen></p>${committeeNoteActions(e,canEd)}`; }
+  let act=''; if(e.nota){ const surgery=committeeSurgery(e); act=`<div class="cm-session-stack">${surgery?`<span class="qx-chip"> ${surgery.fecha?'Programado para el '+H(surgery.fecha):'Agregado a programación · Pendiente de fecha de cirugía'}</span>`:can('editar_quirofano')?`<button type="button" class="qx-btn sm ed" style="grid-column:1/-1" data-ce="program" data-id="${H(e.id)}">${IC.cal}Agregar en Programación</button>`:''}<span class="qx-chip ok cm-session"><svg class="cm-session-check" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="3"/><path d="M9 3h6v4H9zM8.5 14l2.5 2.5 4.5-5"/></svg> Paciente sesionado<button type="button" class="qx-btn sm" data-ce="dictamen" data-id="${H(e.id)}" aria-expanded="false">Ver dictamen</button></span><p hidden data-full-dictamen></p>${committeeNoteActions(e,canEd)}</div>`; }
   else act=canEd?`<button type="button" class="qx-btn pri sm" data-ce="note" data-id="${H(e.id)}">${IC.note}Crear Nota</button><button type="button" class="qx-btn sm" data-ce="link" data-id="${H(e.id)}">${IC.link}Seleccionar nota existente</button><button type="button" class="qx-btn ghost sm" data-ce="resched" data-id="${H(e.id)}">${IC.cal}Reprogramar</button>`:'<span class="qx-chip warn">Pendiente de sesionar</span>';
   const more=`<span class="sp"></span>${canEd&&!e.nota?`<button type="button" class="qx-btn ghost sm bad" data-ce="nses" data-id="${H(e.id)}">${IC.no}No sesionado</button>`:''}${canDelE(e,'comite')?`<button type="button" class="qx-btn ghost sm bad" data-ce="del" data-id="${H(e.id)}">${IC.trash}Borrar paciente</button>`:''}`;
   const rp=(e.h||[]).filter(x=>/^Reprogramad/.test(x.a)).length;
