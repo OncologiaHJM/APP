@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.98">
+<meta name="application-version" content="9.99">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2756,7 +2756,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.98 · Fecha de publicación: 21.11.26</div>
+  <div class="app-footer-version">Versión 9.99 · Fecha de publicación: 21.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -7258,6 +7258,49 @@ html body #dlgStats .st-kpis{grid-template-columns:repeat(4,minmax(0,1fr))!impor
 #dlgResidentGate.beta-shared:not(.beta-denied) .gate-shared-note{display:block;margin:2px 0 10px;padding:10px 12px;border:1px solid #D8DEE8;border-radius:12px;background:#F8FAFD;font-size:12.5px;line-height:1.45;color:#34435E;text-align:left}
 #dlgResidentGate .gate-shared-note p{margin:0}
 #dlgResidentGate .gate-shared-note .gate-shared-risk{margin-top:6px;color:#B42318;font-weight:700}
+
+/* Navegación y fichas en pantallas táctiles compactas */
+@media screen and (max-width:1100px){
+  html:root body #dlgStats .st-tabs{
+    display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;
+    height:auto;min-width:0;overflow:visible;padding:0 0 8px;
+    -webkit-mask-image:none;mask-image:none
+  }
+  html:root body #dlgStats .st-tabs>button{
+    min-width:0;min-height:44px;height:100%;padding:6px;white-space:normal;overflow-wrap:anywhere
+  }
+  html:root body #dlgStats .st-tabs>[hidden]{display:none!important}
+  #qxView .qx-two>section,#qxView .qx-panel,#qxView .qx-tblw{min-width:0;max-width:100%;box-sizing:border-box}
+  #qxView details[data-surgery-pending]{margin-top:12px}
+  #qxView details[data-surgery-pending]>summary{padding:10px;min-height:44px;box-sizing:border-box}
+  #qxView .qx-fsel select{min-width:0;max-width:100%}
+  #qxView .committee-note-actions{max-width:100%;box-sizing:border-box}
+  html body .qx-card .committee-note-actions .rb{min-height:40px}
+  body.hn-compact #hjmNav button span{white-space:normal;line-height:1.15}
+  html body #cenWrap .cen-rev,html body #cenWrap .cen-scroll{min-width:0;max-width:100%;overscroll-behavior-x:contain}
+}
+@media screen and (min-width:701px) and (max-width:1100px){
+  #qxView .qx-two:not(.one){grid-template-columns:minmax(0,1.24fr) minmax(0,1fr);gap:12px}
+  #qxView .qx-row .qx-rsel{display:grid;grid-template-columns:10px minmax(0,1fr);gap:4px 8px}
+  #qxView .qx-row .nm{grid-column:2}
+  #qxView .qx-row em{grid-column:2;justify-self:start;white-space:normal}
+  html body.pp-browse #pPanel #ppList.by-cama .dlg-item.has-bed{
+    grid-template-columns:54px minmax(0,1fr) minmax(0,1.25fr) 38px 26px!important;
+    grid-template-areas:"bed name dx actions kebab" "bed exp dx actions kebab" "meta meta pend actions kebab"!important
+  }
+  html body #pPanel #ppList.by-record .dlg-item{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr) 40px!important;grid-template-areas:"name dx actions" "exp meta actions"!important}
+}
+@media screen and (max-width:700px){
+  html:root body #dlgStats .st-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}
+  html body #qxView .qx-head .qx-acts>.qx-btn{white-space:normal;min-height:44px}
+  #qxView .qw-d i{position:static;min-width:15px;height:15px;font-size:10px;line-height:15px}
+  #qxView .qw-days{align-items:stretch}
+  #qxView .cm-session{flex-wrap:wrap}
+  html body #pPanel #ppList.by-record .dlg-item{grid-template-columns:minmax(0,1fr) 40px!important;grid-template-areas:"name actions" "exp actions" "dx dx" "meta meta"!important}
+}
+@media screen and (max-width:380px){
+  html:root body #dlgStats .st-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
 </style>
 <script id="saved-data" type="application/json">null</script>
 <script type="text/hjm-init" id="hjm-formatos">
