@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.96">
+<meta name="application-version" content="9.98">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2756,7 +2756,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.96 · Fecha de publicación: 21.11.26</div>
+  <div class="app-footer-version">Versión 9.98 · Fecha de publicación: 21.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -3057,6 +3057,8 @@ html body .qx-c-act .qx-btn.ed{color:#1F5FAD;border-color:#C3D8F1;background:#EE
 html body .qx-c-act .qx-btn.ed:hover{background:#DFEBFA}
 /* Acciones de la tarjeta: cuadrícula simétrica de 2 columnas (estado arriba, botones del mismo ancho; si sobra uno, ocupa la fila completa) */
 html body .qx-card .qx-c-act{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;align-items:stretch!important}
+html body .qx-card .committee-note-actions{grid-column:1/-1;display:flex;align-items:stretch;flex-wrap:nowrap;gap:4px;min-width:0;overflow-x:auto}
+html body .qx-card .committee-note-actions .rb{flex:1 0 auto;white-space:nowrap;padding:5px 6px}
 html body .qx-card .qx-c-act>.sp{display:none!important}
 html body .qx-card .qx-c-act>.qx-chip{grid-column:1/-1!important;justify-self:stretch!important;justify-content:center!important;min-height:34px}
 html body .qx-card .qx-c-act>.qx-btn{width:100%!important;min-width:0!important;margin:0!important;justify-content:center!important;white-space:normal!important;text-align:center;line-height:1.15!important;min-height:42px!important;padding:6px 10px!important}
@@ -7044,7 +7046,7 @@ html:root body #dlgStats .sv-nav>*{padding-left:16px!important;padding-right:16p
 .qx-chips{align-items:center}
 @media (pointer:coarse){.qx-file{width:44px;height:44px;flex-basis:44px}}
 .qx-overdue td{background:#fff2da;color:#70430b}.qx-overdue td:first-child{border-left:4px solid #b7650f}
-#qxView [data-full-dictamen]{white-space:pre-wrap;overflow:visible;display:block;-webkit-line-clamp:unset}#qxView [data-full-dictamen][hidden]{display:none}
+#qxView .cm-session button{margin-inline-start:auto}#qxView [data-full-dictamen]{grid-column:1/-1;margin:0;padding:12px;border-inline-start:3px solid #70aa91;line-height:1.5;white-space:pre-wrap;overflow:visible;display:block;-webkit-line-clamp:unset}#qxView [data-full-dictamen][hidden]{display:none}
 .qx-row{cursor:default}
 .qx-rsel{flex:1;min-width:0;display:flex;align-items:center;gap:12px;min-height:38px;padding:0;border:0;background:none;text-align:left;font-family:inherit;cursor:pointer;color:inherit}
 .qx-btn svg{width:15px;height:15px;flex:0 0 15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -14781,7 +14783,7 @@ function isAdmv(){ try{ const r=userRecord(sessionUserName()); return !!(r&&r.ti
 
 function isAdmvRO(){ return isAdmv()&&!isAdminUser(); }
 function admvSync(){ try{ const on=isAdmv(); document.body.classList.toggle("is-admv",on&&!window.HJM_ACCESS_READY); document.body.classList.toggle("is-admv-adm",on&&isAdminUser()&&!window.HJM_ACCESS_READY);
-  document.querySelectorAll('[data-pp-view="recientes"]').forEach(b=>{ const t=[...b.childNodes].reverse().find(n=>n.nodeType===3&&n.textContent.trim()); const want="Archivo"; if(t&&t.textContent.trim()!==want) t.textContent=t.textContent.replace(/Todos|Expedientes|Archivo/,want); else if(!t){ const sp=[...b.querySelectorAll("span")].reverse().find(x=>/Todos|Expedientes|Archivo/.test(x.textContent)); if(sp&&sp.textContent.trim()!==want) sp.textContent=want; } b.title=on?"Buscar entre todos los expedientes":b.title; }); }catch(_){} }
+  document.querySelectorAll('[data-pp-view="recientes"]').forEach(b=>{ const t=[...b.childNodes].reverse().find(n=>n.nodeType===3&&n.textContent.trim()); const want="Archivo Clínico"; if(t&&t.textContent.trim()!==want) t.textContent=t.textContent.replace(/Todos|Expedientes|Archivo(?: Clínico)?/,want); else if(!t){ const sp=[...b.querySelectorAll("span")].reverse().find(x=>/Todos|Expedientes|Archivo/.test(x.textContent)); if(sp&&sp.textContent.trim()!==want) sp.textContent=want; } b.title=on?"Buscar entre todos los expedientes":b.title; }); }catch(_){} }
 try{(function(){
   const w=(n,f)=>{ const o=window[n]; if(typeof o!=="function") return; window[n]=function(...a){ const r=f(o,this,a); return r; }; };
   /* Al iniciar sesión / salir se actualiza la clase del cuerpo */
@@ -15413,7 +15415,7 @@ addEventListener("unhandledrejection",e=>logErr("err","Promesa rechazada: "+((e.
 const wrap=(name,after)=>{ const o=window[name]; if(typeof o!=="function") return; window[name]=function(...a){ const r=o.apply(this,a); try{ after(a,r); }catch(_){} return r; }; };
 /* v2.160 · Contadores: un mismo evento no se suma dos veces (doble toque, doble llamada) */
 const _once={}; function once(k,ms){ const t=Date.now(); if(_once[k]&&t-_once[k]<ms) return false; _once[k]=t; return true; }
-wrap("applyGateUser",()=>{ if(once("acc|"+userName(),5000)) bump("acc"); syncAdminClass(); autoLast=0; [1500,6000,15000].forEach(t=>setTimeout(()=>{ try{ autoLiberar(); }catch(_){} },t)); [3500,12000,30000].forEach(t=>setTimeout(()=>{ try{ autoIntegrarPend(); }catch(_){} },t)); });
+wrap("applyGateUser",()=>{ syncAdminClass(); autoLast=0; [1500,6000,15000].forEach(t=>setTimeout(()=>{ try{ autoLiberar(); }catch(_){} },t)); [3500,12000,30000].forEach(t=>setTimeout(()=>{ try{ autoIntegrarPend(); }catch(_){} },t)); });
 wrap("openFormat",a=>{ if(a[0]==="alta") bump("fmt",a[0]); });
 /* v3.61 · Impresiones y páginas: se cuentan UNA vez por impresión en beforeprint (cuando ya están armadas las copias y hojas adicionales), también con Ctrl+P; si el navegador no avisa, se cuenta 1 impresión al llamar print() */
 /* v3.44 · Páginas: se cuentan en beforeprint, cuando ya están armadas las copias y las hojas adicionales */
@@ -15543,16 +15545,16 @@ function agg(remote,days){
   const devs=Object.assign({},(remote&&remote.dev)||{}); devs[dev]=local;
   Object.values(devs).forEach(dd=>Object.entries(dd||{}).forEach(([dk,us])=>{ if(dk<cutoff||dk>upper) return;
     Object.entries(us||{}).forEach(([u0,r])=>{ const u=statUser(u0); const o=users[u]=users[u]||{acc:0,sav:0,opn:0,min:0,lib:0,crt:0,nts:0,ind:0,prt:0,pgs:0,upd:0,_u:new Set(),lg:{},pd:{}};
-      ["acc","sav","opn","min","lib","crt","nts","ind","prt","pgs"].forEach(k=>o[k]+=r[k]||0);
+      ["sav","opn","min","lib","crt","nts","ind","prt","pgs"].forEach(k=>o[k]+=r[k]||0);
       Object.keys(r.upd||{}).forEach(x=>o._u.add(dk+"|"+x)); o.upd=o._u.size;
-      ["acc","sav","opn","crt","nts","ind","prt","pgs","min"].forEach(k=>{ if(r[k]){ const m=(o.pd[k]=o.pd[k]||{}); m[dk]=(m[dk]||0)+r[k]; } }); { const nu=Object.keys(r.upd||{}).length; if(nu){ const m=(o.pd.upd=o.pd.upd||{}); m[dk]=(m[dk]||0)+nu; } }
+      ["sav","opn","crt","nts","ind","prt","pgs","min"].forEach(k=>{ if(r[k]){ const m=(o.pd[k]=o.pd[k]||{}); m[dk]=(m[dk]||0)+r[k]; } }); { const nu=Object.keys(r.upd||{}).length; if(nu){ const m=(o.pd.upd=o.pd.upd||{}); m[dk]=(m[dk]||0)+nu; } }
       Object.entries(r.lg||{}).forEach(([k,arr])=>{ (o.lg[k]=o.lg[k]||[]).push(...(Array.isArray(arr)?arr:[])); });
       Object.entries(r.fmt||{}).forEach(([f,n])=>fmt[f]=(fmt[f]||0)+n);
       Object.entries(r.hr||{}).forEach(([h,n])=>hr[+h]+=n);
-      perDay[dk]=(perDay[dk]||0)+(r.sav||0)+(r.acc||0); }); }));
+      perDay[dk]=(perDay[dk]||0)+(r.sav||0)+(r.opn||0); }); }));
   return {users,fmt,hr,perDay};
 }
-const pts=o=>o.sav*3+o.acc*2+o.opn+Math.floor(o.min/10);
+const pts=o=>o.sav*3+o.opn+Math.floor(o.min/10);
 function fmtLabel(k){ try{ const L={notas:"Notas Médicas",indicaciones:"Indicaciones"}; if(L[k]) return L[k]; if(typeof CAT!=="undefined"&&CAT[k]&&CAT[k].tt) return CAT[k].tt; if(typeof FORMATS!=="undefined"&&FORMATS[k]&&FORMATS[k].title) return FORMATS[k].title; }catch(_){} return k; }
 const hm=m=>m>=60?Math.floor(m/60)+" h "+pad(m%60)+" min":m+" min";
 
@@ -15870,7 +15872,7 @@ function oncDic(){
 
 /* ---- Apartados Resumen / Actividad / Censo ---- */
 function dailyActivity(A,days){
-  const ks=[...Array(days)].map((_,i)=>dayKey(Date.now()-(days-1-i)*864e5)), M=[["acc","Inicios de sesión","#2F6FA7"],["nts","Notas médicas","#3C8D5A"],["ind","Indicaciones médicas","#D9822B"],["prt","Documentos impresos","#7A5AA6"],["upd","Expedientes actualizados","#2A9D9D"]];
+  const ks=[...Array(days)].map((_,i)=>dayKey(Date.now()-(days-1-i)*864e5)), M=[["opn","Expedientes consultados","#2F6FA7"],["nts","Notas médicas","#3C8D5A"],["ind","Indicaciones médicas","#D9822B"],["prt","Documentos impresos","#7A5AA6"],["upd","Expedientes actualizados","#2A9D9D"]];
   const ser=M.map(([k,n,c])=>({name:n,c,v:ks.map(d=>Object.values(A.users).reduce((s,u)=>s+(((u.pd||{})[k]||{})[d]||0),0))}));
   return chartSVG(ks.map(k=>k.slice(8)+"."+k.slice(5,7)),ser,{stacked:true,title:"Actividad diaria",xName:"Día"});
 }
@@ -15889,8 +15891,8 @@ async function renderStats(body){
 
   const remote=remoteCache; const A=agg(remote,period), T=agg(remote,1);
   const tu=Object.values(T.users), tot=k=>tu.reduce((s,u)=>s+u[k],0);
-  const COLS=[["acc","Inicios de sesión"],["opn","Expedientes consultados"],["crt","Pacientes nuevos registrados"],["upd","Expedientes actualizados"],["nts","Notas médicas"],["ind","Indicaciones médicas"],["prt","Documentos impresos"]];
-  const rows=Object.entries(A.users).map(([u,o])=>({u,o,t:COLS.reduce((n,[k])=>k==="acc"?n:n+(o[k]||0),0)})).filter(r=>r.t>0||r.o.sav>0||r.o.acc>0).sort((a,b)=>b.t-a.t||a.u.localeCompare(b.u,"es"));
+  const COLS=[["opn","Expedientes consultados"],["crt","Pacientes nuevos registrados"],["upd","Expedientes actualizados"],["nts","Notas médicas"],["ind","Indicaciones médicas"],["prt","Documentos impresos"]];
+  const rows=Object.entries(A.users).map(([u,o])=>({u,o,t:COLS.reduce((n,[k])=>n+(o[k]||0),0)})).filter(r=>r.t>0||r.o.sav>0).sort((a,b)=>b.t-a.t||a.u.localeCompare(b.u,"es"));
   const sum=k=>rows.reduce((n,r)=>n+(r.o[k]||0),0); const NDIAS=period>1?period:(period===-1?(()=>{ const b=curBounds(); return kNum(b.upper)-kNum(b.cutoff)+1; })():0); const PB=prevBounds(), AP=PB?aggRange(PB):null, psum=k=>AP?Object.values(AP.users).reduce((n,u)=>n+(u[k]||0),0):null;
   const fm=Object.entries(A.fmt).sort((a,b)=>b[1]-a[1]).slice(0,8), fmax=fm.length?fm[0][1]:1;
   const hmax=Math.max(1,...A.hr);
@@ -15899,7 +15901,7 @@ async function renderStats(body){
   const camasLog=((remote&&remote.camas)||[]).slice(-6).reverse(), med=medios();
   const PER=`<div class="st-per">${[[1,"Hoy"],[7,"7 días"],[30,"30 días"],[0,"Todo"],[-1,"Día / Rango"]].map(([d,l])=>`<button type="button" data-per="${d}" aria-pressed="${period===d}">${l}</button>`).join("")}${period===-1?`<span class="st-rng"><label>Desde <input type="date" id="stRA" value="${rangeA||dayKey(Date.now())}" max="${dayKey(Date.now())}"></label><label>Hasta <input type="date" id="stRB" value="${rangeB||""}" min="${rangeA||""}" max="${dayKey(Date.now())}"></label><small>Sin «Hasta» = solo ese día</small></span>`:""}<span class="st-note">${esc(syncMsg||(remote?"Datos de todos los equipos sincronizados":""))}</span></div>`, KPIS=`<div class="st-kpis">${COLS.map(([k,l])=>`<div class="st-kpi st-click" role="button" tabindex="0" data-plist="${k}" title="Ver gráfica y lista"><b>${sum(k)}</b><span>${l}</span>${k==="prt"?`<small class="st-sub">${sum("pgs")} páginas</small>`:(NDIAS>1&&sum(k)?`<small class="st-sub">≈ ${fmtN(sum(k)/NDIAS,1)} por día</small>`:"")}${AP?dlt(sum(k),psum(k)):""}</div>`).join("")}</div>`;   /* v6.00 · Defunciones sale en Hospitalización (mortalidad) y en Censo; aquí solo uso de la app, con promedio por día */
   const ACT=`<div class="st-card"><h3>Actividad por usuario <small style="font-weight:500;color:#7B7E81">· ${[[1,"hoy"],[7,"últimos 7 días"],[30,"últimos 30 días"],[0,"todo el historial"],[-1,rngLabel()]].find(x=>x[0]===period)[1]} · ${rows.length} usuario(s) con actividad</small></h3>
-   ${rows.length?`<div class="st-scroll"><table class="st-act"><thead><tr><th>Usuario <small>(de mayor a menor uso)</small></th>${COLS.map(([k,l])=>`<th>${l}${k==="prt"?`<br><small class="st-sub">(páginas)</small>`:""}</th>`).join("")}<th>Total</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td class="nm">${i+1}. ${esc(r.u)}</td>${COLS.map(([k])=>`<td class="st-click" data-plist="${k}" data-pu="${esc(r.u)}" title="Ver lista de ${esc(r.u)}">${r.o[k]||0}${k==="prt"?` <span class="st-sub">(${r.o.pgs||0})</span>`:""}</td>`).join("")}<td><b>${r.t}</b></td></tr>`).join("")}</tbody><tfoot><tr><td class="nm">Total</td>${COLS.map(([k])=>`<td>${sum(k)}${k==="prt"?` <span class="st-sub">(${sum("pgs")})</span>`:""}</td>`).join("")}<td>${rows.reduce((n,r)=>n+r.t,0)}</td></tr></tfoot></table></div><div class="st-msg" style="margin-top:8px">El Total no suma «Inicios de sesión» ni las páginas. En Documentos impresos, el número entre paréntesis son las páginas impresas (alta con copia, receta y hojas adicionales, solicitudes, etc.; se registran desde la versión 3.44). «Expedientes actualizados» cuenta cada paciente distinto con ediciones guardadas por día. Notas e indicaciones cuentan registros nuevos guardados. Los datos de creados, actualizados, notas e indicaciones se registran desde la versión 2.149.</div>`:'<div class="st-msg">Aún no hay actividad registrada en este periodo.</div>'}</div>`;
+   ${rows.length?`<div class="st-scroll"><table class="st-act"><thead><tr><th>Usuario <small>(de mayor a menor uso)</small></th>${COLS.map(([k,l])=>`<th>${l}${k==="prt"?`<br><small class="st-sub">(páginas)</small>`:""}</th>`).join("")}<th>Total</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td class="nm">${i+1}. ${esc(r.u)}</td>${COLS.map(([k])=>`<td class="st-click" data-plist="${k}" data-pu="${esc(r.u)}" title="Ver lista de ${esc(r.u)}">${r.o[k]||0}${k==="prt"?` <span class="st-sub">(${r.o.pgs||0})</span>`:""}</td>`).join("")}<td><b>${r.t}</b></td></tr>`).join("")}</tbody><tfoot><tr><td class="nm">Total</td>${COLS.map(([k])=>`<td>${sum(k)}${k==="prt"?` <span class="st-sub">(${sum("pgs")})</span>`:""}</td>`).join("")}<td>${rows.reduce((n,r)=>n+r.t,0)}</td></tr></tfoot></table></div><div class="st-msg" style="margin-top:8px">El total cuenta las acciones realizadas. En Documentos impresos, el número entre paréntesis son las páginas impresas (alta con copia, receta y hojas adicionales, solicitudes, etc.; se registran desde la versión 3.44). «Expedientes actualizados» cuenta cada paciente distinto con ediciones guardadas por día. Notas e indicaciones cuentan registros nuevos guardados. Los datos de creados, actualizados, notas e indicaciones se registran desde la versión 2.149.</div>`:'<div class="st-msg">Aún no hay actividad registrada en este periodo.</div>'}</div>`;
   const GRID=`<div class="st-grid2">
    <div class="st-card"><h3>Formatos más usados</h3>${fm.length?fm.map(([k,n])=>`<div class="frow"><span>${esc(fmtLabel(k))}</span><div class="bar"><i style="width:${Math.round(n/fmax*100)}%"></i></div><b>${n}</b></div>`).join(""):'<div class="st-msg">Sin datos.</div>'}</div>
    <div class="st-card"><h3>Horas de mayor actividad</h3><div class="hrs">${A.hr.map((n,h)=>`<i title="${h}:00 · ${n} min" style="height:${Math.max(2,Math.round(n/hmax*100))}%"></i>`).join("")}</div><div class="hrl">${A.hr.map((_,h)=>`<span>${h%3===0?h:""}</span>`).join("")}</div></div>
@@ -16155,12 +16157,12 @@ function cxLinkOpen(k,key,i){
   d.innerHTML=`<div class="on-h"><div class="on-bc"><b>Ligar cirugía a un paciente</b></div><button type="button" class="on-x" data-x aria-label="Cerrar">×</button></div><div class="on-b">
    <div class="st-msg">Censo <b>${esc(r.f||r.k)}</b> · ${esc({cr:"Cirugía realizada",cp:"Cirugía programada",cs:"Cirugía suspendida"}[key]||"")}:<br><b>${esc(it.t||"")}</b>${it.e?" · "+esc(it.e):""}</div>
    <div class="on-tb"><input type="search" class="st-in" data-cxq placeholder="Busca por nombre, expediente o cama…" autocomplete="off"></div><div data-cxres></div>
-   <details class="cx-man"><summary>No está en la app: escribir el expediente a mano</summary><div class="on-tb"><input class="st-in" data-cxexp placeholder="Expediente" inputmode="numeric"><input class="st-in" data-cxnom placeholder="Nombre (opcional)"><select class="st-in" data-cxcl><option value="">Clínica…</option>${SRVL.map(s=>`<option value="${s}">${esc(SRVN[s])}</option>`).join("")}<option value="OTRO">Otra</option></select><button type="button" class="st-btn st-sm" data-cxman>Ligar</button></div><small class="st-sub">Si el paciente aún no existe, créalo con «Nuevo Paciente» y después lígalo aquí.</small></details>
+   <details class="cx-man"><summary>No está en la app: escribir el expediente a mano</summary><div class="on-tb"><input class="st-in" data-cxexp placeholder="Expediente" inputmode="numeric"><input class="st-in" data-cxnom placeholder="Nombre (opcional)"><select class="st-in" data-cxcl><option value="">Clínica…</option>${SRVL.map(s=>`<option value="${s}">${esc(SRVN[s])}</option>`).join("")}<option value="OTRO">Otra</option></select><button type="button" class="st-btn st-sm" data-cxman>Seleccionar</button></div><small class="st-sub">Si el paciente aún no existe, créalo con «Nuevo Paciente» y después lígalo aquí.</small></details>
    ${it._man?`<div style="margin-top:10px"><button type="button" class="st-btn st-sm" data-cxun>Quitar liga manual</button></div>`:""}<div class="st-msg" data-cxmsg aria-live="polite"></div></div>`;
   const q=d.querySelector("[data-cxq]"), res=d.querySelector("[data-cxres]"), msg=d.querySelector("[data-cxmsg]");
   const guess=cxNz(it.t+" "+it.e).split(/[^A-Z0-9Ñ]+/).filter(w=>w.length>=4||/^\d{3,}$/.test(w));
   const paint=()=>{ const v=cxNz(q.value), ws=v?v.split(" "):[]; let l=files.map(f=>{ const m=f.meta, h=cxNz((m.nombre||"")+" "+(m.exp||"")+" "+(m.cama||"")); return {f,h,sc:ws.length?(ws.every(w=>h.includes(w))?2:0):guess.reduce((a,w)=>a+(h.includes(w)?1:0),0)}; }).filter(z=>z.sc>0).sort((a,b)=>b.sc-a.sc).slice(0,15);
-    res.innerHTML=l.length?`<div class="st-scroll"><table class="st-act"><thead><tr><th>Paciente</th><th>Expediente</th><th>Cama</th><th>Clínica</th><th></th></tr></thead><tbody>${l.map(({f},j)=>`<tr><td class="nm">${esc(f.meta.nombre||"")}</td><td>${esc(f.meta.exp||"")}</td><td>${esc(f.meta.cama||"")}</td><td>${esc(hosClin(f))}</td><td><button type="button" class="st-btn st-sm" data-cxpick="${j}">Ligar</button></td></tr>`).join("")}</tbody></table></div>`:`<div class="st-msg">${ws.length?"Ningún paciente coincide.":"Escribe para buscar; aquí aparecen sugerencias según el texto de la cirugía."}</div>`;
+    res.innerHTML=l.length?`<div class="st-scroll"><table class="st-act"><thead><tr><th>Paciente</th><th>Expediente</th><th>Cama</th><th>Clínica</th><th></th></tr></thead><tbody>${l.map(({f},j)=>`<tr><td class="nm">${esc(f.meta.nombre||"")}</td><td>${esc(f.meta.exp||"")}</td><td>${esc(f.meta.cama||"")}</td><td>${esc(hosClin(f))}</td><td><button type="button" class="st-btn st-sm" data-cxpick="${j}">Seleccionar</button></td></tr>`).join("")}</tbody></table></div>`:`<div class="st-msg">${ws.length?"Ningún paciente coincide.":"Escribe para buscar; aquí aparecen sugerencias según el texto de la cirugía."}</div>`;
     res.querySelectorAll("[data-cxpick]").forEach(b=>b.onclick=()=>{ const f=l[+b.dataset.cxpick].f; save({x:String(f.meta.exp||""),n:String(f.meta.nombre||""),d:String(f.meta.dx||"").slice(0,160),s:cenSrvOf(hosClin(f))||"OTRO",c:String(f.meta.cama||"")}); }); };
   const save=async v=>{ msg.textContent="Guardando…"; try{ const rec=Object.assign({},(remoteCache.censos||{})[k]), kk=key+"|"+cxNz(it.t)+"|"+cxNz(it.e); rec.lig=Object.assign({},rec.lig||{}); if(v) rec.lig[kk]=Object.assign(v,{por:userName(),en:Date.now()}); else delete rec.lig[kk];
       const ok=await window.__statSync({censos:{[k]:rec}}); if(ok===false) throw new Error("no se pudo guardar"); await loadRemote(); d.close(); try{ notify(v?"Cirugía ligada a "+(v.n||v.x)+".":"Liga quitada.","ok"); }catch(_){} render(); }catch(e){ msg.textContent="No se pudo guardar: "+friendly(e); } };
@@ -16476,7 +16478,7 @@ function wireDet(body){
 }
 
 /* v3.61 · Ventana con la lista / gráfica de cada contador (doble clic o clic en la tarjeta) */
-const LIST_LBL={acc:"Inicios de sesión",opn:"Expedientes consultados",crt:"Pacientes nuevos registrados",upd:"Expedientes actualizados",nts:"Notas médicas",ind:"Indicaciones médicas",prt:"Documentos impresos"};
+const LIST_LBL={opn:"Expedientes consultados",crt:"Pacientes nuevos registrados",upd:"Expedientes actualizados",nts:"Notas médicas",ind:"Indicaciones médicas",prt:"Documentos impresos"};
 function dlgList(){ let d=document.getElementById("dlgStList"); if(d) return d; d=document.createElement("dialog"); d.id="dlgStList"; d.innerHTML='<div class="stl-h"><b id="stlT"></b><button type="button" id="stlX" aria-label="Cerrar">×</button></div><div id="stlB"></div>'; document.body.appendChild(d); d.querySelector("#stlX").onclick=()=>d.close(); d.addEventListener("click",e=>{ if(e.target===d) d.close(); }); return d; }
 function openList(metric,uKey,days){if(!canPerm("ver_estadisticas"))uKey=statUser(userName());
   const A=agg(remoteCache,days), us=uKey?[uKey]:Object.keys(A.users), per={}, per2={}, rows=[]; let total=0;
@@ -17506,7 +17508,7 @@ document.addEventListener("click",e=>{ if(e.target.closest&&e.target.closest("#b
   document.addEventListener("click",e=>{ if(e.target.closest&&e.target.closest("#btnClear,#bandNew")) setTimeout(first,0); }); })();
 /* ---------- v3.06 · Configuración: el engrane la abre a todos; al administrador le queda como última pestaña del Panel de Control ---------- */
 let CFG_ONLY=false, cfgPer=7, cfgLoadAt=0;
-const CFG_COLS=[["acc","Accesos"],["opn","Pacientes abiertos"],["crt","Pacientes creados"],["upd","Pacientes actualizados"],["nts","Notas realizadas"],["ind","Indicaciones realizadas"],["prt","Impresiones"]];
+const CFG_COLS=[["opn","Pacientes abiertos"],["crt","Pacientes creados"],["upd","Pacientes actualizados"],["nts","Notas realizadas"],["ind","Indicaciones realizadas"],["prt","Impresiones"]];
 function cfgRec(){ try{ return userRecord(sessionUserName()); }catch(_){ return null; } }
 const HOME_PERM={hospitalizados:["ver_hospitalizados"],todos:["ver_expedientes"],censo:["ver_censo","ver_censos_archivados"],quirofano:["ver_quirofano"],comite:["ver_comite"],nuevo:["crear_pacientes"]};
 function homeAllowed(u,v){ try{ if(!u) return true; const e=accessEffective(u); return (HOME_PERM[v]||[]).some(k=>e[k]===true); }catch(_){ return true; } }
@@ -18496,7 +18498,7 @@ function cenBandPeriodSync(fallback){
  const browse=document.body.classList.contains('pp-browse'),live=browse&&document.getElementById('pPanel')?.classList.contains('cen-on')&&PP_VIEW==='censoActual';
  document.body.classList.toggle('cen-band-dates',!!live);document.body.classList.toggle('pp-band-heading',browse);host.hidden=!browse;
  let heading=document.getElementById('ppBandTitle');if(!heading){heading=document.createElement('span');heading.id='ppBandTitle';heading.setAttribute('role','heading');heading.setAttribute('aria-level','2');host.prepend(heading);}
- const original=document.querySelector('#pPanel .pp-head h2'),label=PP_VIEW==='cama'?'Hospitalizados':PP_VIEW==='recientes'?'Archivo':PP_VIEW==='censoActual'?(CEN.mode==='hist'?(original?.textContent||'Censo'):'Censo Actual'):(original?.textContent||'Archivo Censos');
+ const original=document.querySelector('#pPanel .pp-head h2'),label=PP_VIEW==='cama'?'Hospitalizados':PP_VIEW==='recientes'?'Archivo Clínico':PP_VIEW==='censoActual'?(CEN.mode==='hist'?(original?.textContent||'Censo'):'Censo Actual'):(original?.textContent||'Archivo Censos');
  if(heading.textContent!==label)heading.textContent=label;
  const chips=document.getElementById('cenChips'),dest=live?host:(fallback||document.getElementById('cenDateActions'));if(chips&&dest&&chips.parentNode!==dest)dest.appendChild(chips);
 }
@@ -19364,11 +19366,11 @@ try{(function(){
       return c.toDataURL("image/png").split(",")[1]||""; }catch(_){ return ""; }
   }
   function host(){ try{ if(window.parent&&window.parent!==window&&typeof window.parent.call1==="function"&&window.parent.eval("typeof apiUrl")==="function") return window.parent; }catch(_){} return window; }
-  window.hjmDocDrive=async function(tp,id,btn){
+  window.hjmDocDrive=async function(tp,id,btn,source){
     if(!(tp==="notas"||tp==="indicaciones")) return;
     try{ if(!accessRequire("imprimir_documentos")) return; }catch(_){}
-    const r=(HIST[tp]||[]).find(x=>x&&x.id===id); if(!r||!r.p){ try{ notify("No se encontró el registro.","warn"); }catch(_){} return; }
-    let p=r.p, d=data(); try{ p=clinStaffFixV(p); d=clinEncMerge(d,p); }catch(_){}
+    const r=source?source.rec:(HIST[tp]||[]).find(x=>x&&x.id===id); if(!r||!r.p){ try{ notify("No se encontró el registro.","warn"); }catch(_){} return; }
+    let p=r.p, d=source?source.datos:data(); try{ p=clinStaffFixV(p); d=clinEncMerge(d,p); }catch(_){}
     const exp=String(d.expediente||"").trim(); if(!exp){ try{ notify("El paciente no tiene expediente.","warn"); }catch(_){} return; }
     if(btn) btn.classList.add("busy");
     const job=window.hjmJob.start("Creando el Google Doc en Drive"); job.step("Preparando el documento…",10);
@@ -19850,7 +19852,7 @@ const IC={
  lock:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3M12 14.5v2.5"/></svg>',
  cal:IC_CAL
 };
-const NAV=[['qx','Quirófano'],['cm','Comité'],['censoActual','Censo'],['cama','Hospitalizados'],['recientes','Archivo']];
+const NAV=[['qx','Quirófano'],['cm','Comité'],['censoActual','Censo'],['cama','Hospitalizados'],['recientes','Archivo Clínico']];
 const V={view:null,qx:{sel:hoy(),m:null,tab:'agenda',per:'mes',cal:true},cm:{sel:hoy(),m:null,tab:'agenda',per:'mes',cal:true},navTarget:null,open:new Set(),L:{}};
 function navAllowed(k){ if(k==='qx') return can('ver_quirofano'); if(k==='cm') return can('ver_comite'); if(k==='censoActual') return can('ver_censo')||can('ver_censos_archivados'); try{ return accessViewAllowed(k); }catch(_){ return true; } }
 function navActive(){ const b=document.body.classList; if(!b.contains('pp-browse')) return ''; if(V.view) return V.view; try{ return PP_VIEW==='censos'?'censoActual':PP_VIEW; }catch(_){ return ''; } }
@@ -20059,8 +20061,8 @@ function rowHTML(e,t){ const st=V[t==='quirofano'?'qx':'cm'], ci=clinOf(e.clin),
   return `<div class="qx-row${t==='quirofano'&&e.can?' qx-cancelled':''}${st.cur===e.id?' sel':''}${off?' off':''}"><button type="button" class="qx-rsel" data-qsel="${H(e.id)}" aria-pressed="${st.cur===e.id}"><i style="--c:${off?'#B5BCC4':ci.c}"></i><span class="nm"><b>${H(e.nombre||'Sin nombre')}</b><small>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''}</small></span><span class="cx">${t==='quirofano'?`<b>${H(e.cx||'—')}</b><small>${H(e.dx||'')}</small>`:H(e.dx||'')}</span><span class="ad">${H(e.ads||'')}${t==='quirofano'&&(e.sala||e.tq||e.turno)?`<small>${H([salaTxt(e),TQ[e.tq]||'',TURNO[e.turno]||''].filter(Boolean).join(' · '))}</small>`:''}</span><em class="${cls}">${H(s)}</em></button></div>`; }
 function item(e,t){ return isWide()?rowHTML(e,t):(t==='quirofano'?qxCard(e):cmCard(e)); }
 function curFix(st,pool){ if(!pool.some(e=>e.id===st.cur)) st.cur=pool.length?pool[0].id:null; }
-function shell(k,t,es,off,all,body){ const st=V[k], wide=isWide(), cur=wide?es.concat(off).find(e=>e.id===st.cur):null;
-  return `${filtHTML(k)}<div class="qx-topbar">${weekHTML(k)}${daySummary(es,t)}</div>${st.cal&&!wide?`<div class="qx-panel qx-calp">${calHTML(k)}</div>`:''}<div class="qx-two${wide?'':' one'}"><section><div class="qx-dayh"><b>${H(largo(st.sel))}</b><span>${es.length?es.length+' paciente'+(es.length>1?'s':''):''}</span></div>${fcHTML(st,all)}<div class="qx-list${wide?' rows':''}">${body}</div></section>${wide?`<aside class="qx-det" aria-label="${st.cal?'Calendario del mes':'Detalle del paciente'}">${st.cal?`<div class="qx-panel qx-calp in">${calHTML(k)}</div>`:cur?(t==='quirofano'?qxCard(cur):cmCard(cur)):'<div class="qx-empty"><b>Sin paciente seleccionado</b>Elige un paciente de la lista para ver su detalle.</div>'}</aside>`:''}</div>`; }
+function shell(k,t,es,off,all,body,below=""){ const st=V[k], wide=isWide(), cur=wide?es.concat(off).find(e=>e.id===st.cur):null;
+  return `${filtHTML(k)}<div class="qx-topbar">${weekHTML(k)}${daySummary(es,t)}</div>${st.cal&&!wide?`<div class="qx-panel qx-calp">${calHTML(k)}</div>`:''}<div class="qx-two${wide?'':' one'}"><section><div class="qx-dayh"><b>${H(largo(st.sel))}</b><span>${es.length?es.length+' paciente'+(es.length>1?'s':''):''}</span></div>${fcHTML(st,all)}<div class="qx-list${wide?' rows':''}">${body}</div>${below}</section>${wide?`<aside class="qx-det" aria-label="${st.cal?'Calendario del mes':'Detalle del paciente'}">${st.cal?`<div class="qx-panel qx-calp in">${calHTML(k)}</div>`:cur?(t==='quirofano'?qxCard(cur):cmCard(cur)):'<div class="qx-empty"><b>Sin paciente seleccionado</b>Elige un paciente de la lista para ver su detalle.</div>'}</aside>`:''}</div>`; }
 function pendingSurgeryRows(st){
   return agF(st,list('quirofano')).filter(e=>!e.fecha&&!offE(e)&&!e.res&&(!st.fc||clinOf(e.clin).k===st.fc))
     .sort((a,b)=>(a.creado?.ts||Infinity)-(b.creado?.ts||Infinity)||String(a.id).localeCompare(String(b.id)));
@@ -20079,14 +20081,33 @@ function qxAgendaHTML(){ const st=V.qx, all=agF(st,byDay('quirofano',st.sel)), o
   const empty=`<div class="qx-empty"><b>Sin pacientes para este día</b>Elige otra fecha en el calendario${can('editar_quirofano')?' o usa «Agregar paciente». También puedes agregar desde una Solicitud de cirugía.':'.'}</div>`;
   const rejected=off.filter(e=>!e.can), cancelled=off.filter(e=>e.can);
   const body=(es.length?groups.map(([l,g])=>(groups.length>1||l!=='Turno por definir'?`<div class="qx-grp"><i style="--c:#1F3864"></i>${l} · ${g.length}</div>`:'')+g.map(e=>item(e,'quirofano')).join('')).join(''):empty)+(rejected.length?`<div class="qx-grp"><i style="--c:#B5BCC4"></i>No autorizadas · ${rejected.length}</div>`+rejected.map(e=>item(e,'quirofano')).join(''):'')+(cancelled.length?`<div class="qx-grp"><i style="--c:#89929C"></i>Programaciones canceladas · ${cancelled.length}</div>`+cancelled.map(e=>item(e,'quirofano')).join(''):'');
-  return shell('qx','quirofano',es,off,all,body)+pendingSurgeryTable(st,pendingSurgeryRows(st)); }
+  return shell('qx','quirofano',es,off,all,body,pendingSurgeryTable(st,pendingSurgeryRows(st))); }
+function committeeNoteActions(e,canEdit){
+  const attrs=action=>`data-ce="${action}" data-id="${H(e.id)}"`;
+  const print=can('imprimir_documentos');
+  return '<div class="committee-note-actions">'+
+    (canEdit&&can('editar_documentos')?rbBtn('edit','Editar',attrs('editnote')):'')+
+    rbBtn('view','Ver',attrs('view'))+
+    (print?rbBtn('print','Imprimir',attrs('print'))+window.hjmDriveBtn(attrs('drive')):'')+'</div>';
+}
+function committeeSurgery(e){
+  const day=dkey(e.nota?.fecha||e.fecha);
+  const active=list('quirofano').filter(q=>nz(q.exp)===nz(e.exp)&&!offE(q)&&!q.res);
+  const linked=active.find(q=>q.comiteId===e.id||q.nota?.id&&q.nota.id===e.nota?.id&&(!q.fecha||dkey(q.fecha)>=day-15*864e5));
+  if(linked)return linked;
+  return active.filter(q=>{
+    if(q.comiteId||!day)return false;
+    const date=q.fecha?dkey(q.fecha):Number(q.creado?.ts);
+    return date>=day-15*864e5&&date<=day+30*864e5;
+  }).sort((a,b)=>Math.abs((dkey(a.fecha)||a.creado.ts)-day)-Math.abs((dkey(b.fecha)||b.creado.ts)-day))[0];
+}
 function cmCard(e){ if(offE(e)) return offCard(e,'comite'); const ci=clinOf(e.clin), age=ageOf(e.fnac,e.fecha), canEd=can('editar_comite');
-  let act=''; if(e.nota){ act=`<span class="qx-chip ok">${IC.check} Paciente sesionado</span>${can('editar_quirofano')?`<button type="button" class="qx-btn sm ed" style="grid-column:1/-1" data-ce="program" data-id="${H(e.id)}">${IC.cal}Agregar en Programación</button>`:''}<button type="button" class="qx-btn sm" data-ce="view" data-id="${H(e.id)}">Ver nota</button>${can('imprimir_documentos')?`<button type="button" class="qx-btn sm" data-ce="print" data-id="${H(e.id)}">${IC.print}Imprimir nota</button>`:''}`; }
+  let act=''; if(e.nota){ const surgery=committeeSurgery(e); act=`<span class="qx-chip ok cm-session">${IC.check} Paciente sesionado<button type="button" class="qx-btn sm" data-ce="dictamen" data-id="${H(e.id)}" aria-expanded="false">Ver dictamen</button></span><p hidden data-full-dictamen></p>${surgery?`<span class="qx-chip"> ${surgery.fecha?'Programado para el '+H(surgery.fecha):'Agregado a programación · Pendiente de fecha de cirugía'}</span>`:can('editar_quirofano')?`<button type="button" class="qx-btn sm ed" style="grid-column:1/-1" data-ce="program" data-id="${H(e.id)}">${IC.cal}Agregar en Programación</button>`:''}${committeeNoteActions(e,canEd)}`; }
   else act=canEd?`<button type="button" class="qx-btn pri sm" data-ce="note" data-id="${H(e.id)}">${IC.note}Crear Nota</button><button type="button" class="qx-btn sm" data-ce="link" data-id="${H(e.id)}">${IC.link}Seleccionar nota existente</button><button type="button" class="qx-btn ghost sm" data-ce="resched" data-id="${H(e.id)}">${IC.cal}Reprogramar</button>`:'<span class="qx-chip warn">Pendiente de sesionar</span>';
-  const more=`<span class="sp"></span>${canEd&&can('editar_documentos')&&e.nota?`<button type="button" class="qx-btn ghost sm ed" data-ce="editnote" data-id="${H(e.id)}">${IC.edit}Editar nota</button>`:''}${canEd&&!e.nota?`<button type="button" class="qx-btn ghost sm bad" data-ce="nses" data-id="${H(e.id)}">${IC.no}No sesionado</button>`:''}${canDelE(e,'comite')?`<button type="button" class="qx-btn ghost sm bad" data-ce="del" data-id="${H(e.id)}">${IC.trash}Borrar paciente</button>`:''}`;
+  const more=`<span class="sp"></span>${canEd&&!e.nota?`<button type="button" class="qx-btn ghost sm bad" data-ce="nses" data-id="${H(e.id)}">${IC.no}No sesionado</button>`:''}${canDelE(e,'comite')?`<button type="button" class="qx-btn ghost sm bad" data-ce="del" data-id="${H(e.id)}">${IC.trash}Borrar paciente</button>`:''}`;
   const rp=(e.h||[]).filter(x=>/^Reprogramad/.test(x.a)).length;
   return `<article class="qx-card col${e.nota?' done':''}${V.open.has(e.id)?' open':''}" style="--c:${ci.c}"><div class="qx-c-top"><div class="qx-c-id">${canEd?editDataIcon(e,'ce'):''}<b>${H(e.nombre||'Sin nombre')}</b><span>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''}</span></div><div class="qx-chips"><span class="qx-chip clin" style="--bg:${ci.bg};--fg:${ci.fg}">${H(ci.n)}</span>${rp?`<span class="qx-chip warn">Reprogramado ${rp}×</span>`:''}${fileBtn(e,'ce')}</div></div>
-   ${miniHTML(e,'comite')}<div class="qx-c-body">${phoneDetails(e)}<div><small>Diagnóstico</small>${H(e.dx||'—')}</div><div><small>Adscrito</small>${H(e.ads||'—')}</div><div><small>Dictamen</small>${H(e.nota?.dic||'—')}${e.nota?`<br><button class="qx-btn sm" type="button" data-ce="dictamen" data-id="${H(e.id)}" aria-expanded="false">Ver más</button><p hidden data-full-dictamen></p>`:''}</div></div>
+   ${miniHTML(e,'comite')}<div class="qx-c-body">${phoneDetails(e)}<div><small>Diagnóstico</small>${H(e.dx||'—')}</div><div><small>Adscrito</small>${H(e.ads||'—')}</div></div>
    <div class="qx-who">${whoLine(e,[['creado','Programado por']])}${e.nota?`<br>Nota de sesión realizada por: <b data-note-author="${H(e.nota.id)}" data-exp="${H(e.exp)}">Consultando…</b>` : ''}</div><div class="qx-c-act">${act}${more}</div></article>`; }
 function cmAgendaHTML(){ const st=V.cm, all=agF(st,byDay('comite',st.sel)), off=all.filter(offE), es=fcF(st,all.filter(e=>!offE(e))); curFix(st,es.concat(off)); const by=new Map(); es.forEach(e=>{ const k=clinOf(e.clin).k; (by.get(k)||by.set(k,[]).get(k)).push(e); });
   const order=[...CLIN.map(c=>c.k),...[...by.keys()].filter(k=>!CLIN.some(c=>c.k===k))];
@@ -20151,15 +20172,15 @@ function viewClick(e){ const t=e.target.closest('button'); if(!t) return; const 
   const id=t.dataset.id; if(t.dataset.qe){ const e=AG.quirofano.items[id]; if(!e) return; const a=t.dataset.qe; if(a==='steps') openSteps(id); else if(a==='auth') openAuth(id); else if(a==='edit') openAdd('quirofano',e,id); else if(a==='file') openFile(e.exp); else if(a==='del'||a==='delPending') delEntry('quirofano',id,t,a==='delPending'); else if(a==='noaut') reasonAsk('quirofano',id,'noaut'); else if(a==='cancel') reasonAsk('quirofano',id,'can'); else if(a==='unaut') unAuth(id,t); else if(a==='restore') agChange('quirofano',id,e.can?{can:null}:{noaut:null},'Programación restaurada'); return; }
   if(t.dataset.ce){ const e=AG.comite.items[id]; if(!e) return; const a=t.dataset.ce;
     if(a==='program'){
-      const existing=list('quirofano').find(q=>q.comiteId===id&&!offE(q)&&!q.res);
+      const existing=committeeSurgery(e);
       if(existing)openAdd('quirofano',existing,existing.id);
       else openAdd('quirofano',{...e,fecha:'',comiteId:id});
     }else if(a==='dictamen'){
-      const box=t.parentElement.querySelector('[data-full-dictamen]');
-      if(!box.hidden){box.hidden=true;t.textContent='Ver más';t.setAttribute('aria-expanded','false');return;}
-      box.hidden=false;t.textContent='Ver menos';t.setAttribute('aria-expanded','true');box.textContent='Leyendo dictamen…';
+      const box=t.closest('.qx-c-act').querySelector('[data-full-dictamen]');
+      if(!box.hidden){box.hidden=true;t.textContent='Ver dictamen';t.setAttribute('aria-expanded','false');return;}
+      box.hidden=false;t.textContent='Ocultar dictamen';t.setAttribute('aria-expanded','true');box.textContent='Leyendo dictamen…';
       readPatient(e.exp).then(r=>{const note=r?.o?.historial?.notas?.find(n=>n.id===e.nota.id&&!isCx(n));box.textContent=plain(note?.p?.dictamen||note?.p?.contenido||note?.p?.texto||'')||'No se encontró el dictamen completo en la nota vinculada.';}).catch(()=>box.textContent='No se pudo leer la nota vinculada.');
-    }else if(a==='note') createNote('comite',e); else if(a==='link') openLink('comite',id); else if(a==='view') viewNote(e.exp,e.nota&&e.nota.id); else if(a==='print') printNote(e.exp,e.nota&&e.nota.id); else if(a==='editnote') editNote(e.exp,e.nota&&e.nota.id); else if(a==='resched') resched(id); else if(a==='edit') openAdd('comite',e,id); else if(a==='file') openFile(e.exp); else if(a==='del') delEntry('comite',id,t); else if(a==='cancel') reasonAsk('comite',id,'can'); else if(a==='nses') reasonAsk('comite',id,'nses'); else if(a==='restore') agChange('comite',id,{can:null,nses:null},'Restaurada'); return; }
+    }else if(a==='note') createNote('comite',e); else if(a==='link') openLink('comite',id); else if(a==='view') viewNote(e.exp,e.nota&&e.nota.id); else if(a==='print') printNote(e.exp,e.nota&&e.nota.id); else if(a==='drive'){if(t.disabled||!can('imprimir_documentos'))return;t.disabled=true;noteHTML(e.exp,e.nota.id).then(source=>window.hjmDocDrive('notas',e.nota.id,t,source)).catch(err=>say(err.message||'No se pudo leer la nota.','warn')).finally(()=>{t.disabled=false;});} else if(a==='editnote') editNote(e.exp,e.nota&&e.nota.id); else if(a==='resched') resched(id); else if(a==='edit') openAdd('comite',e,id); else if(a==='file') openFile(e.exp); else if(a==='del') delEntry('comite',id,t); else if(a==='cancel') reasonAsk('comite',id,'can'); else if(a==='nses') reasonAsk('comite',id,'nses'); else if(a==='restore') agChange('comite',id,{can:null,nses:null},'Restaurada'); return; }
 }
 function unAuth(id,b){ if(!b.dataset.ok){ b.dataset.ok='1'; const lb=b.textContent; b.textContent='¿Cancelar autorización?'; setTimeout(()=>{ if(b.isConnected){ delete b.dataset.ok; b.textContent=lb; } },4000); return; } agChange('quirofano',id,{aut:null},'Autorización cancelada (en espera de autorización)'); say('Autorización cancelada: vuelve a esperar autorización.','ok'); }
 function delEntry(t,id,b,pending=false){ const e=AG[t]?.items[id]; if(pending?!(e&&!e.fecha&&!offE(e)&&!e.res&&!e.aut&&can('editar_quirofano')):!canDelE(e,t)){ say('Tu usuario no puede borrar esta entrada.','warn'); return; } if(!b.dataset.ok){ b.dataset.ok='1'; const lb=b.innerHTML; b.textContent='¿Borrar? Toca otra vez'; setTimeout(()=>{ if(b.isConnected){ delete b.dataset.ok; b.innerHTML=lb; } },4000); return; } agChange(t,id,{},t==='quirofano'?'Quitado de la programación':'Quitado del comité',pending?'delPending':'del'); say(t==='quirofano'?'Paciente quitado de la programación.':'Entrada borrada.','ok'); }
@@ -20224,7 +20245,7 @@ function openAdd(t,pre,editId){
       const ok=d.querySelector('#qaOk'); ok.disabled=true; d.dataset.busy='1';
       try{ if(nu){ msg.className='qd-msg ok'; msg.textContent='Creando el expediente en Drive…'; await createPatient(x); }
         const set={exp:x.exp,telUno:x.telUno,telDos:x.telDos,nombre:up(x.nombre),fnac:x.fnac||'',dx:x.dx,ads:x.ads,clin:x.clin,fecha:x.fecha};
-        if(Q){ if(pre.comiteId){set.comiteId=pre.comiteId;if(pre.nota)set.nota=pre.nota;}set.cx=x.cx; set.turno=x.turno||''; if(pre.rid) set.sol=pre.rid; }
+        if(Q){ if(!editId&&pre.comiteId&&committeeSurgery(AG.comite.items[pre.comiteId]||pre)){msg.textContent='Ya hay una programación para esta sesión.';ok.disabled=false;delete d.dataset.busy;return;} if(pre.comiteId){set.comiteId=pre.comiteId;if(pre.nota)set.nota=pre.nota;}set.cx=x.cx; set.turno=x.turno||''; if(pre.rid) set.sol=pre.rid; }
         const id=editId||newId(Q?'q':'c'); const cur=editId?AG[t].items[editId]:null;
         const a=editId?(cur&&cur.fecha!==x.fecha?(Q?'Fecha cambiada '+(cur.fecha||'')+' → '+x.fecha:'Reprogramado '+(cur.fecha||'')+' → '+x.fecha):'Datos editados'):(Q?(pre.rid?'Agregado desde solicitud de cirugía':'Agregado a programación'):'Agregado a sesión');
         agChange(t,id,set,a);
@@ -20238,8 +20259,8 @@ function openAdd(t,pre,editId){
 
 /* Pasos del expediente (Quirófano) */
 async function patientComiteNotes(exp){ const r=await readPatient(exp); if(!r) return {notes:[],r:null}; const ns=((r.o.historial||{}).notas||[]).filter(x=>x&&x.p&&isComite(x.p.tipo)&&!(x.cx&&x.cx.on)).sort((a,b)=>(dkey(b.p.fecha)-dkey(a.p.fecha))||((b.ts||0)-(a.ts||0))); return {notes:ns,r}; }
-function openSteps(id){ const d=dlg('dlgQxSteps','wide'); const draw=()=>{ const e=AG.quirofano.items[id]; if(!e){ d.close(); return; } const canEd=can('editar_quirofano')&&(!e.aut||isQxRole()), role=isQxRole(), age=ageOf(e.fnac,e.fecha);
-    const s1=`<div class="qd-step ${e.nota?'ok':''}"><span class="ic">${IC.note}</span><h4>1 · Nota de Comité Multidisciplinario</h4>${e.nota?`<p>Ligada: nota del <b>${H(e.nota.fecha||'')}</b>${e.nota.por?' · por '+H(whoName(e.nota.por)):''}</p><div class="row"><button type="button" class="qx-btn sm" data-s="view">Ver nota</button>${canEd?'<button type="button" class="qx-btn ghost sm bad" data-s="unlink">Quitar</button>':''}</div>`:`<p>El paciente necesita nota de comité para completar su expediente.</p>${canEd?`<div class="row"><button type="button" class="qx-btn pri sm" data-s="create">${IC.note}Crear nota</button><button type="button" class="qx-btn sm" data-s="pick">Seleccionar nota existente</button></div><div class="qd-nl" id="qsNotes"></div>`:''}`}</div>`;
+function openSteps(id){ const d=dlg('dlgQxSteps','wide'); const token=Symbol();d._stepsToken=token;let notes=[],manual=false; const draw=()=>{ const e=AG.quirofano.items[id]; if(!e){ d.close(); return; } const canEd=can('editar_quirofano')&&(!e.aut||isQxRole()), role=isQxRole(), age=ageOf(e.fnac,e.fecha);
+    const s1=`<div class="qd-step ${e.nota?'ok':''}"><span class="ic">${IC.note}</span><h4>1 · Nota de Comité Multidisciplinario</h4>${e.nota?`<p>Nota seleccionada del <b>${H(e.nota.fecha||'')}</b>${e.nota.por?' · por '+H(whoName(e.nota.por)):''}</p><div class="row"><button type="button" class="qx-btn sm" data-s="view">Ver nota</button>${canEd?'<button type="button" class="qx-btn ghost sm bad" data-s="unlink">Quitar</button>':''}</div>`:`<p>El paciente necesita nota de comité para completar su expediente.</p>${canEd?`<div class="row"><button type="button" class="qx-btn pri sm" data-s="create">${IC.note}Crear nota</button><button type="button" class="qx-btn sm" data-s="pick">Seleccionar nota existente</button></div><div class="qd-nl" id="qsNotes"></div>`:''}`}</div>`;
     const s2=`<div class="qd-step ${e.rev?'ok':''}"><span class="ic">${IC.folder}</span><h4>2 · Expediente revisado por Quirófano</h4><p>Se marca cuando el expediente físico ya tiene el sello de revisión de Quirófano.</p>${canEd?`<label class="qd-chk${e.rev?' on':''}"><input type="checkbox" data-s="rev"${e.rev?' checked':''}><span>Expediente físico revisado y sellado</span></label>`:''}${e.rev?`<p>Marcó: <b>${H(whoName(e.rev.por))}</b> · ${H(tsTxt(e.rev.ts))}</p>`:''}</div>`;
     const ready=!!(e.nota&&e.rev);
     const s3=`<div class="qd-step ${e.comp?'ok':ready?'':'off'}"><span class="ic">${IC.check}</span><h4>3 · Expediente completo</h4>${e.comp?`<p>Completó: <b>${H(whoName(e.comp.por))}</b> · ${H(tsTxt(e.comp.ts))}</p>${canEd&&!e.aut?'<div class="row"><button type="button" class="qx-btn ghost sm bad" data-s="uncomp">Desmarcar</button></div>':''}`:`<p>${ready?'Ya tiene nota de comité y expediente revisado.':'Primero completa los pasos 1 y 2.'}</p>${canEd?`<div class="row"><button type="button" class="qx-btn ok" data-s="comp"${ready?'':' disabled'}>${IC.check}Marcar expediente completo</button></div>`:''}`}</div>`;
@@ -20256,12 +20277,22 @@ function openSteps(id){ const d=dlg('dlgQxSteps','wide'); const draw=()=>{ const
     if(a==='auth'){ d.close(); openAuth(id); return; }
     if(a==='noaut'){ d.close(); reasonAsk('quirofano',id,'noaut'); return; }
     if(a==='unauth'){ if(!b.dataset.ok){ b.dataset.ok='1'; b.textContent='¿Seguro?'; return; } agChange('quirofano',id,{aut:null},'Autorización retirada'); draw(); return; }
-    if(a==='pick'){ const box=d.querySelector('#qsNotes'); box.innerHTML='<p class="qd-note">Buscando notas de comité del paciente…</p>'; try{ const {notes}=await patientComiteNotes(e.exp); box.innerHTML=notes.length?notes.map(n=>`<div><span><b>${H(n.p.fecha||'')}</b> ${H(n.p.hora||'')}<small>${H(plain(n.p.dictamen||n.p.contenido).slice(0,140))}</small></span><button type="button" class="qx-btn sm" data-s="pv" data-nid="${H(n.id)}">Ver</button><button type="button" class="qx-btn ok sm" data-s="link" data-nid="${H(n.id)}" data-nf="${H(n.p.fecha||'')}" data-nd="${H(plain(n.p.dictamen||'').slice(0,240))}">Ligar</button></div>`).join(''):'<p class="qd-note warn">Este paciente no tiene notas de comité. Usa «Crear nota».</p>'; }catch(err){ box.innerHTML='<p class="qd-note warn">No se pudieron leer las notas: '+H(typeof friendly==='function'?friendly(err):err.message)+'</p>'; } return; }
+    if(a==='pick'){ manual=true; const box=d.querySelector('#qsNotes'); box.innerHTML='<p class="qd-note">Buscando notas de comité del paciente…</p>'; try{ const result=await patientComiteNotes(e.exp);if(d._stepsToken!==token||!box.isConnected)return;notes=result.notes; box.innerHTML=notes.length?'<input type="search" aria-label="Buscar nota de comité" placeholder="Buscar por fecha o texto">'+notes.map(n=>`<div><span><b>${H(n.p.fecha||'')}</b> ${H(n.p.hora||'')}<small>${H(plain(n.p.dictamen||n.p.contenido).slice(0,140))}</small></span><button type="button" class="qx-btn sm" data-s="pv" data-nid="${H(n.id)}">Ver</button><button type="button" class="qx-btn ok sm" data-s="link" data-nid="${H(n.id)}" data-nf="${H(n.p.fecha||'')}" data-nd="${H(plain(n.p.dictamen||'').slice(0,240))}">Seleccionar</button></div>`).join(''):'<p class="qd-note warn">Este paciente no tiene notas de comité. Usa «Crear nota».</p>'; const search=box.querySelector('input');if(search)search.oninput=()=>{[...box.querySelectorAll('div')].forEach((row,i)=>{const n=notes[i];row.hidden=!up([n.p.fecha,n.p.hora,plain(n.p.dictamen||n.p.contenido)].join(' ')).includes(up(search.value));});};}catch(err){ box.innerHTML='<p class="qd-note warn">No se pudieron leer las notas: '+H(typeof friendly==='function'?friendly(err):err.message)+'</p>'; } return; }
     if(a==='pv'){ viewNote(e.exp,b.dataset.nid); return; }
     if(a==='link'){ agChange('quirofano',id,{nota:{id:b.dataset.nid,autor:savedBy(notes.find(n=>String(n.id)===b.dataset.nid)),fecha:b.dataset.nf,dic:b.dataset.nd}},'Nota de comité ligada'); draw(); return; }
   };
   d.onchange=ev=>{ const x=ev.target; if(x.dataset&&x.dataset.s==='rev'){ agChange('quirofano',id,{rev:x.checked?{}:null},x.checked?'Expediente revisado':'Expediente revisado desmarcado'); draw(); } };
   draw();
+  const entry=AG.quirofano.items[id];
+  if(entry&&!entry.nota&&can('editar_quirofano')&&(!entry.aut||isQxRole())){
+    patientComiteNotes(entry.exp).then(result=>{
+      if(manual||!d.open||d._stepsToken!==token)return;
+      const current=AG.quirofano.items[id];
+      if(!current||current.exp!==entry.exp||current.nota||offE(current)||current.aut&&!isQxRole())return;
+      const today=dkey(hoy()), n=result.notes.find(n=>dkey(n.p.fecha)<=today&&dkey(n.p.fecha)>=today-15*864e5);
+      if(n){agChange('quirofano',id,{nota:{id:n.id,autor:savedBy(n),fecha:n.p.fecha,dic:plain(n.p.dictamen||'').slice(0,240)}},'Nota de comité seleccionada automáticamente');draw();}
+    }).catch(()=>{});
+  }
 }
 function openAuth(id){ const e=AG.quirofano.items[id]; if(!e) return; if(!isQxRole()){ say('Solo los usuarios con rol Quirófano pueden autorizar.','warn'); return; }
   const d=dlg('dlgQxAuth'); const tur=e.turno||'';
@@ -20282,7 +20313,7 @@ async function createNote(t,e){ const f=fileByExp(e.exp); if(!f){ say('No se enc
   window.__qxNoteIntent={exp:e.exp,entry:e.id,tipo:t,fecha:t==='comite'?(dkey(e.fecha)<=dkey(hoy())?e.fecha:hoy()):hoy(),t:Date.now()};
   try{ if(typeof ppIsolatedOpen==='function') await ppIsolatedOpen(f.id,'notas'); else if(window.ppFormatWindowOpen) await ppFormatWindowOpen(f.id,'notas'); }catch(err){ say('No se pudo abrir la nota: '+(typeof friendly==='function'?friendly(err):err.message),'warn'); } }
 async function editNote(exp,nid){ const f=fileByExp(exp); if(!f||!nid) return; try{ await ppIsolatedOpen(f.id,'notas',{noteId:nid}); }catch(err){ say('No se pudo abrir la nota.','warn'); } }
-async function noteHTML(exp,nid){ const r=await readPatient(exp); if(!r) throw new Error('No se encontró el expediente'); const rec=((r.o.historial||{}).notas||[]).find(x=>x.id===nid); if(!rec||!rec.p||(rec.cx&&rec.cx.on)){ noteGone(nid); throw new Error('La nota ya no existe en el expediente (se borró o se canceló). Se quitó de la agenda para que puedas hacerla de nuevo.'); } const dd=Object.assign({},r.o.datos||{}); dd.nombreCompleto=[dd.apPaterno,dd.apMaterno,dd.nombres].filter(Boolean).join(' ').toUpperCase(); dd.edad=ageOf(dd.fnac,rec.p.fecha); return {html:clinicalPrintHTML('notas',rec.p,dd),rec}; }
+async function noteHTML(exp,nid){ const r=await readPatient(exp); if(!r) throw new Error('No se encontró el expediente'); const rec=((r.o.historial||{}).notas||[]).find(x=>x.id===nid); if(!rec||!rec.p||(rec.cx&&rec.cx.on)){ noteGone(nid); throw new Error('La nota ya no existe en el expediente (se borró o se canceló). Se quitó de la agenda para que puedas hacerla de nuevo.'); } const dd=Object.assign({},r.o.datos||{}); dd.nombreCompleto=[dd.apPaterno,dd.apMaterno,dd.nombres].filter(Boolean).join(' ').toUpperCase(); dd.edad=ageOf(dd.fnac,rec.p.fecha); return {html:clinicalPrintHTML('notas',rec.p,dd),rec,datos:dd}; }
 async function viewNote(exp,nid){ if(!nid) return; const d=dlg('dlgQxView','wide'); d.innerHTML=dlgShell('Nota de Comité Multidisciplinario','Cargando…','<p class="qd-note">Leyendo el expediente…</p>'); show(d);
   try{ const {html,rec}=await noteHTML(exp,nid); const css=(typeof arViewCss==='function')?arViewCss():''; d.querySelector('.qd-h p').textContent=(rec.p.fecha||'')+' '+(rec.p.hora||'')+' · Exp. '+exp;
     d.querySelector('.qd-b').innerHTML='<iframe title="Vista de la nota" style="width:100%;height:min(70vh,900px);border:0;border-radius:12px;background:#e6e7e9"></iframe>';
@@ -20292,7 +20323,7 @@ async function viewNote(exp,nid){ if(!nid) return; const d=dlg('dlgQxView','wide
   }catch(err){ d.querySelector('.qd-b').innerHTML='<p class="qd-note warn">'+H(err.message||err)+'</p>'; } }
 async function printNote(exp,nid){ if(!nid) return; if(!can('imprimir_documentos')){ say('Tu usuario no tiene permiso para imprimir.','warn'); return; } try{ say('Preparando la nota para imprimir…','info',{ms:2500}); const {html}=await noteHTML(exp,nid); const host=$i('clinicalPrint'); if(host&&typeof startClinicalPrint==='function'){ host.innerHTML=html; await startClinicalPrint(host); } else printDoc(html,'Nota de comité'); }catch(err){ say('No se pudo imprimir: '+(err.message||err),'warn'); } }
 async function openLink(t,id){ const e=AG[t].items[id]; if(!e) return; const d=dlg('dlgQxLink','wide'); d.innerHTML=dlgShell('Ligar nota de comité',H(e.nombre)+' · Exp. '+H(e.exp),'<div class="qd-nl" id="qlNotes"><p class="qd-note">Buscando notas de comité del paciente…</p></div>',`<span class="sp"></span><button type="button" class="qx-btn" data-qd-x>Cerrar</button>`); show(d);
-  try{ const {notes}=await patientComiteNotes(e.exp); const box=d.querySelector('#qlNotes'); box.innerHTML=notes.length?notes.map(n=>`<div><span><b>${H(n.p.fecha||'')}</b> ${H(n.p.hora||'')}<small>${H(plain(n.p.dictamen||n.p.contenido).slice(0,160))}</small></span><button type="button" class="qx-btn sm" data-pv="${H(n.id)}">Ver</button><button type="button" class="qx-btn ok sm" data-nid="${H(n.id)}" data-nf="${H(n.p.fecha||'')}" data-nd="${H(plain(n.p.dictamen||'').slice(0,240))}">Ligar</button></div>`).join(''):'<p class="qd-note warn">No hay notas de comité en este expediente. Usa «Crear nota de comité».</p>';
+  try{ const {notes}=await patientComiteNotes(e.exp); const box=d.querySelector('#qlNotes'); box.innerHTML=notes.length?notes.map(n=>`<div><span><b>${H(n.p.fecha||'')}</b> ${H(n.p.hora||'')}<small>${H(plain(n.p.dictamen||n.p.contenido).slice(0,160))}</small></span><button type="button" class="qx-btn sm" data-pv="${H(n.id)}">Ver</button><button type="button" class="qx-btn ok sm" data-nid="${H(n.id)}" data-nf="${H(n.p.fecha||'')}" data-nd="${H(plain(n.p.dictamen||'').slice(0,240))}">Seleccionar</button></div>`).join(''):'<p class="qd-note warn">No hay notas de comité en este expediente. Usa «Crear nota de comité».</p>';
     box.onclick=ev=>{ const b=ev.target.closest('button'); if(!b) return; if(b.dataset.pv){ viewNote(e.exp,b.dataset.pv); return; } agChange(t,id,t==='comite'?{nota:{id:b.dataset.nid,autor:savedBy(notes.find(n=>String(n.id)===b.dataset.nid)),fecha:b.dataset.nf,dic:b.dataset.nd},ses:{}}:{nota:{id:b.dataset.nid,autor:savedBy(notes.find(n=>String(n.id)===b.dataset.nid)),fecha:b.dataset.nf,dic:b.dataset.nd}},'Nota de comité ligada'); d.close(); say('Nota ligada.','ok'); };
   }catch(err){ d.querySelector('#qlNotes').innerHTML='<p class="qd-note warn">'+H(err.message||err)+'</p>'; } }
 function resched(id){ const e=AG.comite.items[id]; if(!e) return; const d=dlg('dlgQxRes'); d.innerHTML=dlgShell('Reprogramar sesión',H(e.nombre)+' · actual: '+H(largo(e.fecha)),dateInput('qrF',addDays(e.fecha,7),'Nueva fecha de sesión',true)+'<div class="qd-chipsel"><button type="button" data-d="7">+1 semana</button><button type="button" data-d="14">+2 semanas</button><button type="button" data-d="28">+4 semanas</button></div><p class="qd-msg" id="qrM" role="alert"></p>',`<button type="button" class="qx-btn" data-qd-x>Cancelar</button><button type="button" class="qx-btn pri" id="qrOk">Reprogramar</button>`); show(d);
