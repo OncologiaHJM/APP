@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.94">
+<meta name="application-version" content="9.96">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2756,7 +2756,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.94 · Fecha de publicación: 21.11.26</div>
+  <div class="app-footer-version">Versión 9.96 · Fecha de publicación: 21.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -3031,9 +3031,10 @@ html body .qx-bar>span,html body .qx-bar>b{color:#E6E8EB!important}
 html body .qx-bar>span small{color:#9AA4AF!important}
 html body .qx-bar>em{background:#2A323C!important}
 }
-#ppGuard,#ppGuard2{position:absolute;z-index:2;display:flex;align-items:center;font:500 12px/1.25 var(--rd-sans,system-ui);color:#5f7184;background:#f3f6f9;border:1px solid #e1e7ee;border-radius:8px;padding:2px 10px;overflow:hidden;box-sizing:border-box}
-#ppGuard span,#ppGuard2 span{display:block}#ppGuard2[hidden]{display:none!important}#ppGuard.pg-s,#ppGuard2.pg-s{font-size:10px;line-height:1.15;padding:1px 6px;justify-content:center;text-align:center}#ppGuard2 b,#ppGuard b{color:#41566c;font-weight:600}
-#ppGuard[hidden]{display:none!important}
+html body.pp-browse #pPanel:not(.cen-on) #ppSharedHead #ppHeaderSummary{display:flex;align-items:center;flex-wrap:wrap;gap:4px 12px}
+#ppGuard{display:inline-block;max-width:100%;box-sizing:border-box;font:500 11px/1.25 var(--rd-sans,system-ui);color:#5f7184;background:#f3f6f9;border:1px solid #e1e7ee;border-radius:8px;padding:3px 9px}
+#ppGuard b{color:#41566c;font-weight:600}
+#ppGuard[hidden],body:not(.pp-browse) #ppGuard,#pPanel.cen-on #ppGuard,body:not(:has(#hjmNav:not([hidden]) [data-nav="cama"][aria-current="page"])) #ppGuard{display:none!important}
 [data-theme="dark"] #ppGuard,[data-theme="dark"] #ppGuard2{background:#1c242e;border-color:#2c3845;color:#93a4b6}[data-theme="dark"] #ppGuard b{color:#b8c7d6}
 
 @media print{#ppGuard,#ppGuard2{display:none!important}}
@@ -9169,21 +9170,6 @@ function parseFullDate(t){
 /* v9.81 · Diagnóstico escrito en un formato: es solo de ese formato. Para cambiar el del censo se pregunta con un aviso flotante
    inferior que no bloquea la página: «No» es la opción principal; cerrar o no contestar en 25 s = no se cambia. */
 
-/* v9.81 · Leyenda «Pendientes de guardia»: ocupa solo el espacio libre del renglón del conteo (posición absoluta, no mueve nada) */
-function ppGuardPlace(){ try{
-  const g=document.getElementById("ppGuard"), c=document.getElementById("ppCount"); if(!g||!c) return; const H=g.parentElement; if(!H) return;
-  let g2=document.getElementById("ppGuard2"); if(!g2){ g2=document.createElement("span"); g2.id="ppGuard2"; g2.className="pp-guard"; H.appendChild(g2); }
-  if(g.hidden){ g2.hidden=true; return; }
-  if(getComputedStyle(H).position==="static") H.style.position="relative";
-  const hr=H.getBoundingClientRect(), cr=c.getBoundingClientRect(); if(!cr.width){ g.style.display=g2.style.display="none"; return; } g.style.display=g2.style.display="";
-  const centered=cr.left-hr.left>40, rowH=Math.max(cr.height,22), mid=cr.top-hr.top+cr.height/2;
-  const put=(e,l,r,h)=>{ e.style.left=l+"px"; e.style.right=r+"px"; e.style.height=h+"px"; e.style.top=(mid-h/2)+"px"; };
-  if(!centered){ g2.hidden=true; g.classList.remove("pg-s"); g.innerHTML='<span><b>Pendientes de Guardia</b> · Uso de Residentes</span>'; put(g,cr.right-hr.left+12,8,rowH+2); g.style.right="auto"; return; }
-  const h=Math.min(34,rowH+10); g2.hidden=true; g.classList.add("pg-s");
-  g.innerHTML='<span><b>Pendientes de Guardia</b><br>Uso de Residentes</span>';
-  put(g,4,hr.right-cr.left+8,h);
-}catch(_){} }
-addEventListener("resize",()=>requestAnimationFrame(ppGuardPlace));
 function dxPromoteAsk(v,after){
   const inp=$('diagnostico'),old=String(inp&&inp.value||'').trim();v=String(v||'').toUpperCase().trim();
   if(!inp||!v||v===old.toUpperCase()) return;
@@ -11558,6 +11544,7 @@ function renderPendingPanels(){
   if(panel.open)pendingAdmissionToggle(panel);
 }
 function renderPP(){
+  if(PP_VIEW!=="cama") $("ppGuard").hidden=true;
   try{renderPendingPanels();}catch(_){}
  if(sessionUserName()&&!accessViewAllowed(PP_VIEW))PP_VIEW=accessFirstView();if(sessionUserName()&&!PP_VIEW){cenShow(false);$('ppList').innerHTML='<div class="pp-empty">Tu usuario no tiene páginas de pacientes habilitadas.</div>';$('ppCount').textContent='';return;}
 
@@ -11574,7 +11561,7 @@ function renderPP(){
   try{ ppFiltDraw(); }catch(_){}
   // Hoja de datos: este buscador es global y compacto; los filtros sólo pertenecen a body.pp-browse.
   const filtOn=document.body.classList.contains("pp-browse")&&!!(PP_FILT.ads.length||PP_FILT.clin.length); if(filtOn) items=items.filter(ppFiltMatch);
-  try{ const pg=$("ppGuard"); if(pg){ pg.hidden=!camaMode; requestAnimationFrame(ppGuardPlace); } }catch(_){}
+  try{ const pg=$("ppGuard"); if(pg){ pg.hidden=!camaMode; } }catch(_){}
   try{ const pc=$("ppCount"); if(pc){ const n=items.length; pc.textContent=!n?"":camaMode?(n===1?"1 hospitalizado":n+" hospitalizados"):(n===1?"1 paciente":n+" pacientes"); } }catch(_){}
   const ppHome=document.body.classList.contains("pp-browse"), ppKey=s+"|"+PP_VIEW+"|"+ppHome+"|"+PP_FILT.ads+"|"+PP_FILT.clin;
   if(window.PP_KEY!==ppKey){ window.PP_KEY=ppKey; window.PP_PAGES=0; }
@@ -13672,10 +13659,11 @@ function cenKeep(w,paint){
   let foc=null; if(inside){ const tr=ae.closest("tr"); foc={k:tr&&tr.dataset.k||"",f:ae.dataset.f||"",rk:ae.dataset.rk||"",res:ae.id==="cenRes",s:ae.selectionStart,e:ae.selectionEnd,v:ae.value}; }
   const anc=[]; for(let n=w;n;n=n.parentElement){ if(n.scrollTop||n.scrollLeft) anc.push([n,n.scrollTop,n.scrollLeft]); } const wsy=window.scrollY, wsx=window.scrollX; const mh=w.offsetHeight; w.style.minHeight=mh+"px";
   paint();
-  const sc2=w.querySelector(".cen-scroll"); if(sc2){ sc2.scrollLeft=st.sx; sc2.scrollTop=st.sy; } w.scrollTop=wy; const rv2=w.querySelector(".cen-rev"); if(rv2) rv2.scrollLeft=rvx;
+
   if(foc){ try{ let el=null; if(foc.res) el=w.querySelector("#cenRes"); else if(foc.rk) el=w.querySelector('[data-rk="'+foc.rk+'"]'); else el=[...w.querySelectorAll('tr[data-k] [data-f]')].find(x=>x.dataset.f===foc.f&&x.closest("tr").dataset.k===foc.k);
     if(el){ el.focus({preventScroll:true}); try{ el.setSelectionRange(foc.s,foc.e); }catch(_){} } }catch(_){} }
   cenFitAll(w);
+  const sc2=w.querySelector(".cen-scroll"); if(sc2){ sc2.scrollLeft=st.sx; sc2.scrollTop=st.sy; } w.scrollTop=wy; const rv2=w.querySelector(".cen-rev"); if(rv2) rv2.scrollLeft=rvx;
   w.style.minHeight=""; anc.forEach(([n,y,x])=>{ n.scrollTop=y; n.scrollLeft=x; }); if(window.scrollY!==wsy||window.scrollX!==wsx) window.scrollTo(wsx,wsy);
 }
 function cenFit(t){ try{ if(!t.offsetParent) return; t.style.height="auto"; if(t.scrollHeight) t.style.height=t.scrollHeight+"px"; }catch(_){} }
@@ -13761,8 +13749,12 @@ function cenRenderActual(w){
   CEN.cur=cen;
   const miss=cen.pac.filter(r=>!r.ok).length;
   cenSetTitle("Censo Actual",cen);
-  cenKeep(w,()=>{ w.innerHTML=cenBarHTML()
-      +cenContHTML(per,cen)+`<div class="cen-scroll">${cenTableHTML(cen)}</div>`+cenResHTML(cen)+`<div class="cen-rev"><h4>Reverso</h4>${cenRevHTML(cen,true)}</div>`; cenSyncUI(); });
+  const html=cenBarHTML()
+      +cenContHTML(per,cen)+`<div class="cen-scroll">${cenTableHTML(cen)}</div>`+cenResHTML(cen)+`<div class="cen-rev"><h4>Reverso</h4>${cenRevHTML(cen,true)}</div>`;
+  if(w._liveMarkup!==html||w._liveTable!==w.querySelector(".cen-scroll")){
+    cenKeep(w,()=>{w.innerHTML=html;cenSyncUI();});
+    w._liveMarkup=html;w._liveTable=w.querySelector(".cen-scroll");
+  }else cenSyncUI();
   cenKick(per,cen);
   try{ cenIntegrarAuto(); }catch(_){}
 }
@@ -14265,7 +14257,7 @@ try{(function(){
   const SEL=["#cenWrap",".cen-scroll","#ppList","#pPanel"];
   const snap=()=>{ const s={wx:window.scrollX,wy:window.scrollY,e:{}}; SEL.forEach(q=>{ const el=document.querySelector(q); if(el) s.e[q]=[el.scrollTop,el.scrollLeft]; }); return s; };
   const apply=s=>{ try{ SEL.forEach(q=>{ const el=document.querySelector(q), v=s.e[q]; if(el&&v){ if(el.scrollTop!==v[0]) el.scrollTop=v[0]; if(el.scrollLeft!==v[1]) el.scrollLeft=v[1]; } }); if(window.scrollY!==s.wy||window.scrollX!==s.wx) window.scrollTo(s.wx,s.wy); }catch(_){} };
-  const restore=s=>{ [0,60,200,500,1000,1800].forEach(ms=>setTimeout(()=>apply(s),ms)); };
+  const restore=s=>{ if(inCen()) apply(s); };
   const inCen=()=>document.body.classList.contains("pp-browse")&&(PP_VIEW==="censoActual"||PP_VIEW==="censos");
   let KEEP=null;
   const wrap=n=>{ const o=window[n]; if(typeof o!=="function") return; window[n]=async function(...a){ const s=inCen()?snap():null; if(s) KEEP=s; try{ return await o.apply(this,a); } finally{ if(s) restore(s); } }; };
@@ -18519,7 +18511,7 @@ function ppHeaderArrange(){
  const selector=head.querySelector('.pp-view-btns');if(selector&&selector.parentNode!==tabs)tabs.appendChild(selector);
  ['ppPrev','ppNext','ppToggle'].forEach(id=>move(id,utility));move('ppRefresh',refresh);
  const summary=box('ppHeaderSummary','div',title),dates=box('cenDateActions','div',title),tools=box('ppHeaderTools','div',utility);
- move('ppCount',summary);move('cenLegend',title);cenBandPeriodSync(dates);move('cenEditBtn',dates);move('ppClrRow',tools);move('cenResBar',utility);move('cenSave',utility);
+ move('ppCount',summary);move('ppGuard',summary);move('cenLegend',title);cenBandPeriodSync(dates);move('cenEditBtn',dates);move('ppClrRow',tools);move('cenResBar',utility);move('cenSave',utility);
  get('ppHeaderInfo')?.remove();const meta=get('ppHeaderMeta');if(meta)meta.hidden=true;
  const bar=get('cenWrap')?.querySelector('.cen-exbar');if(bar){utility.querySelector('.cen-exbar')?.remove();utility.prepend(bar);}
  move('ppHeaderUtility',nav);move('cenToolbar',nav);move('ppHeaderTabs',nav);
