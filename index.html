@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="9.91">
+<meta name="application-version" content="9.94">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2756,7 +2756,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 9.91 · Fecha de publicación: 21.11.26</div>
+  <div class="app-footer-version">Versión 9.94 · Fecha de publicación: 21.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -6756,6 +6756,7 @@ body.pp-browse.qx-on #qxView{display:block}
 .qx-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--c,#B5BCC4)}
 .qx-card.done{border-color:#CFE7D8}
 .qx-c-top{display:flex;flex-wrap:wrap;align-items:flex-start;gap:6px 10px}
+.qx-c-id>.qx-edit-data{float:right;margin-inline-start:8px;width:36px;height:36px;padding:0;display:inline-grid;place-items:center;border-radius:10px}
 .qx-c-id{flex:1 1 260px;min-width:0}
 .qx-c-id b{display:block;font:700 15px/1.25 var(--rd-sans,system-ui);color:#1C2B42;overflow-wrap:anywhere}
 .qx-c-id span{display:block;margin-top:3px;font-size:12.5px;color:#66717F}
@@ -13407,6 +13408,12 @@ function cenBuild(Td,now,opt){
   const act0=CEN.act&&CEN.act.obj, frz=(act0&&act0.fecha===cenDot(Td)&&Array.isArray(act0.cong))?act0.cong:[], fzk=r=>r.k+"|"+r.sec, fzm=new Map(frz.map(r=>[fzk(r),r]));
   const withFrozen=(live,sec)=>{ const used=new Set(), out=live.map(r=>{ const z=fzm.get(fzk(r)); if(z){ used.add(fzk(r)); const o=Object.assign({},z,{ok:true}); Object.keys(r).forEach(k=>{ if(k!=="cama"&&k!=="est"&&k!=="ts"&&(o[k]===undefined||o[k]===null||o[k]==="")&&r[k]!==undefined&&r[k]!=="") o[k]=r[k]; }); if(!o.cama) o.cama=r.cama; return o; } return r; }); frz.filter(r=>r.sec===sec&&!used.has(fzk(r))).forEach(r=>out.push(Object.assign({},r,{ok:true}))); return out.sort((a,b)=>(a.ts||0)-(b.ts||0)); };
   const rows=cenSortRows(mk(fs.H,"H").filter(r=>!camaFuera(r.cama))).concat(withFrozen(mk(fs.E,"E"),"E"),withFrozen(mk(fs.D,"D"),"D"));
+  const importado=CEN.hojaSinArchivo;
+  if(importado&&importado.name===cenFile(prevDay)&&importado.name===cenFile(cenPeriodRaw().prev)){
+    const conocidos=new Set(uniqueFiles(DRIVE_FILES).map(expOf));
+    for(const r of importado.rows)if(!conocidos.has(String(r.exp||"").trim()))rows.push({...r,k:"hoja-"+r.k,sec:"H",ok:true,eh:cenEH(r.ing,Td)});
+    const activos=cenSortRows(rows.filter(r=>r.sec==="H"));rows.splice(0,rows.length,...activos,...rows.filter(r=>r.sec!=="H"));
+  }
   const hoy=cenDot(Td), ayer=cenDot(prevDay);
   /* v3.70 · INGRESO/REINGRESO es evidencia positiva, no una exclusión.
      Si aún no se leyó el censo previo, la fecha del periodo permite marcarlo provisionalmente.
@@ -13842,34 +13849,44 @@ async function cenStatBackfill(onTick,have){
    - si el paciente no se ha editado después del corte de ese censo, el censo manda (es más reciente);
    - si se editó después del corte, lo de la app se respeta (solo se llenan los vacíos).
    Diagnóstico y fecha de ingreso solo se llenan si están vacíos. No crea pacientes ni cambia camas. Repetirlo no duplica nada. */
-const cenEsImportado=o=>!!(o&&Array.isArray(o.pac)&&o.pac.some(r=>/^x\d{6}-\d+$/.test(String((r&&r.k)||""))));
+const cenEsImportado=o=>!!(o&&Array.isArray(o.pac)&&o.pac.length&&o.pac.every(r=>/^x\d{6}-\d+$/i.test(String(r?.k||""))));
+function cenFuenteCorte(list,now=Date.now()){
+  const name=cenFile(cenPeriodRaw(now).prev), files=list.filter(e=>cenFromName(e.name));
+  const matches=files.filter(e=>e.name===name);
+  return matches.length===1&&!files.some(e=>cenCut(cenFromName(e.name))>cenCut(cenFromName(name)))?matches[0]:null;
+}
 async function cenIntegrarActual(opt){
   opt=opt||{}; const say=typeof opt.say==="function"?opt.say:()=>{};
-  const per=cenPeriod(), name=cenFile(per.prev);
-  const list=await cenList(true), e=list.find(x=>x.name===name);
-  if(!e) return {estado:"sin",name};
+  const list=await cenList(true), e=cenFuenteCorte(list), name=e?.name||"";
+  if(!e){CEN.hojaSinArchivo=null;return {estado:"sin",name};}
   const r=await cenReadEntry(e), o=r&&r.obj;
   if(!o||!Array.isArray(o.pac)) return {estado:"sin",name};
-  if(!opt.forzar&&!cenEsImportado(o)) return {estado:"propio",name,fecha:o.fecha};
-  const marca=name+"|"+(e.modified||"");
-  if(!opt.forzar){ try{ if(localStorage.getItem("cenIntegrado")===marca) return {estado:"hecho",name,fecha:o.fecha}; }catch(_){} }
+  if(!cenEsImportado(o)||cenDot(cenFromName(name))!==o.fecha){CEN.hojaSinArchivo=null;return {estado:"propio",name,fecha:o.fecha};}
+  const marca="v993|"+name+"|"+(e.modified||"");
+
   if(!(typeof canPerm!=="function"||canPerm("editar_pacientes"))) return {estado:"permiso",name,fecha:o.fecha};
-  const T=Date.parse(o.corte||"")||Date.parse(e.modified||"")||0;
+  const T=cenCut(cenFromName(name));
   const byExp=new Map(); uniqueFiles(DRIVE_FILES).forEach(f=>{ const x=expOf(f); if(x&&!byExp.has(x)) byExp.set(x,f); });
-  const rows=o.pac.filter(p=>p&&p.sec==="H"), match=[], fuera=[];
-  rows.forEach(p=>{ const f=byExp.get(String(p.exp||"").trim()); if(f&&metaHosp(f.meta||{})) match.push([p,f]); else fuera.push(p); });
+  const rows=o.pac.filter(p=>p&&(p.sec==="H"||p.sec==="P")), match=[], fuera=[];
+  rows.forEach(p=>{ const f=byExp.get(String(p.exp||"").trim()); if(f) match.push([p,f]); else fuera.push(p); });
+  CEN.hojaSinArchivo={name,rows:fuera};
+  const firma=marca+"|"+match.map(x=>x[1].id).sort().join(",");
+  if(!opt.forzar&&localStorage.getItem("cenIntegrado")===firma)return {estado:"hecho",name,fecha:o.fecha};
   say("Integrando el censo "+o.fecha+" al Censo actual: leyendo "+match.length+" expediente(s)…");
-  await cenLoadDatos(match.map(x=>x[1]));
-  const F={cir:"censoCirugias",qt:"censoQT",mt:"censoMT",labs:"censoLabs",pend:"censoPendientes",est:"censoEstatus"}, VAC={dx:"diagnostico",ing:"fIngreso"};
+  if(await cenLoadDatos(match.map(x=>x[1])))throw new Error("Faltan expedientes por leer para integrar el censo.");
+  const F={cir:"censoCirugias",qt:"censoQT",mt:"censoMT",labs:"censoLabs",pend:"censoPendientes",est:"censoEstatus"}, VAC={dx:"diagnostico",ing:"fIngreso",adsRaw:"medico",clin:"clinica",fnac:"fnac"};
   let pacs=0, campos=0, n=0;
   for(const [p,f] of match){
-    n++; const d=cenDat(f), mod=Date.parse((f.meta&&f.meta.modEn)||"")||fileTime(f)||0, viejo=!mod||mod<=T, ch={};
-    Object.entries(F).forEach(([k,dk])=>{ const v=String(p[k]||"").trim(), cur=String(d[dk]||"").trim(); if(!v||v===cur) return; if(!cur||viejo) ch[dk]=v; });
-    Object.entries(VAC).forEach(([k,dk])=>{ const v=String(p[k]||"").trim(), cur=String(d[dk]||"").trim(); if(v&&!cur) ch[dk]=v; });
+    n++; const d=cenDat(f), mod=Date.parse(f.meta?.modEn||d.modEn||"")||fileTime(f)||0, viejo=!mod||mod<=T, ch={};
+    Object.entries(F).forEach(([k,dk])=>{ const v=String(p[k]||"").trim(), cur=String(d[dk]||"").trim(); if(p[k]==null||v===cur)return; if(!cur||viejo)ch[dk]=v; });
+    Object.entries(VAC).forEach(([k,dk])=>{ const v=String(p[k]||(k==="adsRaw"?p.ads:"")||"").trim(),cur=String(d[dk]||"").trim(); if(v&&v!==cur&&(!cur||viejo))ch[dk]=v; });
+    if(viejo&&!(Date.parse(f.meta?.egr||"")>T||Date.parse(f.meta?.def||"")>T)&&p.cama&&String(d.cama||"").trim()!==String(p.cama).trim()){
+      ch.cama=String(p.cama).trim(); if(!camaValida(ch.cama))ch.hospOnco="1";
+    }
     if(Object.keys(ch).length){ pacs++; campos+=Object.keys(ch).length; say("Integrando el censo "+o.fecha+" al Censo actual: paciente "+n+" de "+match.length+"…");
-      await Promise.race([new Promise(res=>ppApply(f,ch,{quiet:true,auto:true,done:()=>res()})),cenWait(45000)]); }
+      await new Promise((resolve,reject)=>ppApply(f,ch,{quiet:true,auto:true,save:true,done:err=>err?reject(err):resolve()})); }
   }
-  try{ localStorage.setItem("cenIntegrado",marca); }catch(_){}
+  try{ localStorage.setItem("cenIntegrado",firma); }catch(_){}
   try{ cenRender(); }catch(_){}
   return {estado:"ok",name,fecha:o.fecha,total:rows.length,encontrados:match.length,pacs,campos,fuera:fuera.map(p=>((p.cama?p.cama+" · ":"")+(p.nombre||p.exp||"")).trim())};
 }
@@ -16518,7 +16535,7 @@ function getEntry(f){ if(fresh(f)) return Promise.resolve(PCACHE[f.id]); if(INFL
     const d=(o&&o.datos)||{}, h=(o&&o.historial)||{};
     let bad=""; if(!o) bad="JSON ilegible o incompleto"; else if(o.app!=="solicitudes-hjm") bad="no es un expediente de la app"; else { const ex=String(d.expediente||"").trim(); const me=f.meta&&f.meta.exp&&String(f.meta.exp).trim(); if(!ex) bad="sin número de expediente"; else if(me&&expKey(me)!==expKey(ex)) bad=`expediente del archivo (${ex}) distinto al de la lista (${me})`; }
     if(!bad&&c.length>1500000) bad=`archivo muy grande (${kb(c.length)}, límite ≈1.9 MB)`;
-    const e={m:String(f.modified||""),sz:new Blob([c]).size,bad,ed:(o&&o.ultimoEditor&&o.ultimoEditor.u)||(f.meta&&f.meta.ed)||"",med:String(d.medico||""),patientName:d.nombreCompleto||[d.apPaterno,d.apMaterno,d.nombres].filter(Boolean).join(" "),patientExp:String(d.expediente||""),patientDx:String(d.diagnostico||""),fullIdentity:true,fn:String(d.fnac||"").trim(),gen:String(d.genero||"").trim(),ing:String(d.fIngreso||"").trim(),res:String(d.residente||"").trim(),nn:Array.isArray(h.notas)?h.notas.length:0,ni:Array.isArray(h.indicaciones)?h.indicaciones.length:0,ok:!!o};
+    const e={m:String(f.modified||""),sz:new Blob([c]).size,bad,ed:(o&&o.ultimoEditor&&o.ultimoEditor.u)||(f.meta&&f.meta.ed)||"",clinica:d.clinica||"",med:String(d.medico||""),patientName:d.nombreCompleto||[d.apPaterno,d.apMaterno,d.nombres].filter(Boolean).join(" "),patientExp:String(d.expediente||""),patientDx:String(d.diagnostico||""),fullIdentity:true,fn:String(d.fnac||"").trim(),gen:String(d.genero||"").trim(),ing:String(d.fIngreso||"").trim(),res:String(d.residente||"").trim(),nn:Array.isArray(h.notas)?h.notas.length:0,ni:Array.isArray(h.indicaciones)?h.indicaciones.length:0,ok:!!o};
     if(!bad&&pendingTechnicalSession()){try{admissionIndex(sessionUserName()).set(JSON.stringify([f.id,f.modified||""]),admissionStatus(o));}catch(_){}}
     PCACHE[f.id]=e; DET[f.id]={size:e.sz,ed:e.ed,edTs:0}; delete READFAIL[f.id]; return e;
   }catch(err){ READFAIL[f.id]="no se pudo leer: "+friendly(err); throw err; } finally{ delete INFL[f.id]; } })(); }
@@ -16552,18 +16569,28 @@ function drawPacStats(){
     if(elapsed<=864e5)add("day",f);
     if(elapsed<=7*864e5)add("week",f);
     if(elapsed<=30*864e5)add("month",f); else add("old",f);
-    const c=fresh(f)&&PCACHE[f.id]; if(!c?.ok)continue;
+    const c=fresh(f)&&PCACHE[f.id];
+    const meta=f.meta||{};
+    const clinics=ppFileClins({meta:{clinica:c?.clinica||meta.clinica,adscrito:c?.med||meta.adscrito}});
+    const clinicLabel=clinics.sort(ppClinCmp).map(k=>clinMatch(k)||k).join(" / ");
+    category("clinic",clinicLabel||(c?.ok?"Sin clínica registrada":"Clínica por verificar"),f);
+    const rawStaff=String(c?.med||meta.adscrito||"").trim();
+    const names=rawStaff.split("/").map(x=>x.trim()).filter(Boolean).map(x=>(adsOf(x)[0]?.n||x).toLocaleUpperCase("es-MX").replace(/^DRA?\.\s*/,"").replace(/\s+/g," ").trim());
+    const staffLabel=[...new Set(names)].sort((a,b)=>a.localeCompare(b,"es")).join(" / ");
+    category("staff",staffLabel||(c?.ok?"Sin adscrito registrado":"Adscrito por verificar"),f);
+    if(!staffLabel&&c?.ok)add("noStaff",f);
+    if(!c?.ok){
+      category("age","Edad por verificar",f);
+      category("gender","Género por verificar",f);
+      continue;
+    }
     add("size",f); totalBytes+=c.sz;
     if(c.nn){add("notes",f);totalNotes+=c.nn;}
     if(c.ni){add("orders",f);totalOrders+=c.ni;}
-    const staff=adsOf(c.med);
-    if(!staff.length)add("noStaff",f);
-    for(const name of new Set(staff.map(x=>x.n.replace(/^DRA?\.\s*/,""))))category("staff",name,f);
-    for(const clinic of new Set(staff.map(x=>x.c||"Sin clínica registrada")))category("clinic",clinic,f);
     const age=parseInt(edad(c.fn,todayStr()),10);
-    if(age>=0&&age<125){const start=Math.floor(age/10)*10;category("age",start+"–"+(start+9)+" años",f);}
+    if(age>=0&&age<125){const start=Math.floor(age/10)*10;category("age",start+"–"+(start+9)+" años",f);}else category("age","Sin edad registrada",f);
     category("resident",String(c.res||"").toLocaleUpperCase("es-MX").replace(/\s+/g," ").trim(),f);
-    category("gender",c.gen,f);
+    category("gender",c.gen||"Sin género registrado",f);
     const date=/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2,4})$/.exec(c.ing);
     if(date)category("admission",(date[3].length===2?"20":"")+date[3]+"-"+pad(+date[2]),f);
   }
@@ -16583,7 +16610,7 @@ function drawPacStats(){
   host.innerHTML='<h3>Pacientes en Drive</h3><div class="st-kpis">'+
     tile("all","Pacientes (archivos)")+tile("bed","Con cama asignada")+tile("day","Editados en 24 h")+tile("week","Editados en 7 días")+tile("old","Sin editar +30 días")+
     tile("size","Tamaño promedio por archivo · total "+kb(totalBytes),count("size")?kb(totalBytes/count("size")):"—")+'</div><div class="st-grid2">'+
-    chart("staff","Adscritos con más pacientes (top 6)",6)+chart("clinic","Pacientes por clínica")+chart("age","Por grupo etario")+chart("resident","Residentes con más pacientes (top 6)",6)+chart("gender","Por género")+chart("admission","Ingresos por mes (últimos 6)")+'</div><div class="st-kpis">'+
+    chart("staff","Pacientes por adscrito")+chart("clinic","Pacientes por clínica")+chart("age","Por grupo etario")+chart("resident","Residentes con más pacientes (top 6)",6)+chart("gender","Por género")+chart("admission","Ingresos por mes (últimos 6)")+'</div><div class="st-kpis">'+
     tile("noStaff","Sin médico asignado")+tile("notes","Notas guardadas",totalNotes)+tile("orders","Indicaciones guardadas",totalOrders)+tile("month","Editados en 30 días")+'</div>'+
     (count("size")<files.length?`<p class="st-msg">Datos de contenido disponibles para ${count("size")} de ${files.length} expedientes.</p>`:"");
   function show(key){
@@ -19070,11 +19097,11 @@ try{(function(){
     busy=true; lastT=Date.now();
     try{
       const list=await cenList(); const fin=(list||[]).filter(x=>/^JCF\d{6}\.json$/i.test(x.name)).map(x=>({x,t:cenFromName(x.name)})).filter(z=>z.t).sort((a,b)=>cenCut(b.t)-cenCut(a.t));
-      if(!fin.length) return; const last=fin[0], key=last.x.name+"|"+(last.x.modified||"");
+      if(!fin.length) return; const last=fin[0]; if(!cenFuenteCorte(list))return; const key="993|"+last.x.name+"|"+(last.x.modified||"");
       let done={}; try{ done=JSON.parse(localStorage.getItem(LS)||"{}"); }catch(_){}
       if(!force&&done.key===key) return;
       const r=await cenReadEntry(last.x), o=r&&r.obj;
-      if(!isImported(o)){ CEN._hoja={modo:"app",censo:last.x.name}; done={key}; localStorage.setItem(LS,JSON.stringify(done)); return; }
+      if(!isImported(o)||o.fecha!==cenDot(last.t)){ CEN._hoja={modo:"app",censo:last.x.name}; done={key}; localStorage.setItem(LS,JSON.stringify(done)); return; }
       const cut=cenCut(last.t), cday=cenIngDay(cenDot(last.t)), byExp=new Map();
       (o.pac||[]).forEach(p=>{ const e=String(p.exp||"").trim(); if(e) byExp.set(e,p); });
       const files=uniqueFiles(DRIVE_FILES), cambios=[], respeta=[];
@@ -19098,7 +19125,7 @@ try{(function(){
           cambios.push({f,ch:{cama:"CE",camaPrevia:norm(m.cama),camaLiberada:new Date().toISOString(),hospOnco:""},t:"lib",txt:(m.nombre||exp)+": cama "+norm(m.cama)+" liberada ("+(p?"alta en el censo "+o.fecha:"no está en el censo "+o.fecha)+")"});
         }
       }
-      for(const c of cambios){ try{ ppApply(c.f,c.ch,{quiet:true}); }catch(_){} }
+      for(const c of cambios){ await new Promise((resolve,reject)=>ppApply(c.f,c.ch,{quiet:true,auto:true,save:true,done:err=>err?reject(err):resolve()})); }
       CEN._hoja={modo:"hoja",censo:last.x.name,fecha:o.fecha,cambios:cambios.map(c=>c.txt).concat(respeta),at:Date.now()};
       done={key,n:cambios.length,at:Date.now()}; localStorage.setItem(LS,JSON.stringify(done));
       if(cambios.length){ try{ notify("Censo de la hoja ("+o.fecha+") integrado: "+cambios.length+" paciente(s) puestos al día en la app (camas liberadas o actualizadas, sin dar altas a mano).","info",{ms:7000}); }catch(_){} setTimeout(()=>{ try{ renderPP(); cenRender(); }catch(_){} },400); }
@@ -20005,6 +20032,7 @@ const TQ={'1':'Primer turno','2':'Segundo turno','3':'Tercer turno'};
 const salaTxt=e=>e.sala?'Sala '+e.sala:'';
 const qxOrd=(a,b)=>String(a.turno||'Z').localeCompare(String(b.turno||'Z'))||(+(a.sala||99))-(+(b.sala||99))||(+(a.tq||9))-(+(b.tq||9))||String(a.nombre).localeCompare(String(b.nombre),'es');
 function phoneDetails(e){return `<div><small>Teléfono 1</small>${H(e.telUno||'—')}</div><div><small>Teléfono 2</small>${H(e.telDos||'—')}</div>`;}
+function editDataIcon(e,key){return `<button type="button" class="qx-btn ed qx-edit-data" data-${key}="edit" data-id="${H(e.id)}" title="Editar datos" aria-label="Editar datos de ${H(e.nombre||'paciente')}">${IC.edit}</button>`;}
 function fileBtn(e,k){ const f=fileByExp(e.exp),quick=f&&ppFrequentAllowed()?`<span data-id="${H(f.id)}">${ppFrequentButton()}</span>`:'';return quick+ `<button type="button" class="qx-file" data-${k}="file" data-id="${H(e.id)}" title="Expediente clínico" aria-label="Expediente clínico de ${H(e.nombre||'paciente')}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/></svg></button>`; }
 function offCard(e,t){ const ci=clinOf(e.clin), age=ageOf(e.fnac,e.fecha), m=e.can||e.noaut||e.nses, lab=e.noaut&&!e.can?'No autorizada':e.can?(t==='quirofano'?'Cancelada':'Entrada cancelada'):'No sesionado', k=t==='quirofano'?'qe':'ce';
   const canR=t==='quirofano'?(isQxRole()||(e.can&&(isTec()||!!me()&&String(e.can.por||'').trim().toLowerCase()===me().trim().toLowerCase()))):can('editar_comite');
@@ -20026,8 +20054,8 @@ function qxCard(e){ if(offE(e)) return offCard(e,'quirofano'); const ci=clinOf(e
   else if(!e.aut){ act+=role?`<button type="button" class="qx-btn gold sm" data-qe="auth" data-id="${H(e.id)}">${IC.lock}Autorizar</button><button type="button" class="qx-btn sm bad" data-qe="noaut" data-id="${H(e.id)}">No autorizar</button>`:`<span class="qx-chip warn">Esperando autorización de Jefatura</span>`; }
   else act+=`<span class="qx-chip ok">${IC.check} Autorizado${e.turno?' · '+TURNO[e.turno]:''}</span>${e.aut.inc&&!e.comp?'<span class="qx-chip warn">Autorizado con expediente incompleto</span>':''}${role&&!e.res?`<button type="button" class="qx-btn sm ed" data-qe="auth" data-id="${H(e.id)}">${IC.edit}Cambiar sala o turno</button>`:''}`;
   if(e.aut?role:(isTec()||((role||canEd)&&!isMine(e)))) act+=`<button type="button" class="qx-btn sm bad" data-qe="cancel" data-id="${H(e.id)}">Cancelar programación</button>`;
-  const more=`<span class="sp"></span>${canEd&&(!e.aut||role)?`<button type="button" class="qx-btn ghost sm ed" data-qe="edit" data-id="${H(e.id)}">${IC.edit}Editar datos</button>`:''}${e.aut&&role&&!e.res?`<button type="button" class="qx-btn ghost sm qx-mini" data-qe="unaut" data-id="${H(e.id)}">Cancelar autorización</button>`:''}${canDelE(e,'quirofano')?`<button type="button" class="qx-btn ghost sm bad" data-qe="del" data-id="${H(e.id)}">${IC.trash}Borrar programación</button>`:''}`;
-  return `<article class="qx-card col${e.aut?' done':''}${V.open.has(e.id)?' open':''}" style="--c:${ci.c}"><div class="qx-c-top"><div class="qx-c-id"><b>${H(e.nombre||'Sin nombre')}</b><span>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''}${e.sol?' · Solicitud de cirugía':''}</span></div><div class="qx-chips"><span class="qx-chip clin" style="--bg:${ci.bg};--fg:${ci.fg}">${H(ci.n)}</span>${e.turno?`<span class="qx-chip">${TURNO[e.turno]}</span>`:''}${e.sala?`<span class="qx-chip">${H(salaTxt(e))}</span>`:''}${e.tq?`<span class="qx-chip">${TQ[e.tq]}</span>`:''}${e.np?'<span class="qx-chip np">No programada</span>':''}${fileBtn(e,'qe')}</div></div>
+  const more=`<span class="sp"></span>${e.aut&&role&&!e.res?`<button type="button" class="qx-btn ghost sm qx-mini" data-qe="unaut" data-id="${H(e.id)}">Cancelar autorización</button>`:''}${canDelE(e,'quirofano')?`<button type="button" class="qx-btn ghost sm bad" data-qe="del" data-id="${H(e.id)}">${IC.trash}Borrar programación</button>`:''}`;
+  return `<article class="qx-card col${e.aut?' done':''}${V.open.has(e.id)?' open':''}" style="--c:${ci.c}"><div class="qx-c-top"><div class="qx-c-id">${canEd&&(!e.aut||role)?editDataIcon(e,'qe'):''}<b>${H(e.nombre||'Sin nombre')}</b><span>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''}${e.sol?' · Solicitud de cirugía':''}</span></div><div class="qx-chips"><span class="qx-chip clin" style="--bg:${ci.bg};--fg:${ci.fg}">${H(ci.n)}</span>${e.turno?`<span class="qx-chip">${TURNO[e.turno]}</span>`:''}${e.sala?`<span class="qx-chip">${H(salaTxt(e))}</span>`:''}${e.tq?`<span class="qx-chip">${TQ[e.tq]}</span>`:''}${e.np?'<span class="qx-chip np">No programada</span>':''}${fileBtn(e,'qe')}</div></div>
     ${miniHTML(e,'quirofano')}<div class="qx-c-body">${phoneDetails(e)}<div><small>Cirugía planeada</small>${H(e.cx||'—')}</div><div><small>Diagnóstico</small>${H(e.dx||'—')}</div><div><small>Adscrito</small>${H(e.ads||'—')}</div></div>
     ${e.np?'':stepsQx(e)}<div class="qx-who">${whoLine(e,[['creado','Programado por'],['comp','Expediente completado por']])}</div>${e.aut&&e.aut.por?`<div class="qx-autby">${IC.lock}<span>Autorizó: <b>${H(whoName(e.aut.por))}</b> · ${H(tsTxt(e.aut.ts))}</span></div>`:''}<div class="qx-c-act">${act}${more}</div></article>`; }
 function daySummary(es,t){ es=es.filter(e=>!offE(e)); if(t==='quirofano'){ const a=es.filter(e=>e.aut).length, c=es.filter(e=>e.comp&&!e.aut).length; return `<div class="qx-sum"><div><b>${es.length}</b><small>Tentativos</small></div><div><b>${c}</b><small>Completos</small></div><div><b>${a}</b><small>Autorizados</small></div></div>`; } const s=es.filter(e=>e.nota).length; return `<div class="qx-sum"><div><b>${es.length}</b><small>Agendados</small></div><div><b>${s}</b><small>Sesionados</small></div><div><b>${es.length-s}</b><small>Pendientes</small></div></div>`; }
@@ -20062,10 +20090,10 @@ function qxAgendaHTML(){ const st=V.qx, all=agF(st,byDay('quirofano',st.sel)), o
   return shell('qx','quirofano',es,off,all,body)+pendingSurgeryTable(st,pendingSurgeryRows(st)); }
 function cmCard(e){ if(offE(e)) return offCard(e,'comite'); const ci=clinOf(e.clin), age=ageOf(e.fnac,e.fecha), canEd=can('editar_comite');
   let act=''; if(e.nota){ act=`<span class="qx-chip ok">${IC.check} Paciente sesionado</span>${can('editar_quirofano')?`<button type="button" class="qx-btn sm ed" style="grid-column:1/-1" data-ce="program" data-id="${H(e.id)}">${IC.cal}Agregar en Programación</button>`:''}<button type="button" class="qx-btn sm" data-ce="view" data-id="${H(e.id)}">Ver nota</button>${can('imprimir_documentos')?`<button type="button" class="qx-btn sm" data-ce="print" data-id="${H(e.id)}">${IC.print}Imprimir nota</button>`:''}`; }
-  else act=canEd?`<button type="button" class="qx-btn pri sm" data-ce="note" data-id="${H(e.id)}">${IC.note}Crear Nota</button><button type="button" class="qx-btn ghost sm ed" data-ce="edit" data-id="${H(e.id)}">${IC.edit}Editar datos</button><button type="button" class="qx-btn sm" data-ce="link" data-id="${H(e.id)}">${IC.link}Seleccionar nota existente</button><button type="button" class="qx-btn ghost sm" data-ce="resched" data-id="${H(e.id)}">${IC.cal}Reprogramar</button>`:'<span class="qx-chip warn">Pendiente de sesionar</span>';
-  const more=`<span class="sp"></span>${canEd&&can('editar_documentos')&&e.nota?`<button type="button" class="qx-btn ghost sm ed" data-ce="editnote" data-id="${H(e.id)}">${IC.edit}Editar nota</button>`:''}${canEd&&e.nota?`<button type="button" class="qx-btn ghost sm ed" data-ce="edit" data-id="${H(e.id)}">${IC.edit}Editar datos</button>`:''}${canEd&&!e.nota?`<button type="button" class="qx-btn ghost sm bad" data-ce="nses" data-id="${H(e.id)}">${IC.no}No sesionado</button>`:''}${canDelE(e,'comite')?`<button type="button" class="qx-btn ghost sm bad" data-ce="del" data-id="${H(e.id)}">${IC.trash}Borrar paciente</button>`:''}`;
+  else act=canEd?`<button type="button" class="qx-btn pri sm" data-ce="note" data-id="${H(e.id)}">${IC.note}Crear Nota</button><button type="button" class="qx-btn sm" data-ce="link" data-id="${H(e.id)}">${IC.link}Seleccionar nota existente</button><button type="button" class="qx-btn ghost sm" data-ce="resched" data-id="${H(e.id)}">${IC.cal}Reprogramar</button>`:'<span class="qx-chip warn">Pendiente de sesionar</span>';
+  const more=`<span class="sp"></span>${canEd&&can('editar_documentos')&&e.nota?`<button type="button" class="qx-btn ghost sm ed" data-ce="editnote" data-id="${H(e.id)}">${IC.edit}Editar nota</button>`:''}${canEd&&!e.nota?`<button type="button" class="qx-btn ghost sm bad" data-ce="nses" data-id="${H(e.id)}">${IC.no}No sesionado</button>`:''}${canDelE(e,'comite')?`<button type="button" class="qx-btn ghost sm bad" data-ce="del" data-id="${H(e.id)}">${IC.trash}Borrar paciente</button>`:''}`;
   const rp=(e.h||[]).filter(x=>/^Reprogramad/.test(x.a)).length;
-  return `<article class="qx-card col${e.nota?' done':''}${V.open.has(e.id)?' open':''}" style="--c:${ci.c}"><div class="qx-c-top"><div class="qx-c-id"><b>${H(e.nombre||'Sin nombre')}</b><span>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''}</span></div><div class="qx-chips"><span class="qx-chip clin" style="--bg:${ci.bg};--fg:${ci.fg}">${H(ci.n)}</span>${rp?`<span class="qx-chip warn">Reprogramado ${rp}×</span>`:''}${fileBtn(e,'ce')}</div></div>
+  return `<article class="qx-card col${e.nota?' done':''}${V.open.has(e.id)?' open':''}" style="--c:${ci.c}"><div class="qx-c-top"><div class="qx-c-id">${canEd?editDataIcon(e,'ce'):''}<b>${H(e.nombre||'Sin nombre')}</b><span>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''}</span></div><div class="qx-chips"><span class="qx-chip clin" style="--bg:${ci.bg};--fg:${ci.fg}">${H(ci.n)}</span>${rp?`<span class="qx-chip warn">Reprogramado ${rp}×</span>`:''}${fileBtn(e,'ce')}</div></div>
    ${miniHTML(e,'comite')}<div class="qx-c-body">${phoneDetails(e)}<div><small>Diagnóstico</small>${H(e.dx||'—')}</div><div><small>Adscrito</small>${H(e.ads||'—')}</div><div><small>Dictamen</small>${H(e.nota?.dic||'—')}${e.nota?`<br><button class="qx-btn sm" type="button" data-ce="dictamen" data-id="${H(e.id)}" aria-expanded="false">Ver más</button><p hidden data-full-dictamen></p>`:''}</div></div>
    <div class="qx-who">${whoLine(e,[['creado','Programado por']])}${e.nota?`<br>Nota de sesión realizada por: <b data-note-author="${H(e.nota.id)}" data-exp="${H(e.exp)}">Consultando…</b>` : ''}</div><div class="qx-c-act">${act}${more}</div></article>`; }
 function cmAgendaHTML(){ const st=V.cm, all=agF(st,byDay('comite',st.sel)), off=all.filter(offE), es=fcF(st,all.filter(e=>!offE(e))); curFix(st,es.concat(off)); const by=new Map(); es.forEach(e=>{ const k=clinOf(e.clin).k; (by.get(k)||by.set(k,[]).get(k)).push(e); });
