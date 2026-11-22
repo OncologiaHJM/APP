@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="10.09">
+<meta name="application-version" content="10.10">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2758,7 +2758,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 10.09 · Fecha de publicación: 21.11.26</div>
+  <div class="app-footer-version">Versión 10.10 · Fecha de publicación: 21.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -7315,6 +7315,11 @@ html body #qxView .qx-filt.on{grid-template-columns:minmax(0,2fr) repeat(2,minma
   #qxView [data-ag-search],#qxView .qx-fclr{grid-column:1/-1}
   #qxView .agenda-modes{justify-content:center}
 }
+.qx-row-state{display:grid;justify-items:end;gap:5px;margin-inline-start:auto;min-width:0}
+.qx-dots{display:flex;gap:4px}
+.qx-dots>span{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#fff;border:1px solid #a4b1bf;color:#485566;font:700 11px/1 system-ui}
+.qx-dots>span.done{background:#087945;color:white;border-color:#087945}
+@media(max-width:1100px){#qxView .qx-row-state{grid-column:2;justify-items:start;margin:0}#qxView .qx-row-state em{grid-column:1}}
 .qx-two>.qx-agenda-column{display:grid;align-self:start;align-content:start;grid-template-columns:minmax(0,1fr);min-width:0}
 .qx-agenda-column>[data-surgery-pending]{width:100%;min-width:0;box-sizing:border-box;margin:12px 0 0}
 .qx-agenda-column>[data-surgery-pending]>summary{padding:10px 12px;cursor:pointer}
@@ -20190,7 +20195,8 @@ function renderView(){ const v=$i('qxView'); if(!v||!V.view) return; const k=V.v
     });
   }
 }
-function stepsQx(e){ const S=[['nota','Nota de comité'],['rev','Expediente revisado'],['comp','Completo'],['aut','Autorizado']]; return `<ol class="qx-steps">${S.map(([k,l],i)=>`<li class="${e[k]?(k==='aut'?'gold':'ok'):''}"><i>${e[k]?'':i+1}</i>${l}</li>`).join('')}</ol>`; }
+const QX_STAGES=[['nota','Nota de comité'],['rev','Expediente revisado'],['comp','Completo'],['aut','Autorizado']];
+function stepsQx(e){ const S=QX_STAGES; return `<ol class="qx-steps">${S.map(([k,l],i)=>`<li class="${e[k]?(k==='aut'?'gold':'ok'):''}"><i>${e[k]?'':i+1}</i>${l}</li>`).join('')}</ol>`; }
 function authorRow(label,name,stamp,attrs=''){
   return `<div class="qx-author-row" ${attrs}><span class="qx-author-label">${H(label)}</span><b class="qx-author-name">${H(name||'Autor no disponible')}</b><span class="qx-author-date">${H(stamp||'')}</span></div>`;
 }
@@ -20242,7 +20248,7 @@ function weekHTML(k){ const st=V[k], t=T(k), d0=pDMY(st.sel)||new Date(), mon=ne
   for(let i=0;i<7;i++){ const d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i,12), x=dDMY(d), n=agF(st,byDay(t,x)).filter(e=>!offE(e)).length; ds+=`<button type="button" class="qw-d${x===st.sel?' on':''}${x===h?' today':''}" data-qday="${x}" aria-pressed="${x===st.sel}" aria-label="${H(largo(x))}${n?', '+n+' paciente'+(n>1?'s':''):''}"><small>${'LMMJVSD'[i]}</small><b>${d.getDate()}</b>${n?`<i>${n}</i>`:''}</button>`; }
   return `<div class="qw"><button type="button" data-qwk="-1" aria-label="Semana anterior">‹</button><div class="qw-days">${ds}</div><button type="button" data-qwk="1" aria-label="Semana siguiente">›</button></div>`; }
 function rowHTML(e,t){ const st=V[t==='quirofano'?'qx':'cm'], ci=clinOf(e.clin), age=ageOf(e.fnac,e.fecha), off=offE(e), s=t==='quirofano'?qxState(e):cmState(e), cls=off?'':t==='quirofano'?(e.res?(e.res.v==='operado'?'ok':'warn'):e.aut?'gold':e.comp?'warn':''):(e.nota?'ok':'');
-  return `<div class="qx-row${e.can?' qx-cancelled':''}${st.cur===e.id?' sel':''}${off?' off':''}"><button type="button" class="qx-rsel" data-qsel="${H(e.id)}" aria-pressed="${st.cur===e.id}"><i style="--c:${off?'#B5BCC4':ci.c}"></i><span class="nm"><b>${H(e.nombre||'Sin nombre')}</b><small>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''}</small></span><span class="cx">${t==='quirofano'?`<b>${H(e.cx||'—')}</b><small>${H(e.dx||'')}</small>`:H(e.dx||'')}</span><span class="ad">${H(e.ads||'')}${t==='quirofano'&&(e.sala||e.tq||e.turno)?`<small>${H([salaTxt(e),TQ[e.tq]||'',TURNO[e.turno]||''].filter(Boolean).join(' · '))}</small>`:''}</span><em class="${cls}">${H(s)}</em></button></div>`; }
+  return `<div class="qx-row${e.can?' qx-cancelled':''}${st.cur===e.id?' sel':''}${off?' off':''}"><button type="button" class="qx-rsel" data-qsel="${H(e.id)}" aria-pressed="${st.cur===e.id}"><i style="--c:${off?'#B5BCC4':ci.c}"></i><span class="nm"><b>${H(e.nombre||'Sin nombre')}</b><small>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''}</small></span><span class="cx">${t==='quirofano'?`<b>${H(e.cx||'—')}</b><small>${H(e.dx||'')}</small>`:H(e.dx||'')}</span><span class="ad">${H(e.ads||'')}${t==='quirofano'&&(e.sala||e.tq||e.turno)?`<small>${H([salaTxt(e),TQ[e.tq]||'',TURNO[e.turno]||''].filter(Boolean).join(' · '))}</small>`:''}</span> ${t==='quirofano'?`<span class="qx-row-state"><span class="qx-dots">${QX_STAGES.map(([key,label],i)=>`<span class="${e[key]?'done':''}" title="${label} · ${e[key]?'completado':'pendiente'}" aria-label="${label} · ${e[key]?'completado':'pendiente'}">${i+1}</span>`).join('')}</span><em class="${cls}">${H(s)}</em></span>`:`<em class="${cls}">${H(s)}</em>`}</button></div>`; }
 function item(e,t){ return isWide()?rowHTML(e,t):(t==='quirofano'?qxCard(e):cmCard(e)); }
 function curFix(st,pool){ if(!pool.some(e=>e.id===st.cur)) st.cur=pool.length?pool[0].id:null; }
 function shell(k,t,es,off,all,body,below="",pending=[]){ const st=V[k], wide=isWide(), cur=wide?es.concat(off,pending).find(e=>e.id===st.cur):null;
@@ -20470,9 +20476,9 @@ function openSteps(id){ const d=dlg('dlgQxSteps','wide'); const token=Symbol();d
     const s1=`<div class="qd-step ${e.nota?'ok':''}"><span class="ic">${IC.note}</span><h4>1 · Nota de Comité Multidisciplinario</h4>${e.nota?`<p>Nota seleccionada del <b>${H(e.nota.fecha||'')}</b>${e.nota.por?' · por '+H(whoName(e.nota.por)):''}</p><div class="row"><button type="button" class="qx-btn sm" data-s="view">Ver nota</button>${canEd?'<button type="button" class="qx-btn ghost sm bad" data-s="unlink">Quitar</button>':''}</div>`:`<p>El paciente necesita nota de comité para completar su expediente.</p>${canEd?`<div class="row"><button type="button" class="qx-btn pri sm" data-s="create">${IC.note}Crear nota</button><button type="button" class="qx-btn sm" data-s="pick">Seleccionar nota existente</button></div><div class="qd-nl" id="qsNotes"></div>`:''}`}</div>`;
     const s2=`<div class="qd-step ${e.rev?'ok':''}"><span class="ic">${IC.folder}</span><h4>2 · Expediente revisado por Quirófano</h4><p>Se marca cuando el expediente físico ya tiene el sello de revisión de Quirófano.</p>${canEd?`<label class="qd-chk${e.rev?' on':''}"><input type="checkbox" data-s="rev"${e.rev?' checked':''}><span>Expediente físico revisado y sellado</span></label>`:''}${e.rev?`<p>Marcó: <b>${H(whoName(e.rev.por))}</b> · ${H(tsTxt(e.rev.ts))}</p>`:''}</div>`;
     const ready=!!(e.nota&&e.rev);
-    const s3=`<div class="qd-step ${e.comp?'ok':ready?'':'off'}"><span class="ic">${IC.check}</span><h4>3 · Expediente completo</h4>${e.comp?`<p>Completó: <b>${H(whoName(e.comp.por))}</b> · ${H(tsTxt(e.comp.ts))}</p>${canEd&&!e.aut?'<div class="row"><button type="button" class="qx-btn ghost sm bad" data-s="uncomp">Desmarcar</button></div>':''}`:`<p>${ready?'Ya tiene nota de comité y expediente revisado.':'Primero completa los pasos 1 y 2.'}</p>${canEd?`<div class="row"><button type="button" class="qx-btn ok" data-s="comp"${ready?'':' disabled'}>${IC.check}Marcar expediente completo</button></div>`:''}`}</div>`;
+    const s3=`<div class="qd-step ${e.comp?'ok':ready?'':'off'}"><span class="ic">${IC.check}</span><h4>3 · Expediente completo</h4>${e.comp?`${!e.aut&&!e.noaut?'<p>Expediente completo en espera de autorización para programación.</p>':''}<p>Completó: <b>${H(whoName(e.comp.por))}</b> · ${H(tsTxt(e.comp.ts))}</p>${canEd&&!e.aut?'<div class="row"><button type="button" class="qx-btn ghost sm bad" data-s="uncomp">Desmarcar</button></div>':''}`:`<p>${ready?'Nota de comité y revisión física registradas. Confirma el expediente con el botón inferior.':[!e.nota?'Falta la nota de comité.':'',!e.rev?'Falta la revisión y el sello del expediente físico.':''].filter(Boolean).join(' ')}</p>`}</div>`;
     const s4=`<div class="qd-step ${e.aut?'ok':e.comp?'':'off'}"><span class="ic">${IC.lock}</span><h4>4 · Autorización para programación</h4>${e.aut?`<p>Autorizó: <b>${H(whoName(e.aut.por))}</b> · ${H(tsTxt(e.aut.ts))}${e.turno?' · Turno '+TURNO[e.turno]:''}</p>${role?'<div class="row"><button type="button" class="qx-btn ghost sm bad" data-s="unauth">Retirar autorización</button></div>':''}`:role?`<p>${e.comp?'Expediente completo: puedes autorizarlo.':'Se autoriza cuando el expediente esté completo.'}</p><div class="row"><button type="button" class="qx-btn gold" data-s="auth"${e.comp?'':' disabled'}>${IC.lock}Autorizar</button><button type="button" class="qx-btn bad" data-s="noaut"${e.comp?'':' disabled'}>No autorizar</button></div>`:`<p>${e.comp?'Esperando autorización del personal con rol Quirófano.':'Se autoriza cuando el expediente esté completo.'}</p>`}</div>`;
-    d.innerHTML=dlgShell(H(e.nombre||'Paciente'),`Exp. ${H(e.exp)}${age?' · '+age+' años':''} · ${H(e.cx||'')} · ${H(largo(e.fecha))}`,s1+s2+s3+s4+'<p class="qd-msg" id="qsMsg" role="alert"></p>',`<button type="button" class="qx-btn" data-s="file">${IC.folder}Archivo clínico</button><span class="sp"></span><button type="button" class="qx-btn pri" data-qd-x>Listo</button>`); show(d);
+    d.innerHTML=dlgShell(H(e.nombre||'Paciente'),`Exp. ${H(e.exp)}${age?' · '+age+' años':''} · ${H(e.cx||'')} · ${H(largo(e.fecha))}`,s1+s2+s3+s4+'<p class="qd-msg" id="qsMsg" role="alert"></p>',`<button type="button" class="qx-btn" data-s="file">${IC.folder}Archivo clínico</button><span class="sp"></span>${ready&&canEd&&!e.comp?`<button type="button" class="qx-btn ok" data-s="comp">${IC.check}Marcar expediente completo</button>`:'<button type="button" class="qx-btn pri" data-qd-x>Listo</button>'}`); show(d);
   };
   d.onclick=async ev=>{ const b=ev.target.closest('[data-s]'); if(!b||b.tagName==='INPUT') return; const e=AG.quirofano.items[id]; if(!e) return; const a=b.dataset.s, msg=d.querySelector('#qsMsg');
     if(a==='view'){ viewNote(e.exp,e.nota&&e.nota.id); return; }
