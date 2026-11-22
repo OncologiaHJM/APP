@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="10.07">
+<meta name="application-version" content="10.08">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2758,7 +2758,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 10.07 · Fecha de publicación: 21.11.26</div>
+  <div class="app-footer-version">Versión 10.08 · Fecha de publicación: 21.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -7304,6 +7304,11 @@ html body #dlgStats .st-kpis{grid-template-columns:repeat(4,minmax(0,1fr))!impor
   html:root body #dlgStats .st-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 
+html body #qxView .qx-filt{grid-template-columns:minmax(0,2fr) repeat(2,minmax(0,1fr)) auto}
+#qxView [data-ag-search]{min-width:0;width:100%;box-sizing:border-box;padding:10px;border:1px solid #c8d6e4;border-radius:10px;font:inherit}
+#qxView .agenda-modes{display:flex;gap:6px;justify-content:flex-end;align-items:center;grid-column:-2/-1}
+#qxView .agenda-modes [aria-pressed=true]{background:#143961;color:white}
+@media(max-width:700px){html body #qxView .qx-filt{grid-template-columns:1.2fr 1fr 1fr}#qxView .qx-filt .qx-fsel{min-width:0;flex-direction:column;align-items:stretch}#qxView .qx-fclr{grid-column:1/-1}#qxView .agenda-modes{justify-content:center}}
 .qx-two>.qx-agenda-column{display:grid;align-self:start;align-content:start;grid-template-columns:minmax(0,1fr);min-width:0}
 .qx-agenda-column>[data-surgery-pending]{width:100%;min-width:0;box-sizing:border-box;margin:12px 0 0}
 .qx-agenda-column>[data-surgery-pending]>summary{padding:10px 12px;cursor:pointer}
@@ -20130,11 +20135,11 @@ const T=k=>k==='qx'?'quirofano':'comite';
 function monthOf(st){ if(!st.m){ const d=pDMY(st.sel)||new Date(); st.m={y:d.getFullYear(),m:d.getMonth()}; } return st.m; }
 /* Filtros Adscrito y Clínica de Quirófano y Comité: aplican al día, a la semana y a la vista de mes */
 const adsK=e=>String(e&&e.ads||'').replace(/\s+/g,' ').trim().toUpperCase();
-function agF(st,es){ return es.filter(e=>(!st.fad||adsK(e)===st.fad)&&(!st.fcl||clinOf(e.clin).k===st.fcl)); }
+function agF(st,es){ const terms=nz(st.query||'').split(/\s+/).filter(Boolean); return es.filter(e=>terms.every(word=>nz([e.nombre,e.exp].join(' ')).includes(word))&&(!st.fad||adsK(e)===st.fad)&&(!st.fcl||clinOf(e.clin).k===st.fcl)); }
 function filtHTML(k){ const st=V[k], t=T(k), ads=[...new Set(list(t).map(adsK).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
   if(st.fad&&!ads.includes(st.fad)) ads.unshift(st.fad);
   const on=!!(st.fad||st.fcl);
-  return `<div class="qx-filt${on?' on':''}" role="group" aria-label="Filtros"><label class="qx-fsel"><span>Adscrito</span><select data-qfa><option value="">Todos</option>${ads.map(a=>`<option value="${H(a)}"${a===st.fad?' selected':''}>${H(a)}</option>`).join('')}</select></label><label class="qx-fsel"><span>Clínica</span><select data-qfcl><option value="">Todas</option>${CLIN.map(c=>`<option value="${H(c.k)}"${c.k===st.fcl?' selected':''}>${H(c.n)}</option>`).join('')}</select></label>${on?'<button type="button" class="qx-fclr" data-qfclr>Quitar filtros</button>':''}</div>`; }
+  return `<div class="qx-filt${on?' on':''}" role="group" aria-label="Filtros"><input type="text" data-ag-search aria-label="Buscar paciente o expediente" placeholder="Buscar paciente o expediente" value="${H(st.query||'')}"><label class="qx-fsel"><span>Adscrito</span><select data-qfa><option value="">Todos</option>${ads.map(a=>`<option value="${H(a)}"${a===st.fad?' selected':''}>${H(a)}</option>`).join('')}</select></label><label class="qx-fsel"><span>Clínica</span><select data-qfcl><option value="">Todas</option>${CLIN.map(c=>`<option value="${H(c.k)}"${c.k===st.fcl?' selected':''}>${H(c.n)}</option>`).join('')}</select></label>${on?'<button type="button" class="qx-fclr" data-qfclr>Quitar filtros</button>':''}</div>`; }
 function calHTML(k){ const st=V[k], t=T(k), M=monthOf(st), first=new Date(M.y,M.m,1,12), start=new Date(first); start.setDate(1-((first.getDay()+6)%7));
   const all=agF(st,list(t)).filter(e=>!offE(e)), by=new Map(); all.forEach(e=>{ if(!e.fecha) return; (by.get(e.fecha)||by.set(e.fecha,[]).get(e.fecha)).push(e); });
   let cells=''; for(let i=0;i<42;i++){ const d=new Date(start); d.setDate(start.getDate()+i); const s=dDMY(d), es=by.get(s)||[]; if(i>=35&&d.getMonth()!==M.m) break;
@@ -20152,7 +20157,11 @@ function renderView(){ const v=$i('qxView'); if(!v||!V.view) return; const k=V.v
     const canEd=can('editar_comite');
     html=`<div class="qx-head"><div class="qx-ttl"><div class="qx-seg" role="group" aria-label="Apartado"><button type="button" data-qtab="agenda" aria-pressed="${st.tab==='agenda'}">Agenda</button><button type="button" data-qtab="notas" aria-pressed="${st.tab==='notas'}">Notas</button><button type="button" data-qtab="stats" aria-pressed="${st.tab==='stats'}">Estadísticas</button></div>${pend?`<p>${pend}</p>`:''}</div><div class="qx-acts">${canEd?`<button type="button" class="qx-btn pri" data-qa="add">${IC.plus}Agregar paciente</button>`:''}${can('imprimir_comite')&&st.tab==='agenda'?`<button type="button" class="qx-btn" data-qa="print">${IC.print}Imprimir lista</button>`:''}</div></div>${err}`+(st.tab==='stats'?cmStatsHTML():st.tab==='notas'?cmNotesHTML():cmAgendaHTML());
   }
-  if(v._html!==html){ v.innerHTML=html; v._html=html; try{ window.scrollTo(0,sy); }catch(_){} }
+  if(v._html!==html){ const active=document.activeElement;
+    const caret=active?.matches('[data-ag-search]')?[active.selectionStart,active.selectionEnd]:null;
+    v.innerHTML=html; v._html=html;
+    const input=caret&&v.querySelector('[data-ag-search]');
+    if(input){input.focus({preventScroll:true});input.setSelectionRange(...caret);} try{ window.scrollTo(0,sy); }catch(_){} }
   for(const node of v.querySelectorAll('[data-note-author]')){
     const exp=node.dataset.exp, id=node.dataset.noteAuthor, file=fileByExp(exp);
     const key=JSON.stringify([me(),file?.id,file?.modified,exp,id]);
@@ -20225,13 +20234,27 @@ function daySummary(es,t){ es=es.filter(e=>!offE(e)); if(t==='quirofano'){ const
 const isWide=()=>{ try{ return matchMedia('(min-width:701px)').matches; }catch(_){ return true; } };
 function weekHTML(k){ const st=V[k], t=T(k), d0=pDMY(st.sel)||new Date(), mon=new Date(d0.getFullYear(),d0.getMonth(),d0.getDate()-((d0.getDay()+6)%7),12), h=hoy(); let ds='';
   for(let i=0;i<7;i++){ const d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i,12), x=dDMY(d), n=agF(st,byDay(t,x)).filter(e=>!offE(e)).length; ds+=`<button type="button" class="qw-d${x===st.sel?' on':''}${x===h?' today':''}" data-qday="${x}" aria-pressed="${x===st.sel}" aria-label="${H(largo(x))}${n?', '+n+' paciente'+(n>1?'s':''):''}"><small>${'LMMJVSD'[i]}</small><b>${d.getDate()}</b>${n?`<i>${n}</i>`:''}</button>`; }
-  return `<div class="qw"><button type="button" data-qwk="-1" aria-label="Semana anterior">‹</button><div class="qw-days">${ds}</div><button type="button" data-qwk="1" aria-label="Semana siguiente">›</button><button type="button" class="qw-t" data-qcal="0">Hoy</button><button type="button" class="qw-t" data-qmes aria-pressed="${!!st.cal}">${IC.cal}Mes</button></div>`; }
+  return `<div class="qw"><button type="button" data-qwk="-1" aria-label="Semana anterior">‹</button><div class="qw-days">${ds}</div><button type="button" data-qwk="1" aria-label="Semana siguiente">›</button></div>`; }
 function rowHTML(e,t){ const st=V[t==='quirofano'?'qx':'cm'], ci=clinOf(e.clin), age=ageOf(e.fnac,e.fecha), off=offE(e), s=t==='quirofano'?qxState(e):cmState(e), cls=off?'':t==='quirofano'?(e.res?(e.res.v==='operado'?'ok':'warn'):e.aut?'gold':e.comp?'warn':''):(e.nota?'ok':'');
   return `<div class="qx-row${e.can?' qx-cancelled':''}${st.cur===e.id?' sel':''}${off?' off':''}"><button type="button" class="qx-rsel" data-qsel="${H(e.id)}" aria-pressed="${st.cur===e.id}"><i style="--c:${off?'#B5BCC4':ci.c}"></i><span class="nm"><b>${H(e.nombre||'Sin nombre')}</b><small>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''}</small></span><span class="cx">${t==='quirofano'?`<b>${H(e.cx||'—')}</b><small>${H(e.dx||'')}</small>`:H(e.dx||'')}</span><span class="ad">${H(e.ads||'')}${t==='quirofano'&&(e.sala||e.tq||e.turno)?`<small>${H([salaTxt(e),TQ[e.tq]||'',TURNO[e.turno]||''].filter(Boolean).join(' · '))}</small>`:''}</span><em class="${cls}">${H(s)}</em></button></div>`; }
 function item(e,t){ return isWide()?rowHTML(e,t):(t==='quirofano'?qxCard(e):cmCard(e)); }
 function curFix(st,pool){ if(!pool.some(e=>e.id===st.cur)) st.cur=pool.length?pool[0].id:null; }
 function shell(k,t,es,off,all,body,below="",pending=[]){ const st=V[k], wide=isWide(), cur=wide?es.concat(off,pending).find(e=>e.id===st.cur):null;
-  return `${filtHTML(k)}<div class="qx-topbar">${weekHTML(k)}${daySummary(es,t)}</div>${st.cal&&!wide?`<div class="qx-panel qx-calp">${calHTML(k)}</div>`:''}<div class="qx-two${wide?'':' one'}"><section class="qx-agenda-column"><div class="qx-dayh"><b>${H(largo(st.sel))}</b><span>${es.length?es.length+' paciente'+(es.length>1?'s':''):''}</span></div>${fcHTML(st,all)}<div class="qx-list${wide?' rows':''}">${body}</div>${below}</section>${wide?`<aside class="qx-det" aria-label="${st.cal?'Calendario del mes':'Detalle del paciente'}">${st.cal?`<div class="qx-panel qx-calp in">${calHTML(k)}</div>`:cur?(t==='quirofano'?qxCard(cur):cmCard(cur)):'<div class="qx-empty"><b>Sin paciente seleccionado</b>Elige un paciente de la lista para ver su detalle.</div>'}</aside>`:''}</div>`; }
+  return `${filtHTML(k)}<div class="qx-topbar">${st.allDates?'':weekHTML(k)}<div class="agenda-modes"><button class="qx-btn" type="button" data-qcal="0">${IC.cal}Hoy</button><button class="qx-btn" type="button" data-qmes aria-pressed="${!!st.cal}">${IC.cal}Mes</button><button class="qx-btn" type="button" data-qall aria-pressed="${!!st.allDates}">${IC.censoActual}Ver todos</button></div></div>${st.cal&&!wide?`<div class="qx-panel qx-calp">${calHTML(k)}</div>`:''}<div class="qx-two${wide?'':' one'}"><section class="qx-agenda-column"><div class="qx-dayh"><b>${st.allDates?(k==='cm'?'Pacientes sesionados':'Programaciones por fecha'):H(largo(st.sel))}</b><span>${es.length?es.length+' paciente'+(es.length>1?'s':''):''}</span></div>${fcHTML(st,all)}<div class="qx-list${wide?' rows':''}">${body}</div>${below}</section>${wide?`<aside class="qx-det" aria-label="${st.cal?'Calendario del mes':'Detalle del paciente'}">${st.cal?`<div class="qx-panel qx-calp in">${calHTML(k)}</div>`:cur?(t==='quirofano'?qxCard(cur):cmCard(cur)):'<div class="qx-empty"><b>Sin paciente seleccionado</b>Elige un paciente de la lista para ver su detalle.</div>'}</aside>`:''}</div>`; }
+function agendaCompleta(k){
+  const st=V[k], t=T(k);
+  const all=agF(st,list(t)).filter(e=>e.fecha&&(k==='qx'||(e.nota&&!e.can)));
+  const entries=fcF(st,all).sort((a,b)=>dkey(b.fecha)-dkey(a.fecha)||Number(!!a.can)-Number(!!b.can)||String(a.nombre||'').localeCompare(String(b.nombre||''),'es'));
+  const pending=k==='qx'?pendingSurgeryRows(st):[];
+  curFix(st,entries.concat(pending));
+  let last='';
+  const body=entries.map(e=>{
+    const heading=e.fecha!==last?`<div class="qx-grp">${H(largo(e.fecha))}</div>`:'';
+    last=e.fecha;
+    return heading+item(e,t);
+  }).join('')||'<div class="qx-empty">Sin pacientes que coincidan.</div>';
+  return shell(k,t,entries,[],all,body,k==='qx'?pendingSurgeryTable(st,pending):'',pending);
+}
 function pendingSurgeryRows(st){
   return agF(st,list('quirofano')).filter(e=>!e.fecha&&!offE(e)&&!e.res&&(!st.fc||clinOf(e.clin).k===st.fc))
     .sort((a,b)=>(a.creado?.ts||Infinity)-(b.creado?.ts||Infinity)||String(a.id).localeCompare(String(b.id)));
@@ -20242,7 +20265,7 @@ function pendingSurgeryTable(st,rows){
   const filtered=!!(st.fad||st.fcl||st.fc);
   return `<details class="qx-panel" data-surgery-pending ${filtered||st.pendingExpanded?'open':''}><summary><span>Pacientes pendientes de fecha quirúrgica</span><b>${rows.length}</b></summary>${body?`<div class="qx-list${isWide()?' rows':''}">${body}</div>`:'<p>Sin pacientes pendientes de fecha quirúrgica.</p>'}</details>`;
 }
-function qxAgendaHTML(){ const st=V.qx, all=agF(st,byDay('quirofano',st.sel)), off=all.filter(offE), es=fcF(st,all.filter(e=>!offE(e))).sort((a,b)=>(a.aut?0:1)-(b.aut?0:1)||qxOrd(a,b));
+function qxAgendaHTML(){ if(V.qx.allDates)return agendaCompleta('qx'); const st=V.qx, all=agF(st,byDay('quirofano',st.sel)), off=all.filter(offE), es=fcF(st,all.filter(e=>!offE(e))).sort((a,b)=>(a.aut?0:1)-(b.aut?0:1)||qxOrd(a,b));
   const pending=pendingSurgeryRows(st); curFix(st,es.concat(off,pending)); const groups=[['M','Matutino'],['V','Vespertino'],['','Turno por definir']].map(([tk,l])=>[l,es.filter(e=>(e.turno||'')===tk)]).filter(g=>g[1].length);
   const empty=`<div class="qx-empty"><b>Sin pacientes para este día</b>Elige otra fecha en el calendario${can('editar_quirofano')?' o usa «Agregar paciente». También puedes agregar desde una Solicitud de cirugía.':'.'}</div>`;
   const rejected=off.filter(e=>!e.can), cancelled=off.filter(e=>e.can);
@@ -20275,7 +20298,7 @@ function cmCard(e){ if(offE(e)) return offCard(e,'comite'); const ci=clinOf(e.cl
   return `<article class="qx-card col${e.nota?' done':''}${V.open.has(e.id)?' open':''}" style="--c:${ci.c}"><div class="qx-c-top"><div class="qx-c-id">${canEd?editDataIcon(e,'ce'):''}<b>${H(e.nombre||'Sin nombre')}</b><span>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''}</span></div><div class="qx-chips"><span class="qx-chip clin" style="--bg:${ci.bg};--fg:${ci.fg}">${H(ci.n)}</span>${rp?`<span class="qx-chip warn">Reprogramado ${rp}×</span>`:''}${fileBtn(e,'ce')}</div></div>
    ${miniHTML(e,'comite')}<div class="qx-c-body qx-patient-fields">${patientDetails(e,'comite')}</div>
    <div class="qx-who">${whoLine(e,[['creado','Programado por']])}${e.nota?`${authorRow('Nota de sesión elaborada por','Consultando…','',`data-note-author="${H(e.nota.id)}" data-exp="${H(e.exp)}"`)}` : ''}</div><div class="qx-c-act">${act}${more}</div></article>`; }
-function cmAgendaHTML(){ const st=V.cm, all=agF(st,byDay('comite',st.sel)), off=all.filter(offE), es=fcF(st,all.filter(e=>!offE(e))); curFix(st,es.concat(off)); const by=new Map(); es.forEach(e=>{ const k=clinOf(e.clin).k; (by.get(k)||by.set(k,[]).get(k)).push(e); });
+function cmAgendaHTML(){ if(V.cm.allDates)return agendaCompleta('cm'); const st=V.cm, all=agF(st,byDay('comite',st.sel)), off=all.filter(offE), es=fcF(st,all.filter(e=>!offE(e))); curFix(st,es.concat(off)); const by=new Map(); es.forEach(e=>{ const k=clinOf(e.clin).k; (by.get(k)||by.set(k,[]).get(k)).push(e); });
   const order=[...CLIN.map(c=>c.k),...[...by.keys()].filter(k=>!CLIN.some(c=>c.k===k))];
   const body=(es.length?order.filter(k=>by.has(k)).map(k=>{ const g=by.get(k).sort((a,b)=>String(a.nombre).localeCompare(String(b.nombre),'es')), ci=clinOf(k); return `<div class="qx-grp"><i style="--c:${ci.c}"></i>${H(ci.n)} · ${g.length}</div>`+g.map(e=>item(e,'comite')).join(''); }).join(''):`<div class="qx-empty"><b>Sin pacientes para esta sesión</b>Elige otra fecha${can('editar_comite')?' o usa «Agregar paciente».':'.'}</div>`)+(off.length?`<div class="qx-grp"><i style="--c:#B5BCC4"></i>Canceladas o no sesionadas · ${off.length}</div>`+off.map(e=>item(e,'comite')).join(''):'');
   return shell('cm','comite',es,off,all,body); }
@@ -20320,18 +20343,25 @@ function statExport(k,how){ if(!can(k==='qx'?'imprimir_programacion':'imprimir_c
 function openList(key){ const L=V.L&&V.L[key]; if(!L) return; const k=V.view, d=dlg('dlgQxList','wide'); const es=L.es.slice().sort((a,b)=>dkey(a.fecha)-dkey(b.fecha));
   d.innerHTML=dlgShell(H(L.t),es.length+' registro'+(es.length===1?'':'s')+' · '+H(perLabel(V[k])),es.length?`<div class="qx-tblw"><table class="qx-tbl"><thead><tr><th>Fecha</th><th>Paciente</th><th>Expediente</th><th>${k==='qx'?'Cirugía':'Diagnóstico'}</th><th>Estado</th></tr></thead><tbody>${es.map(e=>{ const m=entMot(e); return `<tr><td>${H(e.fecha)}</td><td><b>${H(e.nombre)}</b></td><td>${H(e.exp)}</td><td>${H(k==='qx'?(e.cx||''):(e.dx||''))}</td><td>${H(k==='qx'?qxState(e):cmState(e))}${m?'<br><small>'+H(m)+'</small>':''}</td></tr>`; }).join('')}</tbody></table></div>`:'<p class="qd-note">Sin pacientes.</p>','<button type="button" class="qx-btn" data-qd-x>Cerrar</button>'); show(d); }
 try{ const mqW=matchMedia('(min-width:701px)'); const rr=()=>{ try{ renderView(); }catch(_){} }; if(mqW.addEventListener) mqW.addEventListener('change',rr); else mqW.addListener(rr); }catch(_){}
+document.addEventListener('input',event=>{
+  if(event.target.matches('#qxView [data-ag-search]')){
+    V[V.view].query=event.target.value;
+    renderView();
+  }
+});
 function viewChange(e){ const s=e.target.closest('[data-qper]'); if(s){ V[V.view].per=s.value; renderView(); return; } const st=V[V.view]; if(!st) return; if(e.target.matches('[data-qfa]')){ st.fad=e.target.value; st.cur=null; renderView(); return; } if(e.target.matches('[data-qfcl]')){ st.fcl=e.target.value; st.fc=''; st.cur=null; renderView(); } }
 function viewClick(e){ const t=e.target.closest('button'); if(!t) return; const k=V.view, st=V[k];
   if(t.dataset.qsel){ if(t.closest('[data-surgery-pending]'))st.pendingExpanded=true; st.cur=t.dataset.qsel; st.cal=false; renderView(); return; }
   if(t.dataset.qwk){ const d=pDMY(st.sel)||new Date(); const n=new Date(d.getFullYear(),d.getMonth(),d.getDate()+7*(+t.dataset.qwk),12); st.sel=dDMY(n); st.m={y:n.getFullYear(),m:n.getMonth()}; renderView(); return; }
-  if('qmes' in t.dataset){ st.cal=!st.cal; renderView(); return; }
+  if('qall' in t.dataset){ st.allDates=true; st.cal=false; renderView(); return; }
+  if('qmes' in t.dataset){ st.allDates=false; st.cal=!st.cal; renderView(); return; }
   if(t.dataset.qtog){ const id=t.dataset.qtog; if(V.open.has(id)) V.open.delete(id); else V.open.add(id); renderView(); return; }
   if('qfc' in t.dataset){ st.fc=t.dataset.qfc; renderView(); return; }
   if('qfclr' in t.dataset){ st.fad=''; st.fcl=''; st.fc=''; renderView(); return; }
   if(t.dataset.qlist){ openList(t.dataset.qlist); return; }
   if(t.dataset.qst){ statExport(k,t.dataset.qst); return; }
   if(t.dataset.qday){ st.sel=t.dataset.qday; const d=pDMY(st.sel), M0=monthOf(st); if(d&&(d.getMonth()!==M0.m||d.getFullYear()!==M0.y)) st.m={y:d.getFullYear(),m:d.getMonth()}; renderView(); if(matchMedia('(max-width:760px)').matches){ const h=document.querySelector('#qxView .qx-dayh'); if(h) setTimeout(()=>{ try{ h.scrollIntoView({behavior:'smooth',block:'start'}); }catch(_){} },60); } return; }
-  if(t.dataset.qcal){ const n=+t.dataset.qcal; if(n===0){ st.sel=hoy(); st.m=null; } else { const M=monthOf(st); const d=new Date(M.y,M.m+n,1); st.m={y:d.getFullYear(),m:d.getMonth()}; } renderView(); return; }
+  if(t.dataset.qcal){ const n=+t.dataset.qcal; if(n===0){ st.allDates=false; st.cal=false; st.sel=hoy(); st.m=null; } else { const M=monthOf(st); const d=new Date(M.y,M.m+n,1); st.m={y:d.getFullYear(),m:d.getMonth()}; } renderView(); return; }
   if(t.dataset.qtab){ st.tab=t.dataset.qtab; renderView(); return; }
   if(t.dataset.qa==='add'){ openAdd(T(k),{fecha:k==='qx'?'':st.sel}); return; }
   if(t.dataset.qa==='print'){ printAsk(k); return; }
