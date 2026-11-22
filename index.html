@@ -337,7 +337,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="10.25">
+<meta name="application-version" content="10.26">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2769,7 +2769,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 10.25 · Fecha de publicación: 22.11.26</div>
+  <div class="app-footer-version">Versión 10.26 · Fecha de publicación: 22.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -19554,6 +19554,29 @@ try{(function(){
     `<table style="width:100%;border-collapse:collapse;border:none"><tr><td style="${TD}font-size:10pt;vertical-align:bottom">NOMBRE DEL PACIENTE:&nbsp;&nbsp;<b style="font-size:14pt">${E(d.nombreCompleto||"")}</b></td><td style="${TD}text-align:right;vertical-align:bottom;font-size:8pt">${ic?`SERVICIO: <b>${E(d.servicio||"")}</b>`:`ALERGIAS: <b>${E(d.alergias||"")}</b>`}</td></tr></table>`+
     `<table style="width:100%;border-collapse:collapse;border:none"><tr><td style="${TD}font-size:10pt">No. de Expediente:&nbsp;&nbsp;<b style="font-size:11pt">${E(d.expediente||"")}</b></td><td style="${TD}font-size:10pt;text-align:center">Cama:&nbsp;&nbsp;<b style="font-size:11pt">${E(d.cama||"")}</b></td><td style="${TD}font-size:10pt;text-align:right">Fecha de Nacimiento:&nbsp;&nbsp;<b style="font-size:11pt">${E(d.fnac||"")}</b></td></tr></table>`;
   }
+  function firmas(p,align){
+    const names=[p.adscrito,p.otros,p.residente].map(v=>String(v||"").split("/").map(x=>x.trim()).filter(Boolean).map(n=>{ let c=""; try{ c=cpOf(n); }catch(_){} return `${E(n)}${c?` <span style="font-size:6pt;font-weight:400">CP ${E(c)}</span>`:""}`; }).join(" / ")).filter(Boolean);
+    return names.length?`<p style="${F}font-size:7.5pt;font-weight:bold;text-align:${align};margin:13pt 0 0 0;line-height:1.3">${names.join("<br>")}</p>`:"";
+  }
+  function rich(h,k){ k=Number(k)||100; return `<div style="${F}font-size:${Math.round(8.5*k)/100}pt;line-height:1.12;text-align:justify">${h}</div>`; }
+  function cuerpo(tp,p){
+    let title="INDICACIONES MÉDICAS"; try{ if(tp==="notas") title=notePrintTitle(p.tipo); }catch(_){}
+    const T=`font-family:'Times New Roman',serif;font-size:14pt;font-weight:bold;text-align:center;`;
+    if(tp==="notas"){
+      let table=true; try{ table=noteHasTable(p); }catch(_){}
+      let content=""; try{ content=clinicalRichHTML(p.contenido); }catch(_){ content=E(p.contenido); }
+      if(!table) return `<table style="width:100%;border-collapse:collapse;border:none"><tr><td style="border:none;padding:0;vertical-align:top"><p style="${T}margin:8pt 0">${E(title)}</p><p style="font-family:'Times New Roman',serif;font-size:12pt;font-weight:bold;margin:0">${E(p.fecha)}</p><p style="font-family:'Times New Roman',serif;font-size:12pt;font-weight:bold;margin:0 0 12pt 0">${E(p.hora)}</p>${rich(content,p.fs)}${firmas(p,"right")}</td></tr></table>`;
+      let vit=""; try{ const s=p.signos||{}; vit=NOTE_VITAL_FIELDS.map(f=>{ let v=String(s[f.key]??"").trim(); if(!v) return ""; if(f.unit&&/^\d+(?:[.,]\d+)?$/.test(v)) v=v.replace(",",".")+" "+f.unit; return `<p style="${F}font-size:10pt;margin:0 0 12pt 0">${E(f.print)}: ${E(v)}</p>`; }).join(""); }catch(_){}
+      const B="border:1pt solid #000;";
+      return `<table style="width:100%;border-collapse:collapse;${B}margin-top:6pt"><tr><th style="${B}width:15.5%;padding:7pt 4pt;text-align:center;vertical-align:middle;font-family:'Times New Roman',serif;font-size:9pt;font-weight:bold">FECHA, HORA Y<br>SIGNOS VITALES</th><th style="${B}padding:7pt 4pt;text-align:center;vertical-align:middle;${T}">${E(title)}</th></tr>`+
+        `<tr><td style="${B}padding:12pt 7pt;vertical-align:top;${F}font-size:10pt"><p style="${F}font-size:10pt;font-weight:bold;text-align:center;margin:0">${E(p.fecha)}</p><p style="${F}font-size:10pt;font-weight:bold;text-align:center;margin:0 0 12pt 0">${E(p.hora)}</p>${vit}</td><td style="${B}padding:12pt 7pt;vertical-align:top">${rich(content,p.fs)}${firmas(p,"right")}</td></tr></table>`;
+    }
+    const secs=[["DIETA",p.dieta],["SOLUCIONES",p.soluciones],["MEDICAMENTOS",p.medicamentos],["CUIDADOS GENERALES",p.cuidados]];
+    let pend=""; try{ if(clinicalRichHasText(p.pendientes||"")) pend=clinicalRichHTML(p.pendientes); }catch(_){}
+    const R=h=>{ try{ return clinicalRichHTML(h||""); }catch(_){ return E(h); } };
+    const lis=secs.map(x=>`<li style="${F}font-size:8.5pt;margin:0 0 7pt 0"><b>${x[0]}:</b><div style="${F}font-size:8.5pt">${R(x[1])}</div></li>`).join("");
+    return `<p style="${T}margin:8pt 0 10pt 0">INDICACIONES MÉDICAS</p><table style="width:100%;border-collapse:collapse;border:none"><tr><td style="width:17%;border:none;vertical-align:top;${F}font-size:11pt;font-weight:bold">FECHA<br>${E(p.fecha)}<br>${E(p.hora)} HRS</td><td style="border:none;vertical-align:top"><ul style="margin:0;padding-left:18pt">${lis}</ul>${pend?`<div style="${F}font-size:8.5pt;margin:14pt 0 0 18pt">${pend}</div>`:""}</td></tr></table>${firmas(p,"right")}`;
+  }
   function driveLayout(tp,p,d){
     const hasText=v=>typeof v==="string"&&clinicalRichHasText(v);
     if(tp==="notas"&&!hasText(p.contenido)&&hasText(p.texto)) p={...p,contenido:p.texto};
@@ -19640,11 +19663,20 @@ try{(function(){
     try{
       const hjm=document.querySelector(".home-logo .seal")?.src||document.querySelector(".top .seal")?.src||"", crab=document.querySelector(".top > .seal.crab")?.src||"";
       const fecha=String(p.fecha||"").trim(), hora=String(p.hora||"").trim().replace(":",".");
-      const o={...driveLayout(tp,p,d),rid:String(r.id),exp,name:`${exp} ${tipoCorto(tp,p)} ${fecha}`.trim(),alt:`${exp} ${tipoCorto(tp,p)} ${fecha} ${hora}`.trim(),imgs:await Promise.all([png(hjm),png(crab)])};
-      job.step("Creando el documento en Drive…",40);
-      const server=window.__hjmChildFormat?window.parent:window, url=server.__hjmApi.url();
-      if(!url)throw new Error("Falta el enlace del servidor.");
-      const res=await server.__hjmApi.sendNote(o);
+      /* v10.26 · Notas e indicaciones: mismo diseño que la hoja impresa (tabla con bordes, Arial/Times, tamaños de impresión), como en 9.8x.
+         Solo la nota de Comité usa su propia hoja impresa (driveLayout), que ya trae estilos en línea. Envío con reintento y hasta 3 min (hjmLongCall). */
+      const isCom=tp==="notas"&&(()=>{ try{ return normalizedNoteType(p.tipo)==="Comité Multidisciplinario"; }catch(_){ return false; } })();
+      let lay;
+      if(isCom) lay=driveLayout(tp,p,d);
+      else{
+        if(tp==="notas"&&!clinicalRichHasText(p.contenido||"")&&clinicalRichHasText(p.texto||"")) p={...p,contenido:p.texto};
+        let conTabla=true; try{ if(tp==="notas") conTabla=noteHasTable(p); }catch(_){}
+        lay={ header:encabezado(d,(()=>{ try{ return tp==="notas"&&normalizedNoteType(p.tipo)==="Nota de Interconsulta"; }catch(_){ return false; } })()), body:cuerpo(tp,p),
+          anchos:{ header:[[15,70,15],[75,25],[34,32,34]], body:tp==="notas"?(conTabla?[[15.5,84.5]]:[[100]]):[[17,83]] }, llenar:tp==="notas"&&conTabla };
+      }
+      const o={...lay,rid:String(r.id),exp,name:`${exp} ${tipoCorto(tp,p)} ${fecha}`.trim(),alt:`${exp} ${tipoCorto(tp,p)} ${fecha} ${hora}`.trim(),imgs:await Promise.all([png(hjm),png(crab)])};
+      job.step("Creando el documento en Drive… (puede tardar 1 a 3 minutos)",40);
+      const res=await window.hjmLongCall("hjmDocDrive",o,job);
       if(!res||!res.url) throw new Error("Sin respuesta del servidor");
       job.done(res.url,(res.replaced?"Google Doc reemplazado: ":"Google Doc creado: ")+res.name);
     }catch(e){
