@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="10.10">
+<meta name="application-version" content="10.12">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2758,7 +2758,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 10.10 · Fecha de publicación: 21.11.26</div>
+  <div class="app-footer-version">Versión 10.12 · Fecha de publicación: 21.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -7315,9 +7315,10 @@ html body #qxView .qx-filt.on{grid-template-columns:minmax(0,2fr) repeat(2,minma
   #qxView [data-ag-search],#qxView .qx-fclr{grid-column:1/-1}
   #qxView .agenda-modes{justify-content:center}
 }
-.qx-row-state{display:grid;justify-items:end;gap:5px;margin-inline-start:auto;min-width:0}
-.qx-dots{display:flex;gap:4px}
-.qx-dots>span{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#fff;border:1px solid #a4b1bf;color:#485566;font:700 11px/1 system-ui}
+.qx-row-state{display:grid;grid-template-columns:minmax(0,1fr);justify-items:end;gap:5px;width:100%;min-width:0;padding-inline-end:3px;box-sizing:border-box}
+#qxView .qx-row-state em{max-width:100%;box-sizing:border-box;white-space:normal;text-align:center;overflow-wrap:anywhere}
+.qx-dots{display:grid;grid-template-columns:repeat(4,18px);gap:4px}
+.qx-dots>span{box-sizing:border-box;display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#fff;border:1px solid #a4b1bf;color:#485566;font:700 11px/1 system-ui}
 .qx-dots>span.done{background:#087945;color:white;border-color:#087945}
 @media(max-width:1100px){#qxView .qx-row-state{grid-column:2;justify-items:start;margin:0}#qxView .qx-row-state em{grid-column:1}}
 .qx-two>.qx-agenda-column{display:grid;align-self:start;align-content:start;grid-template-columns:minmax(0,1fr);min-width:0}
@@ -19948,6 +19949,8 @@ if(CHILD){ let q=0; new MutationObserver(()=>{ if(q) return; q=requestAnimationF
 const AG={quirofano:{items:{},sello:null,loaded:false,q:[],busy:false,err:'',at:0},comite:{items:{},sello:null,loaded:false,q:[],busy:false,err:'',at:0}};
 const MARCAS={nota:1,rev:1,comp:1,aut:1,res:1,ses:1,noaut:1,can:1,nses:1};
 const committeeAuthors=new Map();
+const noteChecks=new Map();
+let checkingAgenda=false;
 const offE=e=>!!(e&&(e.noaut||e.can||e.nses));
 const isTec=()=>{ try{ return isTechnicalAdmin(); }catch(_){ return false; } };
 const QK=t=>'hjm.agcola.'+t, CK=t=>'hjm.agcache.'+t;
@@ -20162,6 +20165,7 @@ function renderView(){ const v=$i('qxView'); if(!v||!V.view) return; const k=V.v
   const err=A.err?`<p class="qx-err">${H(A.err)}</p>`:'';
   const pend=A.q.length?`<span class="qx-sync">Guardando ${A.q.length} cambio${A.q.length>1?'s':''}…</span>`:(A.loaded?'':'<span class="qx-sync">Cargando agenda…</span>');
   if(k==='qx'){
+    if(st.tab==='agenda')void checkAgendaNotes();
     const canEd=can('editar_quirofano');
     html=`<div class="qx-head"><div class="qx-ttl"><div class="qx-seg" role="group" aria-label="Apartado"><button type="button" data-qtab="agenda" aria-pressed="${st.tab==='agenda'}">Agenda</button><button type="button" data-qtab="stats" aria-pressed="${st.tab==='stats'}">Estadísticas</button></div>${pend?`<p>${pend}</p>`:''}</div><div class="qx-acts">${canEd?`<button type="button" class="qx-btn pri" data-qa="add">${IC.plus}Agregar paciente</button>`:''}${can('imprimir_programacion')&&st.tab==='agenda'?`<button type="button" class="qx-btn" data-qa="print">${IC.print}Imprimir programación</button>`:''}</div></div>${err}`+(st.tab==='stats'?qxStatsHTML():qxAgendaHTML());
   } else {
@@ -20472,6 +20476,43 @@ function openAdd(t,pre,editId){
 
 /* Pasos del expediente (Quirófano) */
 async function patientComiteNotes(exp){ const r=await readPatient(exp); if(!r) return {notes:[],r:null}; const ns=((r.o.historial||{}).notas||[]).filter(x=>x&&x.p&&isComite(x.p.tipo)&&!(x.cx&&x.cx.on)).sort((a,b)=>(dkey(b.p.fecha)-dkey(a.p.fecha))||((b.ts||0)-(a.ts||0))); return {notes:ns,r}; }
+function recentCommitteeNote(notes){
+  const today=dkey(hoy());
+  return notes.find(n=>n.id&&dkey(n.p.fecha)<=today&&dkey(n.p.fecha)>=today-15*864e5);
+}
+function linkRecentCommitteeNote(entry,n){
+  agChange('quirofano',entry.id,{nota:{id:n.id,autor:savedBy(n),fecha:n.p.fecha,dic:plain(n.p.dictamen||'').slice(0,240)}},'Nota de comité seleccionada automáticamente');
+}
+async function checkAgendaNotes(){
+  if(checkingAgenda||!AG.quirofano.loaded||!can('editar_quirofano'))return;
+  checkingAgenda=true;
+  try{
+    const user=me(), groups=new Map();
+    const eligible=e=>e&&e.exp&&!e.nota&&!e.res&&!offE(e)&&(!e.aut||isQxRole());
+    for(const entry of list('quirofano').filter(eligible)){
+      const exp=entry.exp;
+      if(!groups.has(exp))groups.set(exp,[]);
+      groups.get(exp).push(entry.id);
+    }
+    for(const [exp,ids] of groups){
+      if(V.view!=='qx'||me()!==user||!can('editar_quirofano'))break;
+      const file=fileByExp(exp);
+      if(!file)continue;
+      const key=JSON.stringify([user,file.id,file.modified,hoy(),ids]);
+      if((noteChecks.get(key)||0)>Date.now())continue;
+      try{
+        const result=await patientComiteNotes(exp);
+        if(V.view!=='qx'||me()!==user||!can('editar_quirofano'))break;
+        const note=recentCommitteeNote(result.notes);
+        noteChecks.set(key,Date.now()+(result.r?300000:30000));
+        if(note)for(const id of ids){
+          const entry=AG.quirofano.items[id];
+          if(eligible(entry)&&entry.exp===exp&&!document.getElementById('dlgQxSteps')?.open)linkRecentCommitteeNote(entry,note);
+        }
+      }catch(_){noteChecks.set(key,Date.now()+30000);}
+    }
+  }finally{checkingAgenda=false;}
+}
 function openSteps(id){ const d=dlg('dlgQxSteps','wide'); const token=Symbol();d._stepsToken=token;let notes=[],manual=false; const draw=()=>{ const e=AG.quirofano.items[id]; if(!e){ d.close(); return; } const canEd=can('editar_quirofano')&&(!e.aut||isQxRole()), role=isQxRole(), age=ageOf(e.fnac,e.fecha);
     const s1=`<div class="qd-step ${e.nota?'ok':''}"><span class="ic">${IC.note}</span><h4>1 · Nota de Comité Multidisciplinario</h4>${e.nota?`<p>Nota seleccionada del <b>${H(e.nota.fecha||'')}</b>${e.nota.por?' · por '+H(whoName(e.nota.por)):''}</p><div class="row"><button type="button" class="qx-btn sm" data-s="view">Ver nota</button>${canEd?'<button type="button" class="qx-btn ghost sm bad" data-s="unlink">Quitar</button>':''}</div>`:`<p>El paciente necesita nota de comité para completar su expediente.</p>${canEd?`<div class="row"><button type="button" class="qx-btn pri sm" data-s="create">${IC.note}Crear nota</button><button type="button" class="qx-btn sm" data-s="pick">Seleccionar nota existente</button></div><div class="qd-nl" id="qsNotes"></div>`:''}`}</div>`;
     const s2=`<div class="qd-step ${e.rev?'ok':''}"><span class="ic">${IC.folder}</span><h4>2 · Expediente revisado por Quirófano</h4><p>Se marca cuando el expediente físico ya tiene el sello de revisión de Quirófano.</p>${canEd?`<label class="qd-chk${e.rev?' on':''}"><input type="checkbox" data-s="rev"${e.rev?' checked':''}><span>Expediente físico revisado y sellado</span></label>`:''}${e.rev?`<p>Marcó: <b>${H(whoName(e.rev.por))}</b> · ${H(tsTxt(e.rev.ts))}</p>`:''}</div>`;
@@ -20502,8 +20543,8 @@ function openSteps(id){ const d=dlg('dlgQxSteps','wide'); const token=Symbol();d
       if(manual||!d.open||d._stepsToken!==token)return;
       const current=AG.quirofano.items[id];
       if(!current||current.exp!==entry.exp||current.nota||offE(current)||current.aut&&!isQxRole())return;
-      const today=dkey(hoy()), n=result.notes.find(n=>dkey(n.p.fecha)<=today&&dkey(n.p.fecha)>=today-15*864e5);
-      if(n){agChange('quirofano',id,{nota:{id:n.id,autor:savedBy(n),fecha:n.p.fecha,dic:plain(n.p.dictamen||'').slice(0,240)}},'Nota de comité seleccionada automáticamente');draw();}
+      const n=recentCommitteeNote(result.notes);
+      if(n){linkRecentCommitteeNote(current,n);draw();}
     }).catch(()=>{});
   }
 }
