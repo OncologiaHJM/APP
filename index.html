@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="10.08">
+<meta name="application-version" content="10.09">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2758,7 +2758,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 10.08 · Fecha de publicación: 21.11.26</div>
+  <div class="app-footer-version">Versión 10.09 · Fecha de publicación: 21.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -7304,11 +7304,17 @@ html body #dlgStats .st-kpis{grid-template-columns:repeat(4,minmax(0,1fr))!impor
   html:root body #dlgStats .st-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 
-html body #qxView .qx-filt{grid-template-columns:minmax(0,2fr) repeat(2,minmax(0,1fr)) auto}
-#qxView [data-ag-search]{min-width:0;width:100%;box-sizing:border-box;padding:10px;border:1px solid #c8d6e4;border-radius:10px;font:inherit}
-#qxView .agenda-modes{display:flex;gap:6px;justify-content:flex-end;align-items:center;grid-column:-2/-1}
+html body #qxView .qx-filt,
+html body #qxView .qx-filt:not(.on){grid-template-columns:minmax(0,2fr) repeat(2,minmax(0,1fr))}
+html body #qxView .qx-filt.on{grid-template-columns:minmax(0,2fr) repeat(2,minmax(0,1fr)) auto}
+#qxView [data-ag-search]{min-width:0;width:100%;height:44px;box-sizing:border-box;padding:0 12px;border:1px solid #c8d6e4;border-radius:14px;font:inherit}
+#qxView .agenda-modes{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;align-items:center;grid-column:-2/-1}
 #qxView .agenda-modes [aria-pressed=true]{background:#143961;color:white}
-@media(max-width:700px){html body #qxView .qx-filt{grid-template-columns:1.2fr 1fr 1fr}#qxView .qx-filt .qx-fsel{min-width:0;flex-direction:column;align-items:stretch}#qxView .qx-fclr{grid-column:1/-1}#qxView .agenda-modes{justify-content:center}}
+@media screen and (max-width:700px){
+  html body #qxView .qx-filt.on,html body #qxView .qx-filt:not(.on){grid-template-columns:repeat(2,minmax(0,1fr))}
+  #qxView [data-ag-search],#qxView .qx-fclr{grid-column:1/-1}
+  #qxView .agenda-modes{justify-content:center}
+}
 .qx-two>.qx-agenda-column{display:grid;align-self:start;align-content:start;grid-template-columns:minmax(0,1fr);min-width:0}
 .qx-agenda-column>[data-surgery-pending]{width:100%;min-width:0;box-sizing:border-box;margin:12px 0 0}
 .qx-agenda-column>[data-surgery-pending]>summary{padding:10px 12px;cursor:pointer}
