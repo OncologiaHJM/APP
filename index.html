@@ -337,7 +337,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="10.24">
+<meta name="application-version" content="10.25">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2769,7 +2769,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 10.24 · Fecha de publicación: 22.11.26</div>
+  <div class="app-footer-version">Versión 10.25 · Fecha de publicación: 22.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -10221,7 +10221,7 @@ let PP_BROWSE=true, PP_MODE=null;   // v2.70 · true = inicio con la tabla ampli
 const FOLDER_ICON = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';
 const apiUrl=()=>(API_URL||LS.get("hjm-api")||"").trim().replace(/\/u\/\d+\//,"/");
 const apiKey=()=>HJM_BETA.token();
-try{ window.__hjmApi={key:()=>apiKey(),url:()=>apiUrl()}; }catch(_){}
+try{ window.__hjmApi={key:()=>apiKey(),url:()=>apiUrl(),sendNote:o=>call1(apiUrl(),"hjmDocDrive",[o],120000)}; }catch(_){}
 /* enlace privado: https://.../#k=CLAVE -> guarda la clave en este navegador y la quita de la barra de direcciones */
 function takeHashKey(){ return false; try{ const m=/[#&]k=([^&]+)/.exec(location.hash||""); if(m){ LS.set("hjm-key",decodeURIComponent(m[1])); history.replaceState(null,"",location.pathname+location.search); return true; } }catch(_){} return false; }
 /* Si la clave llega por el enlace de GitHub (#k=…), se trabaja en Drive aunque antes se haya elegido "Este equipo" */
@@ -19572,13 +19572,24 @@ try{(function(){
       const page=host.querySelector(".cp-page"),committee=page.classList.contains("cp-comite");
       const bodyWidths=[],headerWidths=committee?[[13,74,13]]:[[15,70,15],[75,25],[34,32,34]];
       // Google Docs imports inline typography and tables, but drops stylesheet classes and flex layouts.
-      for(const el of page.querySelectorAll("*")){
-        const st=getComputedStyle(el);
-        for(const k of ["font-family","font-size","font-weight","font-style","text-align","line-height","color","text-decoration-line","vertical-align","margin-top","margin-bottom","padding-top","padding-bottom","padding-left","padding-right"]){
-          el.style.setProperty(k,st.getPropertyValue(k));
+      const inherited=["font-family","font-size","font-weight","font-style","text-align","line-height","color"];
+      const spacing=["margin-top","margin-bottom","padding-top","padding-bottom","padding-left","padding-right"];
+      const values=new WeakMap();
+      const changes=Array.from(page.querySelectorAll("*"),el=>{
+        const css=getComputedStyle(el), parent=values.get(el.parentElement);
+        const style={}, effective={};
+        for(const key of inherited){
+          effective[key]=css.getPropertyValue(key);
+          if(!parent||effective[key]!==parent[key]) style[key]=effective[key];
         }
-        if(el.matches("table,th,td")) el.style.border=st.border||"none";
-        if(el.matches("[data-cp]")) el.textContent=" "+el.dataset.cp;
+        values.set(el,effective);
+        for(const key of spacing){const value=css.getPropertyValue(key);if(value&&value!=="0px")style[key]=value;}
+        if(el.matches("table,th,td"))style.border=css.border||"none";
+        return [el,style];
+      });
+      for(const [el,style] of changes){
+        for(const [key,value] of Object.entries(style)) el.style.setProperty(key,value);
+        if(el.matches("[data-cp]"))el.textContent=" "+el.dataset.cp;
       }
       function columns(container,count,widths){
         const t=document.createElement("table"); t.style.cssText="width:100%;border-collapse:collapse;border:0";
@@ -19609,7 +19620,10 @@ try{(function(){
   }
   async function png(src){
     if(!src) return "";
-    try{ const im=new Image(); im.crossOrigin="anonymous"; await new Promise((ok,ko)=>{ im.onload=ok; im.onerror=ko; im.src=src; });
+    try{ const im=new Image(); im.crossOrigin="anonymous"; await new Promise((ok,ko)=>{
+        const timer=setTimeout(()=>ko(new Error("Tiempo de carga del logotipo agotado")),5000);
+        im.onload=()=>{clearTimeout(timer);ok();}; im.onerror=()=>{clearTimeout(timer);ko();}; im.src=src;
+      });
       const c=document.createElement("canvas"), W=200, H=Math.round(200*(im.naturalHeight||1)/(im.naturalWidth||1)); c.width=W; c.height=H; c.getContext("2d").drawImage(im,0,0,W,H);
       return c.toDataURL("image/png").split(",")[1]||""; }catch(_){ return ""; }
   }
@@ -19620,20 +19634,23 @@ try{(function(){
     const r=source?source.rec:(HIST[tp]||[]).find(x=>x&&x.id===id); if(!r||!r.p){ try{ notify("No se encontró el registro.","warn"); }catch(_){} return; }
     let p=r.p, d=source?source.datos:data(); try{ p=clinStaffFixV(p); d=clinEncMerge(d,p); }catch(_){}
     const exp=String(d.expediente||"").trim(); if(!exp){ try{ notify("El paciente no tiene expediente.","warn"); }catch(_){} return; }
-    if(btn) btn.classList.add("busy");
+    if(btn&&btn.disabled)return;
+    if(btn){btn.disabled=true;btn.classList.add("busy");}
     const job=window.hjmJob.start("Creando el Google Doc en Drive"); job.step("Preparando el documento…",10);
     try{
       const hjm=document.querySelector(".home-logo .seal")?.src||document.querySelector(".top .seal")?.src||"", crab=document.querySelector(".top > .seal.crab")?.src||"";
       const fecha=String(p.fecha||"").trim(), hora=String(p.hora||"").trim().replace(":",".");
-      const o={...driveLayout(tp,p,d),rid:String(r.id),exp,name:`${exp} ${tipoCorto(tp,p)} ${fecha}`.trim(),alt:`${exp} ${tipoCorto(tp,p)} ${fecha} ${hora}`.trim(),imgs:[await png(hjm),await png(crab)]};
+      const o={...driveLayout(tp,p,d),rid:String(r.id),exp,name:`${exp} ${tipoCorto(tp,p)} ${fecha}`.trim(),alt:`${exp} ${tipoCorto(tp,p)} ${fecha} ${hora}`.trim(),imgs:await Promise.all([png(hjm),png(crab)])};
       job.step("Creando el documento en Drive…",40);
-      const res=await window.hjmLongCall("hjmDocDrive",o,job);
+      const server=window.__hjmChildFormat?window.parent:window, url=server.__hjmApi.url();
+      if(!url)throw new Error("Falta el enlace del servidor.");
+      const res=await server.__hjmApi.sendNote(o);
       if(!res||!res.url) throw new Error("Sin respuesta del servidor");
       job.done(res.url,(res.replaced?"Google Doc reemplazado: ":"Google Doc creado: ")+res.name);
     }catch(e){
       const m=String((e&&e.message)||e||"");
-      job.fail((e&&e.code==="accion")||/Acci[oó]n no permitida/.test(m)?"Falta actualizar Codigo.gs para crear Google Docs.":"No se pudo crear el Google Doc: "+m);
-    }finally{ if(btn) btn.classList.remove("busy"); }
+      job.fail((e&&e.code==="accion")||/Acci[oó]n no permitida/.test(m)?"Falta actualizar Codigo.gs para crear Google Docs.":m==="tiempo"||m==="red"||m==="respuesta"?"No se recibió confirmación de Drive. Revisa la carpeta de Notas e Indicaciones antes de reintentar.":"No se pudo crear el Google Doc: "+m);
+    }finally{ if(btn){btn.disabled=false;btn.classList.remove("busy");} }
   };
   document.addEventListener("click",e=>{
     const b=e.target.closest&&e.target.closest("[data-doc-drive]"); if(!b) return;
