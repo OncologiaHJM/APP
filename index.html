@@ -336,7 +336,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="10.06">
+<meta name="application-version" content="10.07">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2648,6 +2648,8 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
           <div class="f s3"><label for="residente">Residente</label><input id="residente"></div>
           <div class="f s4"><label>Nombre completo</label><div class="auto empty" data-out="nombreCompleto">Se arma con apellidos y nombre</div></div>
           <div class="f servicio-field"><label for="servicio" class="lbl-row"><span>Servicio</span><button type="button" class="hoy" id="btnOnco" title="Poner Oncología">Oncologia</button></label><input id="servicio" class="up"></div>
+          <div class="f s3"><label for="telUno">Teléfono 1</label><input id="telUno" type="tel" inputmode="tel" maxlength="10" pattern="[0-9]{10}" title="10 dígitos"></div>
+          <div class="f s3"><label for="telDos">Teléfono 2</label><input id="telDos" type="tel" inputmode="tel" maxlength="10" pattern="[0-9]{10}" title="10 dígitos"></div>
           <div class="cen-det cen-block" id="cenDet"><div class="cen-bh">CENSO</div><div class="grid">
             <div class="f s2"><label for="cenIngProxy">Fecha de ingreso <small>(la misma de HC / Ingreso)</small></label><input id="cenIngProxy" data-nopersist data-date inputmode="numeric" placeholder="DD.MM.AA"></div>
             <div class="f s1"><label>Días de estancia</label><div class="auto empty" id="cenEhOut">—</div></div>
@@ -2756,7 +2758,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 10.06 · Fecha de publicación: 21.11.26</div>
+  <div class="app-footer-version">Versión 10.07 · Fecha de publicación: 21.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -13919,12 +13921,16 @@ function cenStatPush(cen,now){
 async function cenStatBackfill(onTick,have){
   const all=(await cenList(true)).filter(x=>/^JCF\d{6}\.json$/i.test(x.name)), recs={}; let i=0, leidos=0, omit=0; have=have||{};
   /* v3.44 · solo se leen los censos nuevos o modificados después de su última importación */
-  const list=all.filter(x=>{ const o=cenFromName(x.name), k=o?o.y+"-"+String(o.m+1).padStart(2,"0")+"-"+String(o.d).padStart(2,"0"):"", h=k&&have[k], mt=Date.parse(x.modified||"")||0; if(h&&h.ts&&mt&&h.ts>mt&&h.v>=8){ omit++; return false; } return true; });
+  const names=new Set(),duplicates=new Set(),errors=[];
+  for(const x of all){if(names.has(x.name))duplicates.add(x.name);names.add(x.name);}
+  errors.push(...Array.from(duplicates,name=>name+" (duplicado)"));
+  const list=all.filter(x=>{ if(duplicates.has(x.name))return false; const o=cenFromName(x.name), k=o?o.y+"-"+String(o.m+1).padStart(2,"0")+"-"+String(o.d).padStart(2,"0"):"", h=k&&have[k], mt=Date.parse(x.modified||"")||0; if(h&&h.ts&&mt&&h.ts>mt&&h.v>=8){ omit++; return false; } return true; });
   if(onTick) onTick(0,list.length);
-  await ppPool(list,4,async x=>{ try{ const r=await cenReadEntry(x), o=r&&r.obj; if(o&&Array.isArray(o.pac||[])){ leidos++; const rec=cenStatRec(Object.assign({},o,{pac:o.pac||[]}),x.name); if(rec.k){ if(have[rec.k]&&have[rec.k].lig) rec.lig=have[rec.k].lig; recs[rec.k]=rec; } } }catch(_){} i++; if(onTick) onTick(i,list.length); });   /* v5.26 · 4 censos a la vez */
+  await ppPool(list,4,async x=>{ try{ const r=await cenReadEntry(x), o=r&&r.obj; if(!o||!Array.isArray(o.pac))throw new Error("Censo sin tabla de pacientes"); { leidos++; const rec=cenStatRec(Object.assign({},o,{pac:o.pac||[]}),x.name); if(!rec.k)throw new Error("Fecha de censo inválida"); { if(have[rec.k]&&have[rec.k].lig) rec.lig=have[rec.k].lig; recs[rec.k]=rec; } } }catch(_){errors.push(x.name);} i++; if(onTick) onTick(i,list.length); });   /* v5.26 · 4 censos a la vez */
+
   const n=Object.keys(recs).length;
   if(n){ if(typeof window.__statSync!=="function") throw new Error("Las estadísticas aún no están listas"); const ok=await window.__statSync({censos:recs,keep:false}); if(!ok) throw new Error("No se pudieron guardar en el archivo de estadísticas de Drive; intenta de nuevo"); }
-  return {n,total:all.length,nuevos:list.length,omit,leidos,recs};
+  return {n,total:all.length,nuevos:list.length,omit,leidos,recs,errors};
 }
 
 /* ===== v5.26 · Un censo final cargado desde fuera (hoja de Google → JCF, skill cargar-censo) también alimenta el Censo actual =====
@@ -16030,6 +16036,7 @@ async function renderStats(body){
         let dn={ok:0,bad:0};
         if(r.n){ say("Guardando "+r.n+" censo(s) en las estadísticas…"); period=0; await loadRemote(); say("Actualizando los archivos de estadísticas de cada día…"); dn=await bg(()=>statDayFiles(r.recs,(i,t)=>say("Actualizando archivos de estadísticas "+i+" de "+t+"…"))); }
         base=r.n?"Se importaron "+r.n+" censo(s) nuevo(s) o modificado(s)"+(r.omit?" (se omitieron "+r.omit+" sin cambios)":"")+" a las estadísticas generales y se actualizaron "+dn.ok+" archivo(s) de estadísticas por día"+(dn.bad?" ("+dn.bad+" no se pudieron guardar)":"")+".":(r.total?(r.omit&&!r.nuevos?"Todo al día: los "+r.total+" censo(s) ya estaban importados y no han cambiado.":"Se encontraron "+r.total+" censo(s) pero no se pudo leer ninguno."):"No hay censos guardados en la carpeta.");
+        if(r.errors.length)base+=" Requieren revisión: "+r.errors.join(", ")+". ";
       }catch(e){ base="No se pudo importar a las estadísticas: "+friendly(e)+"."; }
       let g=null; try{ say("Revisando si el último censo debe integrarse al Censo actual…"); g=await bg(()=>window.cenIntegrarActual({say})); }catch(e){ g={estado:"error",err:e}; }
       const gi=g&&g.estado==="error"?" No se pudo integrar el último censo al Censo actual: "+friendly(g.err):(g?" "+window.cenIntegrarTexto(g):"");
@@ -16295,6 +16302,7 @@ async function cenAutoImport(force){
     const r=await bg(()=>cenStatBackfill((i,t)=>{ CENAUTO.msg=t?"Actualizando censos "+i+" de "+t+"…":"Censos al día"; paint(); },(remoteCache&&remoteCache.censos)||{}));
     if(r.n){ await loadRemote(); try{ await bg(()=>statDayFiles(r.recs)); }catch(_){} }
     CENAUTO.done=Date.now(); CENAUTO.msg="Censos al día · "+new Date().toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit"})+(r.n?" · "+r.n+" actualizado(s)":"");
+    if(r.errors.length)CENAUTO.msg+=" · Revisar "+r.errors.join(", ");
     CENAUTO.on=false; const d=$s("dlgStats"); if(r.n&&d&&d.open&&tab==="stats"&&!DETV) await render(); else paint();
   }catch(e){ CENAUTO.msg="No se pudieron actualizar los censos ("+friendly(e)+"); se reintentará."; CENAUTO.last=Date.now()-25*60000; }
   finally{ CENAUTO.on=false; paint(); if(lk){ try{ G("hjmCandadoSoltar","censos-auto"); }catch(_){} } }
@@ -20207,7 +20215,8 @@ function qxCard(e){ if(offE(e)) return offCard(e,'quirofano'); const ci=clinOf(e
   if(!e.comp&&!e.aut){ act+=canEd?`<button type="button" class="qx-btn pri sm" data-qe="steps" data-id="${H(e.id)}">${IC.folder}Completar expediente</button>`:`<span class="qx-chip warn">Expediente incompleto</span>`; if(role) act+=`<button type="button" class="qx-btn gold sm" data-qe="auth" data-id="${H(e.id)}">${IC.lock}Autorizar</button><button type="button" class="qx-btn sm bad" data-qe="noaut" data-id="${H(e.id)}">No autorizar</button>`; }
   else if(!e.aut){ act+=role?`<button type="button" class="qx-btn gold sm" data-qe="auth" data-id="${H(e.id)}">${IC.lock}Autorizar</button><button type="button" class="qx-btn sm bad" data-qe="noaut" data-id="${H(e.id)}">No autorizar</button>`:`<span class="qx-chip warn">Esperando autorización de Jefatura</span>`; }
   else act+=`<span class="qx-chip ok">${IC.check} Autorizado${e.turno?' · '+TURNO[e.turno]:''}</span>${e.aut.inc&&!e.comp?'<span class="qx-chip warn">Autorizado con expediente incompleto</span>':''}${role&&!e.res?`<button type="button" class="qx-btn sm ed" data-qe="auth" data-id="${H(e.id)}">${IC.edit}Cambiar sala o turno</button>`:''}`;
-  if(e.aut?role:(isTec()||role||canEd)) act+=`<div class="qx-cancel-actions"><button type="button" class="qx-btn sm bad" data-qe="cancel" data-id="${H(e.id)}">Cancelar programación</button>${canDelE(e,'quirofano')?surgeryDeleteButton(e):''}</div>`;
+  if(!e.fecha&&canEd) act+=`<button type="button" class="qx-btn sm ed" data-qe="edit" data-id="${H(e.id)}">${IC.cal}Asignar fecha</button>`;
+  if(e.aut?role:(isTec()||role||canEd)) act+=`<div class="qx-cancel-actions"><button type="button" class="qx-btn sm bad" data-qe="cancel" data-id="${H(e.id)}">Cancelar programación</button>${e.fecha&&canDelE(e,'quirofano')?surgeryDeleteButton(e):''}</div>`;
   const more=`<span class="sp"></span>${e.aut&&role&&!e.res?`<button type="button" class="qx-btn ghost sm qx-mini" data-qe="unaut" data-id="${H(e.id)}">Cancelar autorización</button>`:''}`;
   return `<article class="qx-card col${e.aut?' done':''}${V.open.has(e.id)?' open':''}" style="--c:${ci.c}"><div class="qx-c-top"><div class="qx-c-id">${canEd&&(!e.aut||role)?editDataIcon(e,'qe'):''}<b>${H(e.nombre||'Sin nombre')}</b><span>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''}${e.sol?' · Solicitud de cirugía':''}</span></div><div class="qx-chips"><span class="qx-chip clin" style="--bg:${ci.bg};--fg:${ci.fg}">${H(ci.n)}</span>${e.turno?`<span class="qx-chip">${TURNO[e.turno]}</span>`:''}${e.sala?`<span class="qx-chip">${H(salaTxt(e))}</span>`:''}${e.tq?`<span class="qx-chip">${TQ[e.tq]}</span>`:''}${e.np?'<span class="qx-chip np">No programada</span>':''}${fileBtn(e,'qe')}</div></div>
     ${miniHTML(e,'quirofano')}<div class="qx-c-body qx-patient-fields">${patientDetails(e,'quirofano')}</div>
@@ -20221,7 +20230,7 @@ function rowHTML(e,t){ const st=V[t==='quirofano'?'qx':'cm'], ci=clinOf(e.clin),
   return `<div class="qx-row${e.can?' qx-cancelled':''}${st.cur===e.id?' sel':''}${off?' off':''}"><button type="button" class="qx-rsel" data-qsel="${H(e.id)}" aria-pressed="${st.cur===e.id}"><i style="--c:${off?'#B5BCC4':ci.c}"></i><span class="nm"><b>${H(e.nombre||'Sin nombre')}</b><small>Exp. ${H(e.exp||'—')}${age?' · '+H(age)+' años':''}</small></span><span class="cx">${t==='quirofano'?`<b>${H(e.cx||'—')}</b><small>${H(e.dx||'')}</small>`:H(e.dx||'')}</span><span class="ad">${H(e.ads||'')}${t==='quirofano'&&(e.sala||e.tq||e.turno)?`<small>${H([salaTxt(e),TQ[e.tq]||'',TURNO[e.turno]||''].filter(Boolean).join(' · '))}</small>`:''}</span><em class="${cls}">${H(s)}</em></button></div>`; }
 function item(e,t){ return isWide()?rowHTML(e,t):(t==='quirofano'?qxCard(e):cmCard(e)); }
 function curFix(st,pool){ if(!pool.some(e=>e.id===st.cur)) st.cur=pool.length?pool[0].id:null; }
-function shell(k,t,es,off,all,body,below=""){ const st=V[k], wide=isWide(), cur=wide?es.concat(off).find(e=>e.id===st.cur):null;
+function shell(k,t,es,off,all,body,below="",pending=[]){ const st=V[k], wide=isWide(), cur=wide?es.concat(off,pending).find(e=>e.id===st.cur):null;
   return `${filtHTML(k)}<div class="qx-topbar">${weekHTML(k)}${daySummary(es,t)}</div>${st.cal&&!wide?`<div class="qx-panel qx-calp">${calHTML(k)}</div>`:''}<div class="qx-two${wide?'':' one'}"><section class="qx-agenda-column"><div class="qx-dayh"><b>${H(largo(st.sel))}</b><span>${es.length?es.length+' paciente'+(es.length>1?'s':''):''}</span></div>${fcHTML(st,all)}<div class="qx-list${wide?' rows':''}">${body}</div>${below}</section>${wide?`<aside class="qx-det" aria-label="${st.cal?'Calendario del mes':'Detalle del paciente'}">${st.cal?`<div class="qx-panel qx-calp in">${calHTML(k)}</div>`:cur?(t==='quirofano'?qxCard(cur):cmCard(cur)):'<div class="qx-empty"><b>Sin paciente seleccionado</b>Elige un paciente de la lista para ver su detalle.</div>'}</aside>`:''}</div>`; }
 function pendingSurgeryRows(st){
   return agF(st,list('quirofano')).filter(e=>!e.fecha&&!offE(e)&&!e.res&&(!st.fc||clinOf(e.clin).k===st.fc))
@@ -20229,19 +20238,16 @@ function pendingSurgeryRows(st){
 }
 document.addEventListener('toggle',event=>{const el=event.target,st=V.qx;if(el.matches?.('[data-surgery-pending]')&&el.isConnected&&!(st.fad||st.fcl||st.fc))st.pendingExpanded=el.open;},true);
 function pendingSurgeryTable(st,rows){
-  const body=rows.map(e=>{
-    const ts=Number(e.creado?.ts),old=ts>0&&Date.now()-ts>21*864e5;
-    return `<tr class="${old?'qx-overdue':''}"><td>${ts?H(tsTxt(ts)):'—'}</td><td>${H(e.nombre)}<br><small>Exp. ${H(e.exp)}</small></td><td>${H(e.cx||'—')}</td><td>${can('editar_quirofano')?`<button type="button" class="qx-btn sm" data-qe="edit" data-id="${H(e.id)}">Asignar fecha</button>`:''}${!e.aut&&can('editar_quirofano')?` <button type="button" class="qx-btn sm bad" data-qe="delPending" data-id="${H(e.id)}">${IC.trash}Cancelar pendiente</button>`:''}</td></tr>`;
-  }).join('');
+  const body=rows.map(e=>item(e,'quirofano')).join('');
   const filtered=!!(st.fad||st.fcl||st.fc);
-  return `<details class="qx-panel" data-surgery-pending ${filtered||st.pendingExpanded?'open':''}><summary><span>Pacientes pendientes de fecha quirúrgica</span><b>${rows.length}</b></summary>${body?`<div class="qx-tblw"><table class="qx-tbl"><thead><tr><th>Fecha de registro</th><th>Paciente</th><th>Cirugía planeada</th><th></th></tr></thead><tbody>${body}</tbody></table></div>`:'<p>Sin pacientes pendientes de fecha quirúrgica.</p>'}</details>`;
+  return `<details class="qx-panel" data-surgery-pending ${filtered||st.pendingExpanded?'open':''}><summary><span>Pacientes pendientes de fecha quirúrgica</span><b>${rows.length}</b></summary>${body?`<div class="qx-list${isWide()?' rows':''}">${body}</div>`:'<p>Sin pacientes pendientes de fecha quirúrgica.</p>'}</details>`;
 }
 function qxAgendaHTML(){ const st=V.qx, all=agF(st,byDay('quirofano',st.sel)), off=all.filter(offE), es=fcF(st,all.filter(e=>!offE(e))).sort((a,b)=>(a.aut?0:1)-(b.aut?0:1)||qxOrd(a,b));
-  curFix(st,es.concat(off)); const groups=[['M','Matutino'],['V','Vespertino'],['','Turno por definir']].map(([tk,l])=>[l,es.filter(e=>(e.turno||'')===tk)]).filter(g=>g[1].length);
+  const pending=pendingSurgeryRows(st); curFix(st,es.concat(off,pending)); const groups=[['M','Matutino'],['V','Vespertino'],['','Turno por definir']].map(([tk,l])=>[l,es.filter(e=>(e.turno||'')===tk)]).filter(g=>g[1].length);
   const empty=`<div class="qx-empty"><b>Sin pacientes para este día</b>Elige otra fecha en el calendario${can('editar_quirofano')?' o usa «Agregar paciente». También puedes agregar desde una Solicitud de cirugía.':'.'}</div>`;
   const rejected=off.filter(e=>!e.can), cancelled=off.filter(e=>e.can);
   const body=(es.length?groups.map(([l,g])=>(groups.length>1||l!=='Turno por definir'?`<div class="qx-grp"><i style="--c:#1F3864"></i>${l} · ${g.length}</div>`:'')+g.map(e=>item(e,'quirofano')).join('')).join(''):empty)+(rejected.length?`<div class="qx-grp"><i style="--c:#B5BCC4"></i>No autorizadas · ${rejected.length}</div>`+rejected.map(e=>item(e,'quirofano')).join(''):'')+(cancelled.length?`<div class="qx-grp"><i style="--c:#89929C"></i>Programaciones canceladas · ${cancelled.length}</div>`+cancelled.map(e=>item(e,'quirofano')).join(''):'');
-  return shell('qx','quirofano',es,off,all,body,pendingSurgeryTable(st,pendingSurgeryRows(st))); }
+  return shell('qx','quirofano',es,off,all,body,pendingSurgeryTable(st,pending),pending); }
 function committeeNoteActions(e,canEdit){
   const button=(action,label,icon)=>`<button type="button" class="qx-btn sm" data-ce="${action}" data-id="${H(e.id)}">${icon}<span>${label}</span></button>`;
   const eye='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
@@ -20293,12 +20299,12 @@ function statTools(p){ return can(p)?`<div class="qx-stt"><button type="button" 
 function qxState(e){ return e.can?'Cancelada':e.noaut?'No autorizada':e.res?(e.res.v==='operado'?'Operado':'Diferido'):e.aut?'Autorizado':e.comp?'Espera autorización':'Expediente incompleto'; }
 function cmState(e){ return e.can?'Cancelada':e.nses?'No sesionado':e.nota?'Sesionado':'Pendiente'; }
 function entMot(e){ return (e.can&&e.can.motivo)||(e.noaut&&e.noaut.motivo)||(e.nses&&e.nses.motivo)||(e.res&&e.res.motivo)||''; }
-function qxStatsHTML(){ V.L={}; const st=V.qx, all=list('quirofano').filter(e=>perFilter(st,e)), es=all.filter(e=>!e.can), cans=all.filter(e=>e.can);
+function qxStatsHTML(){ V.L={}; const st=V.qx, all=list('quirofano').filter(e=>perFilter(st,e.can?.ts?{fecha:dDMY(new Date(e.can.ts))}:e)), es=all.filter(e=>!e.can), cans=all.filter(e=>e.can);
   const comp=es.filter(e=>e.comp||e.aut), aut=es.filter(e=>e.aut), noa=es.filter(e=>e.noaut), op=es.filter(e=>e.res&&e.res.v==='operado'), dif=es.filter(e=>e.res&&e.res.v==='diferido'), np=op.filter(e=>e.np).length, pac=new Set(es.map(e=>nz(e.exp))).size, t0=dkey(hoy()), sinr=aut.filter(e=>!e.res&&dkey(e.fecha)<t0);
-  const k=kpi(es.length,`Programaciones · ${pac} paciente${pac===1?'':'s'} distinto${pac===1?'':'s'}`,'k1',es)+kpi(aut.length,`Autorizadas · ${pct(aut.length,comp.length)} de las completas`,'k2',aut)+kpi(noa.length,'No autorizadas','k3',noa)+kpi(op.length,`Operadas · ${pct(op.length,aut.length)} de las autorizadas${np?' ('+np+' no programadas)':''}`,'k4',op)+kpi(dif.length,`Diferidas · ${pct(dif.length,op.length+dif.length)} de las que tienen resultado`,'k5',dif)+kpi(sinr.length,'Autorizadas con fecha pasada y sin resultado','k6',sinr)+kpi(cans.length,'Canceladas por quien las solicitó','k7',cans);
+  const k=kpi(es.length,`Programaciones · ${pac} paciente${pac===1?'':'s'} distinto${pac===1?'':'s'}`,'k1',es)+kpi(aut.length,`Autorizadas · ${pct(aut.length,comp.length)} de las completas`,'k2',aut)+kpi(noa.length,'No autorizadas','k3',noa)+kpi(op.length,`Operadas · ${pct(op.length,aut.length)} de las autorizadas${np?' ('+np+' no programadas)':''}`,'k4',op)+kpi(dif.length,`Diferidas · ${pct(dif.length,op.length+dif.length)} de las que tienen resultado`,'k5',dif)+kpi(sinr.length,'Autorizadas con fecha pasada y sin resultado','k6',sinr)+kpi(cans.length,'Programaciones canceladas','k7',cans);
   const clin=grp(es,clinRow).map(r=>Object.assign(r,{sub:r.es.filter(e=>e.res&&e.res.v==='operado').length+' operadas · '+r.es.filter(e=>e.res&&e.res.v==='diferido').length+' diferidas'}));
   const tur=grp(aut,e=>({k:e.turno||'',n:TURNO[e.turno]||'Sin turno'}));
-  return perSel(st)+statTools('imprimir_programacion')+`<div class="qx-kpis">${k}</div><div class="qx-statsg">${panel('Por clínica','pc',clin)}${panel('Por adscrito','pa',grp(es,adsRow).sort((a,b)=>b.v-a.v).slice(0,12))}${panel('Motivos de diferimiento','pd',grp(dif,motRow(e=>e.res.motivo,'#B7791F')))}${panel('Motivos de no autorización','pn',grp(noa,motRow(e=>e.noaut.motivo,'#9B2C2C')))}${panel('Autorizó','pz',grp(aut,e=>e.aut.por?{k:e.aut.por,n:whoName(e.aut.por),c:'#B7791F'}:null))}${panel('Autorizadas por turno','pt',tur)}${st.per!=='mes'?panel('Por mes','pm',grp(es,mesRow).sort((a,b)=>a.o-b.o),false):''}</div><p class="qd-note" style="margin-top:14px">Toca una cifra o una barra para ver la lista de pacientes.</p>`; }
+  return perSel(st)+statTools('imprimir_programacion')+`<div class="qx-kpis">${k}</div><div class="qx-statsg">${panel('Por clínica','pc',clin)}${panel('Por adscrito','pa',grp(es,adsRow).sort((a,b)=>b.v-a.v).slice(0,12))}${panel('Motivos de cancelación','px',grp(cans,motRow(e=>e.can.motivo,'#9B2C2C')))}${panel('Motivos de diferimiento','pd',grp(dif,motRow(e=>e.res.motivo,'#B7791F')))}${panel('Motivos de no autorización','pn',grp(noa,motRow(e=>e.noaut.motivo,'#9B2C2C')))}${panel('Autorizó','pz',grp(aut,e=>e.aut.por?{k:e.aut.por,n:whoName(e.aut.por),c:'#B7791F'}:null))}${panel('Autorizadas por turno','pt',tur)}${st.per!=='mes'?panel('Por mes','pm',grp(es,mesRow).sort((a,b)=>a.o-b.o),false):''}</div><p class="qd-note" style="margin-top:14px">Toca una cifra o una barra para ver la lista de pacientes.</p>`; }
 function cmStatsHTML(){ V.L={}; const st=V.cm, all=list('comite').filter(e=>perFilter(st,e)), es=all.filter(e=>!e.can), cans=all.filter(e=>e.can);
   const ses=es.filter(e=>e.nota), nses=es.filter(e=>e.nses&&!e.nota), pen=es.filter(e=>!e.nota&&!e.nses), repE=es.filter(e=>(e.h||[]).some(x=>/^Reprogramad/.test(x.a))), rep=es.reduce((n,e)=>n+(e.h||[]).filter(x=>/^Reprogramad/.test(x.a)).length,0), pac=new Set(es.map(e=>nz(e.exp))).size;
   const qx=list('quirofano').filter(e=>e.res&&e.res.v==='operado'); const lag=[]; ses.forEach(e=>{ const t=dkey(e.fecha), c=qx.filter(q=>nz(q.exp)===nz(e.exp)&&dkey(q.fecha)>=t).sort((a,b)=>dkey(a.fecha)-dkey(b.fecha))[0]; if(c) lag.push([e,Math.round((dkey(c.fecha)-t)/86400000)]); });
@@ -20316,7 +20322,7 @@ function openList(key){ const L=V.L&&V.L[key]; if(!L) return; const k=V.view, d=
 try{ const mqW=matchMedia('(min-width:701px)'); const rr=()=>{ try{ renderView(); }catch(_){} }; if(mqW.addEventListener) mqW.addEventListener('change',rr); else mqW.addListener(rr); }catch(_){}
 function viewChange(e){ const s=e.target.closest('[data-qper]'); if(s){ V[V.view].per=s.value; renderView(); return; } const st=V[V.view]; if(!st) return; if(e.target.matches('[data-qfa]')){ st.fad=e.target.value; st.cur=null; renderView(); return; } if(e.target.matches('[data-qfcl]')){ st.fcl=e.target.value; st.fc=''; st.cur=null; renderView(); } }
 function viewClick(e){ const t=e.target.closest('button'); if(!t) return; const k=V.view, st=V[k];
-  if(t.dataset.qsel){ st.cur=t.dataset.qsel; st.cal=false; renderView(); return; }
+  if(t.dataset.qsel){ if(t.closest('[data-surgery-pending]'))st.pendingExpanded=true; st.cur=t.dataset.qsel; st.cal=false; renderView(); return; }
   if(t.dataset.qwk){ const d=pDMY(st.sel)||new Date(); const n=new Date(d.getFullYear(),d.getMonth(),d.getDate()+7*(+t.dataset.qwk),12); st.sel=dDMY(n); st.m={y:n.getFullYear(),m:n.getMonth()}; renderView(); return; }
   if('qmes' in t.dataset){ st.cal=!st.cal; renderView(); return; }
   if(t.dataset.qtog){ const id=t.dataset.qtog; if(V.open.has(id)) V.open.delete(id); else V.open.add(id); renderView(); return; }
@@ -20346,11 +20352,11 @@ function unAuth(id,b){ if(!b.dataset.ok){ b.dataset.ok='1'; const lb=b.textConte
 function delEntry(t,id,b,pending=false){ const e=AG[t]?.items[id]; if(pending?!(e&&!e.fecha&&!offE(e)&&!e.res&&!e.aut&&can('editar_quirofano')):!canDelE(e,t)){ say('Tu usuario no puede borrar esta entrada.','warn'); return; } if(!pending){
     if(!confirm((t==='quirofano'?'¿Borrar la programación de ':'¿Borrar la sesión de ')+(e.nombre||'este paciente')+' (Exp. '+(e.exp||'sin registrar')+')? Se eliminará esta entrada de la agenda.')) return;
   } else if(!b.dataset.ok){ b.dataset.ok='1'; const lb=b.innerHTML; b.textContent='¿Borrar? Toca otra vez'; setTimeout(()=>{ if(b.isConnected){ delete b.dataset.ok; b.innerHTML=lb; } },4000); return; } agChange(t,id,{},t==='quirofano'?'Quitado de la programación':'Quitado del comité',pending?'delPending':'del'); say(t==='quirofano'?'Paciente quitado de la programación.':'Entrada borrada.','ok'); }
-const SUG={quirofanonoaut:['FALTA VALORACIÓN PREOPERATORIA','ESTUDIOS INCOMPLETOS','EXPEDIENTE INCOMPLETO','FALTA DE TIEMPO QUIRÚRGICO','FALTA DE MATERIAL O INSUMOS','FALTA DE HEMODERIVADOS','SIN CAMA EN TERAPIA INTENSIVA'],quirofanocan:['PACIENTE NO ACEPTA CIRUGÍA','CAMBIO DE PLAN TERAPÉUTICO','PROGRESIÓN DE LA ENFERMEDAD','REFERIDO A OTRA UNIDAD','ENTRADA DUPLICADA'],comitecan:['CAMBIO DE PLAN TERAPÉUTICO','REFERIDO A OTRA UNIDAD','PACIENTE PERDIDO EN SEGUIMIENTO','ENTRADA DUPLICADA'],comitenses:['FALTA REPORTE DE PATOLOGÍA','FALTAN ESTUDIOS DE IMAGEN','PACIENTE NO ACUDIÓ','ADSCRITO AUSENTE','FALTA DE TIEMPO EN LA SESIÓN']};
-function reasonAsk(t,id,k){ const e=AG[t].items[id]; if(!e) return; const C={noaut:['No autorizar','Motivo por el que no se autoriza','No autorizar','No autorizada: '],can:['Cancelar entrada','Motivo de la cancelación','Cancelar entrada','Entrada cancelada: '],nses:['No sesionado','Motivo por el que no se sesionó','Marcar no sesionado','No sesionado: ']}[k];
+const SUG={quirofanonoaut:['FALTA VALORACIÓN PREOPERATORIA','ESTUDIOS INCOMPLETOS','EXPEDIENTE INCOMPLETO','FALTA DE TIEMPO QUIRÚRGICO','FALTA DE MATERIAL O INSUMOS','FALTA DE HEMODERIVADOS','SIN CAMA EN TERAPIA INTENSIVA'],quirofanocan:['Paciente no acepta cirugía','Falta de tiempo quirúrgico','Cambio de plan terapéutico','Progresión de la enfermedad'],comitecan:['CAMBIO DE PLAN TERAPÉUTICO','REFERIDO A OTRA UNIDAD','PACIENTE PERDIDO EN SEGUIMIENTO','ENTRADA DUPLICADA'],comitenses:['FALTA REPORTE DE PATOLOGÍA','FALTAN ESTUDIOS DE IMAGEN','PACIENTE NO ACUDIÓ','ADSCRITO AUSENTE','FALTA DE TIEMPO EN LA SESIÓN']};
+function reasonAsk(t,id,k){ const e=AG[t].items[id]; if(!e) return; const C={noaut:['No autorizar','Motivo por el que no se autoriza','No autorizar','No autorizada: '],can:t==='quirofano'?['Cancelar programación','Motivo de la cancelación','Confirmar cancelación','Programación cancelada: ']:['Cancelar sesión','Motivo de la cancelación','Confirmar cancelación','Sesión cancelada: '],nses:['No sesionado','Motivo por el que no se sesionó','Marcar no sesionado','No sesionado: ']}[k];
   const d=dlg('dlgQxReason'); d.innerHTML=dlgShell(C[0],H(e.nombre)+' · Exp. '+H(e.exp),`<label class="qd-l req"><span>${C[1]}</span><textarea id="qrsT" rows="3"></textarea></label><div class="qd-pick">${(SUG[t+k]||[]).map(x=>`<button type="button" data-sug>${H(x)}</button>`).join('')}</div><p class="qd-msg" id="qrsM" role="alert"></p>`,`<button type="button" class="qx-btn" data-qd-x>Volver</button><button type="button" class="qx-btn pri" id="qrsOk">${C[2]}</button>`); show(d); setTimeout(()=>{ try{ d.querySelector('#qrsT').focus(); }catch(_){} },40);
   d.querySelectorAll('[data-sug]').forEach(b=>b.onclick=()=>{ const x=d.querySelector('#qrsT'); x.value=b.textContent; x.focus(); });
-  d.querySelector('#qrsOk').onclick=()=>{ const m=up(d.querySelector('#qrsT').value); if(!m){ d.querySelector('#qrsM').textContent='Escribe el motivo.'; return; } const set={}; set[k]={motivo:m}; agChange(t,id,set,C[3]+m); d.close(); say(C[0]+' · listo.','ok'); }; }
+  d.querySelector('#qrsOk').onclick=()=>{ const m=up(d.querySelector('#qrsT').value); if(!m){ d.querySelector('#qrsM').textContent='Escribe el motivo.'; return; } const set={}; set[k]={motivo:m}; agChange(t,id,set,C[3]+m,t==='quirofano'&&k==='can'&&!e.fecha?'cancelPending':'set'); d.close(); say(C[0]+' · listo.','ok'); }; }
 async function openFile(exp){ const f=fileByExp(exp); if(!f){ say('No se encontró el expediente '+exp+' en Drive.','warn'); return; } try{ if(window.arWinOpen) arWinOpen(f.id); else openDriveFile(f.id); }catch(e){ say('No se pudo abrir: '+(typeof friendly==='function'?friendly(e):e.message),'warn'); } }
 
 /* ---------- Ventanas (diálogos) ---------- */
