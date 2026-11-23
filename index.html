@@ -337,7 +337,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="10.26">
+<meta name="application-version" content="10.27">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="crab">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="crab">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="crab">
@@ -2769,7 +2769,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 10.26 · Fecha de publicación: 22.11.26</div>
+  <div class="app-footer-version">Versión 10.27 · Fecha de publicación: 22.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -8234,6 +8234,37 @@ function refresh(){
   if(typeof updateSecNav==="function") try{ updateSecNav(); renderSync(); }catch(_){}
 }
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+/* v10.27 · Repintado sin parpadeo: solo se cambian los nodos distintos; el campo en edición conserva su texto, foco y selección */
+function hjmMorphKey(n){ return n&&n.nodeType===1?(n.getAttribute("data-id")||n.getAttribute("data-k")||null):null; }
+function hjmMorphNode(a,b){
+  if(a.nodeType!==b.nodeType||a.nodeName!==b.nodeName){ a.replaceWith(b); return; }
+  if(a.nodeType!==1){ if(a.nodeValue!==b.nodeValue) a.nodeValue=b.nodeValue; return; }
+  const ae=document.activeElement, foc=a===ae;
+  for(const at of [...a.attributes]){ if(at.name==="style"&&/^(TEXTAREA|INPUT)$/.test(a.tagName)) continue; if(!b.hasAttribute(at.name)) a.removeAttribute(at.name); }
+  for(const at of [...b.attributes]){ if(a.getAttribute(at.name)!==at.value) a.setAttribute(at.name,at.value); }
+  if(a.tagName==="TEXTAREA"){ if(!foc){ const v=b.value; if(a.value!==v) a.value=v; } return; }
+  if(a.tagName==="INPUT"){ if(!foc){ if(a.value!==b.value) a.value=b.value; if(a.checked!==b.checked) a.checked=b.checked; } return; }
+  if(a.tagName==="SELECT"&&foc) return;
+  hjmMorphKids(a,b);
+}
+function hjmMorphKids(a,b){
+  const bc=[...b.childNodes], keyed=new Map(); [...a.childNodes].forEach(n=>{ const k=hjmMorphKey(n); if(k&&!keyed.has(k)) keyed.set(k,n); });
+  let cur=a.firstChild;
+  bc.forEach(nb=>{ const k=hjmMorphKey(nb); let m=null;
+    if(k){ m=keyed.get(k)||null; if(m) keyed.delete(k); }
+    else if(cur&&!hjmMorphKey(cur)&&cur.nodeName===nb.nodeName) m=cur;
+    if(m){ if(m!==cur) a.insertBefore(m,cur); hjmMorphNode(m,nb); cur=m.nextSibling; }
+    else a.insertBefore(nb,cur); });
+  while(cur){ const nx=cur.nextSibling; cur.remove(); cur=nx; }
+}
+function hjmMorphHTML(el,html){
+  if(!el) return; if(el._hjmHTML===html&&el.childNodes.length&&el.firstChild===el._hjmFirst&&el.childNodes.length===el._hjmN) return;
+  const ae=document.activeElement, inEl=ae&&ae!==document.body&&el.contains(ae), ss=inEl&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
+  try{ const t=document.createElement("template"); t.innerHTML=html; hjmMorphKids(el,t.content); }catch(_){ el.innerHTML=html; }
+  el._hjmHTML=html; el._hjmFirst=el.firstChild; el._hjmN=el.childNodes.length;
+  if(inEl&&ae.isConnected&&document.activeElement!==ae){ try{ ae.focus({preventScroll:true}); if(ss) ae.setSelectionRange(ss[0],ss[1]); }catch(_){} }
+}
+window.hjmMorphHTML=hjmMorphHTML;
 const FORMAT_NOTE="Puedes escribir directamente sobre el formato.";
 const TRANSFUSION_FIELDS=["hb","hto","plt","tp","inr","tpt","indicacion","peso","gestas","partos","abortos","cesareas"];
 const TRANSFUSION_LABELS={hb:"Hb",hto:"Hto",plt:"Plaquetas",tp:"TP",inr:"INR",tpt:"TPT",indicacion:"Indicación de transfusión",peso:"Peso",gestas:"Gestas",partos:"Partos",abortos:"Abortos",cesareas:"Cesáreas"};
@@ -11703,10 +11734,10 @@ function renderPP(){
   const simple=!ppHome&&!camaMode;   /* v5.09 · buscador de la hoja de datos: solo Nombre, Expediente, FN y Cama, sin botones de acceso rápido ni de copiar; carga directo en la hoja de datos */
   const feMode=!camaMode&&!simple&&(!!s||(ppHome&&PP_VIEW==="recientes"));   /* v3.64 · Todos y cualquier búsqueda muestran los mismos datos, incluida FN y edad. */
   $("ppList").classList.toggle("by-record",!!feMode);
-  $("ppList").innerHTML=items.length?items.slice(0,ppShown).map(f=>{ const p=f.meta||{}, exp=p.exp||patientExpFromFileName(f.name), nm=p.nombre||exp;
+  hjmMorphHTML($("ppList"),items.length?items.slice(0,ppShown).map(f=>{ const p=f.meta||{}, exp=p.exp||patientExpFromFileName(f.name), nm=p.nombre||exp;
     const bed=camaMode&&p.cama?`<span class="cama-badge${String(p.cama).trim().length>3?" long":""}" title="Cama ${esc(p.cama)}">${esc(String(p.cama).trim().replace(/^UCI\s*/i,"UCI "))}</span>`:"";
     const tg="div"; return `<${tg} role="button" tabindex="0" class="dlg-item${bed?" has-bed":""}" data-id="${f.id}" data-exp="${esc(exp)}">${camaMode?`<span class="pp-kebab" role="button" tabindex="0" data-ppmenu aria-haspopup="menu" aria-expanded="false" title="Acciones" aria-label="Acciones del paciente"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></span>`:""}${bed}<span class="pinfo"><span class="nmw">${(camaMode||feMode)?ppCpyHTML():""}<b data-sel>${esc(String(nm).toLocaleUpperCase("es-MX"))}</b></span><span class="tags"><span class="tgw">${(camaMode||feMode)?ppCpyHTML():""}<span class="tag" data-sel>Exp. ${esc(exp)}</span></span>${(camaMode||feMode)?`<span class="tgw">${ppCpyHTML()}${ppFnHTML(f)}</span>`+ppEdadHTML(f):simple?`<span class="tgw">${ppFnHTML(f)}</span>`:""}${p.cama&&!bed?`<span class="tag cama">Cama ${esc(p.cama)}</span>`:""}</span>${simple?"":(p.dx?`<small class="dx">${esc(p.dx)}</small>`:"")}${camaMode?ppHospitalMetaHTML(p,f):simple?"":ppMetaMod(p,camaMode)}</span>${camaMode?ppPendHTML(f):feMode?ppRecordActionsHTML():""}</${tg}>`; }).join("")
-    :filtOn?'<div class="dlg-empty">Ningún paciente con ese filtro en esta vista. Puedes borrar el filtro o cambiar a «Archivo». Los pacientes se asocian al adscrito la próxima vez que se guardan.</div>':camaMode?'<div class="dlg-empty">Sin pacientes hospitalizados. Usa «Archivo» o el buscador.</div>':`<button type="button" class="dlg-item pp-new" data-pp-new><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H5v18h14V8l-5-5zM14 3v5h5M8 14h8M12 10v8"/></svg><b>Nuevo Paciente</b></button>`;
+    :filtOn?'<div class="dlg-empty">Ningún paciente con ese filtro en esta vista. Puedes borrar el filtro o cambiar a «Archivo». Los pacientes se asocian al adscrito la próxima vez que se guardan.</div>':camaMode?'<div class="dlg-empty">Sin pacientes hospitalizados. Usa «Archivo» o el buscador.</div>':`<button type="button" class="dlg-item pp-new" data-pp-new><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H5v18h14V8l-5-5zM14 3v5h5M8 14h8M12 10v8"/></svg><b>Nuevo Paciente</b></button>`);
   try{ ppCensusSync(!!camaMode); }catch(_){}
   try{ ppRowFill(!!(camaMode||feMode||simple),items.slice(0,ppShown)); }catch(_){}
   try{ ppPendFitAll($("ppList")); }catch(_){}
@@ -13896,7 +13927,7 @@ function cenRenderActual(w){
   const html=cenBarHTML()
       +cenContHTML(per,cen)+`<div class="cen-scroll">${cenTableHTML(cen)}</div>`+cenResHTML(cen)+`<div class="cen-rev"><h4>Reverso</h4>${cenRevHTML(cen,true)}</div>`;
   if(w._liveMarkup!==html||w._liveTable!==w.querySelector(".cen-scroll")){
-    cenKeep(w,()=>{w.innerHTML=html;cenSyncUI();});
+    cenKeep(w,()=>{(window.hjmMorphHTML||((e,h)=>{e.innerHTML=h;}))(w,html);cenSyncUI();});
     w._liveMarkup=html;w._liveTable=w.querySelector(".cen-scroll");
   }else cenSyncUI();
   cenKick(per,cen);
@@ -13936,7 +13967,7 @@ async function cenOpenHist(name){
 function cenRenderHist(w){
   CEN.mode="hist"; const cf=CEN.hist, cen=cf.obj; if(cenDirtyFocus(w)){ CEN.pend=true; return; } CEN.pend=false; CEN.cur=cen;
   cenSetTitle("Censo "+cen.fecha,cen);
-  cenKeep(w,()=>{ w.innerHTML=cenBarHTML()+`<div class="cen-scroll">${cenTableHTML(cen)}</div>`+cenResHTML(cen)+`<div class="cen-rev"><h4>Reverso</h4>${cenRevHTML(cen,true)}</div>`; cenSyncUI(); });
+  cenKeep(w,()=>{ (window.hjmMorphHTML||((e,h)=>{e.innerHTML=h;}))(w,cenBarHTML()+`<div class="cen-scroll">${cenTableHTML(cen)}</div>`+cenResHTML(cen)+`<div class="cen-rev"><h4>Reverso</h4>${cenRevHTML(cen,true)}</div>`); cenSyncUI(); });
 }
 
 
