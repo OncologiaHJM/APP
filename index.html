@@ -337,7 +337,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="10.30">
+<meta name="application-version" content="10.32">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="hjm">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="hjm">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="hjm">
@@ -2769,7 +2769,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 10.30 · Fecha de publicación: 23.11.26</div>
+  <div class="app-footer-version">Versión 10.32 · Fecha de publicación: 23.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -3065,7 +3065,7 @@ html body.pp-browse #pPanel:not(.cen-on) #ppSharedHead #ppHeaderSummary{display:
 [data-theme="dark"] :is(#ppList,#ppPendingPanels) .pp-nj .pp-nj-x{border-color:#4a4434;color:#b9ad90}[data-theme="dark"] :is(#ppList,#ppPendingPanels) .pp-nj tr.dsc td{color:#8a8576}
 /* v10.30 · Agregar paciente (Censo y Hospitalizados): tarjeta con lo esencial y secciones plegables */
 html body dialog#dlgCenAdd .ca-census-fields{display:flex!important;flex-direction:column;gap:12px;padding:2px 0 4px}
-html body dialog#dlgCenAdd .ca-census-fields>.ca-main{order:1}html body dialog#dlgCenAdd .ca-census-fields>.ca-general{order:2}html body dialog#dlgCenAdd .ca-census-fields>.ca-more{order:3}
+html body dialog#dlgCenAdd .ca-census-fields>.ca-hero{order:0}html body dialog#dlgCenAdd .ca-census-fields>.ca-general{order:1}html body dialog#dlgCenAdd .ca-census-fields>.ca-main{order:2}html body dialog#dlgCenAdd .ca-census-fields>.ca-more{order:3}
 html body dialog#dlgCenAdd .ca-census-fields>.ca-main{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px;padding:16px 18px 18px;margin:0;border:1px solid var(--rd-line,#d9e2ec);border-left:4px solid var(--u-acc,#2563a6);border-radius:16px;background:var(--rd-surface,#fff);box-shadow:0 6px 18px -12px rgba(20,44,69,.35)}
 html body dialog#dlgCenAdd .ca-census-fields>.ca-main>h3{grid-column:1/-1;margin:0!important;padding:0!important;font-size:12px;font-weight:750;letter-spacing:.06em;text-transform:uppercase;color:var(--u-acc,#2563a6)}
 html body dialog#dlgCenAdd .ca-census-fields>.ca-main>.ca-bed{display:contents}
@@ -3091,6 +3091,24 @@ html body #dlgCenAdd #caList .tag.ca-hz{background:#fdecea;color:#a3271c;border-
 @media (max-width:600px){html body dialog#dlgCenAdd .ca-census-fields>.ca-main,html body dialog#dlgCenAdd .ca-census-fields :is(.ca-ident-fields,.ca-more-grid){grid-template-columns:1fr}html body dialog#dlgCenAdd .ca-census-fields>.ca-main{padding:14px}}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #dlgCenAdd #caList .tag.ca-hz{background:#4a1f1b;color:#ffb4ab;border-color:#6b2a24}}
 :root[data-theme="dark"] #dlgCenAdd #caList .tag.ca-hz{background:#4a1f1b;color:#ffb4ab;border-color:#6b2a24}
+/* v10.31 · Tarjeta del paciente, iconos y puntos de dato faltante */
+html body dialog#dlgCenAdd .ca-census-fields>.ca-hero{display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:18px;background:linear-gradient(135deg,var(--u-acc,#2563a6),#1b3f6b);color:#fff;box-shadow:0 10px 24px -14px rgba(20,44,69,.7)}
+html body dialog#dlgCenAdd .ca-census-fields>.ca-hero .ca-av{flex:none;display:grid;place-items:center;width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.45);font-size:18px;font-weight:750;letter-spacing:.03em}
+html body dialog#dlgCenAdd .ca-census-fields>.ca-hero .ca-hi{flex:1;min-width:0}
+html body dialog#dlgCenAdd .ca-census-fields>.ca-hero .ca-hi>b{display:block;font-size:16px;line-height:1.25;overflow-wrap:anywhere}
+html body dialog#dlgCenAdd .ca-census-fields>.ca-hero .ca-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+html body dialog#dlgCenAdd .ca-census-fields>.ca-hero .ca-chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.16);font-size:12px;font-weight:600;white-space:nowrap}
+html body dialog#dlgCenAdd .ca-census-fields>.ca-hero .ca-chip.miss{background:rgba(255,255,255,.06);color:rgba(255,255,255,.85);font-weight:500;border:1px dashed rgba(255,255,255,.35)}
+html body dialog#dlgCenAdd .ca-census-fields>.ca-hero :is(.ca-chip.miss,.ca-pend) i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#ffb347;box-shadow:0 0 0 3px rgba(255,179,71,.25)}
+html body dialog#dlgCenAdd .ca-census-fields>.ca-hero :is(.ca-pend,.ca-ok){flex:none;display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.14);font-size:12px;font-weight:650;white-space:nowrap}
+html body dialog#dlgCenAdd .ca-census-fields .ca-ic{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+html body dialog#dlgCenAdd .ca-census-fields>.ca-main>h3{display:flex!important;align-items:center;gap:8px}
+html body dialog#dlgCenAdd .ca-census-fields>:is(.ca-general,.ca-more)>summary .ca-ic{color:var(--u-acc,#2563a6)}
+html body dialog#dlgCenAdd .ca-census-fields .ca-cnt{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#f59e0b;color:#fff;font-style:normal;font-size:11px;font-weight:750;line-height:1;letter-spacing:0}
+html body dialog#dlgCenAdd .ca-census-fields .ca-cnt[hidden],html body dialog#dlgCenAdd .ca-census-fields .ca-cnt:empty{display:none}
+html body dialog#dlgCenAdd .ca-census-fields .f.ca-miss>label::after{content:""!important;display:inline-block!important;position:static!important;width:7px!important;height:7px!important;margin-left:7px!important;border-radius:50%!important;background:#f59e0b!important;vertical-align:middle;box-shadow:0 0 0 3px rgba(245,158,11,.18)!important}
+html body dialog#dlgCenAdd .ca-census-fields :is(input:not([hidden]),textarea):focus{outline:none;border-color:var(--u-acc,#2563a6)!important;box-shadow:0 0 0 3px rgba(37,99,166,.15)!important}
+@media (max-width:600px){html body dialog#dlgCenAdd .ca-census-fields>.ca-hero{flex-wrap:wrap;padding:14px}html body dialog#dlgCenAdd .ca-census-fields>.ca-hero .ca-hi{flex:1 1 100%}html body dialog#dlgCenAdd .ca-census-fields>.ca-hero :is(.ca-pend,.ca-ok){order:3}}
 /* Agenda (Quirófano y Comité): mismos colores de acción */
 html body .qx-c-act .qx-btn.bad{color:#B42318;border-color:#F4C7C2;background:#FEF3F2}
 html body .qx-c-act .qx-btn.bad:hover{background:#FDE4E1}
@@ -12022,6 +12040,7 @@ function ppSrvFix(f,changes){ try{ if(!changes||changes.cama===undefined||change
   const op=hasSelectedPatient()&&String(($("expediente")||{}).value||"").trim()===ppExp(f), cur=op?($("servicio")||{}).value:metaSrv(f&&f.meta||{});
   return String(cur==null?"":cur).trim()?changes:Object.assign({},changes,{servicio:"ONCOLOGÍA"}); }catch(_){ return changes; } }
 try{ document.addEventListener("click",()=>setTimeout(()=>{ try{ ppBandSync(); }catch(_){} },0),true); }catch(_){}
+try{ (function(){ const b=$("bandNew"); if(!b||typeof MutationObserver!=="function") return; let busy=false; new MutationObserver(()=>{ if(busy) return; busy=true; try{ ppBandSync(); }catch(_){} busy=false; }).observe(b,{childList:true,characterData:true,subtree:true}); new MutationObserver(()=>{ try{ ppBandSync(); }catch(_){} }).observe(document.body,{attributes:true,attributeFilter:["class"]}); setInterval(()=>{ try{ ppBandSync(); }catch(_){} },1500); })(); }catch(_){}
 function ppBandSync(){ try{ const b=$("bandNew"); if(!b) return; const on=PP_VIEW==="cama"||PP_VIEW==="censoActual", lbl=on?"Agregar Paciente":"Nuevo Paciente", t=[...b.childNodes].reverse().find(n=>n.nodeType===3); if(t&&t.textContent!==lbl) t.textContent=lbl; b.title=lbl; }catch(_){} }
 try{ document.addEventListener("change",e=>{ const t=e.target; if(!t||(t.id!=="cama"&&t.id!=="hospOncoChk")) return; setTimeout(()=>{ try{ const c=$("cama"),sv=$("servicio"); if(!c||!sv||String(sv.value||"").trim()) return; if(camaHosp(c.value,($("hospOnco")||{}).value)){ sv.value="ONCOLOGÍA"; sv.dispatchEvent(new Event("input",{bubbles:true})); sv.dispatchEvent(new Event("change",{bubbles:true})); } }catch(_){} },0); },true); }catch(_){}
 function cenFreezeRow(f,sec,ts,camaPrev){
@@ -14674,7 +14693,7 @@ function cenAddPhase(n){
 function cenAddFields(){
  const fs=CENADD.fs;if(!fs||CENADD.fields)return;
  const container=document.createElement('div');container.className='ca-census-fields';
- container.innerHTML='<div class="ca-main ca-clinical-fields"><h3>Hospitalización</h3><div class="ca-bed"></div></div><details class="ca-general" open><summary>Datos generales <span class="ca-patient-summary"></span></summary><div class="ca-ident-fields"></div></details><details class="ca-more ca-clinical-fields"><summary>Datos del censo <small>Cirugías · QT · MT · Labs · Pendientes · Estatus</small></summary><div class="ca-more-grid"></div></details>';
+ container.innerHTML='<div class="ca-hero" aria-live="polite"></div><div class="ca-main ca-clinical-fields"><h3><svg class="ca-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18V7M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="10.5" r="1.6"/></svg><span>Hospitalización</span><i class="ca-cnt"></i></h3><div class="ca-bed"></div></div><details class="ca-general" open><summary><svg class="ca-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/></svg><span class="ca-st">Datos generales</span><i class="ca-cnt"></i><span class="ca-patient-summary"></span></summary><div class="ca-ident-fields"></div></details><details class="ca-more ca-clinical-fields"><summary><svg class="ca-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4"/></svg><span class="ca-st">Datos del censo</span><i class="ca-cnt"></i><small>Cirugías · QT · MT · Labs · Pendientes · Estatus</small></summary><div class="ca-more-grid"></div></details>';
  fs.appendChild(container);CENADD.fields=container;CENADD.moves=[];
  const move=(el,target)=>{const field=el?.closest('.f');if(!field||CENADD.moves.some(x=>x.field===field))return;const marker=document.createComment('census-field');field.before(marker);CENADD.moves.push({field,marker});target.appendChild(field);};
  move($('cama'),container.querySelector('.ca-bed'));
@@ -14697,14 +14716,27 @@ function cenAddAutoEstatus(existing){
 }
 function cenAddPresentation(existing){
  const d=$('dlgCenAdd'),fields=CENADD.fields;if(!fields)return;try{cenAddAutoEstatus(existing);}catch(_){}d.classList.toggle('ca-existing',!!existing);d.classList.toggle('ca-new-patient',!existing);
- const det=fields.querySelector('.ca-general');det.open=!existing;const more=fields.querySelector('.ca-more');if(more)more.open=false;
+ const det=fields.querySelector('.ca-general');det.open=!existing;const more=fields.querySelector('.ca-more');if(more)more.open=CENADD.mode!=="hosp";
  if((CENADD.mode==="add"||CENADD.mode==="hosp")&&!camaHosp(($('cama')||{}).value,($('hospOnco')||{}).value)){const fi=$('fIngreso'),px=$('cenIngProxy'),hoy=todayStr();if(fi&&fi.value!==hoy){fi.value=hoy;fi.dispatchEvent(new Event('input',{bubbles:true}));fi.dispatchEvent(new Event('change',{bubbles:true}));}if(px)px.value=hoy;}
  const name=[$('apPaterno')?.value,$('apMaterno')?.value,$('nombres')?.value].filter(Boolean).join(' '),exp=$('expediente')?.value||'';
  const birth=$('fnac')?.value||'',years=birth?edad(birth,todayStr()):'',identity=[name,years!==''&&years!=null?years+' años':'',exp?'Exp. '+exp:'',birth?'FN. '+birth:''].filter(Boolean).join(' · ');
- fields.querySelector('.ca-patient-summary').textContent=existing?identity:'Identificación del paciente nuevo';const selected=$('caSelectedPatient');if(selected){selected.hidden=!existing;selected.textContent=existing?identity:'';}
+ fields.querySelector('.ca-patient-summary').textContent=existing?identity:'Identificación del paciente nuevo';try{caDecorate(fields,existing);}catch(_){}const selected=$('caSelectedPatient');if(selected){selected.hidden=!existing;selected.textContent=existing?identity:'';}
  const service=$('servicio');if(service&&!service.value.trim())service.value='ONCOLOGÍA';
  requestAnimationFrame(()=>{const target=$('cama');if(target){target.focus({preventScroll:true});if(existing){const row=target.closest('.f'),top=row?row.getBoundingClientRect().top:target.getBoundingClientRect().top;d.scrollTop=Math.max(0,d.scrollTop+top-d.getBoundingClientRect().top-90);}else d.scrollTop=0;}});
 }
+/* v10.31 · Tarjeta del paciente y puntos de dato faltante en Agregar paciente */
+const CA_REQ={cama:"Cama",cenIngProxy:"Fecha de ingreso",medico:"Médico tratante",clinica:"Clínica",diagnostico:"Diagnóstico",apPaterno:"Apellido paterno",nombres:"Nombre",expediente:"Expediente",fnac:"Fecha de nacimiento",genero:"Sexo"};
+function caVal(id){ const e=$(id); return String((e&&e.value)||"").trim(); }
+function caPaint(fields){ if(!fields) return; const miss=[];
+  Object.keys(CA_REQ).forEach(id=>{ const e=$(id), f=e&&e.closest(".f"); if(!f||!fields.contains(f)) return; const m=!caVal(id); f.classList.toggle("ca-miss",m); if(m) miss.push(id); });
+  fields.querySelectorAll(".ca-main,.ca-general,.ca-more").forEach(sec=>{ const n=sec.querySelectorAll(".f.ca-miss").length, c=sec.querySelector(".ca-cnt"); if(c){ c.textContent=n?String(n):""; c.hidden=!n; c.title=n?(n===1?"1 dato pendiente":n+" datos pendientes"):""; } });
+  const h=fields.querySelector(".ca-hero"); if(!h) return;
+  const nm=[caVal("apPaterno"),caVal("apMaterno"),caVal("nombres")].filter(Boolean).join(" "), ex=caVal("expediente"), fn=caVal("fnac"), sx=caVal("genero");
+  let ed=""; try{ ed=fn?edad(fn,todayStr()):""; }catch(_){}
+  const chip=(ok,lbl,val)=>'<span class="ca-chip'+(ok?'':' miss')+'" title="'+(ok?esc(lbl):'Falta: '+esc(lbl))+'">'+(ok?esc(val):'<i></i>'+esc(lbl))+'</span>';
+  const rest=miss.length;
+  h.innerHTML='<div class="ca-hi"><b>'+(nm?esc(nm):'Paciente nuevo')+'</b><div class="ca-chips">'+chip(!!ex,"Expediente","Exp. "+ex)+chip(!!fn,"Fecha de nacimiento","FN. "+fn+(ed!==""&&ed!=null?" · "+ed+" años":""))+chip(!!sx,"Sexo",sx==="MASCULINO"?"Hombre":sx==="FEMENINO"?"Mujer":sx)+'</div></div>'+(rest?'<span class="ca-pend" title="Datos pendientes en el formulario"><i></i>'+rest+' pendiente'+(rest>1?'s':'')+'</span>':'<span class="ca-ok" title="Datos esenciales completos">✓ Completo</span>'); }
+function caDecorate(fields,existing){ caPaint(fields); if(!fields._caOn){ fields._caOn=1; let t=0; const go=()=>{ clearTimeout(t); t=setTimeout(()=>caPaint(fields),60); }; fields.addEventListener("input",go,true); fields.addEventListener("change",go,true); fields.addEventListener("click",go,true); } }
 function cenAddRestore(){
  for(const {field,marker}of CENADD.moves||[]){if(marker.parentNode){marker.replaceWith(field);}}
  CENADD.fields?.remove();CENADD.fields=null;CENADD.moves=[];
