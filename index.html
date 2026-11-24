@@ -337,7 +337,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="10.28">
+<meta name="application-version" content="10.29">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="hjm">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="hjm">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="hjm">
@@ -2769,7 +2769,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 10.28 · Fecha de publicación: 23.11.26</div>
+  <div class="app-footer-version">Versión 10.29 · Fecha de publicación: 23.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -3063,6 +3063,21 @@ html body.pp-browse #pPanel:not(.cen-on) #ppSharedHead #ppHeaderSummary{display:
 :is(#ppList,#ppPendingPanels) .pp-nj td.pp-nj-acc{white-space:nowrap}:is(#ppList,#ppPendingPanels) .pp-nj .pp-nj-x{margin-left:6px;border:1px solid #D9D2C0;background:transparent;color:#8A7F66;border-radius:8px;padding:4px 9px;font:600 12px/1 inherit;cursor:pointer}:is(#ppList,#ppPendingPanels) .pp-nj .pp-nj-x:hover{background:#F4EEDF;color:#6A5E44}
 :is(#ppList,#ppPendingPanels) .pp-nj .pp-nj-d{margin-top:8px}:is(#ppList,#ppPendingPanels) .pp-nj .pp-nj-dt{border:0;background:none;color:#8A7F66;font:600 12.5px inherit;cursor:pointer;text-decoration:underline;padding:4px 0}:is(#ppList,#ppPendingPanels) .pp-nj tr.dsc td{color:#9A9384}
 [data-theme="dark"] :is(#ppList,#ppPendingPanels) .pp-nj .pp-nj-x{border-color:#4a4434;color:#b9ad90}[data-theme="dark"] :is(#ppList,#ppPendingPanels) .pp-nj tr.dsc td{color:#8a8576}
+/* v10.29 · Agregar paciente (Censo y Hospitalizados): lo esencial en tarjeta, lo demás plegado */
+html body #dlgCenAdd .ca-main{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px;padding:14px;margin:4px 0 12px;border:1px solid var(--rd-line,#d9e2ec);border-radius:14px;background:var(--rd-surface,#fff)}
+html body #dlgCenAdd .ca-main>h3{grid-column:1/-1;margin:0 0 2px!important;padding:0!important;font-size:13px;letter-spacing:.02em;text-transform:uppercase;color:var(--rd-navy,#234264)}
+html body #dlgCenAdd .ca-main>.ca-bed{display:contents}
+html body #dlgCenAdd .ca-main .f{grid-column:auto!important;width:auto!important;min-width:0;margin:0!important}
+html body #dlgCenAdd .ca-main .f:has(#diagnostico){grid-column:1/-1!important}
+html body #dlgCenAdd .ca-more{display:block;margin:12px 0;border:1px solid var(--rd-line,#d9e2ec);border-radius:12px;background:var(--rd-surface,#fff)}
+html body #dlgCenAdd .ca-more>summary{cursor:pointer;padding:13px 14px;color:var(--rd-navy,#234264);font-size:13px;font-weight:700;background:var(--rd-wash,#f5f8fc);border-radius:12px}
+html body #dlgCenAdd .ca-more>summary small{font-weight:500;color:var(--rd-mute,#738090);margin-left:6px}
+html body #dlgCenAdd .ca-more[open]>summary{border-radius:12px 12px 0 0}
+html body #dlgCenAdd .ca-more-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px;padding:12px 14px 14px}
+html body #dlgCenAdd .ca-more-grid .f{grid-column:auto!important;width:auto!important;min-width:0;margin:0!important}
+html body #dlgCenAdd .ca-more-grid .f:has(#censoEstatus),html body #dlgCenAdd .ca-more-grid .f:has(#censoPendientes){grid-column:1/-1!important}
+html body #dlgCenAdd.ca-hist .ca-more{display:none}
+@media (max-width:600px){html body #dlgCenAdd .ca-main,html body #dlgCenAdd .ca-more-grid{grid-template-columns:1fr}}
 /* Agenda (Quirófano y Comité): mismos colores de acción */
 html body .qx-c-act .qx-btn.bad{color:#B42318;border-color:#F4C7C2;background:#FEF3F2}
 html body .qx-c-act .qx-btn.bad:hover{background:#FDE4E1}
@@ -11708,6 +11723,7 @@ function renderPendingPanels(){
   if(panel.open)pendingAdmissionToggle(panel);
 }
 function renderPP(){
+  try{ ppBandSync(); }catch(_){}
   if(PP_VIEW!=="cama") $("ppGuard").hidden=true;
   try{renderPendingPanels();}catch(_){}
  if(sessionUserName()&&!accessViewAllowed(PP_VIEW))PP_VIEW=accessFirstView();if(sessionUserName()&&!PP_VIEW){cenShow(false);$('ppList').innerHTML='<div class="pp-empty">Tu usuario no tiene páginas de pacientes habilitadas.</div>';$('ppCount').textContent='';return;}
@@ -11907,7 +11923,7 @@ function nnSweep(){
 }
 function nnSweepSoon(){ if(NN_T||Date.now()-NN_LAST<45000) return; NN_T=setTimeout(()=>{ NN_T=0; NN_LAST=Date.now(); nnSweep(); },4000); }
 const PPQ={chain:Promise.resolve(),over:new Map()};
-const PP_META_KEY={ingresosPrev:"ingp",cama:"cama",medico:"adscrito",clinica:"clinica",diagnostico:"dx",fIngreso:"ingreso",pendientes:"pendientes",altaEn:"egr",defEn:"def",hospOnco:"hosp"};
+const PP_META_KEY={servicio:"srv",ingresosPrev:"ingp",cama:"cama",medico:"adscrito",clinica:"clinica",diagnostico:"dx",fIngreso:"ingreso",pendientes:"pendientes",altaEn:"egr",defEn:"def",hospOnco:"hosp"};
 /* v5.28 · Altas, defunciones y cambios de cama sin parpadeo: lo guardado se recuerda («pegado») hasta que la lista de Drive ya lo trae.
    Una lista que salió de Drive antes del guardado (más vieja) ya no puede regresar al paciente a Hospitalizados ni al censo. */
 const PP_STICKY=new Map();
@@ -11933,6 +11949,7 @@ function clinNormalizeRecord(v,medico){
 
 function ppApply(f,changes,opt){
  if(!accessRequire("editar_pacientes"))return;
+ changes=ppSrvFix(f,changes);
  const quiet=!!(opt&&opt.quiet);
   const exp=ppExp(f);
   if(changes&&changes.fIngreso!==undefined&&changes.ingresosPrev===undefined){ const op=hasSelectedPatient()&&exp&&String($("expediente").value||"").trim()===exp, m0=op?{ingp:($("ingresosPrev")||{}).value||"",ingreso:($("fIngreso")||{}).value||""}:(f.meta||{}), d0=(!op&&typeof ppRowS==='function'&&ppRowS(f))||{}; const nv=ingHistMerge(m0.ingp!=null?m0.ingp:d0.ingresosPrev,m0.ingreso!=null?m0.ingreso:d0.fIngreso,changes.fIngreso); if(nv!=null) changes=Object.assign({},changes,{ingresosPrev:nv}); }
@@ -11986,6 +12003,13 @@ async function ppChangeBed(id){ const f=DRIVE_FILES.find(x=>x.id===id); if(!f) r
   /* v5.28 · de una cama de hospitalización a CE (u otra que no es de hospitalización) = alta: se registra el egreso para que salga en ALTAS del censo */
   if(metaHosp(p)&&!/^RIP$/i.test(v)){ const prev=String(p.cama||"").trim().toUpperCase(), now0=Date.now(); ppApply(f,{cama:v,hospOnco:"",altaEn:new Date(now0).toISOString(),camaPrevia:prev,defEn:""}); cenFreezeRow(f,"E",now0,prev); try{ notify("Se registró como alta: sale de Hospitalizados y aparece en ALTAS del censo.","info",{ms:5000}); }catch(_){} return; }
   ppApply(f,{cama:v,hospOnco:""}); }
+/* v10.29 · Servicio vacío no cuenta como hospitalizado: al asignar una cama de hospitalización sin servicio se pone ONCOLOGÍA (un servicio distinto se respeta) */
+function ppSrvFix(f,changes){ try{ if(!changes||changes.cama===undefined||changes.servicio!==undefined) return changes;
+  const h=changes.hospOnco!==undefined?changes.hospOnco:(f&&f.meta||{}).hosp; if(!camaHosp(changes.cama,h)) return changes;
+  const op=hasSelectedPatient()&&String(($("expediente")||{}).value||"").trim()===ppExp(f), cur=op?($("servicio")||{}).value:metaSrv(f&&f.meta||{});
+  return String(cur==null?"":cur).trim()?changes:Object.assign({},changes,{servicio:"ONCOLOGÍA"}); }catch(_){ return changes; } }
+function ppBandSync(){ try{ const b=$("bandNew"); if(!b) return; const on=PP_VIEW==="cama"||PP_VIEW==="censoActual", lbl=on?"Agregar Paciente":"Nuevo Paciente", t=[...b.childNodes].reverse().find(n=>n.nodeType===3); if(t&&t.textContent!==lbl) t.textContent=lbl; b.title=lbl; }catch(_){} }
+try{ document.addEventListener("change",e=>{ const t=e.target; if(!t||(t.id!=="cama"&&t.id!=="hospOncoChk")) return; setTimeout(()=>{ try{ const c=$("cama"),sv=$("servicio"); if(!c||!sv||String(sv.value||"").trim()) return; if(camaHosp(c.value,($("hospOnco")||{}).value)){ sv.value="ONCOLOGÍA"; sv.dispatchEvent(new Event("input",{bubbles:true})); sv.dispatchEvent(new Event("change",{bubbles:true})); } }catch(_){} },0); },true); }catch(_){}
 function cenFreezeRow(f,sec,ts,camaPrev){
   (async()=>{ try{
     const cf=await cenActualEnsure(cenPeriod()), per=cenPeriod(), Td=per.next, S=cenCut(cenDay(Td.y,Td.m,Td.d,-1));
@@ -14619,7 +14643,7 @@ function cenAddEnsure(){
   d.addEventListener("cancel",e=>{ e.preventDefault(); cenAddClose(); });
   $("caClose").onclick=$("caCancel").onclick=()=>cenAddClose();
   $("caQ").oninput=cenAddList;
-  $("caList").onclick=e=>{ if(e.target.closest("[data-new]")){ cenAddNew(); return; } const b=e.target.closest("[data-id]"); if(b) cenAddPick(b.dataset.id); };
+  $("caList").onclick=e=>{ if(CENADD.mode==="hosp"){ if(e.target.closest("[data-new]")){ hospAddNew(); return; } const hb=e.target.closest("[data-id]"); if(hb) hospAddPick(hb.dataset.id); return; } if(e.target.closest("[data-new]")){ cenAddNew(); return; } const b=e.target.closest("[data-id]"); if(b) cenAddPick(b.dataset.id); };
   $("caBack").onclick=()=>cenAddPhase(1);
   $("caOk").onclick=()=>cenAddSubmit();
   return d;
@@ -14636,19 +14660,20 @@ function cenAddPhase(n){
 function cenAddFields(){
  const fs=CENADD.fs;if(!fs||CENADD.fields)return;
  const container=document.createElement('div');container.className='ca-census-fields';
- container.innerHTML='<div class="ca-intro">Completa los datos en el orden del censo.</div><div class="ca-bed"></div><details class="ca-general" open><summary>Datos generales <span class="ca-patient-summary"></span></summary><div class="ca-ident-fields"></div></details><div class="ca-clinical-fields"><h3>Datos para el censo</h3></div>';
+ container.innerHTML='<div class="ca-intro">Lo esencial arriba; lo demás está plegado y es opcional.</div><div class="ca-main ca-clinical-fields"><h3>Hospitalización</h3><div class="ca-bed"></div></div><details class="ca-general" open><summary>Datos generales <span class="ca-patient-summary"></span></summary><div class="ca-ident-fields"></div></details><details class="ca-more ca-clinical-fields"><summary>Más datos del censo <small>Cirugías · QT · MT · Labs · Pendientes · Estatus</small></summary><div class="ca-more-grid"></div></details>';
  fs.appendChild(container);CENADD.fields=container;CENADD.moves=[];
  const move=(el,target)=>{const field=el?.closest('.f');if(!field||CENADD.moves.some(x=>x.field===field))return;const marker=document.createComment('census-field');field.before(marker);CENADD.moves.push({field,marker});target.appendChild(field);};
  move($('cama'),container.querySelector('.ca-bed'));
  const general=container.querySelector('.ca-ident-fields');
  ['apPaterno','apMaterno','nombres'].forEach(id=>move($(id),general));move(fs.querySelector('[data-out="edad"]'),general);
  ['expediente','fnac','genero'].forEach(id=>move($(id),general));
- const clinical=container.querySelector('.ca-clinical-fields');
- ['diagnostico','medico','clinica','cenIngProxy','cenEhOut','censoCirugias','censoQT','censoMT','censoLabs','censoPendientes','censoEstatus'].forEach(id=>move($(id),clinical));
+ const main=container.querySelector('.ca-main'),more=container.querySelector('.ca-more-grid');
+ ['cenIngProxy','medico','clinica','diagnostico'].forEach(id=>move($(id),main));
+ ['cenEhOut','censoCirugias','censoQT','censoMT','censoLabs','censoPendientes','censoEstatus'].forEach(id=>move($(id),more));
 }
 /* v4.26 · Al agregar un paciente al censo se marca INGRESO; si su ingreso anterior fue en el último mes, también RE INGRESO. Son opcionales: se pueden desmarcar. */
 function cenAddAutoEstatus(existing){
- if(CENADD.mode!=="add")return;const inp=$("censoEstatus");if(!inp)return;
+ if(CENADD.mode!=="add"&&CENADD.mode!=="hosp")return;const inp=$("censoEstatus");if(!inp)return;
  const fi=String(($("fIngreso")||{}).value||"").trim();CENADD.fi0=fi;
  const add=["INGRESO"];if(existing&&fi){const d=cenIngDay(fi),t=cenIngDay(todayStr());if(Number.isFinite(d)&&Number.isFinite(t)&&d<t&&t-d<=31*864e5)add.push("RE INGRESO");}
  const t=cenEstToks(inp.value);add.forEach(x=>{if(!t.includes(x))t.push(x);});
@@ -14658,12 +14683,13 @@ function cenAddAutoEstatus(existing){
 }
 function cenAddPresentation(existing){
  const d=$('dlgCenAdd'),fields=CENADD.fields;if(!fields)return;try{cenAddAutoEstatus(existing);}catch(_){}d.classList.toggle('ca-existing',!!existing);d.classList.toggle('ca-new-patient',!existing);
- const det=fields.querySelector('.ca-general');det.open=!existing;
+ const det=fields.querySelector('.ca-general');det.open=!existing;const more=fields.querySelector('.ca-more');if(more)more.open=false;
+ if((CENADD.mode==="add"||CENADD.mode==="hosp")&&!camaHosp(($('cama')||{}).value,($('hospOnco')||{}).value)){const fi=$('fIngreso'),px=$('cenIngProxy'),hoy=todayStr();if(fi&&fi.value!==hoy){fi.value=hoy;fi.dispatchEvent(new Event('input',{bubbles:true}));fi.dispatchEvent(new Event('change',{bubbles:true}));}if(px)px.value=hoy;}
  const name=[$('apPaterno')?.value,$('apMaterno')?.value,$('nombres')?.value].filter(Boolean).join(' '),exp=$('expediente')?.value||'';
  const birth=$('fnac')?.value||'',years=birth?edad(birth,todayStr()):'',identity=[name,years!==''&&years!=null?years+' años':'',exp?'Exp. '+exp:'',birth?'FN. '+birth:''].filter(Boolean).join(' · ');
  fields.querySelector('.ca-patient-summary').textContent=existing?identity:'Identificación del paciente nuevo';const selected=$('caSelectedPatient');if(selected){selected.hidden=!existing;selected.textContent=existing?identity:'';}
  const service=$('servicio');if(service&&!service.value.trim())service.value='ONCOLOGÍA';
- requestAnimationFrame(()=>{const target=$(existing?'diagnostico':'cama');if(target){target.focus({preventScroll:true});if(existing){const row=target.closest('.f'),top=row?row.getBoundingClientRect().top:target.getBoundingClientRect().top;d.scrollTop=Math.max(0,d.scrollTop+top-d.getBoundingClientRect().top-90);}else d.scrollTop=0;}});
+ requestAnimationFrame(()=>{const target=$('cama');if(target){target.focus({preventScroll:true});if(existing){const row=target.closest('.f'),top=row?row.getBoundingClientRect().top:target.getBoundingClientRect().top;d.scrollTop=Math.max(0,d.scrollTop+top-d.getBoundingClientRect().top-90);}else d.scrollTop=0;}});
 }
 function cenAddRestore(){
  for(const {field,marker}of CENADD.moves||[]){if(marker.parentNode){marker.replaceWith(field);}}
@@ -14692,8 +14718,20 @@ function cenAddClose(){
   try{ const dd=$("dlgCenAdd"); if(dd) dd.classList.remove("ca-hist"); }catch(_){}
   const d=$("dlgCenAdd"); try{ const e=$("expediente"); if(e) e.readOnly=false; }catch(_){} CENADD.open=false; cenAddRestore(); if(d){ d.classList.remove("loading"); if(d.open) d.close(); } document.body.classList.remove("cen-add-on"); window.__cenKeepBg=false;
   try{ fill(DEFAULTS()); if($("ppSearch")) $("ppSearch").value=""; PP_AUTO=false; PP_MANUAL=false; PP_BROWSE=true; ppLayout(); renderPP(); }catch(_){}
-  try{ if(CENADD.mode!=="hist"&&PP_VIEW!=="censoActual"){ const b=$("ppViewCenA"); if(b) b.click(); } }catch(_){}
+  try{ if(CENADD.mode!=="hist"&&CENADD.mode!=="hosp"&&PP_VIEW!=="censoActual"){ const b=$("ppViewCenA"); if(b) b.click(); } }catch(_){}
 }
+/* v10.29 · Hospitalizados › Agregar Paciente: mismo buscador; si no está, «Paciente nuevo» abre la hoja de datos */
+function hospAddOpen(){
+  if(!accessRequire("editar_pacientes"))return;
+  const d=cenAddEnsure(); if(!d) return; CENADD.mode="hosp"; CENADD.selectedId=""; d.classList.remove("ca-hist","edit"); $("caTitle").textContent="Agregar paciente hospitalizado"; $("caOk").textContent="Hospitalizar";
+  CENADD.open=true; CENADD.wasBrowse=true; document.body.classList.add("cen-add-on"); $("caQ").value=""; cenAddPhase(1); cenAddList();
+  if(!d.open) d.showModal(); $("caQ").focus();
+  (async()=>{ try{ await ensureFolder(); if(!DRIVE_FILES.length){ DRIVE_FILES=onlyJsonFiles(await gcall("hjmList",FOLDER.id)); } cenAddList(); }catch(_){} })();
+}
+function hospAddPick(id){ CENADD.mode="hosp"; $("caTitle").textContent="Agregar paciente hospitalizado"; $("caOk").textContent="Hospitalizar"; cenAddPick(id); }
+function hospAddNew(){ const q=String(($("caQ")||{}).value||"").trim(); cenAddClose(); CENADD.mode="";
+  try{ $("btnClear").click(); }catch(_){}
+  setTimeout(()=>{ try{ if(/^\d[\d\s-]*$/.test(q)){ const e=$("expediente"); if(e&&!e.value){ e.value=q.replace(/\D/g,""); e.dispatchEvent(new Event("input",{bubbles:true})); } } const sv=$("servicio"); if(sv&&!sv.value.trim()){ sv.value="ONCOLOGÍA"; sv.dispatchEvent(new Event("input",{bubbles:true})); } }catch(_){} },60); }
 async function cenAddPick(id){
  CENADD.selectedId=id;
   const d=$("dlgCenAdd"); if(CENADD.busy) return; CENADD.busy=true;
@@ -14718,11 +14756,11 @@ function cenAddNew(){
   cenAddPresentation(false);
 }
 async function cenAddSubmit(){
- if(!accessRequire(CENADD.mode==="edit"?(CEN.mode==="hist"?"editar_censos_archivados":"editar_censo"):"agregar_censo"))return;
+ if(!accessRequire(CENADD.mode==="edit"?(CEN.mode==="hist"?"editar_censos_archivados":"editar_censo"):CENADD.mode==="hosp"?"editar_pacientes":"agregar_censo"))return;
 
   if(CENADD.busy) return;
   if(CENADD.mode==="hist"){ const ex=String(($("expediente")||{}).value||"").trim(), ap=String(($("apPaterno")||{}).value||"").trim(); if(!ex||!ap){ notify("Falta expediente o apellido paterno.","warn"); return; } if(DRIVE_FILES.some(f=>expKey(expOf(f))===expKey(ex))){ notify("Ya existe un paciente con el expediente "+ex+".","warn"); return; } CENADD.busy=true; $("caOk").disabled=true; try{ try{ const h=$("hospOnco"); if(h) h.value=""; }catch(_){} try{ refresh(); }catch(_){} const p=driveSaveNow(), st=await Promise.race([p,Promise.resolve("pending")]); if(st===false) return; cenAddClose(); p.then(()=>{ try{ loadPatients(); }catch(_){} notify("Paciente creado en Archivo.","ok"); }); }finally{ CENADD.busy=false; const o=$("caOk"); if(o) o.disabled=false; } return; }
-  const cama=String(($("cama")||{}).value||"").trim(), edit=CENADD.mode==="edit";
+  const cama=String(($("cama")||{}).value||"").trim(), edit=CENADD.mode==="edit", hospM=CENADD.mode==="hosp";
   if(cama&&!camaValida(cama)&&!camaFuera(cama)&&!camaConsulta(cama)){ const hh=$("hospOnco"); if(hh){ hh.value="1"; hh.dispatchEvent(new Event("input",{bubbles:true})); } try{ hospOncoSync(); }catch(_){} }   /* agregar o editar en el Censo = hospitalizado en Oncología */
   if(!(camaHosp(cama,($("hospOnco")||{}).value)||(edit&&camaFuera(cama)))){ notify("Escribe una cama (3 cifras, UCI, URG, Coronarios u otro texto de cama) para agregar al paciente al censo. Las camas de consulta externa (CE, Externa, C Ext…) no se agregan.","warn"); try{ $("cama").focus(); }catch(_){} return; }
   CENADD.busy=true; const ok0=$("caOk"); ok0.disabled=true;
@@ -14737,7 +14775,7 @@ async function cenAddSubmit(){
     const p=driveSaveNow(), st=await Promise.race([p,Promise.resolve("pending")]);   // los datos ya quedaron copiados: se cierra al instante y el guardado sigue en segundo plano
     if(st===false) return;
     cenAddClose();
-    p.then(async r=>{ if(r){ if(!edit){if(!reinclude.id)reinclude.id=DRIVE_FILES.find(f=>expKey(expOf(f))===expKey(reinclude.exp))?.id;await cenReincludeAfterAdd(reinclude);}try{ loadPatients(); }catch(_){} try{ cenRender&&cenRender(); }catch(_){} notify(edit?"Cambios guardados":"Paciente agregado al censo","ok"); } }).catch(e=>{ try{ driveError(e); }catch(_){} });
+    p.then(async r=>{ if(r){ if(!edit){if(!reinclude.id)reinclude.id=DRIVE_FILES.find(f=>expKey(expOf(f))===expKey(reinclude.exp))?.id;await cenReincludeAfterAdd(reinclude);}try{ loadPatients(); }catch(_){} try{ cenRender&&cenRender(); }catch(_){} notify(edit?"Cambios guardados":hospM?"Paciente hospitalizado":"Paciente agregado al censo","ok"); } }).catch(e=>{ try{ driveError(e); }catch(_){} });
   }catch(e){ try{ driveError(e); }catch(_){} }
   finally{ CENADD.busy=false; ok0.disabled=false; }
 }
@@ -14875,7 +14913,7 @@ function cenListDraw(d){
 
 /* Encabezado: en la página Censo, «Nuevo Paciente» pasa a «Agregar Paciente» y abre la ventana de identificación */
 function cenBandSync(on){ const b=$("bandNew"); if(!b) return; const t=[...b.childNodes].reverse().find(n=>n.nodeType===3); const lbl=on?"Agregar Paciente":"Nuevo Paciente"; if(t) t.textContent=lbl; b.title=lbl; b.dataset.cen=on?"1":""; }
-window.addEventListener("click",e=>{ try{ const b=e.target.closest&&e.target.closest("#bandNew"); if(!b) return; if(document.body.classList.contains("pp-browse")&&typeof PP_VIEW!=="undefined"&&PP_VIEW==="censoActual"){ e.stopImmediatePropagation(); e.preventDefault(); cenAddOpen(); } }catch(_){} },true);
+window.addEventListener("click",e=>{ try{ const b=e.target.closest&&e.target.closest("#bandNew"); if(!b) return; if(document.body.classList.contains("pp-browse")&&typeof PP_VIEW!=="undefined"&&PP_VIEW==="censoActual"){ e.stopImmediatePropagation(); e.preventDefault(); cenAddOpen(); } else if(document.body.classList.contains("pp-browse")&&typeof PP_VIEW!=="undefined"&&PP_VIEW==="cama"){ e.stopImmediatePropagation(); e.preventDefault(); hospAddOpen(); } }catch(_){} },true);
 try{$("bandNew").addEventListener("click",e=>{ if(document.body.classList.contains("pp-browse")&&PP_VIEW==="censoActual"&&$("bandNew").dataset.cen==="1"){ e.stopImmediatePropagation(); e.preventDefault(); cenAddOpen(); } },true);
 }catch(e){try{console.error(e);}catch(_){}}
 
