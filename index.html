@@ -337,7 +337,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="10.36">
+<meta name="application-version" content="10.37">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="hjm">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="hjm">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="hjm">
@@ -2769,7 +2769,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 10.36 · Fecha de publicación: 26.11.26</div>
+  <div class="app-footer-version">Versión 10.37 · Fecha de publicación: 26.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -14128,10 +14128,10 @@ function cenStatPush(cen,now){
 async function cenStatBackfill(onTick,have){
   const all=(await cenList(true)).filter(x=>/^JCF\d{6}\.json$/i.test(x.name)), recs={}; let i=0, leidos=0, omit=0; have=have||{};
   /* v3.44 · solo se leen los censos nuevos o modificados después de su última importación */
-  const names=new Set(),duplicates=new Set(),errors=[];
-  for(const x of all){if(names.has(x.name))duplicates.add(x.name);names.add(x.name);}
-  errors.push(...Array.from(duplicates,name=>name+" (duplicado)"));
-  const list=all.filter(x=>{ if(duplicates.has(x.name))return false; const o=cenFromName(x.name), k=o?o.y+"-"+String(o.m+1).padStart(2,"0")+"-"+String(o.d).padStart(2,"0"):"", h=k&&have[k], mt=Date.parse(x.modified||"")||0; if(h&&h.ts&&mt&&h.ts>mt&&h.v>=8){ omit++; return false; } return true; });
+  const errors=[], best=new Map(), duplicates=new Set();   /* v10.37 · un censo duplicado en Drive ya no se descarta: se usa la copia modificada más reciente y se avisa del duplicado */
+  for(const x of all){ const o=best.get(x.name); if(o){ duplicates.add(x.name); if((Date.parse(x.modified||"")||0)>(Date.parse(o.modified||"")||0)) best.set(x.name,x); } else best.set(x.name,x); }
+  window.__cenDupes=[...duplicates].sort();
+  const list=[...best.values()].filter(x=>{ const o=cenFromName(x.name), k=o?o.y+"-"+String(o.m+1).padStart(2,"0")+"-"+String(o.d).padStart(2,"0"):"", h=k&&have[k], mt=Date.parse(x.modified||"")||0; if(h&&h.ts&&mt&&h.ts>mt&&h.v>=8){ omit++; return false; } return true; });
   if(onTick) onTick(0,list.length);
   await ppPool(list,4,async x=>{ try{ const r=await cenReadEntry(x), o=r&&r.obj; if(!o||!Array.isArray(o.pac))throw new Error("Censo sin tabla de pacientes"); { leidos++; const rec=cenStatRec(Object.assign({},o,{pac:o.pac||[]}),x.name); if(!rec.k)throw new Error("Fecha de censo inválida"); { if(have[rec.k]&&have[rec.k].lig) rec.lig=have[rec.k].lig; recs[rec.k]=rec; } } }catch(_){errors.push(x.name);} i++; if(onTick) onTick(i,list.length); });   /* v5.26 · 4 censos a la vez */
 
@@ -16473,6 +16473,7 @@ function dataAuditHTML(remote){ if(!isTechnicalAdmin()) return ""; try{
    ${dt("hospitalizado en uno y no en el otro (archivo vs. último censo)",hospDif.length,tbl(arHd(["Paciente","Expediente","Cama en archivo","Archivo","Último censo"]),hospDif.map(([x,m,hj,hc])=>arCl(x.e,[esc(m.nombre||x.nom||"—"),esc(x.e),esc(m.cama||"—"),hj?"Hospitalizado":"No",hc?"Hospitalizado":"No"]))))}
    <h4 class="det-h">Calidad de los censos</h4>
    <div class="st-kpis">${kp(gaps,"Días sin censo entre el primero y el último",mis.length+" huecos",gaps>0)}${kp(inc.length,"Censos que parecen incompletos","faltan muchos pacientes respecto al anterior",inc.length>0)}${kp(revDif.length,"Censos con reverso ≠ tabla","ingresos o egresos del reverso no coinciden con la tabla",revDif.length>0)}${kp(noExp,"Filas sin expediente","no se pueden ligar a un archivo",noExp>0)}${kp(noName,"Filas sin nombre","",noName>0)}${kp(sinLig,"Cirugías sin paciente ligado","ligarlas en Quirófano",sinLig>0)}</div>
+   ${dt("censos duplicados en Drive (se usa la copia más reciente; borra la otra)",(window.__cenDupes||[]).length,tbl(["Archivo duplicado"],(window.__cenDupes||[]).map(n=>[esc(n)])))}
    ${dt("fechas de censo faltantes",gaps,tbl(["Fecha del censo faltante"],mis.flatMap(([inicio,fin,n])=>Array.from({length:n},(_,i)=>[kf(new Date(Date.parse(inicio+"T00:00:00Z")+(i+1)*864e5).toISOString().slice(0,10))])),gaps))}
    ${dt("censos con reverso distinto de la tabla",revDif.length,tbl(["Censo","Ingresos reverso / tabla","Egresos reverso / tabla"],revDif.slice().reverse().map(k=>{ const c=C[k].chk; return [kf(k),c.ingR+" / "+c.ingC,c.egrR+" / "+c.egrC]; })))}
   </div>`; }catch(e){ return `<div class="st-card"><div class="st-msg">No se pudo calcular la auditoría: ${esc(e&&e.message||e)}</div></div>`; } }
