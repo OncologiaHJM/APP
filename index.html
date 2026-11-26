@@ -337,7 +337,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="10.37">
+<meta name="application-version" content="10.38">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="hjm">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="hjm">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="hjm">
@@ -2769,7 +2769,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 10.37 · Fecha de publicación: 26.11.26</div>
+  <div class="app-footer-version">Versión 10.38 · Fecha de publicación: 26.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -3171,6 +3171,13 @@ table.rev .rv-b:hover{background:var(--cen-tint,#eef3f9)}
 .cx-pd input{min-width:0}
 @media (max-width:560px){.cx-pd{grid-template-columns:1fr}}
 @media (max-width:480px){.cx-bar1,.cx-ps,.cx-grid{padding-left:12px;padding-right:12px}.cx-charts{padding:0 12px 14px}.cx-seg{padding:8px 9px;font-size:12px}}
+/* v10.38 · Auditoría completa */
+.aud-box{border:1px solid var(--st-line,#dfe6ee);border-left:4px solid #2F6FA7;border-radius:14px;padding:14px 16px;margin:6px 0 14px}
+.aud-h b{display:block;font-size:14.5px}.aud-h small{display:block;color:var(--st-mute,#6b7a8c);font-size:12.5px;margin-top:3px;line-height:1.4}
+.aud-b{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}.aud-msg{font-size:12.5px;color:var(--st-mute,#6b7a8c)}
+.aud-b .aud-go:not(:disabled){background:#2F6FA7;color:#fff;border-color:#2F6FA7}
+.aud-r{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:12px}
+.aud-r>div{border:1px solid var(--st-line,#dfe6ee);border-radius:10px;padding:8px 10px}.aud-r b{display:block;font-size:18px}.aud-r span{font-size:11.5px;color:var(--st-mute,#6b7a8c)}
 /* Agenda (Quirófano y Comité): mismos colores de acción */
 html body .qx-c-act .qx-btn.bad{color:#B42318;border-color:#F4C7C2;background:#FEF3F2}
 html body .qx-c-act .qx-btn.bad:hover{background:#FDE4E1}
@@ -12078,6 +12085,7 @@ function ppApply(f,changes,opt){
     else if(err) notify("No se pudo guardar el cambio de "+(f.meta&&f.meta.nombre||"un paciente")+": "+friendly(err)+". Se restauró el valor anterior.","warn");
   });
 }
+window.__ppApply=(...a)=>ppApply(...a);
 const camaOk=v=>v===""||camaValida(v)||camaFuera(v);
 async function ppChangeClinic(id){ const f=DRIVE_FILES.find(x=>x.id===id); if(!f) return; const p=f.meta||{};
   let cur=p.clinica; if(cur===undefined){ cur=""; String(p.adscrito||"").split("/").slice(0,1).forEach(a=>{ const i=ppAdsInfo(a.trim()); if(i.ok) cur=i.clin; }); }
@@ -14100,18 +14108,21 @@ function cenRenderHist(w){
 
 /* ===== v3.42 · Estadísticas del censo: cada censo final (y sus ediciones) se registra en el archivo de estadísticas ===== */
 const CEN_VACIO=/^(NINGUN[AO]S?|NADA|N\/?A|NO|NO HAY|NO APLICA|SIN\b.*|0|-+|\.+|X)$/i, cenVacio=t=>{ const v=String(t||"").replace(/\s+/g," ").trim(); return !v||CEN_VACIO.test(v); };
-function cenStatRec(cen,fname){
+function cenStatRec(cen,fname,ctx){
   const A=cenRevAuto(cen), V=k=>String(cenRevVal(cen,k,A)||"").trim(), n=k=>cenNum(V(k));
-  const lst=(key,cnt,two)=>[...Array(cnt)].map((_,i)=>two?{t:V(key+"."+i+".t"),e:V(key+"."+i+".e")}:V(key+"."+i)).filter(x=>two?!(cenVacio(x.t)&&cenVacio(x.e)):!cenVacio(x));
+  const lst=(key,cnt,two)=>[...Array(cenRevCnt(cen,key,cnt,A))].map((_,i)=>two?{t:V(key+"."+i+".t"),e:V(key+"."+i+".e")}:V(key+"."+i)).filter(x=>two?!(cenVacio(x.t)&&cenVacio(x.e)):!cenVacio(x));
   const ing={},egr={},nt={}; CEN_SRV.forEach(s=>{ ing[s]=n("ing."+s); egr[s]=n("egr."+s); nt[s]=V("nt."+s); });
   const o=cenFromName(fname)||cenFromDot(cen.fecha), key=o?o.y+"-"+String(o.m+1).padStart(2,"0")+"-"+String(o.d).padStart(2,"0"):"";
   const est={}, estc={}; (cen.pac||[]).filter(r=>!r.exc&&(r.sec||"H")==="H").forEach(r=>{ const sc=cenSrvOf(r.clin)||"OTRO"; String(r.est||"").split(/\s*[\/,;]\s*/).map(x=>x.toLocaleUpperCase("es-MX").replace(/\s+/g," ").trim()).filter(Boolean).forEach(t=>{ const k=CEN_EST.includes(t)?t:"OTROS"; est[k]=(est[k]||0)+1; const ec=estc[sc]=estc[sc]||{}; ec[k]=(ec[k]||0)+1; }); });
   const ps={}, il=[], el=[]; (cen.pac||[]).forEach(r=>{ const s=cenSrvOf(r.clin)||"OTRO"; if(r.sec==="H"&&!r.exc&&(String(r.exp||"").trim()||!cenVacio(r.nombre))) ps[s]=(ps[s]||0)+1; if(r.nu) il.push({c:r.cama||"",n:r.nombre||"",s,e:r.exp||"",x:r.est||""}); if((r.sec==="E"||r.sec==="D")&&(String(r.exp||"").trim()||!cenVacio(r.nombre))) el.push({c:r.cama||"",n:r.nombre||"",s,e:r.exp||"",t:r.sec,x:r.est||""}); });
-  const H0=(cen.pac||[]).filter(r=>!r.exc), nz=t=>String(t||"").toLocaleUpperCase("es-MX").normalize("NFD").replace(/[\u0300-\u036f]/g,""), liga=x=>{ const t=nz((x.t||"")+" "+(x.e||"")); let p=null;
-    const ex=t.match(/\b\d{5,9}\b/g)||[]; p=H0.find(r=>r.exp&&ex.includes(String(r.exp).trim()));
-    if(!p){ const cm=t.match(/\b(1[5-9]\d)\b/); if(cm){ const c=H0.filter(r=>String(r.cama||"").trim()===cm[1]); p=c.find(r=>(r.sec||"H")==="H")||c[0]||null; } }
-    if(!p){ const c=H0.filter(r=>{ const cm=nz(r.cama).trim(); return cm&&!/^\d{3}$/.test(cm)&&new RegExp("(^|[^0-9A-Z])"+cm.replace(/[.*+?^${}()|[\]\\]/g,"\\$&").replace(/\s+/g,"\\s*")+"($|[^0-9])").test(t); }); if(c.length===1) p=c[0]; }
-    if(!p){ const ws=new Set(t.split(/[^A-ZÑ]+/).filter(w=>w.length>=4)); const c=H0.filter(r=>{ const a=nz(r.nombre).split(/\s+/).filter(w=>w.length>=4); return a.length>=2&&ws.has(a[0])&&ws.has(a[1]); }); if(c.length===1) p=c[0]; }
+  const H0=(cen.pac||[]).filter(r=>!r.exc), nz=t=>String(t||"").toLocaleUpperCase("es-MX").normalize("NFD").replace(/[\u0300-\u036f]/g,""), ekl=v=>String(v||"").replace(/\D/g,"").replace(/^0+/,"");
+  /* v10.38 · ligado: expediente (con o sin separadores), cama (3 cifras, UCI/URG n) y dos apellidos; primero en el mismo censo y luego en el del día anterior y el siguiente */
+  const pick=(t,P)=>{ let p=null; const ex=(t.replace(/(\d)[\s.\-](?=\d)/g,"$1").match(/\d{5,9}/g)||[]).map(ekl); p=P.find(r=>ekl(r.exp)&&ex.includes(ekl(r.exp)))||null;
+    if(!p){ const cm=t.match(/(?:^|[^0-9])((?:1|2)\d{2})(?:\s*[-.:)]|\s|$)/); if(cm){ const c=P.filter(r=>String(r.cama||"").trim()===cm[1]); p=c.find(r=>(r.sec||"H")==="H")||(c.length===1?c[0]:null); } }
+    if(!p){ const c=P.filter(r=>{ const cm=nz(r.cama).trim(); return cm&&!/^\d{3}$/.test(cm)&&new RegExp("(^|[^0-9A-Z])"+cm.replace(/[.*+?^${}()|[\]\\]/g,"\\$&").replace(/\s+/g,"\\s*")+"($|[^0-9])").test(t); }); if(c.length===1) p=c[0]; }
+    if(!p){ const ws=new Set(t.split(/[^A-ZÑ]+/).filter(w=>w.length>=4)); const c=P.filter(r=>{ const a=nz(r.nombre).replace(/\(\s*R\s*\)/g,"").split(/\s+/).filter(w=>w.length>=4); return a.length>=2&&ws.has(a[0])&&ws.has(a[1]); }); if(c.length===1) p=c[0]; }
+    return p; };
+  const liga=x=>{ const t=nz((x.t||"")+" "+(x.e||"")); let p=pick(t,H0); if(!p&&Array.isArray(ctx)) for(const P of ctx){ p=pick(t,(P||[]).filter(r=>!r.exc)); if(p) break; }
     return p?Object.assign({},x,{x:String(p.exp||""),s:cenSrvOf(p.clin)||"OTRO",n:p.nombre||"",d:String(p.dx||"").slice(0,160),c:String(p.cama||"")}):x; };
   const hx=(cen.pac||[]).filter(r=>!r.exc&&(r.sec||"H")==="H"&&String(r.exp||"").trim()).map(r=>[String(r.exp).trim(),cenSrvOf(r.clin)||"OTRO",String(r.nombre||"").slice(0,80),String(r.cama||""),String(r.ing||"").trim().slice(0,10),String(r.dx||"").trim().slice(0,300)]);   /* v8.46 · + fecha de ingreso escrita en el censo (historial de ingresos) */
   return {v:8,hx,ps,il,el,k:key,f:cen.fecha,est,estc,g:cen.guardia||"",res:cen.res||"",por:cen.por||"",ts:Date.now(),ing,egr,nt,nttot:V("nt.TOT"),
@@ -15826,18 +15837,18 @@ function cenChainFix(o){
     if(Array.isArray(r.hx)&&r.ps&&typeof r.ps==="object"){ const ot=r.hx.filter(x=>x[1]==="OTRO").length; if((+r.ps.OTRO||0)>ot) r.ps=Object.assign({},r.ps,{OTRO:ot}); }
     ["el","il"].forEach(k=>{ if(Array.isArray(r[k])) r[k]=r[k].filter(x=>x&&(String(x.e||"").trim()||!cenVacio(x.n))); }); }); }catch(_){}
   try{ const C=(o&&o.censos)||{}, ks=Object.keys(C).filter(k=>C[k]&&/^\d{4}-\d\d-\d\d$/.test(k)).sort(), dk=(k,n)=>{ const d=new Date(k+"T12:00:00Z"); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); };
-    const setOf=r=>new Set((r&&Array.isArray(r.hx)?r.hx:[]).map(x=>x[0])), egSet=r=>new Set((r&&Array.isArray(r.el)?r.el:[]).map(x=>String(x.e||"").trim()).filter(Boolean));
+    const nk=v=>{ const t=String(v||"").toUpperCase().replace(/[^0-9A-Z]/g,"").replace(/^0+(?=\d)/,""); return t||String(v||"").trim(); }, setOf=r=>new Set((r&&Array.isArray(r.hx)?r.hx:[]).map(x=>nk(x[0]))), egSet=r=>new Set((r&&Array.isArray(r.el)?r.el:[]).map(x=>nk(x.e)).filter(Boolean));
     ks.forEach(k=>{ const r=C[k]; if(!r.ingRev) r.ingRev=Object.assign({},r.ing||{}); if(!r.egrRev) r.egrRev=Object.assign({},r.egr||{});
       if(!Array.isArray(r.hx)){ r.chk=null; r.ing=Object.assign({},r.ingRev); r.egr=Object.assign({},r.egrRev); return; }
       const P=C[dk(k,-1)], P2=C[dk(k,-2)], N=C[dk(k,1)], hasP=P&&Array.isArray(P.hx), hasN=N&&Array.isArray(N.hx);
       const hoyH=setOf(r), hoyE=egSet(r), prevH=setOf(P), prev2H=setOf(P2), nextH=setOf(N), nextE=egSet(N);
       const ing={}, egr={}, add=(m,s)=>{ m[s]=(m[s]||0)+1; }, faltan=[], sinReg=[], nuevos=[];
-      const incompleto=(hoyH.size<0.7*prevH.size)||(hasN&&nextH.size<0.7*hoyH.size);
+      const incompleto=hoyH.size<0.7*prevH.size&&(!hasN||nextH.size>=0.85*prevH.size);   /* v10.38 · solo el día que cae y se recupera al siguiente; un fin de semana con altas reales ya no cuenta */
       if(hasP){
-        r.hx.forEach(x=>{ if(!prevH.has(x[0])&&!prev2H.has(x[0])){ add(ing,x[1]); nuevos.push({e:x[0],n:x[2],s:x[1]}); } });
-        (r.el||[]).forEach(x=>{ const e=String(x.e||"").trim(); if(e&&!prevH.has(e)&&!hoyH.has(e)) add(ing,x.s||"OTRO"); });
+        r.hx.forEach(x=>{ if(!prevH.has(nk(x[0]))&&!prev2H.has(nk(x[0]))){ add(ing,x[1]); nuevos.push({e:x[0],n:x[2],s:x[1]}); } });
+        (r.el||[]).forEach(x=>{ const e=nk(x.e); if(e&&!prevH.has(e)&&!hoyH.has(e)) add(ing,x.s||"OTRO"); });
         (r.el||[]).forEach(x=>add(egr,x.s||"OTRO"));
-        (P.hx||[]).forEach(x=>{ const e=x[0]; if(hoyH.has(e)||hoyE.has(e)) return; if(hasN&&nextH.has(e)){ faltan.push({e,n:x[2],s:x[1]}); return; } if(hasN&&nextE.has(e)) return; if(!hasN) return; if(incompleto){ faltan.push({e,n:x[2],s:x[1]}); return; } add(egr,x[1]); sinReg.push({e,n:x[2],s:x[1],c:x[3]}); });
+        (P.hx||[]).forEach(x=>{ const e=nk(x[0]); if(hoyH.has(e)||hoyE.has(e)) return; if(hasN&&nextH.has(e)){ faltan.push({e,n:x[2],s:x[1]}); return; } if(hasN&&nextE.has(e)) return; if(!hasN) return; if(incompleto){ faltan.push({e,n:x[2],s:x[1]}); return; } add(egr,x[1]); sinReg.push({e,n:x[2],s:x[1],c:x[3]}); });
       } else { SRVL.forEach(s=>{ ing[s]=(r.ingRev||{})[s]||0; egr[s]=(r.egrRev||{})[s]||0; }); }
       const tot=m=>SRVL.reduce((a,s)=>a+(+m[s]||0),0); SRVL.forEach(s=>{ ing[s]=ing[s]||0; egr[s]=egr[s]||0; });
       r.ing=ing; r.egr=egr; const dfnC=(r.el||[]).filter(x=>x.t==="D").length, dfnR=cenCnt(r.dfn);
@@ -16439,6 +16450,94 @@ function movHist(rs,S,C,pd,dfnN){
   return `<div class="st-card"><h3>Historial de censos finales <small>· ${rs.length} censo(s) del periodo, agrupados por mes${C?" · columnas de pacientes, ingresos, egresos y defunciones de "+esc(SRVN[C]):""}</small></h3><div class="on-tb mv-tb"><input type="search" class="st-in" data-mv="q" value="${esc(MOVF.q)}" placeholder="Buscar fecha del censo (ej. 05.11)…" autocomplete="off"><button type="button" class="st-btn st-sm" data-mvall="1">Abrir todos</button><button type="button" class="st-btn st-sm" data-mvall="0">Cerrar todos</button></div><div id="mvHist">${sec||'<div class="st-msg">Ningún censo coincide con la búsqueda.</div>'}</div><div class="st-msg" style="margin-top:6px">Usa «Todo» o «Día / Rango» arriba para ver meses anteriores.</div></div>`;
 }
 /* v8.47 · Auditoría de datos (administración): los expedientes JSON deben reflejar los censos. Mide cobertura, campos faltantes, diferencias y calidad de los censos */
+/* ===== v10.38 · Auditoría completa de censos (solo Técnico): analiza y corrige para que las estadísticas sean exactas =====
+   Reglas (REGLAS_AUDITORIA.md): R1 duplicados → una copia; R4 filas basura fuera, expediente limpio, nombre/expediente del día vecino;
+   R5 «(R)» → RE INGRESO; R3 paciente que falta un solo día → se restaura; alta no anotada → ALTAS; R2 reverso = tabla;
+   R6 cirugías ligadas con el día anterior/siguiente; R10 vacíos de los JSON desde el último censo (nunca sobrescribe). */
+const AUD={on:false,msg:"",res:null};
+const audEk=v=>String(v||"").replace(/\D/g,"").replace(/^0+/,"");
+const audNm=t=>String(t||"").toLocaleUpperCase("es-MX").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\(\s*R\s*\)/g," ").replace(/[^A-ZÑ ]/g," ").replace(/\s+/g," ").trim();
+const audKey=n=>{ const o=cenFromName(n); return o?o.y+"-"+String(o.m+1).padStart(2,"0")+"-"+String(o.d).padStart(2,"0"):""; };
+const audDay=(k,n)=>{ const d=new Date(k+"T12:00:00Z"); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); };
+const audH=o=>(o.pac||[]).filter(r=>!r.exc&&(r.sec||"H")==="H"), audE=o=>(o.pac||[]).filter(r=>!r.exc&&(r.sec==="E"||r.sec==="D"));
+function audScore(o){ const p=(o.pac||[]).filter(r=>!cenVacio(r.nombre)||audEk(r.exp).length>=5).length, f=Object.values((o.rev&&o.rev.f)||{}).filter(v=>String(v==null?"":v).trim()).length; return p*1000+f; }
+function audJunk(r){ const nm=cenVacio(r.nombre)||!/[A-ZÁÉÍÓÚÑ]{2,}/i.test(String(r.nombre||"")); return nm&&audEk(r.exp).length<5&&cenVacio(r.dx); }
+function audPanelHTML(){ const r=AUD.res; return `<div class="aud-box"><div class="aud-h"><b>Auditoría y corrección automática</b><small>Revisa todos los censos de Drive y los corrige: duplicados, filas vacías, expedientes, «(R)», pacientes que faltan un día, altas no anotadas, reverso contra tabla, cirugías sin ligar y datos vacíos de los archivos. Nada escrito por una persona se sobrescribe; Drive guarda la versión anterior de cada archivo.</small></div>
+   <div class="aud-b"><button type="button" class="st-btn st-sm" data-audrun="0"${AUD.on?" disabled":""}>Analizar (sin cambiar nada)</button><button type="button" class="st-btn st-sm aud-go" data-audrun="1"${AUD.on||!r||r.dry!==true?" disabled":""} title="${r&&r.dry?"Aplica las correcciones encontradas":"Primero analiza"}">Corregir todo</button><span class="aud-msg${AUD.on?" st-busy":""}" aria-live="polite">${esc(AUD.msg||"")}</span></div>
+   ${r?`<div class="aud-r">${[["Censos revisados",r.files],["Duplicados a unificar",r.dup],["Filas vacías a borrar",r.junk],["Expedientes a limpiar",r.exp],["«(R)» → RE INGRESO",r.rmark],["Nombres o expedientes del día vecino",r.names],["Pacientes que faltaban un día",r.rest],["Altas no anotadas → ALTAS",r.altas],["Reversos a hacer concordar",r.rev],["Cirugías ligadas",r.liga],["Datos vacíos de archivos a llenar",r.json],["Censos que cambiarán",r.dirty]].map(([l,v])=>`<div><b>${v||0}</b><span>${l}</span></div>`).join("")}</div>${r.errs&&r.errs.length?`<div class="st-msg">No se pudieron leer o guardar: ${esc(r.errs.slice(0,20).join(", "))}${r.errs.length>20?"…":""}</div>`:""}${r.dry?"":`<div class="st-msg">✓ Correcciones aplicadas${r.when?" · "+esc(r.when):""}.</div>`}`:""}</div>`; }
+async function audRun(apply){
+  if(AUD.on||!isTechnicalAdmin()) return; AUD.on=true; const R={dry:!apply,files:0,dup:0,junk:0,exp:0,rmark:0,names:0,rest:0,altas:0,rev:0,liga:0,json:0,dirty:0,errs:[]};
+  const say=t=>{ AUD.msg=t; document.querySelectorAll(".aud-msg").forEach(e=>e.textContent=t); };
+  try{
+    const all=(await statsWait(cenList(true),60000)).filter(x=>/^JCF\d{6}\.json$/i.test(x.name)), G=new Map();
+    all.forEach(x=>{ (G.get(x.name)||G.set(x.name,[]).get(x.name)).push(x); });
+    const C=new Map(); let i=0;
+    await ppPool([...G.entries()],4,async([name,arr])=>{ const reads=[]; for(const e of arr){ try{ const r=await statsWait(cenReadEntry(e),60000); if(r&&r.obj&&Array.isArray(r.obj.pac)) reads.push({e,obj:JSON.parse(JSON.stringify(r.obj))}); }catch(_){ R.errs.push(name); } }
+      i++; if(i%10===0) say("Leyendo censos "+i+" de "+G.size+"…"); if(!reads.length) return;
+      reads.sort((a,b)=>audScore(b.obj)-audScore(a.obj)||(Date.parse(b.e.modified||"")||0)-(Date.parse(a.e.modified||"")||0));
+      const keep=reads[0], x={name,e:keep.e,obj:keep.obj,drops:reads.slice(1).map(z=>z.e.id).concat(arr.filter(e=>!reads.some(z=>z.e.id===e.id)).map(e=>e.id)),dirty:false};
+      if(x.drops.length){ R.dup++; x.dirty=true; const f=(x.obj.rev=x.obj.rev||{}).f=x.obj.rev.f||{}; reads.slice(1).forEach(z=>{ const g=(z.obj.rev&&z.obj.rev.f)||{}; Object.keys(g).forEach(k=>{ if(!String(f[k]==null?"":f[k]).trim()&&String(g[k]==null?"":g[k]).trim()) f[k]=g[k]; }); }); }
+      const k=audKey(name); if(k) C.set(k,x); });
+    const ks=[...C.keys()].sort(); R.files=ks.length; let seq=0;
+    /* filas: basura, expediente, (R) */
+    ks.forEach(k=>{ const x=C.get(k), o=x.obj, n0=o.pac.length; o.pac=o.pac.filter(r=>!audJunk(r)); if(o.pac.length!==n0){ R.junk+=n0-o.pac.length; x.dirty=true; }
+      o.pac.forEach(r=>{ const raw=String(r.exp||"").trim(), d=audEk(raw); if(raw&&raw!==d){ if(!/[A-Za-z]/.test(raw)&&/^\d{6,8}$/.test(d)){ r.exp=d; R.exp++; x.dirty=true; } else if(d.length<5){ r.exp=""; R.exp++; x.dirty=true; } }
+        const nm=String(r.nombre||""); if(/\(\s*R\s*\)/i.test(nm)){ r.nombre=nm.replace(/\s*\(\s*R\s*\)\s*/gi," ").replace(/\s+/g," ").trim(); const t=String(r.est||"").split(/\s*[\/,;]\s*/).map(z=>z.trim()).filter(Boolean); if(!t.some(z=>/^RE ?INGRESO$/i.test(z))) t.push("RE INGRESO"); r.est=t.join(" / "); R.rmark++; x.dirty=true; } }); });
+    /* continuidad entre días */
+    const ddmmaa=k=>k.slice(8)+k.slice(5,7)+k.slice(2,4);
+    ks.forEach(k=>{ const x=C.get(k), o=x.obj, P=C.get(audDay(k,-1)), N=C.get(audDay(k,1)), P2=C.get(audDay(k,-2));
+      const near=[P,N].filter(Boolean).map(z=>z.obj.pac).flat();
+      o.pac.forEach(r=>{ const e=audEk(r.exp);
+        if(cenVacio(r.nombre)&&e){ const m=near.find(z=>audEk(z.exp)===e&&!cenVacio(z.nombre)); if(m){ r.nombre=String(m.nombre).replace(/\s*\(\s*R\s*\)\s*/gi," ").trim(); R.names++; x.dirty=true; } }
+        if(!e&&!cenVacio(r.nombre)){ const nn=audNm(r.nombre); const c=near.filter(z=>audEk(z.exp).length>=5&&audNm(z.nombre)===nn); const u=[...new Set(c.map(z=>audEk(z.exp)))]; if(u.length===1){ r.exp=u[0]; R.names++; x.dirty=true; } } });
+      if(!P) return;
+      const set=a=>new Set(a.map(r=>audEk(r.exp)).filter(Boolean)), pH=audH(P.obj), cH=set(audH(o)), cE=set(audE(o));
+      if(N){ const nH=set(audH(N.obj)), nE=set(audE(N.obj)), lost=pH.filter(r=>{ const e=audEk(r.exp); return e&&!cH.has(e)&&!cE.has(e); });
+        const miss=lost.filter(r=>nH.has(audEk(r.exp)));
+        if(miss.length&&miss.length<=Math.max(3,Math.round(pH.length*0.35))){ miss.forEach(r=>{ o.pac.push(Object.assign({},r,{k:"x"+ddmmaa(k)+"-"+(900+(++seq)),sec:"H",nu:0,aud:1})); cH.add(audEk(r.exp)); }); R.rest+=miss.length; x.dirty=true; }
+        const incomp=cH.size<0.7*pH.length;
+        if(!incomp) lost.filter(r=>!nH.has(audEk(r.exp))&&!nE.has(audEk(r.exp))&&!cH.has(audEk(r.exp))).forEach(r=>{ o.pac.push(Object.assign({},r,{k:"x"+ddmmaa(k)+"-"+(900+(++seq)),sec:"E",nu:0,aud:1,est:"ALTA (NO ANOTADA EN EL CENSO)"})); R.altas++; x.dirty=true; }); }
+      /* reverso = tabla */
+      const p2=P2?set(audH(P2.obj)):new Set(), pS=set(pH), hS=set(audH(o)), ing={}, egr={}; CEN_SRV.forEach(sv=>{ ing[sv]=0; egr[sv]=0; });
+      audH(o).forEach(r=>{ const e=audEk(r.exp), sv=cenSrvOf(r.clin); if(e&&!pS.has(e)&&!p2.has(e)&&sv in ing) ing[sv]++; });
+      audE(o).forEach(r=>{ const e=audEk(r.exp), sv=cenSrvOf(r.clin); if(!(sv in egr)) return; egr[sv]++; if(e&&!pS.has(e)&&!hS.has(e)) ing[sv]++; });
+      const f=(o.rev=o.rev||{}).f=o.rev.f||{}; let ch=false;
+      CEN_SRV.forEach(sv=>{ [["ing."+sv,ing[sv]],["egr."+sv,egr[sv]]].forEach(([kk,v])=>{ if(String(f[kk]==null?"":f[kk]).trim()!==String(v)){ f[kk]=String(v); ch=true; } }); });
+      const tot=String(audH(o).length); if(String(f.tot==null?"":f.tot).trim()!==tot){ f.tot=tot; ch=true; }
+      const D=(o.pac||[]).filter(r=>r.sec==="D"); if(D.length&&cenVacio(f.dfn)){ f.dfn=D.map(r=>(r.cama?r.cama+". ":"")+String(r.nombre||"")).join("; "); ch=true; }
+      if(ch){ R.rev++; x.dirty=true; } });
+    /* estadísticas con ligado por días vecinos */
+    const recs={}, have=(remoteCache&&remoteCache.censos)||{};
+    ks.forEach(k=>{ const x=C.get(k), P=C.get(audDay(k,-1)), N=C.get(audDay(k,1)); try{ const rec=cenStatRec(Object.assign({},x.obj,{pac:x.obj.pac}),x.name,[P&&P.obj.pac,N&&N.obj.pac]); if(!rec.k) return; const old=have[rec.k]; if(old&&old.lig) rec.lig=old.lig;
+      const nl=r=>["cr","cp","cs"].reduce((a,g)=>a+((r&&r[g])||[]).filter(z=>z&&z.x).length,0); R.liga+=Math.max(0,nl(rec)-nl(old)); recs[rec.k]=rec; }catch(_){} });
+    /* JSON: vacíos desde el último censo en que aparece el paciente */
+    const lastBy=new Map(); ks.forEach(k=>audH(C.get(k).obj).forEach(r=>{ const e=audEk(r.exp); if(e) lastBy.set(e,{r,k}); }));
+    const clinFull={}; uniqueFiles(DRIVE_FILES||[]).forEach(f=>{ const c=String((f.meta||{}).clinica||"").trim(), cd=cenSrvOf(c); if(c&&cd){ const m=clinFull[cd]=clinFull[cd]||{}; m[c]=(m[c]||0)+1; } });
+    const fullOf=cd=>{ const m=clinFull[cd]; return m?Object.keys(m).sort((a,b)=>m[b]-m[a])[0]:""; };
+    const jsonCh=[]; uniqueFiles(DRIVE_FILES||[]).forEach(f=>{ const m=f.meta||{}, e=audEk(m.exp); const L=e&&lastBy.get(e); if(!L) return; const ch={};
+      if(!String(m.clinica||"").trim()){ const v=fullOf(cenSrvOf(L.r.clin)); if(v) ch.clinica=v; }
+      if(cenVacio(m.dx)&&!cenVacio(L.r.dx)) ch.diagnostico=String(L.r.dx).trim().toUpperCase().slice(0,300);
+      if(!String(m.ingreso||"").trim()&&parts(String(L.r.ing||"").trim())) ch.fIngreso=String(L.r.ing).trim();
+      if(Object.keys(ch).length) jsonCh.push([f,ch]); });
+    R.json=jsonCh.length; R.dirty=ks.filter(k=>C.get(k).dirty).length;
+    if(apply){
+      let j=0; const dirty=ks.filter(k=>C.get(k).dirty);
+      for(const k of dirty){ const x=C.get(k); j++; say("Guardando censos corregidos "+j+" de "+dirty.length+"…");
+        try{ if(x.drops.length) await statsWait(G_("hjmCensoUnificar",x.e.id,x.drops),60000);
+          const payload=Object.assign({},x.obj,{auditado:new Date().toISOString(),editado:cenUser()}); const res=await statsWait(G_("hjmCensoSave",x.name,JSON.stringify(payload),JSON.stringify({base:x.e.modified})),60000);
+          if(res&&res.conflicto) R.errs.push(x.name+" (lo editaron mientras tanto)"); }catch(e){ R.errs.push(x.name+" ("+friendly(e)+")"); } }
+      say("Actualizando estadísticas…"); const ok=await statsWait(window.__statSync({censos:recs,keep:false}),9*60000); if(ok===false) R.errs.push("archivo de estadísticas");
+      let q=0; for(const [f,ch] of jsonCh){ q++; if(q%20===0) say("Llenando datos vacíos de archivos "+q+" de "+jsonCh.length+"…"); try{ await new Promise(res=>window.__ppApply(f,ch,{quiet:true,auto:true,done:()=>res()})); }catch(_){} }
+      try{ CEN.list=null; CEN.cache&&CEN.cache.clear&&CEN.cache.clear(); }catch(_){} await statsWait(loadRemote(),60000);
+      R.when=new Date().toLocaleString("es-MX",{day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"});
+      say(R.errs.length?"Terminado con "+R.errs.length+" aviso(s).":"Terminado: censos y estadísticas corregidos.");
+    } else say("Análisis listo: revisa las cifras y pulsa «Corregir todo».");
+    AUD.res=R;
+  }catch(e){ say("No se pudo completar: "+friendly(e)); }
+  finally{ AUD.on=false; try{ const d=$s("dlgStats"); if(d&&d.open) render(); }catch(_){} }
+}
+const G_=(...a)=>gcall(...a);
+document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest("[data-audrun]"); if(!b||b.disabled) return; e.preventDefault(); audRun(b.dataset.audrun==="1"); });
 function dataAuditHTML(remote){ if(!isTechnicalAdmin()) return ""; try{
   const C=(remote&&remote.censos)||{}, ks=Object.keys(C).filter(k=>C[k]&&C[k].k).sort(), withHx=ks.filter(k=>Array.isArray(C[k].hx)), lastK=withHx[withHx.length-1]||"";
   const ek=v=>String(v||"").toUpperCase().replace(/[^0-9A-Z]/g,"").replace(/^0+(?=\d)/,"");
@@ -16452,19 +16551,20 @@ function dataAuditHTML(remote){ if(!isTechnicalAdmin()) return ""; try{
   const fRows=fld.map(([k,t,ok])=>{ const miss=files.filter(f=>!ok(f.meta)); return [t,files.length-miss.length,miss.length,miss]; });
   /* diferencias JSON ↔ censo */
   const CN={TM:"TM",GINE:"GINE",OM:"OM",CYC:"CYC",MAMA:"MAMA"}; const difClin=[], dxCen=[], hospDif=[];
-  inBoth.forEach(e=>{ const x=CEN.get(e), m=J.get(e).meta||{}; const jc=cenSrvOf(m.clinica||""); if(x.srv&&jc&&jc!==x.srv) difClin.push([x,m]); if(cenVacio(m.dx)&&x.dx) dxCen.push([x,m]);
-    const hj=metaHosp(m), hc=x.last===lastK; if(hj!==hc) hospDif.push([x,m,hj,hc]); });
+  inBoth.forEach(e=>{ const x=CEN.get(e), m=J.get(e).meta||{}; const jc=cenSrvOf(m.clinica||""), ed0=Date.parse(m.modEn||m.porEn||"")||0; if(x.srv&&jc&&jc!==x.srv&&!(ed0&&ed0>ingKeyMs(x.last)+864e5)) difClin.push([x,m]); if(cenVacio(m.dx)&&x.dx) dxCen.push([x,m]);
+    const hj=metaHosp(m), hc=x.last===lastK, ed=Date.parse(m.modEn||m.porEn||"")||0, cut=ingKeyMs(x.last)+864e5; if(hj!==hc&&!(ed&&ed>cut&&!hc)) hospDif.push([x,m,hj,hc]); });
   /* calidad de los censos */
   const inc=ks.filter(k=>C[k].chk&&C[k].chk.incompleto), noName=withHx.reduce((n,k)=>n+C[k].hx.filter(h=>!String(h[2]||"").trim()).length,0), noExp=withHx.reduce((n,k)=>n+Math.max(0,Object.values(C[k].ps||{}).reduce((a,b)=>a+(+b||0),0)-C[k].hx.length),0);
   const mis=[]; for(let i=1;i<ks.length;i++){ const d=Math.round((ingKeyMs(ks[i])-ingKeyMs(ks[i-1]))/864e5); if(d>1) mis.push([ks[i-1],ks[i],d-1]); }
-  const gaps=mis.reduce((n,x)=>n+x[2],0), revDif=ks.filter(k=>{ const c=C[k].chk; return c&&!c.incompleto&&((c.ingR!=null&&c.ingC!=null&&c.ingR!==c.ingC)||(c.egrR!=null&&c.egrC!=null&&c.egrR!==c.egrC)); });
+  const gaps=mis.reduce((n,x)=>n+x[2],0), revDif=ks.filter(k=>{ const c=C[k].chk; return c&&!c.incompleto&&((c.ingR!=null&&c.ingC!=null&&Math.abs(c.ingR-c.ingC)>=2)||(c.egrR!=null&&c.egrC!=null&&Math.abs(c.egrR-c.egrC)>=2)); });
   const sinLig=ks.reduce((n,k)=>n+["cr","cp","cs"].reduce((a,g)=>a+((C[k][g]||[]).filter(x=>x&&!x.x).length),0),0);
   const kf=k=>k?k.slice(8)+"."+k.slice(5,7)+"."+k.slice(2,4):"";
   const kp=(n,l,sub,warn)=>`<div class="st-kpi${warn?" st-warn":""}"><b>${n}</b><span>${esc(l)}</span>${sub?`<small class="st-sub">${esc(sub)}</small>`:""}</div>`;
   const tbl=(h,rows,max)=>rows.length?detTbl(h,rows.slice(0,max||60).map(c=>detTr(c)))+(rows.length>(max||60)?`<div class="st-msg">… y ${rows.length-(max||60)} más.</div>`:""):'<div class="st-msg">Sin casos.</div>';
   const dt=(t,n,body)=>`<details class="on-rv"><summary><b>${n}</b> ${esc(t)}</summary>${body}</details>`;
   return `<div class="st-card"><h3>Auditoría de datos <small>· solo Técnico · expedientes JSON contra censos (todo el historial)</small></h3>
-   <div class="st-msg">Solo consulta: nada de esta tarjeta cambia los archivos de los pacientes. Sirve para ver, paciente por paciente, qué falta o no coincide entre los archivos y los censos (los cargados de años anteriores incluidos); cada corrección la haces tú al abrir al paciente. El diagnóstico del archivo siempre es el que manda: el del censo es solo referencia (un reingreso puede traer otro primario).</div>
+   ${audPanelHTML()}
+   <div class="st-msg">Los indicadores de abajo son consulta. Sirve para ver, paciente por paciente, qué falta o no coincide entre los archivos y los censos (los cargados de años anteriores incluidos); cada corrección la haces tú al abrir al paciente. El diagnóstico del archivo siempre es el que manda: el del censo es solo referencia (un reingreso puede traer otro primario).</div>
    <div class="st-kpis">${kp(CEN.size,"Pacientes distintos en censos",ks.length+" censos · "+kf(ks[0])+" a "+kf(ks[ks.length-1]))}${kp(pc0(inBoth.length,CEN.size)+"%","De los pacientes de censos tienen archivo",inBoth.length+" de "+CEN.size,pc0(inBoth.length,CEN.size)<80)}${kp(cenOnlyL.length,"En censos sin archivo","créalos desde Pacientes › Todos",cenOnlyL.length>0)}${kp(hospNowNo.length,"Hospitalizados hoy sin archivo","del último censo ("+kf(lastK)+")",hospNowNo.length>0)}${kp(jsonOnly.length,"Archivos que no aparecen en censos","consulta externa, interconsultas o anteriores a los censos")}${kp(files.length,"Archivos de pacientes","con expediente")}</div>
    ${dt("hospitalizados en el último censo sin archivo en la app",hospNowNo.length,tbl(["Paciente","Expediente","Clínica","Desde",""],hospNowNo.map(x=>[esc(x.nom||"—"),esc(x.e),esc(x.srv||"—"),kf(x.first),`<button type="button" class="st-btn st-sm" data-njcrear="${esc(x.e)}" data-njk="${x.last}">Crear</button>`])))}
    ${dt("campos vacíos en los archivos de pacientes",fRows.reduce((n,r)=>n+r[2],0),detTbl(["Campo","Con dato","Vacíos","% completo"],fRows.map(r=>detTr([esc(r[0]),r[1],r[2],pc0(r[1],files.length)+"%"])))+fRows.filter(r=>r[2]).map(r=>dt(r[0]+" vacío",r[2],tbl(arHd(["Paciente","Expediente"]),r[3].map(f=>arCl(f.meta.exp,[esc(f.meta.nombre||"—"),esc(f.meta.exp)])),40))).join(""))}
@@ -16472,7 +16572,7 @@ function dataAuditHTML(remote){ if(!isTechnicalAdmin()) return ""; try{
    ${dt("con clínica distinta en el archivo y en el último censo",difClin.length,tbl(arHd(["Paciente","Expediente","Archivo","Último censo"]),difClin.map(([x,m])=>arCl(x.e,[esc(m.nombre||x.nom||"—"),esc(x.e),esc(m.clinica||"—"),esc(x.srv)]))))}
    ${dt("hospitalizado en uno y no en el otro (archivo vs. último censo)",hospDif.length,tbl(arHd(["Paciente","Expediente","Cama en archivo","Archivo","Último censo"]),hospDif.map(([x,m,hj,hc])=>arCl(x.e,[esc(m.nombre||x.nom||"—"),esc(x.e),esc(m.cama||"—"),hj?"Hospitalizado":"No",hc?"Hospitalizado":"No"]))))}
    <h4 class="det-h">Calidad de los censos</h4>
-   <div class="st-kpis">${kp(gaps,"Días sin censo entre el primero y el último",mis.length+" huecos",gaps>0)}${kp(inc.length,"Censos que parecen incompletos","faltan muchos pacientes respecto al anterior",inc.length>0)}${kp(revDif.length,"Censos con reverso ≠ tabla","ingresos o egresos del reverso no coinciden con la tabla",revDif.length>0)}${kp(noExp,"Filas sin expediente","no se pueden ligar a un archivo",noExp>0)}${kp(noName,"Filas sin nombre","",noName>0)}${kp(sinLig,"Cirugías sin paciente ligado","ligarlas en Quirófano",sinLig>0)}</div>
+   <div class="st-kpis">${kp(gaps,"Días sin censo entre el primero y el último",mis.length+" huecos",gaps>0)}${kp(inc.length,"Censos que parecen incompletos","faltan muchos pacientes respecto al anterior",inc.length>0)}${kp(revDif.length,"Censos con reverso ≠ tabla","diferencia de 2 o más en ingresos o egresos",revDif.length>0)}${kp(noExp,"Filas sin expediente","no se pueden ligar a un archivo",noExp>0)}${kp(noName,"Filas sin nombre","",noName>0)}${kp(sinLig,"Cirugías sin paciente ligado","ligarlas en Quirófano",sinLig>0)}</div>
    ${dt("censos duplicados en Drive (se usa la copia más reciente; borra la otra)",(window.__cenDupes||[]).length,tbl(["Archivo duplicado"],(window.__cenDupes||[]).map(n=>[esc(n)])))}
    ${dt("fechas de censo faltantes",gaps,tbl(["Fecha del censo faltante"],mis.flatMap(([inicio,fin,n])=>Array.from({length:n},(_,i)=>[kf(new Date(Date.parse(inicio+"T00:00:00Z")+(i+1)*864e5).toISOString().slice(0,10))])),gaps))}
    ${dt("censos con reverso distinto de la tabla",revDif.length,tbl(["Censo","Ingresos reverso / tabla","Egresos reverso / tabla"],revDif.slice().reverse().map(k=>{ const c=C[k].chk; return [kf(k),c.ingR+" / "+c.ingC,c.egrR+" / "+c.egrC]; })))}
