@@ -337,7 +337,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="10.48">
+<meta name="application-version" content="10.49">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="hjm">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="hjm">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="hjm">
@@ -2769,7 +2769,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 10.48 · Fecha de publicación: 27.11.26</div>
+  <div class="app-footer-version">Versión 10.49 · Fecha de publicación: 27.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -16368,7 +16368,13 @@ function cmpDefaults(){ if(CMPF.a1) return; let a1,a2; try{ const cb=curBounds()
 function cmpPreset(k){ const t=dayKey(Date.now()); if(k==="dia"){ CMPF.a1=CMPF.a2=t; CMPF.b1=CMPF.b2=kAdd(t,-1); }
   else if(k==="sem"){ CMPF.a2=t; CMPF.a1=kAdd(t,-6); CMPF.b2=kAdd(t,-7); CMPF.b1=kAdd(t,-13); }
   else if(k==="mes"){ const d=new Date(), m0=new Date(d.getFullYear(),d.getMonth(),1), p0=new Date(d.getFullYear(),d.getMonth()-1,1), p1=new Date(d.getFullYear(),d.getMonth(),0); CMPF.a1=dayKey(m0.getTime()); CMPF.a2=t; CMPF.b1=dayKey(p0.getTime()); CMPF.b2=dayKey(p1.getTime()); }
-  else if(k==="anio"){ const d=new Date(); CMPF.a1=dayKey(new Date(d.getFullYear(),d.getMonth(),1).getTime()); CMPF.a2=t; CMPF.b1=dayKey(new Date(d.getFullYear()-1,d.getMonth(),1).getTime()); CMPF.b2=dayKey(new Date(d.getFullYear()-1,d.getMonth()+1,0).getTime()); } }
+  else if(k==="anio"){ const d=new Date(); CMPF.a1=dayKey(new Date(d.getFullYear(),d.getMonth(),1).getTime()); CMPF.a2=t; CMPF.b1=dayKey(new Date(d.getFullYear()-1,d.getMonth(),1).getTime()); CMPF.b2=dayKey(new Date(d.getFullYear()-1,d.getMonth()+1,0).getTime()); }
+  /* v10.49 · «este … vs anterior»: del inicio del periodo a hoy contra el mismo corte del periodo anterior */
+  else{ const d=new Date(), Y=d.getFullYear(), M=d.getMonth(), D=d.getDate(), K=(y,m,dd)=>dayKey(new Date(y,m,dd).getTime()), cut=(y,m,dd)=>K(y,m,Math.min(dd,new Date(y,m+1,0).getDate()));
+    if(k==="esem"){ const dw=(d.getDay()+6)%7; CMPF.a1=kAdd(t,-dw); CMPF.a2=t; CMPF.b1=kAdd(t,-dw-7); CMPF.b2=kAdd(t,-7); }
+    else if(k==="emes"){ CMPF.a1=K(Y,M,1); CMPF.a2=t; CMPF.b1=K(Y,M-1,1); CMPF.b2=cut(Y,M-1,D); }
+    else if(k==="eano"){ CMPF.a1=K(Y,0,1); CMPF.a2=t; CMPF.b1=K(Y-1,0,1); CMPF.b2=cut(Y-1,M,D); }
+    else if(k==="eciclo"){ const y0=M>=2?Y:Y-1; CMPF.a1=K(y0,2,1); CMPF.a2=t; CMPF.b1=K(y0-1,2,1); CMPF.b2=cut(Y-1,M,D); } } }
 function cmpLbl(a,b){ return (!b||a===b)?kFmt(a):kFmt(a)+" – "+kFmt(b); }
 function cmpView(remote,C){ cmpDefaults(); const A=cmpRs(remote,CMPF.a1,CMPF.a2), B=cmpRs(remote,CMPF.b1,CMPF.b2), ma=cmpMet(A,C,CMPF.a1,CMPF.a2), mb=cmpMet(B,C,CMPF.b1,CMPF.b2);
   const IC={cen:'<path d="M7 3h10v18H7z"/><path d="M10 8h4M10 12h4M10 16h2"/>',bed:'<path d="M3 18V7M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="10.5" r="1.6"/>',in:'<path d="M12 4v12M6 10l6 6 6-6M4 20h16"/>',out:'<path d="M12 20V8M6 14l6-6 6 6M4 4h16"/>',bal:'<path d="M12 3v18M5 7h14M5 7l-3 6h6zM19 7l-3 6h6z"/>',dfn:'<path d="M12 3v18M7 8h10"/>',rein:'<path d="M4 12a8 8 0 1 0 2.3-5.6M4 4v4h4"/>',grv:'<path d="M12 3 2 20h20zM12 9v5M12 17h.01"/>',max:'<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>',qx:'<path d="m11 10 3 3-9 9-3-3Z"/><path d="m11 10 4-6q3-3 7-2-1 5-7 11Z"/>',ic:'<circle cx="8" cy="7" r="3"/><path d="M2 20v-3q0-5 6-5M16 4h6M19 1v6M14 20q0-4 4-4t4 4"/>'};
@@ -16399,7 +16405,7 @@ function cmpView(remote,C){ cmpDefaults(); const A=cmpRs(remote,CMPF.a1,CMPF.a2)
   const cxDet=k=>`<div class="cx-det"><div class="cx-dc a"><h5><span class="cx-tg">A</span>${cmpLbl(CMPF.a1,CMPF.a2)}</h5>${lst(A,k,"a")}</div><div class="cx-dc b"><h5><span class="cx-tg">B</span>${cmpLbl(CMPF.b1,CMPF.b2)}</h5>${lst(B,k,"b")}</div></div>`;
   const inp=(k,v)=>`<input type="text" data-cmp="${k}" value="${esc(v?kFmt(v):"")}" inputmode="numeric" maxlength="8" placeholder="DD.MM.AA" autocomplete="off" aria-label="${k[1]==="1"?"Desde":"Hasta"} (DD.MM.AA)">`;
   const per=(x,lab,a1,a2,rs)=>`<div class="cx-p ${x}"><div class="cx-ph"><span class="cx-tag">${x.toUpperCase()}</span><div><b>${cmpLbl(a1,a2)}</b><small>Periodo ${x.toUpperCase()}</small></div></div><div class="cx-pd"><label><span>Desde</span>${inp(x+"1",a1)}</label><label><span>Hasta</span>${inp(x+"2",a2)}</label></div></div>`;
-  const pre=[["dia","Hoy vs ayer"],["sem","7 vs 7 días"],["mes","Mes vs anterior"],["anio","Mes vs hace 1 año"]].map(([k,l])=>`<button type="button" class="cx-seg${CMPF.pre===k?" on":""}" data-cmppre="${k}">${l}</button>`).join("");
+  const pre=[["dia","Hoy vs ayer"],["sem","7 vs 7 días"],["mes","Mes vs anterior"],["anio","Mes vs hace 1 año"],["esem","Esta semana vs anterior"],["emes","Este mes vs anterior"],["eano","Este año vs anterior"],["eciclo","Este ciclo vs anterior"]].map(([k,l])=>`<button type="button" class="cx-seg${CMPF.pre===k?" on":""}" data-cmppre="${k}">${l}</button>`).join("");
   const srt=[["","Original"],["up","Mayor aumento"],["dn","Mayor descenso"]].map(([k,l])=>`<button type="button" class="cx-seg${(CMPF.sort||"")===k?" on":""}" data-cmpsort="${k}">${l}</button>`).join("");
   const warn=(!A.length||!B.length)?`<div class="cx-warn">${!A.length&&!B.length?"Ningún periodo tiene censos finales.":!A.length?"El periodo A no tiene censos finales.":"El periodo B no tiene censos finales."} Elige otras fechas o espera a que terminen de importarse.</div>`:"";
   const asc=rs=>rs.slice().sort((x,y)=>x.k.localeCompare(y.k)), Aa=asc(A), Ba=asc(B), n=Math.min(60,Math.max(Aa.length,Ba.length)), lab=Array.from({length:n},(_,i)=>"Día "+(i+1));
