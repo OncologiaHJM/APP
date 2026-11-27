@@ -337,7 +337,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="10.46">
+<meta name="application-version" content="10.47">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="hjm">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="hjm">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="hjm">
@@ -2769,7 +2769,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 10.46 · Fecha de publicación: 26.11.26</div>
+  <div class="app-footer-version">Versión 10.47 · Fecha de publicación: 26.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -3145,7 +3145,7 @@ table.rev .rv-b:hover{background:var(--cen-tint,#eef3f9)}
 .cx-pd{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 14px}
 .cx-pd label{display:flex;flex-direction:column;gap:4px;font-size:11px;font-weight:700;color:var(--cxm);text-transform:uppercase;letter-spacing:.04em}
 .cx-pd input{width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--cxl);border-radius:10px;font:500 14px inherit;font-family:inherit;color:inherit;background:transparent}
-.cx-pd input:focus{outline:none;border-color:var(--cxa);box-shadow:0 0 0 3px color-mix(in srgb,var(--cxa) 18%,transparent)}
+.cx-pd input.bad{border-color:#C0392B!important;box-shadow:0 0 0 3px rgba(192,57,43,.15)!important}.cx-pd input{letter-spacing:.03em;font-variant-numeric:tabular-nums}.cx-pd input:focus{outline:none;border-color:var(--cxa);box-shadow:0 0 0 3px color-mix(in srgb,var(--cxa) 18%,transparent)}
 .cx-warn{margin:10px 18px 0;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,#C0392B 8%,transparent);color:#a3271c;font-size:13px}
 .cx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;padding:14px 18px}
 .cx-m{border:1px solid var(--cxl);border-radius:14px;padding:12px 14px;background:var(--st-card,#fff);display:flex;flex-direction:column;gap:8px;transition:box-shadow .15s}
@@ -16396,7 +16396,7 @@ function cmpView(remote,C){ cmpDefaults(); const A=cmpRs(remote,CMPF.a1,CMPF.a2)
     L.sort(k==="pmax"||k==="ingmax"?(p,q)=>q.v-p.v||q.r.k.localeCompare(p.r.k):(p,q)=>q.r.k.localeCompare(p.r.k));
     return L.length?`<table class="cx-t"><thead><tr><th>Censo</th><th>${k==="pd"||k==="pmax"?"Pacientes":"Cifra"}</th>${TXT[k]?"<th>Detalle</th>":""}</tr></thead><tbody>${L.slice(0,120).map(z=>`<tr class="st-click" data-cenview="${esc(jcf(z.r))}" tabindex="0" title="Abrir el censo ${esc(z.r.f||"")}"><td>${esc(z.r.f||kFmt(z.r.k))}</td><td><b>${fmtN(z.v)}</b></td>${TXT[k]?`<td class="nm">${esc(TXT[k](z.r)||"—")}</td>`:""}</tr>`).join("")}</tbody></table>${L.length>120?`<div class="cx-none">… y ${L.length-120} censos más.</div>`:""}`:'<div class="cx-none">Ningún censo con esta cifra.</div>'; };
   const cxDet=k=>`<div class="cx-det"><div class="cx-dc a"><h5><span class="cx-tg">A</span>${cmpLbl(CMPF.a1,CMPF.a2)}</h5>${lst(A,k,"a")}</div><div class="cx-dc b"><h5><span class="cx-tg">B</span>${cmpLbl(CMPF.b1,CMPF.b2)}</h5>${lst(B,k,"b")}</div></div>`;
-  const inp=(k,v)=>`<input type="date" data-cmp="${k}" value="${esc(v||"")}" max="${dayKey(Date.now())}" aria-label="${k[1]==="1"?"Desde":"Hasta"}">`;
+  const inp=(k,v)=>`<input type="text" data-cmp="${k}" value="${esc(v?kFmt(v):"")}" inputmode="numeric" maxlength="8" placeholder="DD.MM.AA" autocomplete="off" aria-label="${k[1]==="1"?"Desde":"Hasta"} (DD.MM.AA)">`;
   const per=(x,lab,a1,a2,rs)=>`<div class="cx-p ${x}"><div class="cx-ph"><span class="cx-tag">${x.toUpperCase()}</span><div><b>${cmpLbl(a1,a2)}</b><small>Periodo ${x.toUpperCase()}</small></div></div><div class="cx-pd"><label><span>Desde</span>${inp(x+"1",a1)}</label><label><span>Hasta</span>${inp(x+"2",a2)}</label></div></div>`;
   const pre=[["dia","Hoy vs ayer"],["sem","7 vs 7 días"],["mes","Mes vs anterior"],["anio","Mes vs hace 1 año"]].map(([k,l])=>`<button type="button" class="cx-seg${CMPF.pre===k?" on":""}" data-cmppre="${k}">${l}</button>`).join("");
   const srt=[["","Original"],["up","Mayor aumento"],["dn","Mayor descenso"]].map(([k,l])=>`<button type="button" class="cx-seg${(CMPF.sort||"")===k?" on":""}" data-cmpsort="${k}">${l}</button>`).join("");
@@ -16409,9 +16409,15 @@ function cmpView(remote,C){ cmpDefaults(); const A=cmpRs(remote,CMPF.a1,CMPF.a2)
    <div class="cx-ps">${per("a","A",CMPF.a1,CMPF.a2,A)}<span class="cx-vs">vs</span>${per("b","B",CMPF.b1,CMPF.b2,B)}</div>${warn}
    <div class="cx-bar1"><div class="cx-grp"><span>Ordenar</span><div class="cx-segs">${srt}</div></div><small class="cx-leg"><i class="ok"></i>mejor <i class="bad"></i>peor <i class="nt"></i>neutro · para un solo día usa la misma fecha en Desde y Hasta</small></div>
    <div class="cx-grid">${L.map(card).join("")}</div>${charts}</details>`; }
-function cmpWire(root){ const box=root.querySelector("[data-cmpbox]"); if(!box) return; box.addEventListener("toggle",e=>{ if(e.target===box) CMPF.on=box.open; });
+function cmpWire(root){ const box=root.querySelector("[data-cmpbox]"); if(!box) return;
+  if(CMPF._focus){ const f=box.querySelector('[data-cmp="'+CMPF._focus+'"]'); CMPF._focus=""; if(f) setTimeout(()=>{ try{ f.focus({preventScroll:true}); f.select(); }catch(_){} },0); } box.addEventListener("toggle",e=>{ if(e.target===box) CMPF.on=box.open; });
   box.querySelectorAll("details[data-cmpk]").forEach(d=>d.addEventListener("toggle",()=>{ CMPF.open=CMPF.open||new Set(); const k=d.dataset.cmpk; if(d.open){ if(!CMPF.open.has(k)){ CMPF.open.add(k); CMPF.on=true; render(); } } else CMPF.open.delete(k); }));
-  box.querySelectorAll("[data-cmp]").forEach(i=>i.onchange=()=>{ const k=i.dataset.cmp; CMPF[k]=i.value||""; CMPF.pre=""; if(k==="a1"&&(!CMPF.a2||CMPF.a2<CMPF.a1)) CMPF.a2=CMPF.a1; if(k==="b1"&&(!CMPF.b2||CMPF.b2<CMPF.b1)) CMPF.b2=CMPF.b1; if(k==="a2"&&CMPF.a2&&CMPF.a2<CMPF.a1) CMPF.a1=CMPF.a2; if(k==="b2"&&CMPF.b2&&CMPF.b2<CMPF.b1) CMPF.b1=CMPF.b2; CMPF.on=true; render(); });
+  /* v10.47 · fechas DD.MM.AA con escritura rápida: los puntos se ponen solos y al completar 6 dígitos se aplica */
+  const toKey=v=>{ const m=/^(\d{2})\.(\d{2})\.(\d{2})$/.exec(v); if(!m) return ""; const d=+m[1], mo=+m[2], y=2000+ +m[3], dt=new Date(y,mo-1,d); return dt.getFullYear()===y&&dt.getMonth()===mo-1&&dt.getDate()===d?dayKey(dt.getTime()):""; };
+  box.querySelectorAll("[data-cmp]").forEach(i=>{ i.oninput=()=>{ let d0=i.value.replace(/\D/g,""); if(d0.length===8&&/^20/.test(d0.slice(4))) d0=d0.slice(0,4)+d0.slice(6); const dg=d0.slice(0,6); const v=dg.replace(/^(\d{2})(\d)/,"$1.$2").replace(/^(\d{2}\.\d{2})(\d)/,"$1.$2"); if(i.value!==v){ i.value=v; try{ i.setSelectionRange(v.length,v.length); }catch(_){} } i.classList.toggle("bad",dg.length===6&&!toKey(v)); if(dg.length===6&&toKey(v)) i.dispatchEvent(new Event("change")); };
+    i.onfocus=()=>{ try{ i.select(); }catch(_){} }; });
+  box.querySelectorAll("[data-cmp]").forEach(i=>i.onchange=()=>{ const key=toKey(i.value); if(!key) return; const k=i.dataset.cmp; if(CMPF[k]===key) return; CMPF[k]=key; CMPF.pre="";
+    const nx={a1:"a2",a2:"b1",b1:"b2"}[k]; CMPF._focus=nx||""; if(k==="a1"&&(!CMPF.a2||CMPF.a2<CMPF.a1)) CMPF.a2=CMPF.a1; if(k==="b1"&&(!CMPF.b2||CMPF.b2<CMPF.b1)) CMPF.b2=CMPF.b1; if(k==="a2"&&CMPF.a2&&CMPF.a2<CMPF.a1) CMPF.a1=CMPF.a2; if(k==="b2"&&CMPF.b2&&CMPF.b2<CMPF.b1) CMPF.b1=CMPF.b2; CMPF.on=true; render(); });
   box.querySelectorAll("[data-cmppre]").forEach(b=>b.onclick=()=>{ cmpPreset(b.dataset.cmppre); CMPF.pre=b.dataset.cmppre; CMPF.on=true; render(); });
   box.querySelectorAll("[data-cmpsort]").forEach(b=>b.onclick=()=>{ CMPF.sort=b.dataset.cmpsort; CMPF.on=true; render(); }); }
 function movView(remote){
