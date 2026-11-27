@@ -337,7 +337,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="10.49">
+<meta name="application-version" content="10.50">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="hjm">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="hjm">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="hjm">
@@ -2769,7 +2769,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 10.49 · Fecha de publicación: 27.11.26</div>
+  <div class="app-footer-version">Versión 10.50 · Fecha de publicación: 27.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -17312,13 +17312,16 @@ async function integrarExp(exp){
     let row=pendData.out.find(p=>p.exp===exp)||{items:[]}, left=row.items.length, n=(r&&r.n)||0;
     /* v2.163 · Las altas se arman con el formato de la Nota de Alta: se abre al paciente por detrás (así se integran también sus notas), se guarda y se vuelve a Inicio */
     if(left&&row.items.some(it=>pendInfo(it).hasAltas)){
+      const before=left; let bgOk=false;
+      if(typeof window.__ppAltaBg==="function"){ try{ bgOk=await window.__ppAltaBg(f.id); }catch(_){ bgOk=false; } }   /* v10.50 · en segundo plano */
+      if(!bgOk){
       if(hasSelectedPatient()) return (n?"ok:"+n+" · ":"")+"hay un paciente abierto en pantalla: toca «Pacientes» para volver a Inicio y vuelve a integrar la alta";
-      const before=left;
       try{
         window.__quietOpen=true; await openDriveFile(f.id); window.__quietOpen=false;
         if(current||currentClinical) back();
         await goHome();
       }catch(e){ window.__quietOpen=false; return "error al integrar la alta: "+friendly(e); }
+      }
       await refreshExp(exp); row=pendData.out.find(p=>p.exp===exp)||{items:[]}; left=row.items.length; n+=Math.max(0,before-left);
       if(!n&&left) return "la alta no se integró (ya existe una con esa fecha de egreso, contenido no reconocido o conflicto); quedan "+left;
     }
@@ -18007,7 +18010,7 @@ async function autoIntegrarPend(){
     const data=await scanPend(sink); pendData=data;
     if(data.unsupported){ mini(""); return; }
     const quieto=!hasSelectedPatient()&&!document.querySelector("dialog[open]")&&(document.hidden||Date.now()-(window.__hjmLastInput||0)>120000);
-    const todo=data.out.filter(p=>!/^\(sin/.test(p.exp)&&!p.items.some(it=>{ const i=pendInfo(it); return i.bad||(i.hasAltas&&!quieto); }));
+    const todo=data.out.filter(p=>!/^\(sin/.test(p.exp)&&!p.items.some(it=>{ const i=pendInfo(it); return i.bad||(i.hasAltas&&!quieto&&typeof window.__ppAltaBg!=="function"); }));
     if(!todo.length){ mini(""); autoPendUser=u; return; }
     let i=0, ok=0, skip=0;
     for(const p of todo){ i++; mini("Integrando pendientes "+i+" de "+todo.length+"…","",0); const r=String(await integrarExp(p.exp)); if(/^ok:[1-9]/.test(r)) ok++; else { skip++; reint=true; } }
@@ -19038,6 +19041,21 @@ function ppChildBusy(w){ try{ return !!(w&&w.eval&&w.eval('(typeof SAVING!=="und
 function ppKeepSaving(fr){ if(!fr) return; window.__ppBgFrames=window.__ppBgFrames||new Set(); window.__ppBgFrames.add(fr); fr.style.visibility='hidden'; fr.style.display='none'; const t0=Date.now();
   const tick=()=>{ if(!fr.isConnected){ window.__ppBgFrames.delete(fr); return; } if(ppChildBusy(fr.contentWindow)&&Date.now()-t0<15*60e3){ try{ window.renderSync&&renderSync(); }catch(_){} setTimeout(tick,1500); return; } window.__ppBgFrames.delete(fr); if(fr!==PPIW.frame&&fr!==PPIW.saving){ try{ fr.remove(); }catch(_){} } try{ window.renderSync&&renderSync(); }catch(_){} };
   setTimeout(tick,1500); }
+/* v10.50 · Nota de Alta desde Pendientes: se arma en una copia oculta de la app (como las ventanas), sin abrir al paciente en la pantalla principal */
+window.__ppAltaBg=async(id)=>{
+  const template=ppIsolatedTemplate(); window.__ppBgFrames=window.__ppBgFrames||new Set();
+  const cfg={key:'datos',token:'alta'+Date.now(),session:sessionUserName(),noteId:'',section:'',personalRecord:null,exp:'',adscrito:SESSION_ADSCRITO,residente:SESSION_RESIDENT,tech:TECH_ADMIN_SESSION,user:USER,folder:FOLDER,store:STORE};
+  const fr=document.createElement('iframe'); fr.setAttribute('aria-hidden','true'); fr.tabIndex=-1; fr.title='Integración de alta';
+  fr.style.cssText='position:fixed;left:-12000px;top:0;width:1280px;height:900px;visibility:hidden;pointer-events:none;border:0';
+  window.__ppBgFrames.add(fr);
+  try{
+    const ready=new Promise((res,rej)=>{ const t0=Date.now(); const chk=()=>{ try{ const w=fr.contentWindow; if(w&&w.__hjmChildError) return rej(Error(w.__hjmChildError)); if(w&&w.__hjmChildReady&&typeof w.openDriveFile==='function') return res(w); }catch(_){} if(Date.now()-t0>60000) return rej(Error('la copia oculta no cargó')); setTimeout(chk,250); }; chk(); });
+    fr.srcdoc=ppIsolatedDocument(template,null,cfg); document.body.appendChild(fr);
+    const w=await ready; await w.openDriveFile(id);
+    const t1=Date.now(); await sleep(800); while(ppChildBusy(w)&&Date.now()-t1<10*60e3) await sleep(1000);
+    return true;
+  } finally { window.__ppBgFrames.delete(fr); try{ fr.remove(); }catch(_){} }
+};
 window.__ppBgSaving=()=>{ let n=0; try{ (window.__ppBgFrames||new Set()).forEach(f=>{ if(ppChildBusy(f.contentWindow)) n++; }); if(PPIW.saving) n++; if(!PPIW.active&&PPIW.frame&&ppChildBusy(PPIW.frame.contentWindow)) n++; }catch(_){} return n; };
 async function ppIsolatedClose(){
   if(!PPIW.active)return;
