@@ -337,7 +337,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="10.40">
+<meta name="application-version" content="10.46">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="hjm">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="hjm">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="hjm">
@@ -2769,7 +2769,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 10.40 · Fecha de publicación: 26.11.26</div>
+  <div class="app-footer-version">Versión 10.46 · Fecha de publicación: 26.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -3178,6 +3178,28 @@ table.rev .rv-b:hover{background:var(--cen-tint,#eef3f9)}
 .aud-b .aud-go:not(:disabled){background:#2F6FA7;color:#fff;border-color:#2F6FA7}
 .aud-r{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:12px}
 .aud-r>div{border:1px solid var(--st-line,#dfe6ee);border-radius:10px;padding:8px 10px}.aud-r b{display:block;font-size:18px}.aud-r span{font-size:11.5px;color:var(--st-mute,#6b7a8c)}
+/* v10.41 · Herramientas del Técnico al final de Censos */
+.st-tech>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+.st-tech>summary::-webkit-details-marker{display:none}.st-tech>summary h3{margin:0}
+.st-tech>summary::after{content:"";width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);margin:0 6px 4px;opacity:.6;transition:transform .15s}
+.st-tech[open]>summary::after{transform:rotate(-135deg);margin-bottom:-2px}.st-tech[open]>summary{margin-bottom:12px}
+.st-tech-b>.st-card{box-shadow:none}
+/* v10.45 · tarjetas del comparador desplegables */
+details.cx-m>summary{list-style:none;cursor:pointer;display:flex;flex-direction:column;gap:8px}
+details.cx-m>summary::-webkit-details-marker{display:none}
+.cx-more{align-self:flex-end;font-size:11.5px;font-weight:700;color:var(--cxa,#2F6FA7);display:inline-flex;align-items:center;gap:5px}
+.cx-more::after{content:"";width:6px;height:6px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);margin-top:-3px;transition:transform .15s}
+details.cx-m[open] .cx-more::after{transform:rotate(-135deg);margin-top:2px}
+details.cx-m[open]{grid-column:1/-1}
+.cx-det{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:10px;padding-top:10px;border-top:1px solid var(--cxl,#dfe6ee)}
+.cx-dc h5{display:flex;align-items:center;gap:6px;margin:0 0 6px;font-size:12.5px}
+.cx-tg{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:5px;color:#fff;font-size:10.5px;font-weight:800}.cx-dc.a .cx-tg{background:#2F6FA7}.cx-dc.b .cx-tg{background:#D9822B}
+.cx-dc{max-height:340px;overflow:auto;min-width:0}
+.cx-t{width:100%;border-collapse:collapse;font-size:12.5px}.cx-t th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--cxm,#6b7a8c);padding:4px 6px;position:sticky;top:0;background:var(--st-card,#fff)}
+.cx-t td{padding:5px 6px;border-top:1px solid var(--cxl,#eef2f6);vertical-align:top}.cx-t td.nm{font-size:11.5px;color:var(--cxm,#6b7a8c)}
+.cx-t tr.st-click{cursor:pointer}.cx-t tr.st-click:hover td{background:color-mix(in srgb,#2F6FA7 7%,transparent)}
+.cx-none{font-size:12px;color:var(--cxm,#6b7a8c);padding:6px}
+@media (max-width:700px){.cx-det{grid-template-columns:1fr}}
 /* Agenda (Quirófano y Comité): mismos colores de acción */
 html body .qx-c-act .qx-btn.bad{color:#B42318;border-color:#F4C7C2;background:#FEF3F2}
 html body .qx-c-act .qx-btn.bad:hover{background:#FDE4E1}
@@ -16338,7 +16360,7 @@ function cmpMet(rs,C,a,b){ const S=C?[C]:SRVL, sv=(o,r)=>S.reduce((n,s)=>n+(((r|
   const es=(r,k)=>C?(((r.estc||{})[C]||{})[k]||0):((r.est||{})[k]||0), dfnN=r=>Array.isArray(r.el)?r.el.filter(x=>x.t==="D"&&(!C||x.s===C)).length:(C?0:cenCnt(r.dfn));
   const n=rs.length, ing=rs.reduce((t,r)=>t+sv("ing",r),0), egr=rs.reduce((t,r)=>t+sv("egr",r),0), pds=rs.map(pd).filter(x=>x>0);
   let rein=0; try{ const lo=ingKeyMs(a), hi=ingKeyMs(b||a)+864e5-1; rein=ingAllAdmissions().filter(x=>x.i>=2&&x.ms>=lo&&x.ms<=hi&&(!C||x.s===C)).length; }catch(_){}
-  return {n,pd:n?avgOf(pds):null,pmax:pds.length?Math.max(...pds):null,ing,egr,bal:ing-egr,ingd:n?ing/n:null,egrd:n?egr/n:null,dfn:rs.reduce((t,r)=>t+dfnN(r),0),rein,grv:n?avgOf(rs.map(r=>es(r,"GRAVE"))):null,
+  return {n,ingmax:n?Math.max(0,...rs.map(r=>sv("ing",r))):null,pd:n?avgOf(pds):null,pmax:pds.length?Math.max(...pds):null,ing,egr,bal:ing-egr,ingd:n?ing/n:null,egrd:n?egr/n:null,dfn:rs.reduce((t,r)=>t+dfnN(r),0),rein,grv:n?avgOf(rs.map(r=>es(r,"GRAVE"))):null,
     cx:rs.reduce((t,r)=>t+(r.cr||[]).filter(x=>x&&(!C||x.s===C)).length,0), cxd:n?rs.reduce((t,r)=>t+(r.cr||[]).filter(x=>x&&(!C||x.s===C)).length,0)/n:null,
     ic:rs.reduce((t,r)=>t+icTot(r),0), icd:n?rs.reduce((t,r)=>t+icTot(r),0)/n:null}; }
 function cmpDefaults(){ if(CMPF.a1) return; let a1,a2; try{ const cb=curBounds(); a1=cb.cutoff; a2=cb.upper; }catch(_){ a2=dayKey(Date.now()); a1=kAdd(a2,-6); } if(!a1||a1<"2000") a1=kAdd(a2,-6); const len=kNum(a2)-kNum(a1)+1; CMPF.a1=a1; CMPF.a2=a2; CMPF.b2=kAdd(a1,-1); CMPF.b1=kAdd(a1,-len); }
@@ -16349,18 +16371,33 @@ function cmpPreset(k){ const t=dayKey(Date.now()); if(k==="dia"){ CMPF.a1=CMPF.a
 function cmpLbl(a,b){ return (!b||a===b)?kFmt(a):kFmt(a)+" – "+kFmt(b); }
 function cmpView(remote,C){ cmpDefaults(); const A=cmpRs(remote,CMPF.a1,CMPF.a2), B=cmpRs(remote,CMPF.b1,CMPF.b2), ma=cmpMet(A,C,CMPF.a1,CMPF.a2), mb=cmpMet(B,C,CMPF.b1,CMPF.b2);
   const IC={cen:'<path d="M7 3h10v18H7z"/><path d="M10 8h4M10 12h4M10 16h2"/>',bed:'<path d="M3 18V7M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="10.5" r="1.6"/>',in:'<path d="M12 4v12M6 10l6 6 6-6M4 20h16"/>',out:'<path d="M12 20V8M6 14l6-6 6 6M4 4h16"/>',bal:'<path d="M12 3v18M5 7h14M5 7l-3 6h6zM19 7l-3 6h6z"/>',dfn:'<path d="M12 3v18M7 8h10"/>',rein:'<path d="M4 12a8 8 0 1 0 2.3-5.6M4 4v4h4"/>',grv:'<path d="M12 3 2 20h20zM12 9v5M12 17h.01"/>',max:'<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>',qx:'<path d="m11 10 3 3-9 9-3-3Z"/><path d="m11 10 4-6q3-3 7-2-1 5-7 11Z"/>',ic:'<circle cx="8" cy="7" r="3"/><path d="M2 20v-3q0-5 6-5M16 4h6M19 1v6M14 20q0-4 4-4t4 4"/>'};
-  const M=[["Hospitalizados por día","pd",1,1,"bed","promedio"],["Máximo en un día","pmax",0,1,"max","hospitalizados"],["Ingresos","ing",0,0,"in","total"],["Ingresos por día","ingd",1,0,"in","promedio"],["Egresos","egr",0,1,"out","total"],["Egresos por día","egrd",1,1,"out","promedio"],["Balance","bal",0,1,"bal","ingresos − egresos"],["Defunciones","dfn",0,2,"dfn","total"],["Reingresos","rein",0,2,"rein","total"],["Graves por día","grv",1,2,"grv","promedio"],["Cirugías realizadas","cx",0,0,"qx","total"],["Cirugías por día","cxd",1,0,"qx","promedio"],["Interconsultas realizadas","ic",0,1,"ic",C?"total · todas las clínicas":"total"],["Interconsultas por día","icd",1,1,"ic","promedio"],["Censos finales","n",0,1,"cen","en el periodo"]];
+  const M=[["Hospitalizados por día","pd",1,1,"bed","promedio"],["Máximo en un día","pmax",0,1,"max","hospitalizados"],["Ingresos","ing",0,0,"in","total"],["Ingresos por día","ingd",1,0,"in","promedio"],["Mayor número de ingresos en un día","ingmax",0,0,"in","máximo"],["Egresos","egr",0,1,"out","total"],["Egresos por día","egrd",1,1,"out","promedio"],["Defunciones","dfn",0,2,"dfn","total"],["Reingresos","rein",0,2,"rein","total"],["Graves por día","grv",1,2,"grv","promedio"],["Cirugías realizadas","cx",0,0,"qx","total"],["Cirugías por día","cxd",1,0,"qx","promedio"],["Interconsultas realizadas","ic",0,1,"ic",C?"total · todas las clínicas":"total"],["Interconsultas por día","icd",1,1,"ic","promedio"]];
   const dif=k=>(ma[k]==null||mb[k]==null)?null:ma[k]-mb[k], rel=k=>{ const d=dif(k); return d==null?null:(mb[k]?d/Math.abs(mb[k]):(d?1:0)); };
   let L=M.slice(); if(CMPF.sort==="up") L.sort((x,y)=>(rel(y[1])??-1e9)-(rel(x[1])??-1e9)); else if(CMPF.sort==="dn") L.sort((x,y)=>(rel(x[1])??1e9)-(rel(y[1])??1e9));
   const fv=(v,dec,k)=>v==null?"—":(k==="bal"&&v>0?"+":"")+fmtN(v,dec);
   const card=([l,k,dec,kind,ic,sub])=>{ const va=ma[k], vb=mb[k], d=dif(k), mx=Math.max(Math.abs(va||0),Math.abs(vb||0))||1, wa=Math.round(Math.abs(va||0)/mx*100), wb=Math.round(Math.abs(vb||0)/mx*100);
     let chip='<span class="cx-chip eq">sin datos</span>';
     if(d!=null){ const z=Math.abs(d)<(dec?.05:.5); if(z) chip='<span class="cx-chip eq">= igual</span>'; else { const pct=mb[k]?Math.round(Math.abs(d)/Math.abs(mb[k])*100):null, cls=kind===2?(d>0?"bad":"ok"):kind===0?(d>0?"ok":"bad"):"nt"; chip=`<span class="cx-chip ${cls}">${d>0?"↑":"↓"} ${fmtN(Math.abs(d),dec)}${pct!=null&&isFinite(pct)?" · "+pct+"%":""}</span>`; } }
-    return `<div class="cx-m"><div class="cx-mh"><span class="cx-ic"><svg viewBox="0 0 24 24" aria-hidden="true">${IC[ic]}</svg></span><div><b>${l}</b><small>${sub}</small></div>${chip}</div>
+    const op=CMPF.open&&CMPF.open.has(k);
+    return `<details class="cx-m" data-cmpk="${k}"${op?" open":""}><summary><div class="cx-mh"><span class="cx-ic"><svg viewBox="0 0 24 24" aria-hidden="true">${IC[ic]}</svg></span><div><b>${l}</b><small>${sub}</small></div>${chip}</div>
      <div class="cx-row a"><i>A</i><span class="cx-bar"><span style="width:${wa}%"></span></span><b>${fv(va,dec,k)}</b></div>
-     <div class="cx-row b"><i>B</i><span class="cx-bar"><span style="width:${wb}%"></span></span><b>${fv(vb,dec,k)}</b></div></div>`; };
+     <div class="cx-row b"><i>B</i><span class="cx-bar"><span style="width:${wb}%"></span></span><b>${fv(vb,dec,k)}</b></div><span class="cx-more">Ver censos</span></summary>${op?cxDet(k):""}</details>`; };
+  /* v10.45 · cada tarjeta se abre y muestra, por censo, de dónde sale la cifra; tocar un censo lo abre */
+  const S0=C?[C]:SRVL, svf=(o,r)=>S0.reduce((t,s)=>t+(((r||{})[o]||{})[s]||0),0), esf=(r,k)=>C?(((r.estc||{})[C]||{})[k]||0):((r.est||{})[k]||0), pdf=r=>C?(+((r.ps||{})[C])||0):cenPacDia(r);
+  const dfnL=r=>Array.isArray(r.el)?r.el.filter(x=>x.t==="D"&&(!C||x.s===C)):[], cxL=r=>(r.cr||[]).filter(x=>x&&(!C||x.s===C));
+  const VAL={pd:pdf,pmax:pdf,ing:r=>svf("ing",r),ingd:r=>svf("ing",r),ingmax:r=>svf("ing",r),egr:r=>svf("egr",r),egrd:r=>svf("egr",r),dfn:r=>dfnL(r).length,grv:r=>esf(r,"GRAVE"),cx:r=>cxL(r).length,cxd:r=>cxL(r).length,ic:r=>icTot(r),icd:r=>icTot(r)};
+  const TXT={dfn:r=>dfnL(r).map(x=>x.n||x.e).join(" · "),cx:r=>cxL(r).map(x=>(x.t||"")+(x.n?" — "+x.n:"")).join(" · "),cxd:r=>cxL(r).map(x=>(x.t||"")+(x.n?" — "+x.n:"")).join(" · "),
+    ing:r=>(Array.isArray(r.il)?r.il.filter(x=>!C||x.s===C).map(x=>x.n||x.e).join(" · "):""),egr:r=>(Array.isArray(r.el)?r.el.filter(x=>!C||x.s===C).map(x=>x.n||x.e).join(" · "):"")};
+  TXT.ingd=TXT.ingmax=TXT.ing; TXT.egrd=TXT.egr;
+  const jcf=r=>"JCF"+String(r.f||"").replace(/\D/g,"")+".json";
+  const lst=(rs,k,x)=>{ if(k==="rein"){ const a1=x==="a"?CMPF.a1:CMPF.b1, a2=x==="a"?CMPF.a2:CMPF.b2; let L=[]; try{ const lo=ingKeyMs(a1), hi=ingKeyMs(a2||a1)+864e5-1; L=ingAllAdmissions().filter(z=>z.i>=2&&z.ms>=lo&&z.ms<=hi&&(!C||z.s===C)).sort((p,q)=>q.ms-p.ms); }catch(_){}
+      return L.length?`<table class="cx-t"><thead><tr><th>Fecha</th><th>Paciente</th></tr></thead><tbody>${L.slice(0,80).map(z=>`<tr><td>${esc(z.f)}</td><td class="nm">${esc(z.n||z.e)}${z.e?` <small>· ${esc(z.e)}</small>`:""}</td></tr>`).join("")}</tbody></table>`:'<div class="cx-none">Sin reingresos.</div>'; }
+    const f=VAL[k]; if(!f) return ""; let L=rs.map(r=>({r,v:f(r)})); if(!["pd","pmax"].includes(k)) L=L.filter(z=>z.v>0);
+    L.sort(k==="pmax"||k==="ingmax"?(p,q)=>q.v-p.v||q.r.k.localeCompare(p.r.k):(p,q)=>q.r.k.localeCompare(p.r.k));
+    return L.length?`<table class="cx-t"><thead><tr><th>Censo</th><th>${k==="pd"||k==="pmax"?"Pacientes":"Cifra"}</th>${TXT[k]?"<th>Detalle</th>":""}</tr></thead><tbody>${L.slice(0,120).map(z=>`<tr class="st-click" data-cenview="${esc(jcf(z.r))}" tabindex="0" title="Abrir el censo ${esc(z.r.f||"")}"><td>${esc(z.r.f||kFmt(z.r.k))}</td><td><b>${fmtN(z.v)}</b></td>${TXT[k]?`<td class="nm">${esc(TXT[k](z.r)||"—")}</td>`:""}</tr>`).join("")}</tbody></table>${L.length>120?`<div class="cx-none">… y ${L.length-120} censos más.</div>`:""}`:'<div class="cx-none">Ningún censo con esta cifra.</div>'; };
+  const cxDet=k=>`<div class="cx-det"><div class="cx-dc a"><h5><span class="cx-tg">A</span>${cmpLbl(CMPF.a1,CMPF.a2)}</h5>${lst(A,k,"a")}</div><div class="cx-dc b"><h5><span class="cx-tg">B</span>${cmpLbl(CMPF.b1,CMPF.b2)}</h5>${lst(B,k,"b")}</div></div>`;
   const inp=(k,v)=>`<input type="date" data-cmp="${k}" value="${esc(v||"")}" max="${dayKey(Date.now())}" aria-label="${k[1]==="1"?"Desde":"Hasta"}">`;
-  const per=(x,lab,a1,a2,rs)=>`<div class="cx-p ${x}"><div class="cx-ph"><span class="cx-tag">${x.toUpperCase()}</span><div><b>${cmpLbl(a1,a2)}</b><small>${rs.length} censo${rs.length===1?"":"s"} final${rs.length===1?"":"es"}</small></div></div><div class="cx-pd"><label><span>Desde</span>${inp(x+"1",a1)}</label><label><span>Hasta</span>${inp(x+"2",a2)}</label></div></div>`;
+  const per=(x,lab,a1,a2,rs)=>`<div class="cx-p ${x}"><div class="cx-ph"><span class="cx-tag">${x.toUpperCase()}</span><div><b>${cmpLbl(a1,a2)}</b><small>Periodo ${x.toUpperCase()}</small></div></div><div class="cx-pd"><label><span>Desde</span>${inp(x+"1",a1)}</label><label><span>Hasta</span>${inp(x+"2",a2)}</label></div></div>`;
   const pre=[["dia","Hoy vs ayer"],["sem","7 vs 7 días"],["mes","Mes vs anterior"],["anio","Mes vs hace 1 año"]].map(([k,l])=>`<button type="button" class="cx-seg${CMPF.pre===k?" on":""}" data-cmppre="${k}">${l}</button>`).join("");
   const srt=[["","Original"],["up","Mayor aumento"],["dn","Mayor descenso"]].map(([k,l])=>`<button type="button" class="cx-seg${(CMPF.sort||"")===k?" on":""}" data-cmpsort="${k}">${l}</button>`).join("");
   const warn=(!A.length||!B.length)?`<div class="cx-warn">${!A.length&&!B.length?"Ningún periodo tiene censos finales.":!A.length?"El periodo A no tiene censos finales.":"El periodo B no tiene censos finales."} Elige otras fechas o espera a que terminen de importarse.</div>`:"";
@@ -16372,7 +16409,8 @@ function cmpView(remote,C){ cmpDefaults(); const A=cmpRs(remote,CMPF.a1,CMPF.a2)
    <div class="cx-ps">${per("a","A",CMPF.a1,CMPF.a2,A)}<span class="cx-vs">vs</span>${per("b","B",CMPF.b1,CMPF.b2,B)}</div>${warn}
    <div class="cx-bar1"><div class="cx-grp"><span>Ordenar</span><div class="cx-segs">${srt}</div></div><small class="cx-leg"><i class="ok"></i>mejor <i class="bad"></i>peor <i class="nt"></i>neutro · para un solo día usa la misma fecha en Desde y Hasta</small></div>
    <div class="cx-grid">${L.map(card).join("")}</div>${charts}</details>`; }
-function cmpWire(root){ const box=root.querySelector("[data-cmpbox]"); if(!box) return; box.addEventListener("toggle",()=>{ CMPF.on=box.open; });
+function cmpWire(root){ const box=root.querySelector("[data-cmpbox]"); if(!box) return; box.addEventListener("toggle",e=>{ if(e.target===box) CMPF.on=box.open; });
+  box.querySelectorAll("details[data-cmpk]").forEach(d=>d.addEventListener("toggle",()=>{ CMPF.open=CMPF.open||new Set(); const k=d.dataset.cmpk; if(d.open){ if(!CMPF.open.has(k)){ CMPF.open.add(k); CMPF.on=true; render(); } } else CMPF.open.delete(k); }));
   box.querySelectorAll("[data-cmp]").forEach(i=>i.onchange=()=>{ const k=i.dataset.cmp; CMPF[k]=i.value||""; CMPF.pre=""; if(k==="a1"&&(!CMPF.a2||CMPF.a2<CMPF.a1)) CMPF.a2=CMPF.a1; if(k==="b1"&&(!CMPF.b2||CMPF.b2<CMPF.b1)) CMPF.b2=CMPF.b1; if(k==="a2"&&CMPF.a2&&CMPF.a2<CMPF.a1) CMPF.a1=CMPF.a2; if(k==="b2"&&CMPF.b2&&CMPF.b2<CMPF.b1) CMPF.b1=CMPF.b2; CMPF.on=true; render(); });
   box.querySelectorAll("[data-cmppre]").forEach(b=>b.onclick=()=>{ cmpPreset(b.dataset.cmppre); CMPF.pre=b.dataset.cmppre; CMPF.on=true; render(); });
   box.querySelectorAll("[data-cmpsort]").forEach(b=>b.onclick=()=>{ CMPF.sort=b.dataset.cmpsort; CMPF.on=true; render(); }); }
@@ -16385,14 +16423,21 @@ function movView(remote){
   const sel=`<div class="on-fl mv-fl"><label>Clínica<select data-mv="clin"><option value="">Todas las clínicas</option>${SRVL.map(s=>`<option value="${s}"${C===s?" selected":""}>${esc(SRVN[s])}</option>`).join("")}</select></label></div>`;
   if(!rs.length) return cenSrcNote(lab)+sel+'<div class="st-card"><div class="st-msg">Aún no hay censos finales en este periodo. Se registran al guardar el censo final y se actualizan solos en segundo plano.</div></div>'+cmpView(remote,C)+movAdmin();
   const dc=C?`data-dclin="${C}"`:"";
-  const K=kpi(rs.length,"Censos finales del periodo",`${kFmt(asc[0].k)} al ${kFmt(asc[asc.length-1].k)}`,'data-det="cen"')
-   +kpi(fmtN(avgOf(pds),1),"Pacientes hospitalizados por día",pds.length?`mín. ${Math.min(...pds)} · máx. ${Math.max(...pds)}`:"",'data-det="ps" '+dc)
-   +kpi(ing,"Ingresos",`≈ ${fmtN(ing/rs.length,1)} por día`,'data-det="ing" '+dc)
-   +kpi(egr,"Egresos",`≈ ${fmtN(egr/rs.length,1)} por día`,'data-det="egr" '+dc)
-   +kpi(ing-egr>0?"+"+(ing-egr):ing-egr,"Balance ingresos − egresos",ing-egr>0?"más ingresos que egresos":ing-egr<0?"más egresos que ingresos":"sin cambio",'data-det="ing" '+dc)
-   +kpi(dfn,"Defunciones",C?"con detalle por clínica":"",'data-det="dfn" '+dc,"",dfn?"st-warn":"")
-   +kpi(rein,"Reingresos",`${ing?pc(rein,ing)+"% de los ingresos · ":""}${new Set(reinL.map(a=>a.e)).size} pacientes${rein0?" · "+rein0+" con estatus «Re ingreso»":""}`,'data-det="rein" '+dc)
-   +kpi(fmtN(avgOf(grv),1),"Pacientes graves por día",`máx. ${Math.max(0,...grv)}`,'data-det="est:GRAVE" '+dc);
+  const cxN=r=>(r.cr||[]).filter(x=>x&&(!C||x.s===C)).length, cxT=rs.reduce((t,r)=>t+cxN(r),0), icT=rs.reduce((t,r)=>t+icTot(r),0), ingMax=Math.max(0,...rs.map(r=>sv("ing",r)));
+  const K=kpi(fmtN(avgOf(pds),1),"Hospitalizados por día",pds.length?`promedio · ${kFmt(asc[0].k)} al ${kFmt(asc[asc.length-1].k)}`:"",'data-det="ps" '+dc)
+   +kpi(pds.length?Math.max(...pds):"—","Máximo en un día",pds.length?`hospitalizados · mín. ${Math.min(...pds)}`:"",'data-det="ps" '+dc)
+   +kpi(ing,"Ingresos","total",'data-det="ing" '+dc)
+   +kpi(fmtN(ing/rs.length,1),"Ingresos por día","promedio",'data-det="ing" '+dc)
+   +kpi(ingMax,"Mayor número de ingresos en un día","máximo",'data-det="ing" '+dc)
+   +kpi(egr,"Egresos","total",'data-det="egr" '+dc)
+   +kpi(fmtN(egr/rs.length,1),"Egresos por día","promedio",'data-det="egr" '+dc)
+   +kpi(dfn,"Defunciones",C?"con detalle por clínica":"total",'data-det="dfn" '+dc,"",dfn?"st-warn":"")
+   +kpi(rein,"Reingresos",`${ing?pc(rein,ing)+"% de los ingresos · ":""}${new Set(reinL.map(a=>a.e)).size} pacientes`,'data-det="rein" '+dc)
+   +kpi(fmtN(avgOf(grv),1),"Graves por día",`promedio · máx. ${Math.max(0,...grv)}`,'data-det="est:GRAVE" '+dc)
+   +kpi(cxT,"Cirugías realizadas","total"+(C?" de la clínica":""))
+   +kpi(fmtN(cxT/rs.length,1),"Cirugías por día","promedio")
+   +kpi(icT,"Interconsultas realizadas",C?"total · todas las clínicas":"total")
+   +kpi(fmtN(icT/rs.length,1),"Interconsultas por día","promedio");
   const serP=C?[{name:SRVN[C],v:A45.map(pd),c:CH_COL[SRVL.indexOf(C)]}]:SRVL.map((s,i)=>({name:SRVN[s],c:CH_COL[i%CH_COL.length],v:A45.map(r=>+((r.ps||{})[s])||0)}));
   if(!C){ const ot=A45.map(r=>Math.max(0,cenPacDia(r)-SRVL.reduce((n,s)=>n+(+((r.ps||{})[s])||0),0))); if(ot.some(x=>x)) serP.push({name:"Otras clínicas",c:"#9AA3AD",v:ot}); }
   const grp=CEN_EST_GRP.map(([g,ks])=>`<tr class="mv-g"><td colspan="4">${esc(g)}</td></tr>`+ks.map(k=>{ const v=rs.map(r=>es(r,k)); const last=es(rs[0],k);
@@ -16403,8 +16448,7 @@ function movView(remote){
    <div class="st-kpis">${K}</div>${cmpView(remote,C)}
    <div class="st-grid2"><div class="st-card"><h3>Ingresos contra egresos <small>· por día de censo</small></h3>${chartSVG(L,[{name:"Ingresos",v:A45.map(r=>sv("ing",r)),c:"#2F6FA7"},{name:"Egresos",v:A45.map(r=>sv("egr",r)),c:"#D9822B"}],{line:true,title:"Ingresos contra egresos",xName:"Censo"})}</div>
     <div class="st-card"><h3>Pacientes hospitalizados por día <small>· ${C?"de la clínica":"por clínica"}</small> <button type="button" class="st-btn st-sm mv-amp" data-mvps>Ampliar</button></h3>${chartSVG(L,serP,{stacked:true,title:"Pacientes por censo",avg:avgOf(A45.map(pd).filter(x=>x>0)),avgLabel:"Promedio",xName:"Censo"})}</div></div>
-   <div class="st-card"><h3>Estado de los pacientes <small>· según el estatus escrito en el censo · toca una fila para verlo por día</small></h3>${noEc?'<div class="st-msg">Algunos censos aún no traen el estado separado por clínica; se completan solos en la próxima actualización automática.</div>':""}<div class="st-scroll"><table class="st-act mv-est"><thead><tr><th>Estado</th><th>Último censo<br><small>${esc(rs[0].f||rs[0].k)}</small></th><th>Promedio por día</th><th>Máximo en un día</th></tr></thead><tbody>${grp}</tbody></table></div><div class="st-msg" style="margin-top:6px">Un paciente cuenta una vez por cada censo en que tuvo ese estado; por eso se muestra el promedio diario y no la suma.</div></div>
-   ${byClin}${movChk(rs)}${movLists(rs,C)}${icView(remote,true)}${movHist(rs,S,C,pd,dfnN)}${dataAuditHTML(remote)}${movAdmin()}`;
+   ${byClin}${movLists(rs,C)}${icView(remote,true)}${isTechnicalAdmin()?`<details class="st-card st-tech"><summary><h3>Herramientas del Técnico <small>· estado de los pacientes, cifras en cadena, historial, auditoría y mantenimiento</small></h3></summary><div class="st-tech-b">${`<div class="st-card"><h3>Estado de los pacientes <small>· según el estatus escrito en el censo · toca una fila para verlo por día</small></h3>${noEc?'<div class="st-msg">Algunos censos aún no traen el estado separado por clínica; se completan solos en la próxima actualización automática.</div>':""}<div class="st-scroll"><table class="st-act mv-est"><thead><tr><th>Estado</th><th>Último censo<br><small>${esc(rs[0].f||rs[0].k)}</small></th><th>Promedio por día</th><th>Máximo en un día</th></tr></thead><tbody>${grp}</tbody></table></div><div class="st-msg" style="margin-top:6px">Un paciente cuenta una vez por cada censo en que tuvo ese estado; por eso se muestra el promedio diario y no la suma.</div></div>`}${movChk(rs)}${movHist(rs,S,C,pd,dfnN)}${dataAuditHTML(remote)}${movAdmin()}</div></details>`:""}`;
 }
 function movChk(rs){
   const L=rs.filter(r=>r.chk&&(r.chk.ingR!==r.chk.ingC||r.chk.egrR!==r.chk.egrC||r.chk.dfnR!==r.chk.dfnC||r.chk.sinReg.length||r.chk.faltan.length)); const sinCadena=rs.filter(r=>!r.chk).length;
