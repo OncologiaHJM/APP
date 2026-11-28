@@ -337,7 +337,7 @@ La especificación ampliada está en el JSON hjm-app-contract que sigue. No impr
   "mantenimiento": "Estas equivalencias son especificaciones del proyecto para futuros cambios. No son texto clínico ni contenido para imprimir. Conservar claves internas compatibles al cambiar nombres visibles."
 }
 </script>
-<meta name="application-version" content="10.51">
+<meta name="application-version" content="10.52">
 <link rel="icon" type="image/png" sizes="32x32" href="data:," data-logo-link="hjm">
 <link rel="icon" type="image/png" sizes="64x64" href="data:," data-logo-link="hjm">
 <link rel="apple-touch-icon" sizes="180x180" href="data:," data-logo-link="hjm">
@@ -2769,7 +2769,7 @@ window.addEventListener("load",function(){setTimeout(end,8000);});setTimeout(end
   </div>
 
   <footer class="app-footer" aria-label="Información de la aplicación">
-  <div class="app-footer-version">Versión 10.51 · Fecha de publicación: 27.11.26</div>
+  <div class="app-footer-version">Versión 10.52 · Fecha de publicación: 27.11.26</div>
     <p>Página creada por el Servicio de Oncología del Hospital Juárez de México.</p>
     <p class="app-footer-legal"><span class="legal-risk">El uso de esta aplicación es responsabilidad de cada usuario.</span><span class="legal-platform">Aplicación de prueba en espera de autorización por la División Médica del Hospital Juárez de México. Herramienta de apoyo de uso interno: no es expediente clínico ni lo sustituye.</span></p>
     <p>La información se guarda en la misma cuenta y carpetas de Google Drive que la Jefatura designó para los censos y los ingresos. Esta página no almacena datos de pacientes ni de usuarios; se consultan por conexión cifrada (HTTPS) con una cuenta de Google autorizada.</p>
@@ -3206,9 +3206,18 @@ details.cx-m[open]{grid-column:1/-1}
   html body #dlgPatientFormat .pfw-title>#ppEditorState{font-size:12px!important;padding:3px 8px!important;white-space:nowrap}
   html body #dlgPatientFormat .pfw-title>#ppFormatWindowPatient{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 }
-.cl-last-ind{padding:10px 12px 0}.cl-last-ind[hidden]{display:none!important}
-.cl-last-ind .rb{width:100%;justify-content:center;gap:8px;padding:10px 12px}
-.cl-last-ind .rb small{opacity:.75;font-weight:500}
+.cl-last-ind{display:flex;justify-content:flex-end;padding:10px 14px 2px}.cl-last-ind[hidden]{display:none!important}
+html body .cl-last-ind .cl-li-btn{appearance:none;margin:0;box-sizing:border-box;display:inline-flex;align-items:center;gap:7px;max-width:100%;padding:6px 12px 6px 10px;border-radius:999px;cursor:pointer;
+  font:600 12.5px/1.2 inherit;font-family:inherit;color:var(--cla,#2F6FA7);background:color-mix(in srgb,var(--cla,#2F6FA7) 8%,transparent);border:1px solid color-mix(in srgb,var(--cla,#2F6FA7) 22%,transparent);transition:background .15s,border-color .15s}
+html body .cl-last-ind .cl-li-btn:hover{background:color-mix(in srgb,var(--cla,#2F6FA7) 14%,transparent);border-color:color-mix(in srgb,var(--cla,#2F6FA7) 40%,transparent)}
+html body .cl-last-ind .cl-li-btn:focus-visible{outline:2px solid var(--cla,#2F6FA7);outline-offset:2px}
+html body .cl-last-ind .cl-li-btn svg{width:15px;height:15px;flex:0 0 auto}
+html body .cl-last-ind .cl-li-btn .cl-li-l{display:inline;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html body .cl-last-ind .cl-li-btn small{font-weight:500;font-size:11px;opacity:.7;white-space:nowrap;padding-left:7px;border-left:1px solid currentColor;border-left-color:color-mix(in srgb,currentColor 30%,transparent)}
+@media (prefers-color-scheme:dark){html:not([data-theme="light"]) body .cl-last-ind{--cla:#8DB8E3}}
+html[data-theme="dark"] body .cl-last-ind{--cla:#8DB8E3}
+@media (max-width:700px){.cl-last-ind{justify-content:stretch;padding:10px 12px 2px}html body .cl-last-ind .cl-li-btn{width:100%;justify-content:center}}
+@media (max-width:480px){html body .cl-last-ind .cl-li-btn small{display:none}}
 /* Agenda (Quirófano y Comité): mismos colores de acción */
 html body .qx-c-act .qx-btn.bad{color:#B42318;border-color:#F4C7C2;background:#FEF3F2}
 html body .qx-c-act .qx-btn.bad:hover{background:#FDE4E1}
@@ -15532,7 +15541,7 @@ try{(function(){
       if(tp==="notas"){ try{ last=(arCollectLive(["indicaciones"])||[]).find(x=>x&&x.tp==="indicaciones"&&x.r&&x.r.p&&!(typeof isCx==="function"&&isCx(x.r))); }catch(_){} }
       if(!last){ if(b) b.hidden=true; return r; }
       if(!b){ b=document.createElement("div"); b.id="clLastInd"; b.className="cl-last-ind"; box.insertBefore(b,box.firstChild); b.addEventListener("click",e=>{ const k=e.target.closest("[data-cl-lastind]"); if(k) arViewPop("indicaciones",k.dataset.clLastind); }); }
-      b.hidden=false; b.innerHTML=`<button type="button" class="rb rb-view" data-cl-lastind="${esc(last.r.id)}">${(typeof RB_IC!=="undefined"&&RB_IC.view)||""}<span class="rb-l">Ver últimas indicaciones médicas</span><small>${esc(last.r.t||(last.r.p&&last.r.p.fecha)||"")}</small></button>`;
+      b.hidden=false; b.innerHTML=`<button type="button" class="cl-li-btn" data-cl-lastind="${esc(last.r.id)}">${(typeof RB_IC!=="undefined"&&RB_IC.view)||""}<span class="cl-li-l">Ver últimas indicaciones médicas</span><small>${esc(last.r.t||(last.r.p&&last.r.p.fecha)||"")}</small></button>`;
     }catch(_){} return r; };
   head.addEventListener("click",toggle);
   head.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggle(); } });
